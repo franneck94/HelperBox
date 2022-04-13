@@ -1,0 +1,15 @@
+#pragma once
+
+#if defined(__clang__) || defined(__GNUC__)
+# define DllExport __attribute__((dllexport))
+# define DllImport __attribute__((dllimport))
+#elif defined(_MSC_VER)
+# define DllExport __declspec(dllexport)
+# define DllImport __declspec(dllimport)
+#endif
+
+#ifdef GWCA_BUILD_EXPORTS
+# define GWCA_API DllExport
+#else
+# define GWCA_API extern
+#endif
