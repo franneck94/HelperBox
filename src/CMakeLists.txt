@@ -6,9 +6,9 @@ file(GLOB DLL_SOURCES
     "*.h"
     "*.cpp")
 add_library(HelperBoxDll SHARED ${DLL_SOURCES})
-target_compile_definitions(HelperBoxDll PUBLIC "_USRDLL")
-target_compile_options(HelperBoxDll PUBLIC /ZI)
-target_link_libraries(HelperBoxDll PUBLIC
+target_compile_definitions(HelperBoxDll PRIVATE "_USRDLL")
+target_compile_options(HelperBoxDll PRIVATE /ZI)
+target_link_libraries(HelperBoxDll PRIVATE
     UtilsDll
     HelperDll
     MainDll

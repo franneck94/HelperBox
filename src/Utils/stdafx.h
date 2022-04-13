@@ -57,10 +57,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#pragma warning(disable : 4505)
-#pragma warning(disable : 4201)
-#pragma warning(disable : 4996)
-
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameContainers/List.h>

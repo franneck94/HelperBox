@@ -3,10 +3,10 @@ file(GLOB UTILS_SOURCES
     "*.cpp")
 
 add_library(UtilsDll STATIC ${UTILS_SOURCES})
-target_compile_definitions(UtilsDll PUBLIC "_USRDLL")
 target_compile_options(UtilsDll PUBLIC /ZI)
 target_precompile_headers(UtilsDll PUBLIC "stdafx.h")
-target_include_directories(UtilsDll PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(UtilsDll PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(UtilsDll PUBLIC
     impl
     gwca

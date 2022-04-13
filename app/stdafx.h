@@ -17,7 +17,3 @@
 #include <atomic>
 #include <string>
 #include <vector>
-
-#pragma warning(disable : 4201)
-#pragma warning(disable : 4505)
-#pragma warning(disable : 4996)
