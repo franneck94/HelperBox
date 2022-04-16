@@ -30,6 +30,9 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
     static GW::Constants::InstanceType last_instance_type = GW::Constants::InstanceType::Loading;
     GW::Constants::InstanceType instance_type = GW::Map::GetInstanceType();
 
+    if (instance_type == GW::Constants::InstanceType::Loading)
+        return;
+
     if (instance_type != last_instance_type)
     {
         if (hide_when_entering_explorable && instance_type == GW::Constants::InstanceType::Explorable)
@@ -39,6 +42,7 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (!visible)
         return;
+
     ImGui::SetNextWindowSize(ImVec2(768, 768), ImGuiCond_FirstUseEver);
     if (ImGui::Begin(Name(), GetVisiblePtr(), GetWinFlags()))
     {
@@ -57,10 +61,8 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
         const std::vector<HelperBoxModule *> &optional_modules = HelperBoxSettings::Instance().GetOptionalModules();
         for (unsigned i = 0; i < optional_modules.size(); ++i)
         {
-            if (i == sep_windows)
-                ImGui::Text("Windows:");
-            if (i == sep_widgets)
-                ImGui::Text("Widgets:");
+            if (i == sep)
+                ImGui::Text("Components:");
             DrawSettingsSection(optional_modules[i]->SettingsName());
         }
     }

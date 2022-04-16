@@ -1,5 +1,9 @@
+#include <GWCA/Managers/ChatMgr.h>
+#include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/ItemMgr.h>
+#include <GWCA/Managers/PartyMgr.h>
+#include <GWCA/Packets/StoC.h>
 
 #include <fmt/format.h>
 
@@ -42,19 +46,22 @@ ActionState SafeTravel(const GW::Constants::MapID target_map,
     }
     else if (travel_finished && !IsLoading())
     {
+        Wait(10);
         state = ActionState::FINISHED;
     }
 
     return state;
 }
 
-ActionState SafeWalk(GW::GamePos target_position)
+ActionState SafeWalk(GW::GamePos target_position, const bool reset)
 {
     static auto map_zoned = false;
     static auto state = ActionState::NONE;
     ResetState(state);
+    if (reset)
+        state = ActionState::NONE;
 
-    if (GW::Constants::InstanceType::Loading == GW::Map::GetInstanceType())
+    if (!map_zoned && GW::Constants::InstanceType::Loading == GW::Map::GetInstanceType())
     {
         map_zoned = true;
     }
@@ -170,7 +177,7 @@ ActionState SafeChangeTarget(const TargetType type)
 
     if (TargetType::Item == type)
     {
-        TargetNearest(type, GW::Constants::Range::Nearby);
+        TargetNearest(type, GW::Constants::Range::Compass / 2.0F);
     }
     else
     {
@@ -250,8 +257,44 @@ ActionState SafeOpenChest()
         return ActionState::FINISHED;
     }
 
-    GW::Agents::GoSignpost(target);
-    GW::Items::OpenLockedChest();
+    if (target && target->type == 0x200)
+    {
+        GW::Agents::GoSignpost(target);
+        GW::Items::OpenLockedChest();
+    }
 
     return ActionState::FINISHED;
+}
+
+ActionState SafeResign(bool issue_resign)
+{
+    static bool send_package = false;
+    static ActionState state = ActionState::NONE;
+    ResetState(state);
+
+    if (!IsMapReady())
+    {
+        return ActionState::FINISHED;
+    }
+
+    if (issue_resign && state != ActionState::ACTIVE)
+    {
+        GW::Chat::SendChat('/', "resign");
+        state = ActionState::ACTIVE;
+        send_package = false;
+    }
+
+    if (!GW::PartyMgr::GetIsPartyDefeated())
+    {
+        return ActionState::FINISHED;
+    }
+
+    if (!send_package && state == ActionState::ACTIVE)
+    {
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_PARTY_RETURN_TO_OUTPOST);
+        send_package = true;
+        return ActionState::FINISHED;
+    }
+
+    return state;
 }

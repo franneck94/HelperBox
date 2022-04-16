@@ -23,10 +23,10 @@ bool HelperBoxSettings::move_all = false;
 
 void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 {
-    SettingsWindow::Instance().sep_modules = optional_modules.size();
+    SettingsWindow::Instance().sep = optional_modules.size();
 
     optional_modules.push_back(&ChatCommands::Instance());
-    // optional_modules.push_back(&ChestRunnerWindow::Instance());
+    optional_modules.push_back(&ChestRunnerWindow::Instance());
     optional_modules.push_back(&EmoWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 

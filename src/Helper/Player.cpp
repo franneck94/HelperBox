@@ -18,7 +18,7 @@
 
 bool Player::ValidateData() const
 {
-    if (!IsExplorable())
+    if (IsLoading())
         return false;
 
     const auto me_agent = GW::Agents::GetPlayer();
@@ -29,6 +29,9 @@ bool Player::ValidateData() const
 
     if (me_agent->agent_id == UINT32_MAX)
         return false;
+
+    if (IsOutpost())
+        return true;
 
     const auto skillbar_ = GW::SkillbarMgr::GetPlayerSkillbar();
     if (!skillbar_)

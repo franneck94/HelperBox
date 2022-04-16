@@ -5,19 +5,14 @@
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
-#include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameEntities/Item.h>
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/ChatMgr.h>
-#include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/EffectMgr.h>
-#include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/MemoryMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
-#include <GWCA/Managers/StoCMgr.h>
-#include <GWCA/Packets/StoC.h>
 
 #include <fmt/format.h>
 
@@ -217,31 +212,13 @@ bool DetectNotMoving(const uint32_t threshold)
 
     if (not_moving_counter == threshold)
     {
+        not_moving_counter = 0;
         return true;
     }
     else
     {
         return false;
     }
-}
-
-ActionState SafeResign()
-{
-    if (!IsMapReady())
-    {
-        return ActionState::FINISHED;
-    }
-
-    GW::Chat::SendChat('/', "resign");
-
-    if (!GW::PartyMgr::GetIsPartyDefeated())
-    {
-        return ActionState::FINISHED;
-    }
-
-    GW::CtoS::SendPacket(0x4, GAME_CMSG_PARTY_RETURN_TO_OUTPOST);
-
-    return ActionState::FINISHED;
 }
 
 std::tuple<uint32_t, uint32_t, float> GetEnergy()

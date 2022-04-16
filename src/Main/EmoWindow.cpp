@@ -75,10 +75,11 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
-    if (!visible)
-    {
+    if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
         return;
-    }
+
+    if (!visible)
+        return;
 
     ImGui::SetNextWindowSize(WINDOW_SIZE, ImGuiCond_FirstUseEver);
 

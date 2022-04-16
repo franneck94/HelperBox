@@ -34,9 +34,7 @@ public:
 
     bool DrawSettingsSection(const char *section);
 
-    size_t sep_modules = 0;
-    size_t sep_windows = 0;
-    size_t sep_widgets = 0;
+    size_t sep = 0;
 
 private:
     std::map<std::string, bool> drawn_settings{};

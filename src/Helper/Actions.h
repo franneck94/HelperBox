@@ -13,13 +13,24 @@
 #include <Types.h>
 #include <Utils.h>
 
-ActionState SafeResign();
+enum class ActionType
+{
+    NONE,
+    TRAVEL,
+    WALK,
+    USE_SKILL,
+    LOAD_SKILLS,
+    CHANGE_TARGET,
+    GOTO_TARGET,
+    OPEN_CHEST,
+    RESIGN
+};
 
 ActionState SafeTravel(const GW::Constants::MapID target_map,
-                       const GW::Constants::MapRegion target_region,
-                       const GW::Constants::MapLanguage target_language);
+                       const GW::Constants::MapRegion target_region = GW::Constants::MapRegion::European,
+                       const GW::Constants::MapLanguage target_language = GW::Constants::MapLanguage::Polish);
 
-ActionState SafeWalk(GW::GamePos target_position);
+ActionState SafeWalk(GW::GamePos target_position, const bool reset = false);
 
 ActionState SafeUseSkill(const uint32_t skill_idx, const uint32_t target = 0, const uint32_t call_target = 0);
 
@@ -31,19 +42,22 @@ ActionState SafeGotoTarget();
 
 ActionState SafeOpenChest();
 
+ActionState SafeResign(bool issue_resign);
+
 class Action
 {
 public:
     const std::string_view name;
+    const ActionType type;
 
-    Action(std::string_view name_) : name(name_){};
+    Action(std::string_view name_, ActionType type_) : name(name_), type(type_){};
     virtual ~Action(){};
 
-    virtual ActionState action_function() = 0;
+    virtual ActionState action_function(const bool reset) = 0;
 
-    const ActionState operator()()
+    const ActionState operator()(const bool reset)
     {
-        return action_function();
+        return action_function(reset);
     }
 };
 
@@ -54,10 +68,11 @@ public:
                  const GW::Constants::MapID target_map_,
                  const GW::Constants::MapRegion target_region_,
                  const GW::Constants::MapLanguage target_language_)
-        : Action(name_), target_map(target_map_), target_region(target_region_), target_language(target_language_){};
+        : Action(name_, ActionType::TRAVEL), target_map(target_map_), target_region(target_region_),
+          target_language(target_language_){};
     ~TravelAction(){};
 
-    ActionState action_function() override
+    ActionState action_function(const bool) override
     {
         return SafeTravel(target_map, target_region, target_language);
     }
@@ -73,12 +88,12 @@ class WalkAction : public Action
 {
 public:
     WalkAction(std::string_view name_, const GW::GamePos &target_position_)
-        : Action(name_), target_position(target_position_){};
+        : Action(name_, ActionType::WALK), target_position(target_position_){};
     ~WalkAction(){};
 
-    ActionState action_function() override
+    ActionState action_function(const bool reset) override
     {
-        return SafeWalk(target_position);
+        return SafeWalk(target_position, reset);
     }
 
 private:
@@ -92,10 +107,10 @@ public:
                    const uint32_t skill_idx_,
                    const uint32_t target_ = 0,
                    const uint32_t call_target_ = 0)
-        : Action(name_), skill_idx(skill_idx_), target(target_), call_target(call_target_){};
+        : Action(name_, ActionType::USE_SKILL), skill_idx(skill_idx_), target(target_), call_target(call_target_){};
     ~UseSkillAction(){};
 
-    ActionState action_function() override
+    ActionState action_function(const bool) override
     {
         return SafeUseSkill(skill_idx, target, call_target);
     }
@@ -109,10 +124,11 @@ private:
 class LoadSkillTemplateAction : public Action
 {
 public:
-    LoadSkillTemplateAction(std::string_view name_, std::string_view code_) : Action(name_), code(code_){};
+    LoadSkillTemplateAction(std::string_view name_, std::string_view code_)
+        : Action(name_, ActionType::LOAD_SKILLS), code(code_){};
     ~LoadSkillTemplateAction(){};
 
-    ActionState action_function()
+    ActionState action_function(const bool)
     {
         return SafeLoadSkillTemplate(code);
     }
@@ -124,10 +140,11 @@ private:
 class ChangeTargetAction : public Action
 {
 public:
-    ChangeTargetAction(std::string_view name_, TargetType type_) : Action(name_), type(type_){};
+    ChangeTargetAction(std::string_view name_, TargetType type_)
+        : Action(name_, ActionType::CHANGE_TARGET), type(type_){};
     ~ChangeTargetAction(){};
 
-    ActionState action_function() override
+    ActionState action_function(const bool) override
     {
         return SafeChangeTarget(type);
     }
@@ -139,10 +156,10 @@ private:
 class GotoTargetAction : public Action
 {
 public:
-    GotoTargetAction(std::string_view name_) : Action(name_){};
+    GotoTargetAction(std::string_view name_) : Action(name_, ActionType::GOTO_TARGET){};
     ~GotoTargetAction(){};
 
-    ActionState action_function() override
+    ActionState action_function(const bool) override
     {
         return SafeGotoTarget();
     }
@@ -151,10 +168,10 @@ public:
 class OpenChestAction : public Action
 {
 public:
-    OpenChestAction(std::string_view name_) : Action(name_){};
+    OpenChestAction(std::string_view name_) : Action(name_, ActionType::OPEN_CHEST){};
     ~OpenChestAction(){};
 
-    ActionState action_function() override
+    ActionState action_function(const bool) override
     {
         return SafeOpenChest();
     }

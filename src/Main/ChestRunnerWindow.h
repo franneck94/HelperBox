@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <string_view>
 #include <vector>
 
@@ -16,7 +17,7 @@
 class ChestRunnerWindow : public HelperBoxWindow
 {
 public:
-    ChestRunnerWindow() : actions(std::vector<std::unique_ptr<Action>>{}){};
+    ChestRunnerWindow() : actions(std::vector<std::shared_ptr<Action>>{}){};
     ~ChestRunnerWindow(){};
 
     static ChestRunnerWindow &Instance()
@@ -27,7 +28,7 @@ public:
 
     const char *Name() const override
     {
-        return "Helper";
+        return "ChestRunner";
     }
 
     void Initialize() override;
@@ -40,10 +41,13 @@ private:
     void AddChestActions();
     bool ChestMain();
     bool HelperMain();
+    void RunnerSkillLogic();
 
     RangerRunnerSkillbar skillbar{};
 
     boolean start_helper = false;
-    std::vector<std::unique_ptr<Action>> actions;
+    std::vector<std::shared_ptr<Action>> actions;
+    std::vector<ActionType> types;
+    std::set<uint32_t> used_targets;
     uint32_t action_idx = 0;
 };
