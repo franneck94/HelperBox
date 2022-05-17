@@ -20,10 +20,7 @@ static bool InjectInstalledDllInProcess(Process *process)
     }
 
     wchar_t dllpath[MAX_PATH];
-    if (settings.localdll)
-    {
-        PathGetProgramDirectory(dllpath, MAX_PATH);
-    }
+    PathGetProgramDirectory(dllpath, MAX_PATH);
 
     PathCompose(dllpath, MAX_PATH, dllpath, L"HelperBoxDll.dll");
 
@@ -70,6 +67,7 @@ static bool SetProcessForeground(Process *process)
 
     return false;
 }
+
 #ifdef _DEBUG
 int main()
 #else

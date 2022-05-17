@@ -12,7 +12,6 @@
 #include <HelperBox.h>
 
 #include <ChatCommands.h>
-#include <ChestRunnerWindow.h>
 #include <EmoWindow.h>
 #include <MainWindow.h>
 #include <SettingsWindow.h>
@@ -26,7 +25,6 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     SettingsWindow::Instance().sep = optional_modules.size();
 
     optional_modules.push_back(&ChatCommands::Instance());
-    optional_modules.push_back(&ChestRunnerWindow::Instance());
     optional_modules.push_back(&EmoWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 

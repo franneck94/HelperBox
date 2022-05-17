@@ -9,7 +9,6 @@ void PrintUsage(bool terminate)
 {
     fprintf(stderr,
             "Usage: [options]\n\n"
-            "    /localdll                  Check launcher directory for HelperBox dll\n\n"
             "    /pid <process id>          Process id of the target in which to inject\n");
 
     if (terminate)
@@ -26,30 +25,6 @@ void ParseRegSettings()
     }
 
     RegCloseKey(SettingsKey);
-}
-
-static void WriteRegSettings()
-{
-    HKEY SettingsKey;
-    if (!OpenSettingsKey(&SettingsKey))
-    {
-        fprintf(stderr, "OpenUninstallKey failed\n");
-        return;
-    }
-
-    RegCloseKey(SettingsKey);
-}
-
-static bool IsOneOrZeroOf3(bool b1, bool b2, bool b3)
-{
-    int count = 0;
-    if (b1)
-        ++count;
-    if (b2)
-        ++count;
-    if (b3)
-        ++count;
-    return count <= 1;
 }
 
 void ParseCommandLine()
@@ -82,10 +57,6 @@ void ParseCommandLine()
                 exit(0);
             }
             settings.pid = static_cast<uint32_t>(pid);
-        }
-        else if (wcscmp(arg, L"/localdll") == 0)
-        {
-            settings.localdll = true;
         }
     }
 }
