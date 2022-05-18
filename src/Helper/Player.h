@@ -22,6 +22,8 @@ public:
     bool HasBuff(const GW::Constants::SkillID buff_skill_id) const;
     bool HasEffect(const GW::Constants::SkillID effect_skill_id) const;
 
+    void ChangeTarget(const uint32_t target_id);
+
 public:
     uint32_t id = UINT32_MAX;
 

@@ -9,7 +9,9 @@ enum class ModuleState
 
 ModuleState StateNegation(const ModuleState state);
 
-void StateOnHoldToggle(ModuleState &state);
+void StateOnActive(ModuleState &state);
+
+void StateOnHold(ModuleState &state);
 
 enum class TargetType
 {
@@ -28,3 +30,9 @@ enum class ActionState
 };
 
 void ResetState(ActionState &state);
+
+struct PlayerMapping
+{
+    uint32_t id;
+    uint32_t party_idx;
+};

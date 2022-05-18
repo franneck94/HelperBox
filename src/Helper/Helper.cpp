@@ -7,12 +7,16 @@
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameEntities/Item.h>
+#include <GWCA/GameEntities/Party.h>
+#include <GWCA/GameEntities/Player.h>
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/ChatMgr.h>
+#include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/MemoryMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
+#include <GWCA/Packets/Opcodes.h>
 
 #include <fmt/format.h>
 
@@ -298,4 +302,153 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
     }
 
     return false;
+}
+
+bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
+{
+    if (!GW::PartyMgr::GetIsPartyLoaded())
+        return false;
+    if (!GW::Map::GetIsMapLoaded())
+        return false;
+
+    GW::PartyInfo *info = GW::PartyMgr::GetPartyInfo();
+    if (info == nullptr)
+        return false;
+
+    GW::PlayerArray players = GW::Agents::GetPlayerArray();
+    if (!players.valid())
+        return false;
+
+    party_members.clear();
+
+    uint32_t idx = 0;
+    for (GW::PlayerPartyMember &player : info->players)
+    {
+        uint32_t id = players[player.login_number].agent_id;
+        party_members.push_back({id, idx});
+        ++idx;
+
+        for (GW::HeroPartyMember &hero : info->heroes)
+        {
+            if (hero.owner_player_id == player.login_number)
+            {
+                party_members.push_back({hero.agent_id, idx});
+                ++idx;
+            }
+        }
+    }
+    for (GW::HenchmanPartyMember &hench : info->henchmen)
+    {
+        party_members.push_back({hench.agent_id, idx});
+        ++idx;
+    }
+
+    return true;
+}
+
+bool IsEquippable(const GW::Item *_item)
+{
+    if (!_item)
+        return false;
+    switch (static_cast<GW::Constants::ItemType>(_item->type))
+    {
+    case GW::Constants::ItemType::Axe:
+    case GW::Constants::ItemType::Boots:
+    case GW::Constants::ItemType::Bow:
+    case GW::Constants::ItemType::Chestpiece:
+    case GW::Constants::ItemType::Offhand:
+    case GW::Constants::ItemType::Gloves:
+    case GW::Constants::ItemType::Hammer:
+    case GW::Constants::ItemType::Headpiece:
+    case GW::Constants::ItemType::Leggings:
+    case GW::Constants::ItemType::Wand:
+    case GW::Constants::ItemType::Shield:
+    case GW::Constants::ItemType::Staff:
+    case GW::Constants::ItemType::Sword:
+    case GW::Constants::ItemType::Daggers:
+    case GW::Constants::ItemType::Scythe:
+    case GW::Constants::ItemType::Spear:
+    case GW::Constants::ItemType::Costume_Headpiece:
+    case GW::Constants::ItemType::Costume:
+        break;
+    default:
+        return false;
+        break;
+    }
+    return true;
+}
+
+bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
+{
+    GW::Item *item = nullptr;
+
+    if (bag_idx < 1 || bag_idx > 5 || slot_idx < 1 || slot_idx > 25)
+    {
+        return false;
+    }
+    GW::Bag *b = GW::Items::GetBag(bag_idx);
+    if (!b)
+    {
+        return false;
+    }
+    GW::ItemArray items = b->items;
+    if (!items.valid() || slot_idx > items.size())
+    {
+        return false;
+    }
+    item = items.at(slot_idx - 1);
+
+    if (!IsEquippable(item))
+    {
+        return false;
+    }
+
+    if (!item || !item->item_id)
+    {
+        return false;
+    }
+    if (item->bag && item->bag->bag_type == 2)
+    {
+        return false;
+    }
+    GW::AgentLiving *p = GW::Agents::GetCharacter();
+    if (!p || p->GetIsDead())
+    {
+        return false;
+    }
+    const GW::Skillbar *s = GW::SkillbarMgr::GetPlayerSkillbar();
+    if (p->GetIsKnockedDown() || (s && s->casting))
+    {
+        return false;
+    }
+    if (p->skill)
+    {
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        return false;
+    }
+    if (p->GetIsIdle() || p->GetIsMoving())
+    {
+        GW::Items::EquipItem(item);
+        return true;
+    }
+    else
+    {
+        GW::Agents::Move(p->pos);
+        return false;
+    }
+}
+
+void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+{
+    bool all_done = true;
+
+    for (uint32_t offset = 0; offset < 5; offset++)
+    {
+        all_done = EquipItemExecute(bag_idx, start_slot_idx + offset);
+    }
+
+    if (!all_done)
+    {
+        Log::Log("ERROR!");
+    }
 }

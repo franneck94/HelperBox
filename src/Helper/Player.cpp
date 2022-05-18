@@ -57,8 +57,7 @@ void Player::Update()
 
     dead = me_living->GetIsDead();
 
-    const auto target_agent = GW::Agents::GetTarget();
-    target = target_agent;
+    target = GW::Agents::GetTarget();
 
     internal_skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
     skillbar_skills = internal_skillbar->skills;
@@ -126,4 +125,10 @@ bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
     }
 
     return false;
+}
+
+void Player::ChangeTarget(const uint32_t target_id)
+{
+    GW::Agents::ChangeTarget(target_id);
+    target = GW::Agents::GetTarget();
 }

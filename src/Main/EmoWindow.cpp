@@ -13,11 +13,13 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
+#include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Managers/PlayerMgr.h>
 #include <GWCA/Managers/SkillbarMgr.h>
+#include <GWCA/Packets/Opcodes.h>
 
 #include <fmt/format.h>
 
@@ -48,11 +50,15 @@ static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 static const auto WINDOW_SIZE = ImVec2(120.0, 370.0);
 static const auto BUTTON_SIZE = ImVec2(120.0, 80.0);
 
-static const auto ACTIVE_COLOR = ImVec4{0.0F, 200.0F, 0.0F, 102.0F};
-static const auto INACTIVE_COLOR = ImVec4{200.0F, 0.0F, 0.0F, 102.0F};
-static const auto ON_HOLD_COLOR = ImVec4{255.0F, 226.0F, 0.0F, 102.0F};
+static const auto ACTIVE_COLOR = ImVec4{0.0F, 200.0F, 0.0F, 80.0F};
+static const auto INACTIVE_COLOR = ImVec4{41.0F, 74.0F, 122.0F, 80.0F};
+static const auto ON_HOLD_COLOR = ImVec4{255.0F, 226.0F, 0.0F, 80.0F};
 
 static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
+
+static auto COLOR_MAPPING = std::map<uint32_t, ImVec4>{{static_cast<uint32_t>(ModuleState::INACTIVE), INACTIVE_COLOR},
+                                                       {static_cast<uint32_t>(ModuleState::ACTIVE), ACTIVE_COLOR},
+                                                       {static_cast<uint32_t>(ModuleState::ON_HOLD), ON_HOLD_COLOR}};
 }; // namespace
 
 void EmoWindow::Initialize()
@@ -71,6 +77,27 @@ void EmoWindow::SaveSettings(CSimpleIni *ini)
     HelperBoxWindow::SaveSettings(ini);
 }
 
+void DrawButton(ModuleState &state, const ImVec4 color, std::string_view text)
+{
+    bool pushed_style = false;
+
+    if (state != ModuleState::INACTIVE)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, color);
+        pushed_style = true;
+    }
+
+    if (ImGui::Button(text.data(), BUTTON_SIZE))
+    {
+        if (IsExplorable())
+        {
+            state = StateNegation(state);
+        }
+    }
+    if (pushed_style)
+        ImGui::PopStyleColor();
+}
+
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
@@ -85,72 +112,21 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
     {
-        auto casting_button_text = "";
-        auto casting_button_color = ImVec4{0.0F, 0.0F, 0.0F, 255.0F};
+        const auto casting_button_text = "Pumping";
+        const auto casting_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_emo_casting_routine)];
+        DrawButton(state_emo_casting_routine, casting_button_color, casting_button_text);
 
-        switch (state_emo_casting_routine)
-        {
-        case ModuleState::ACTIVE:
-        {
-            casting_button_text = "Stop Pump";
-            casting_button_color = ACTIVE_COLOR;
+        const auto bonding_tank_button_text = "Tank Bonds";
+        const auto tank_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_tank_bonding_routine)];
+        DrawButton(state_tank_bonding_routine, tank_bonding_button_color, bonding_tank_button_text);
 
-            break;
-        }
-        case ModuleState::ON_HOLD:
-        {
-            casting_button_text = "On Hold Pump";
-            casting_button_color = ON_HOLD_COLOR;
+        const auto bonding_player_button_text = "Player Bonds";
+        const auto player_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_player_bonding_routine)];
+        DrawButton(state_player_bonding_routine, player_bonding_button_color, bonding_player_button_text);
 
-            break;
-        }
-        case ModuleState::INACTIVE:
-        default:
-        {
-            casting_button_text = "Start Pump";
-            casting_button_color = INACTIVE_COLOR;
-
-            break;
-        }
-        }
-
-        auto bonding_tank_button_text = "Tank Bonds";
-        auto bonding_player_button_text = "Player Bonds";
-        auto fuse_pull_button_text = "Fuse Pull";
-
-        ImGui::PushStyleColor(ImGuiCol_Button, casting_button_color);
-        if (ImGui::Button(casting_button_text, BUTTON_SIZE))
-        {
-            if (IsExplorable())
-            {
-                state_emo_casting_routine = StateNegation(state_emo_casting_routine);
-            }
-        }
-        ImGui::PopStyleColor();
-
-        if (ImGui::Button(bonding_tank_button_text, BUTTON_SIZE))
-        {
-            if (IsExplorable())
-            {
-                state_tank_bonding_routine = StateNegation(state_tank_bonding_routine);
-            }
-        }
-
-        if (ImGui::Button(bonding_player_button_text, BUTTON_SIZE))
-        {
-            if (IsExplorable())
-            {
-                state_player_bonding_routine = StateNegation(state_player_bonding_routine);
-            }
-        }
-
-        if (ImGui::Button(fuse_pull_button_text, BUTTON_SIZE))
-        {
-            if (IsExplorable())
-            {
-                state_fuse_pull_routine = StateNegation(state_fuse_pull_routine);
-            }
-        }
+        const auto fuse_pull_button_text = "Fuse Pull";
+        const auto fuse_pull_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_fuse_pull_routine)];
+        DrawButton(state_fuse_pull_routine, fuse_pull_button_color, fuse_pull_button_text);
     }
 
     ImGui::End();
@@ -234,19 +210,35 @@ bool EmoWindow::EmoBondTankRoutine()
         return false;
     }
 
-    if (!player.target || player.target->type != 0xDB)
+    // Expect that the emo is last and tank is second last in party
+    if (!player.target)
+    {
+        std::vector<PlayerMapping> party_members;
+
+        bool success = GetPartyMembers(party_members);
+
+        if (party_members.size() < 2)
+        {
+            return true;
+        }
+
+        const auto tank = party_members[party_members.size() - 2];
+        player.ChangeTarget(tank.id);
+
+        if (!success || !player.target)
+        {
+            return true;
+        }
+    }
+
+    if (player.target->type != 0xDB)
     {
         return true;
     }
 
     const auto target_living = player.target->GetAsAgentLiving();
 
-    if (target_living->allegiance != 0x1)
-    {
-        return true;
-    }
-
-    if (target_living->GetIsDead())
+    if (target_living->allegiance != 0x1 || target_living->GetIsDead())
     {
         return true;
     }
@@ -300,12 +292,7 @@ bool EmoWindow::EmoBondPlayerRoutine()
 
     const auto target_living = player.target->GetAsAgentLiving();
 
-    if (target_living->allegiance != 0x1)
-    {
-        return true;
-    }
-
-    if (target_living->GetIsDead())
+    if (target_living->allegiance != 0x1 || target_living->GetIsDead())
     {
         return true;
     }
@@ -330,9 +317,12 @@ bool EmoWindow::EmoBondPlayerRoutine()
 
 bool EmoWindow::EmoFusePull()
 {
+    static auto timer = TIMER_INIT();
     static ActionState state = ActionState::NONE;
     static GW::GamePos requested_pos = GW::GamePos{};
     static GW::GamePos last_pos = GW::GamePos{};
+    static uint32_t stuck_counter = 0;
+    static uint32_t step = 0;
     ResetState(state);
 
     if (!player.target || player.target->type != 0xDB)
@@ -342,12 +332,7 @@ bool EmoWindow::EmoFusePull()
 
     const auto target_living = player.target->GetAsAgentLiving();
 
-    if (target_living->allegiance != 0x1)
-    {
-        return true;
-    }
-
-    if (target_living->GetIsDead())
+    if (target_living->allegiance != 0x1 || target_living->GetIsDead())
     {
         return true;
     }
@@ -378,29 +363,121 @@ bool EmoWindow::EmoFusePull()
 
         return false;
     }
-    else if (state == ActionState::ACTIVE)
+    else if (state == ActionState::ACTIVE && !(me_pos == requested_pos))
     {
         // Stuck, or somehow walking canceled
         if (last_pos == GW::GamePos{} || last_pos == me_pos)
         {
-            state = ActionState::FINISHED;
-            return true;
+            ++stuck_counter;
+
+            if (stuck_counter >= 25)
+            {
+                state = ActionState::FINISHED;
+                stuck_counter = 0;
+                last_pos = GW::GamePos{};
+                requested_pos = GW::GamePos{};
+                timer = TIMER_INIT();
+                return true;
+            }
+        }
+        last_pos = player.pos;
+
+        return false;
+    }
+
+    const auto timer_diff = TIMER_DIFF(timer);
+
+    if (step == 0)
+    {
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        ++step;
+
+        return false;
+    }
+    if (timer_diff > 400)
+    {
+        timer = TIMER_INIT();
+    }
+    else
+    {
+        return false;
+    }
+
+    if (step == 1)
+    {
+        ChangeFullArmor(5, 16);
+        ++step;
+        return false;
+    }
+    if (timer_diff > 400)
+    {
+        timer = TIMER_INIT();
+    }
+    else
+    {
+        return false;
+    }
+
+    if (step == 2)
+    {
+        if (!player.CanCast())
+        {
+            return false;
         }
 
+        if (player.skillbar.fuse.CanBeCasted(player.energy))
+        {
+            SafeUseSkill(player.skillbar.fuse.idx, player.target->agent_id);
+        }
+        ++step;
+        return false;
+    }
+    if (timer_diff > 800)
+    {
+        timer = TIMER_INIT();
+    }
+    else
+    {
+        return false;
+    }
+
+    if (step == 3)
+    {
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        ++step;
+
+        return false;
+    }
+    if (timer_diff > 400)
+    {
+        timer = TIMER_INIT();
+    }
+    else
+    {
+        return false;
+    }
+
+    if (step == 4)
+    {
+        ChangeFullArmor(5, 16);
+        ++step;
+
+        return false;
+    }
+    if (timer_diff > 400)
+    {
+        timer = TIMER_INIT();
+    }
+    else
+    {
         return false;
     }
 
     state = ActionState::FINISHED;
-
-    if (!player.CanCast())
-    {
-        return false;
-    }
-
-    if (player.skillbar.fuse.CanBeCasted(player.energy))
-    {
-        SafeUseSkill(player.skillbar.fuse.idx, player.target->agent_id);
-    }
+    stuck_counter = 0;
+    last_pos = GW::GamePos{};
+    requested_pos = GW::GamePos{};
+    timer = TIMER_INIT();
 
     return true;
 }
@@ -418,40 +495,37 @@ void EmoWindow::Update(float delta)
 
     if (state_tank_bonding_routine == ModuleState::ACTIVE)
     {
-        StateOnHoldToggle(state_emo_casting_routine);
-
+        StateOnHold(state_emo_casting_routine);
         const auto done = EmoBondTankRoutine();
 
         if (done)
         {
             state_tank_bonding_routine = ModuleState::INACTIVE;
-            StateOnHoldToggle(state_emo_casting_routine);
+            StateOnActive(state_emo_casting_routine);
         }
     }
 
     if (state_player_bonding_routine == ModuleState::ACTIVE)
     {
-        StateOnHoldToggle(state_emo_casting_routine);
-
+        StateOnHold(state_emo_casting_routine);
         const auto done = EmoBondPlayerRoutine();
 
         if (done)
         {
             state_player_bonding_routine = ModuleState::INACTIVE;
-            StateOnHoldToggle(state_emo_casting_routine);
+            StateOnActive(state_emo_casting_routine);
         }
     }
 
     if (state_fuse_pull_routine == ModuleState::ACTIVE)
     {
-        StateOnHoldToggle(state_emo_casting_routine);
-
+        StateOnHold(state_emo_casting_routine);
         const auto done = EmoFusePull();
 
         if (done)
         {
             state_fuse_pull_routine = ModuleState::INACTIVE;
-            StateOnHoldToggle(state_emo_casting_routine);
+            StateOnActive(state_emo_casting_routine);
         }
     }
 

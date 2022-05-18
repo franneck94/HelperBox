@@ -31,14 +31,18 @@ void ResetState(ActionState &state)
     }
 }
 
-void StateOnHoldToggle(ModuleState &state)
+void StateOnActive(ModuleState &state)
+{
+    if (state == ModuleState::ON_HOLD)
+    {
+        state = ModuleState::ACTIVE;
+    }
+}
+
+void StateOnHold(ModuleState &state)
 {
     if (state == ModuleState::ACTIVE)
     {
         state = ModuleState::ON_HOLD;
-    }
-    else if (state == ModuleState::ON_HOLD)
-    {
-        state = ModuleState::ACTIVE;
     }
 }
