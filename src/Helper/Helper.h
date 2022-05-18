@@ -35,3 +35,5 @@ bool DetectPlayerIsDead();
 std::tuple<uint32_t, uint32_t, float> GetEnergy();
 
 std::tuple<uint32_t, uint32_t, float> GetHp();
+
+bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t target_agent_id);

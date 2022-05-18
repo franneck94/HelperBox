@@ -8,6 +8,7 @@
 #include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/AgentMgr.h>
+#include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Managers/SkillbarMgr.h>
@@ -76,10 +77,53 @@ void Player::Update()
 
 bool Player::CanCast() const
 {
-    if (living->GetIsKnockedDown() || (internal_skillbar && internal_skillbar->casting))
+    if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() ||
+        (internal_skillbar && internal_skillbar->casting))
     {
         return false;
     }
 
     return true;
+}
+
+bool Player::HasBuff(const GW::Constants::SkillID buff_skill_id) const
+{
+    const auto &me_buffs = GW::Effects::GetPlayerBuffArray();
+
+    for (size_t i = 0; i < me_buffs.size(); ++i)
+    {
+        const auto agent_id = me_buffs[i].target_agent_id;
+        const auto skill_id = me_buffs[i].skill_id;
+
+        if (agent_id == id)
+        {
+            if (skill_id == static_cast<uint32_t>(buff_skill_id))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
+{
+    const auto &me_effects = GW::Effects::GetPlayerEffectArray();
+
+    for (size_t i = 0; i < me_effects.size(); ++i)
+    {
+        const auto agent_id = me_effects[i].agent_id;
+        const auto skill_id = me_effects[i].skill_id;
+
+        if (agent_id == id || agent_id == 0)
+        {
+            if (skill_id == static_cast<uint32_t>(effect_skill_id))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

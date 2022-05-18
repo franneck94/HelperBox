@@ -19,6 +19,9 @@ public:
 
     bool CanCast() const;
 
+    bool HasBuff(const GW::Constants::SkillID buff_skill_id) const;
+    bool HasEffect(const GW::Constants::SkillID effect_skill_id) const;
+
 public:
     uint32_t id = UINT32_MAX;
 

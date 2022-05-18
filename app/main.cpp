@@ -71,7 +71,7 @@ static bool SetProcessForeground(Process *process)
 #ifdef _DEBUG
 int main()
 #else
-INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
+INT __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, INT)
 #endif
 {
     ParseRegSettings();

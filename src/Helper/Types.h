@@ -9,6 +9,8 @@ enum class ModuleState
 
 ModuleState StateNegation(const ModuleState state);
 
+void StateOnHoldToggle(ModuleState &state);
+
 enum class TargetType
 {
     Gadget = 0,

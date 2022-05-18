@@ -266,3 +266,36 @@ std::tuple<uint32_t, uint32_t, float> GetHp()
 
     return std::make_tuple(static_cast<uint32_t>(hp), max_hp, hp_perc);
 }
+
+bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t target_agent_id)
+{
+    const GW::AgentEffectsArray &effects = GW::Effects::GetPartyEffectArray();
+
+    if (!effects.valid())
+    {
+        return false;
+    }
+
+    const auto &buffs = effects[0].buffs;
+
+    if (!buffs.valid())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < buffs.size(); ++i)
+    {
+        const auto agent_id = buffs[i].target_agent_id;
+        const auto skill_id = buffs[i].skill_id;
+
+        if (agent_id == target_agent_id)
+        {
+            if (skill_id == static_cast<uint32_t>(buff_skill_id))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
