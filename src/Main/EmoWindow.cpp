@@ -43,10 +43,6 @@ static auto state_tank_bonding_routine = ModuleState::INACTIVE;
 static auto state_player_bonding_routine = ModuleState::INACTIVE;
 static auto state_fuse_pull_routine = ModuleState::INACTIVE;
 
-static constexpr auto MIN_FUSE_PULL_RANGE = float{1200.0F};
-static constexpr auto MAX_FUSE_PULL_RANGE = float{1248.0F};
-static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
-
 static const auto WINDOW_SIZE = ImVec2(120.0, 370.0);
 static const auto BUTTON_SIZE = ImVec2(120.0, 80.0);
 
@@ -112,27 +108,22 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
     {
-        const auto casting_button_text = "Pumping";
-        const auto casting_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_emo_casting_routine)];
-        DrawButton(state_emo_casting_routine, casting_button_color, casting_button_text);
-
-        const auto bonding_tank_button_text = "Tank Bonds";
-        const auto tank_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_tank_bonding_routine)];
-        DrawButton(state_tank_bonding_routine, tank_bonding_button_color, bonding_tank_button_text);
-
-        const auto bonding_player_button_text = "Player Bonds";
-        const auto player_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_player_bonding_routine)];
-        DrawButton(state_player_bonding_routine, player_bonding_button_color, bonding_player_button_text);
-
-        const auto fuse_pull_button_text = "Fuse Pull";
-        const auto fuse_pull_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_fuse_pull_routine)];
-        DrawButton(state_fuse_pull_routine, fuse_pull_button_color, fuse_pull_button_text);
+        pumping.Draw();
+        tank_bonding.Draw();
+        player_bonding.Draw();
+        fuse_pull.Draw();
     }
 
     ImGui::End();
 }
 
-void EmoWindow::EmoSkillRoutine()
+void Pumping::Draw()
+{
+    const auto casting_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_emo_casting_routine)];
+    DrawButton(state_emo_casting_routine, casting_button_color, casting_button_text);
+}
+
+void Pumping::Routine()
 {
     static auto timer = TIMER_INIT();
     const auto timer_diff = TIMER_DIFF(timer);
@@ -144,56 +135,70 @@ void EmoWindow::EmoSkillRoutine()
 
     timer = TIMER_INIT();
 
-    if (!player.CanCast())
+    if (!player->CanCast())
     {
         return;
     }
 
-    const bool found_balth = player.HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
-    const bool found_bond = player.HasBuff(GW::Constants::SkillID::Protective_Bond);
+    const bool found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
+    const bool found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
 
-    const bool found_ether = player.HasEffect(GW::Constants::SkillID::Ether_Renewal);
-    const bool found_sb = player.HasEffect(GW::Constants::SkillID::Spirit_Bond);
-    const bool found_burning = player.HasEffect(GW::Constants::SkillID::Burning_Speed);
+    const bool found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
+    const bool found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
+    const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
 
-    if (player.skillbar.ether.CanBeCasted(player.energy))
+    if (player->skillbar.ether.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player.skillbar.ether.idx, player.id);
+        SafeUseSkill(player->skillbar.ether.idx, player->id);
         return;
     }
 
-    const bool balth_avail = player.skillbar.balth.CanBeCasted(player.energy);
+    const bool balth_avail = player->skillbar.balth.CanBeCasted(player->energy);
     if (!found_balth && balth_avail)
     {
-        SafeUseSkill(player.skillbar.balth.idx, player.id);
+        SafeUseSkill(player->skillbar.balth.idx, player->id);
         return;
     }
 
-    const bool bond_avail = player.skillbar.bond.CanBeCasted(player.energy);
+    const bool bond_avail = player->skillbar.bond.CanBeCasted(player->energy);
     if (!found_bond && bond_avail)
     {
-        SafeUseSkill(player.skillbar.bond.idx, player.id);
+        SafeUseSkill(player->skillbar.bond.idx, player->id);
         return;
     }
 
-    const bool sb_needed = (player.hp_perc < 0.90F) || !found_sb;
-    const bool sb_avail = player.skillbar.sb.CanBeCasted(player.energy);
+    const bool sb_needed = (player->hp_perc < 0.90F) || !found_sb;
+    const bool sb_avail = player->skillbar.sb.CanBeCasted(player->energy);
     if (found_ether && sb_needed && sb_avail)
     {
-        SafeUseSkill(player.skillbar.sb.idx, player.id);
+        SafeUseSkill(player->skillbar.sb.idx, player->id);
         return;
     }
 
-    const bool need_burning = (player.energy_perc < 0.905F || !found_burning);
-    const bool burning_avail = player.skillbar.burning.CanBeCasted(player.energy);
+    const bool need_burning = (player->energy_perc < 0.905F || !found_burning);
+    const bool burning_avail = player->skillbar.burning.CanBeCasted(player->energy);
     if (found_ether && need_burning && burning_avail)
     {
-        SafeUseSkill(player.skillbar.burning.idx, player.id);
+        SafeUseSkill(player->skillbar.burning.idx, player->id);
         return;
     }
 }
 
-bool EmoWindow::EmoBondTankRoutine()
+void Pumping::Update()
+{
+    if (state_emo_casting_routine == ModuleState::ACTIVE)
+    {
+        Routine();
+    }
+}
+
+void TankBonding::Draw()
+{
+    const auto tank_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_tank_bonding_routine)];
+    DrawButton(state_tank_bonding_routine, tank_bonding_button_color, bonding_tank_button_text);
+}
+
+bool TankBonding::Routine()
 {
     static auto timer = TIMER_INIT();
     const auto timer_diff = TIMER_DIFF(timer);
@@ -205,13 +210,13 @@ bool EmoWindow::EmoBondTankRoutine()
 
     timer = TIMER_INIT();
 
-    if (!player.CanCast())
+    if (!player->CanCast())
     {
         return false;
     }
 
     // Expect that the emo is last and tank is second last in party
-    if (!player.target)
+    if (!player->target)
     {
         std::vector<PlayerMapping> party_members;
 
@@ -223,52 +228,73 @@ bool EmoWindow::EmoBondTankRoutine()
         }
 
         const auto tank = party_members[party_members.size() - 2];
-        player.ChangeTarget(tank.id);
+        player->ChangeTarget(tank.id);
 
-        if (!success || !player.target)
+        if (!success || !player->target)
         {
             return true;
         }
     }
 
-    if (player.target->type != 0xDB)
+    if (player->target->type != 0xDB)
     {
         return true;
     }
 
-    const auto target_living = player.target->GetAsAgentLiving();
+    const auto target_living = player->target->GetAsAgentLiving();
 
     if (target_living->allegiance != 0x1 || target_living->GetIsDead())
     {
         return true;
     }
 
-    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player.target->agent_id);
-    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player.target->agent_id);
-    const bool found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, player.target->agent_id);
+    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player->target->agent_id);
+    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player->target->agent_id);
+    const bool found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, player->target->agent_id);
 
-    if (!found_balth && player.skillbar.balth.CanBeCasted(player.energy))
+    if (!found_balth && player->skillbar.balth.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player.skillbar.balth.idx, player.target->agent_id);
+        SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
         return false;
     }
 
-    if (!found_bond && player.skillbar.bond.CanBeCasted(player.energy))
+    if (!found_bond && player->skillbar.bond.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player.skillbar.bond.idx, player.target->agent_id);
+        SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
         return false;
     }
 
-    if (!found_life && player.skillbar.life.CanBeCasted(player.energy))
+    if (!found_life && player->skillbar.life.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player.skillbar.life.idx, player.target->agent_id);
+        SafeUseSkill(player->skillbar.life.idx, player->target->agent_id);
         return false;
     }
 
     return true;
 }
 
-bool EmoWindow::EmoBondPlayerRoutine()
+void TankBonding::Update()
+{
+    if (state_tank_bonding_routine == ModuleState::ACTIVE)
+    {
+        StateOnHold(state_emo_casting_routine);
+        const auto done = Routine();
+
+        if (done)
+        {
+            state_tank_bonding_routine = ModuleState::INACTIVE;
+            StateOnActive(state_emo_casting_routine);
+        }
+    }
+}
+
+void PlayerBonding::Draw()
+{
+    const auto player_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_player_bonding_routine)];
+    DrawButton(state_player_bonding_routine, player_bonding_button_color, bonding_player_button_text);
+}
+
+bool PlayerBonding::Routine()
 {
     static auto timer = TIMER_INIT();
     const auto timer_diff = TIMER_DIFF(timer);
@@ -280,65 +306,82 @@ bool EmoWindow::EmoBondPlayerRoutine()
 
     timer = TIMER_INIT();
 
-    if (!player.CanCast())
+    if (!player->CanCast())
     {
         return false;
     }
 
-    if (!player.target || player.target->type != 0xDB)
+    if (!player->target || player->target->type != 0xDB)
     {
         return true;
     }
 
-    const auto target_living = player.target->GetAsAgentLiving();
+    const auto target_living = player->target->GetAsAgentLiving();
 
     if (target_living->allegiance != 0x1 || target_living->GetIsDead())
     {
         return true;
     }
 
-    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player.target->agent_id);
-    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player.target->agent_id);
+    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player->target->agent_id);
+    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player->target->agent_id);
 
-    if (!found_balth && player.skillbar.balth.CanBeCasted(player.energy))
+    if (!found_balth && player->skillbar.balth.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player.skillbar.balth.idx, player.target->agent_id);
+        SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
         return false;
     }
 
-    if (!found_bond && player.skillbar.bond.CanBeCasted(player.energy))
+    if (!found_bond && player->skillbar.bond.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player.skillbar.bond.idx, player.target->agent_id);
+        SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
         return false;
     }
 
     return true;
 }
 
-bool EmoWindow::EmoFusePull()
+void PlayerBonding::Update()
 {
-    static auto timer = TIMER_INIT();
-    static ActionState state = ActionState::NONE;
-    static GW::GamePos requested_pos = GW::GamePos{};
-    static GW::GamePos last_pos = GW::GamePos{};
-    static uint32_t stuck_counter = 0;
-    static uint32_t step = 0;
+    if (state_player_bonding_routine == ModuleState::ACTIVE)
+    {
+        StateOnHold(state_emo_casting_routine);
+        const auto done = Routine();
+
+        if (done)
+        {
+            state_player_bonding_routine = ModuleState::INACTIVE;
+            StateOnActive(state_emo_casting_routine);
+        }
+    }
+}
+
+void FusePull::Draw()
+{
+    const auto fuse_pull_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_fuse_pull_routine)];
+    DrawButton(state_fuse_pull_routine, fuse_pull_button_color, fuse_pull_button_text);
+}
+
+bool FusePull::Routine()
+{
     ResetState(state);
 
-    if (!player.target || player.target->type != 0xDB)
+    if (!player->target || player->target->type != 0xDB)
     {
+        ResetData();
         return true;
     }
 
-    const auto target_living = player.target->GetAsAgentLiving();
+    const auto target_living = player->target->GetAsAgentLiving();
 
     if (target_living->allegiance != 0x1 || target_living->GetIsDead())
     {
+        ResetData();
         return true;
     }
 
-    const auto me_pos = player.pos;
-    const auto target_pos = player.target->pos;
+    const auto me_pos = player->pos;
+    const auto target_pos = player->target->pos;
 
     const auto d = GW::GetDistance(me_pos, target_pos);
 
@@ -359,7 +402,7 @@ bool EmoWindow::EmoFusePull()
 
         requested_pos = GW::GamePos{p_x, p_y, 0};
         state = SafeWalk(requested_pos);
-        last_pos = player.pos;
+        last_pos = player->pos;
 
         return false;
     }
@@ -372,15 +415,11 @@ bool EmoWindow::EmoFusePull()
 
             if (stuck_counter >= 25)
             {
-                state = ActionState::FINISHED;
-                stuck_counter = 0;
-                last_pos = GW::GamePos{};
-                requested_pos = GW::GamePos{};
-                timer = TIMER_INIT();
+                ResetData();
                 return true;
             }
         }
-        last_pos = player.pos;
+        last_pos = player->pos;
 
         return false;
     }
@@ -420,14 +459,14 @@ bool EmoWindow::EmoFusePull()
 
     if (step == 2)
     {
-        if (!player.CanCast())
+        if (!player->CanCast())
         {
             return false;
         }
 
-        if (player.skillbar.fuse.CanBeCasted(player.energy))
+        if (player->skillbar.fuse.CanBeCasted(player->energy))
         {
-            SafeUseSkill(player.skillbar.fuse.idx, player.target->agent_id);
+            SafeUseSkill(player->skillbar.fuse.idx, player->target->agent_id);
         }
         ++step;
         return false;
@@ -473,13 +512,23 @@ bool EmoWindow::EmoFusePull()
         return false;
     }
 
-    state = ActionState::FINISHED;
-    stuck_counter = 0;
-    last_pos = GW::GamePos{};
-    requested_pos = GW::GamePos{};
-    timer = TIMER_INIT();
-
+    ResetData();
     return true;
+}
+
+void FusePull::Update()
+{
+    if (state_fuse_pull_routine == ModuleState::ACTIVE)
+    {
+        StateOnHold(state_emo_casting_routine);
+        const auto done = Routine();
+
+        if (done)
+        {
+            state_fuse_pull_routine = ModuleState::INACTIVE;
+            StateOnActive(state_emo_casting_routine);
+        }
+    }
 }
 
 void EmoWindow::Update(float delta)
@@ -493,44 +542,8 @@ void EmoWindow::Update(float delta)
 
     player.Update();
 
-    if (state_tank_bonding_routine == ModuleState::ACTIVE)
-    {
-        StateOnHold(state_emo_casting_routine);
-        const auto done = EmoBondTankRoutine();
-
-        if (done)
-        {
-            state_tank_bonding_routine = ModuleState::INACTIVE;
-            StateOnActive(state_emo_casting_routine);
-        }
-    }
-
-    if (state_player_bonding_routine == ModuleState::ACTIVE)
-    {
-        StateOnHold(state_emo_casting_routine);
-        const auto done = EmoBondPlayerRoutine();
-
-        if (done)
-        {
-            state_player_bonding_routine = ModuleState::INACTIVE;
-            StateOnActive(state_emo_casting_routine);
-        }
-    }
-
-    if (state_fuse_pull_routine == ModuleState::ACTIVE)
-    {
-        StateOnHold(state_emo_casting_routine);
-        const auto done = EmoFusePull();
-
-        if (done)
-        {
-            state_fuse_pull_routine = ModuleState::INACTIVE;
-            StateOnActive(state_emo_casting_routine);
-        }
-    }
-
-    if (state_emo_casting_routine == ModuleState::ACTIVE)
-    {
-        EmoSkillRoutine();
-    }
+    tank_bonding.Update();
+    player_bonding.Update();
+    fuse_pull.Update();
+    pumping.Update();
 }
