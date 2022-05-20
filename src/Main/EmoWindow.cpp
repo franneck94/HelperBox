@@ -371,20 +371,8 @@ bool FusePull::Routine()
 
         return false;
     }
-    else if (routine_state == RoutineState::ACTIVE && !(me_pos == requested_pos))
+    else if (routine_state == RoutineState::ACTIVE && player->living->GetIsMoving())
     {
-        // Stuck, or somehow walking canceled
-        if (target_living->GetIsIdle())
-        {
-            ++stuck_counter;
-
-            if (stuck_counter >= 50)
-            {
-                ResetData();
-                return true;
-            }
-        }
-
         return false;
     }
 
@@ -393,7 +381,7 @@ bool FusePull::Routine()
     constexpr auto fuse_step = 2;
     constexpr auto cancel2_step = 3;
     constexpr auto armor2_step = 4;
-    constexpr auto time_wait_ms = 400;
+    constexpr auto time_wait_ms = 500;
     constexpr auto bag_idx = 5;
     constexpr auto starting_slid_idx = 16;
 
