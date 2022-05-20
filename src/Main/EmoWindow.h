@@ -26,11 +26,11 @@ public:
     }
 
     void Draw();
-    virtual bool Routine() = 0;
+    virtual RoutineState Routine() = 0;
     virtual void Update() = 0;
 
     Player *player = nullptr;
-    ModuleState state = ModuleState::INACTIVE;
+    ActionState action_state = ActionState::INACTIVE;
     char *const text;
 };
 
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    bool Routine() override;
+    RoutineState Routine() override;
     void Update() override;
 };
 
@@ -52,7 +52,7 @@ public:
     {
     }
 
-    bool Routine() override;
+    RoutineState Routine() override;
     void Update() override;
 };
 
@@ -63,7 +63,7 @@ public:
     {
     }
 
-    bool Routine() override;
+    RoutineState Routine() override;
     void Update() override;
 };
 
@@ -78,7 +78,7 @@ public:
     {
     }
 
-    bool Routine();
+    RoutineState Routine();
     void Update();
 
     void ResetData()

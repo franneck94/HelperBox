@@ -1,17 +1,17 @@
 #pragma once
 
-enum class ModuleState
+enum class ActionState
 {
     INACTIVE = 0,
     ACTIVE = 1,
     ON_HOLD = 2,
 };
 
-ModuleState StateNegation(const ModuleState state);
+ActionState StateNegation(const ActionState state);
 
-void StateOnActive(ModuleState &state);
+void StateOnActive(ActionState &state);
 
-void StateOnHold(ModuleState &state);
+void StateOnHold(ActionState &state);
 
 enum class TargetType
 {

@@ -1,23 +1,23 @@
 #include "Types.h"
 
-ModuleState StateNegation(const ModuleState state)
+ActionState StateNegation(const ActionState state)
 {
     switch (state)
     {
-    case ModuleState::INACTIVE:
+    case ActionState::INACTIVE:
     {
-        return ModuleState::ACTIVE;
+        return ActionState::ACTIVE;
         break;
     }
-    case ModuleState::ON_HOLD:
+    case ActionState::ON_HOLD:
     {
-        return ModuleState::ON_HOLD;
+        return ActionState::ON_HOLD;
         break;
     }
-    case ModuleState::ACTIVE:
+    case ActionState::ACTIVE:
     default:
     {
-        return ModuleState::INACTIVE;
+        return ActionState::INACTIVE;
         break;
     }
     }
@@ -31,18 +31,18 @@ void ResetState(RoutineState &state)
     }
 }
 
-void StateOnActive(ModuleState &state)
+void StateOnActive(ActionState &state)
 {
-    if (state == ModuleState::ON_HOLD)
+    if (state == ActionState::ON_HOLD)
     {
-        state = ModuleState::ACTIVE;
+        state = ActionState::ACTIVE;
     }
 }
 
-void StateOnHold(ModuleState &state)
+void StateOnHold(ActionState &state)
 {
-    if (state == ModuleState::ACTIVE)
+    if (state == ActionState::ACTIVE)
     {
-        state = ModuleState::ON_HOLD;
+        state = ActionState::ON_HOLD;
     }
 }
