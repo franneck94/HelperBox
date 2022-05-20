@@ -22,14 +22,14 @@ enum class TargetType
     Living
 };
 
-enum class ActionState
+enum class RoutineState
 {
     NONE = 0,
     ACTIVE = 1,
     FINISHED = 2
 };
 
-void ResetState(ActionState &state);
+void ResetState(RoutineState &state);
 
 struct PlayerMapping
 {

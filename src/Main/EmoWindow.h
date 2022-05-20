@@ -8,6 +8,9 @@
 #include <string>
 #include <string_view>
 
+#include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Packets/Opcodes.h>
+
 #include <Timer.h>
 
 #include <Player.h>
@@ -15,88 +18,84 @@
 
 #include <HelperBoxWindow.h>
 
-class Pumping
+class EmoAction
 {
 public:
-    static constexpr auto casting_button_text = "Pumping";
-
-    Pumping(Player *p) : player(p)
+    EmoAction(Player *p, char *const t) : player(p), text(t)
     {
     }
 
     void Draw();
-    void Routine();
-    void Update();
+    virtual bool Routine() = 0;
+    virtual void Update() = 0;
 
     Player *player = nullptr;
+    ModuleState state = ModuleState::INACTIVE;
+    char *const text;
 };
 
-class TankBonding
+class Pumping : public EmoAction
 {
 public:
-    static constexpr auto bonding_tank_button_text = "Tank Bonds";
-
-    TankBonding(Player *p) : player(p)
+    Pumping(Player *p) : EmoAction(p, "Pumping")
     {
     }
 
-    void Draw();
-    bool Routine();
-    void Update();
-
-    Player *player = nullptr;
+    bool Routine() override;
+    void Update() override;
 };
 
-class PlayerBonding
+class TankBonding : public EmoAction
 {
 public:
-    static constexpr auto bonding_player_button_text = "Player Bonds";
-
-    PlayerBonding(Player *p) : player(p)
+    TankBonding(Player *p) : EmoAction(p, "Tank Bonds")
     {
     }
 
-    void Draw();
-    bool Routine();
-    void Update();
-
-    Player *player = nullptr;
+    bool Routine() override;
+    void Update() override;
 };
 
-class FusePull
+class PlayerBonding : public EmoAction
 {
 public:
-    static constexpr auto fuse_pull_button_text = "Fuse Pull";
+    PlayerBonding(Player *p) : EmoAction(p, "Player Bonds")
+    {
+    }
+
+    bool Routine() override;
+    void Update() override;
+};
+
+class FusePull : public EmoAction
+{
+public:
     static constexpr auto MIN_FUSE_PULL_RANGE = float{1200.0F};
     static constexpr auto MAX_FUSE_PULL_RANGE = float{1248.0F};
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
-    FusePull(Player *p) : timer(TIMER_INIT()), player(p)
+    FusePull(Player *p) : timer(TIMER_INIT()), EmoAction(p, "Fuse Pull")
     {
     }
 
-    void Draw();
     bool Routine();
     void Update();
 
     void ResetData()
     {
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         timer = TIMER_INIT();
-        state = ActionState::NONE;
+        routine_state = RoutineState::NONE;
         requested_pos = GW::GamePos{};
-        last_pos = GW::GamePos{};
         stuck_counter = 0;
         step = 0;
     }
 
     clock_t timer;
-    ActionState state = ActionState::NONE;
+    RoutineState routine_state = RoutineState::NONE;
     GW::GamePos requested_pos = GW::GamePos{};
-    GW::GamePos last_pos = GW::GamePos{};
     uint32_t stuck_counter = 0;
     uint32_t step = 0;
-
-    Player *player = nullptr;
 };
 
 class EmoWindow : public HelperBoxWindow
@@ -116,11 +115,24 @@ public:
         return "EmoWindow";
     }
 
-    void Initialize() override;
+    void Initialize() override
+    {
+        HelperBoxWindow::Initialize();
+    }
+
+    void LoadSettings(CSimpleIni *ini) override
+    {
+        HelperBoxWindow::LoadSettings(ini);
+        show_menubutton = true;
+    }
+
+    void SaveSettings(CSimpleIni *ini) override
+    {
+        HelperBoxWindow::SaveSettings(ini);
+    }
+
     void Draw(IDirect3DDevice9 *pDevice) override;
     void Update(float delta) override;
-    void LoadSettings(CSimpleIni *ini) override;
-    void SaveSettings(CSimpleIni *ini) override;
 
 private:
     void EmoSkillRoutine();

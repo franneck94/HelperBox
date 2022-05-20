@@ -9,6 +9,7 @@
 #include <GWCA/Context/GameContext.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
+#include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/AgentMgr.h>
@@ -39,9 +40,6 @@
 namespace
 {
 static auto state_emo_casting_routine = ModuleState::INACTIVE;
-static auto state_tank_bonding_routine = ModuleState::INACTIVE;
-static auto state_player_bonding_routine = ModuleState::INACTIVE;
-static auto state_fuse_pull_routine = ModuleState::INACTIVE;
 
 static const auto WINDOW_SIZE = ImVec2(120.0, 370.0);
 static const auto BUTTON_SIZE = ImVec2(120.0, 80.0);
@@ -56,22 +54,6 @@ static auto COLOR_MAPPING = std::map<uint32_t, ImVec4>{{static_cast<uint32_t>(Mo
                                                        {static_cast<uint32_t>(ModuleState::ACTIVE), ACTIVE_COLOR},
                                                        {static_cast<uint32_t>(ModuleState::ON_HOLD), ON_HOLD_COLOR}};
 }; // namespace
-
-void EmoWindow::Initialize()
-{
-    HelperBoxWindow::Initialize();
-}
-
-void EmoWindow::LoadSettings(CSimpleIni *ini)
-{
-    HelperBoxWindow::LoadSettings(ini);
-    show_menubutton = true;
-}
-
-void EmoWindow::SaveSettings(CSimpleIni *ini)
-{
-    HelperBoxWindow::SaveSettings(ini);
-}
 
 void DrawButton(ModuleState &state, const ImVec4 color, std::string_view text)
 {
@@ -92,6 +74,12 @@ void DrawButton(ModuleState &state, const ImVec4 color, std::string_view text)
     }
     if (pushed_style)
         ImGui::PopStyleColor();
+}
+
+void EmoAction::Draw()
+{
+    const auto color = COLOR_MAPPING[static_cast<uint32_t>(state)];
+    DrawButton(state, color, text);
 }
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
@@ -117,27 +105,21 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 }
 
-void Pumping::Draw()
-{
-    const auto casting_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_emo_casting_routine)];
-    DrawButton(state_emo_casting_routine, casting_button_color, casting_button_text);
-}
-
-void Pumping::Routine()
+bool Pumping::Routine()
 {
     static auto timer = TIMER_INIT();
     const auto timer_diff = TIMER_DIFF(timer);
 
     if (timer_diff < MIN_CYCLE_TIME_MS)
     {
-        return;
+        return false;
     }
 
     timer = TIMER_INIT();
 
     if (!player->CanCast())
     {
-        return;
+        return false;
     }
 
     const bool found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
@@ -150,21 +132,21 @@ void Pumping::Routine()
     if (player->skillbar.ether.CanBeCasted(player->energy))
     {
         SafeUseSkill(player->skillbar.ether.idx, player->id);
-        return;
+        return true;
     }
 
     const bool balth_avail = player->skillbar.balth.CanBeCasted(player->energy);
     if (!found_balth && balth_avail)
     {
         SafeUseSkill(player->skillbar.balth.idx, player->id);
-        return;
+        return true;
     }
 
     const bool bond_avail = player->skillbar.bond.CanBeCasted(player->energy);
     if (!found_bond && bond_avail)
     {
         SafeUseSkill(player->skillbar.bond.idx, player->id);
-        return;
+        return true;
     }
 
     const bool sb_needed = (player->hp_perc < 0.90F) || !found_sb;
@@ -172,7 +154,7 @@ void Pumping::Routine()
     if (found_ether && sb_needed && sb_avail)
     {
         SafeUseSkill(player->skillbar.sb.idx, player->id);
-        return;
+        return true;
     }
 
     const bool need_burning = (player->energy_perc < 0.905F || !found_burning);
@@ -180,22 +162,18 @@ void Pumping::Routine()
     if (found_ether && need_burning && burning_avail)
     {
         SafeUseSkill(player->skillbar.burning.idx, player->id);
-        return;
+        return true;
     }
+
+    return true;
 }
 
 void Pumping::Update()
 {
-    if (state_emo_casting_routine == ModuleState::ACTIVE)
+    if (state == ModuleState::ACTIVE)
     {
         Routine();
     }
-}
-
-void TankBonding::Draw()
-{
-    const auto tank_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_tank_bonding_routine)];
-    DrawButton(state_tank_bonding_routine, tank_bonding_button_color, bonding_tank_button_text);
 }
 
 bool TankBonding::Routine()
@@ -215,8 +193,8 @@ bool TankBonding::Routine()
         return false;
     }
 
-    // Expect that the emo is last and tank is second last in party
-    if (!player->target)
+    // Expects that the tank is second last in party in UW
+    if (!player->target && GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld)
     {
         std::vector<PlayerMapping> party_members;
 
@@ -275,23 +253,17 @@ bool TankBonding::Routine()
 
 void TankBonding::Update()
 {
-    if (state_tank_bonding_routine == ModuleState::ACTIVE)
+    if (state == ModuleState::ACTIVE)
     {
         StateOnHold(state_emo_casting_routine);
         const auto done = Routine();
 
         if (done)
         {
-            state_tank_bonding_routine = ModuleState::INACTIVE;
+            state = ModuleState::INACTIVE;
             StateOnActive(state_emo_casting_routine);
         }
     }
-}
-
-void PlayerBonding::Draw()
-{
-    const auto player_bonding_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_player_bonding_routine)];
-    DrawButton(state_player_bonding_routine, player_bonding_button_color, bonding_player_button_text);
 }
 
 bool PlayerBonding::Routine()
@@ -343,28 +315,22 @@ bool PlayerBonding::Routine()
 
 void PlayerBonding::Update()
 {
-    if (state_player_bonding_routine == ModuleState::ACTIVE)
+    if (state == ModuleState::ACTIVE)
     {
         StateOnHold(state_emo_casting_routine);
         const auto done = Routine();
 
         if (done)
         {
-            state_player_bonding_routine = ModuleState::INACTIVE;
+            state = ModuleState::INACTIVE;
             StateOnActive(state_emo_casting_routine);
         }
     }
 }
 
-void FusePull::Draw()
-{
-    const auto fuse_pull_button_color = COLOR_MAPPING[static_cast<uint32_t>(state_fuse_pull_routine)];
-    DrawButton(state_fuse_pull_routine, fuse_pull_button_color, fuse_pull_button_text);
-}
-
 bool FusePull::Routine()
 {
-    ResetState(state);
+    ResetState(routine_state);
 
     if (!player->target || player->target->type != 0xDB)
     {
@@ -385,7 +351,7 @@ bool FusePull::Routine()
 
     const auto d = GW::GetDistance(me_pos, target_pos);
 
-    if ((state == ActionState::NONE) && (d < MIN_FUSE_PULL_RANGE || d > MAX_FUSE_PULL_RANGE))
+    if ((routine_state == RoutineState::NONE) && (d < MIN_FUSE_PULL_RANGE || d > MAX_FUSE_PULL_RANGE))
     {
         requested_pos = GW::GamePos{};
 
@@ -401,63 +367,70 @@ bool FusePull::Routine()
         const auto p_y = ((1.0F - t) * t_y + t * m_y);
 
         requested_pos = GW::GamePos{p_x, p_y, 0};
-        state = SafeWalk(requested_pos);
-        last_pos = player->pos;
+        routine_state = SafeWalk(requested_pos, true);
 
         return false;
     }
-    else if (state == ActionState::ACTIVE && !(me_pos == requested_pos))
+    else if (routine_state == RoutineState::ACTIVE && !(me_pos == requested_pos))
     {
         // Stuck, or somehow walking canceled
-        if (last_pos == GW::GamePos{} || last_pos == me_pos)
+        if (target_living->GetIsIdle())
         {
             ++stuck_counter;
 
-            if (stuck_counter >= 25)
+            if (stuck_counter >= 50)
             {
                 ResetData();
                 return true;
             }
         }
-        last_pos = player->pos;
 
         return false;
     }
 
+    constexpr auto cancel1_step = 0;
+    constexpr auto armor1_step = 1;
+    constexpr auto fuse_step = 2;
+    constexpr auto cancel2_step = 3;
+    constexpr auto armor2_step = 4;
+    constexpr auto time_wait_ms = 400;
+    constexpr auto bag_idx = 5;
+    constexpr auto starting_slid_idx = 16;
+
     const auto timer_diff = TIMER_DIFF(timer);
 
-    if (step == 0)
+    if (step == cancel1_step)
     {
         GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         ++step;
 
         return false;
     }
-    if (timer_diff > 400)
+    if (step == cancel1_step + 1 && timer_diff > time_wait_ms)
     {
         timer = TIMER_INIT();
     }
-    else
+    else if (step == cancel1_step + 1 && timer_diff < time_wait_ms)
     {
         return false;
     }
 
-    if (step == 1)
+    if (step == armor1_step)
     {
-        ChangeFullArmor(5, 16);
+        ChangeFullArmor(bag_idx, starting_slid_idx);
         ++step;
         return false;
     }
-    if (timer_diff > 400)
+    if (step == armor1_step + 1 && timer_diff > time_wait_ms)
     {
         timer = TIMER_INIT();
     }
-    else
+    else if (step == armor1_step + 1 && timer_diff < time_wait_ms)
     {
         return false;
     }
 
-    if (step == 2)
+    if (step == fuse_step)
     {
         if (!player->CanCast())
         {
@@ -471,43 +444,43 @@ bool FusePull::Routine()
         ++step;
         return false;
     }
-    if (timer_diff > 800)
+    if (step == fuse_step + 1 && timer_diff > time_wait_ms * 2)
     {
         timer = TIMER_INIT();
     }
-    else
+    else if (step == fuse_step + 1 && timer_diff < time_wait_ms * 2)
     {
         return false;
     }
 
-    if (step == 3)
+    if (step == cancel2_step)
     {
         GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         ++step;
 
         return false;
     }
-    if (timer_diff > 400)
+    if (step == cancel2_step + 1 && timer_diff > time_wait_ms)
     {
         timer = TIMER_INIT();
     }
-    else
+    else if (step == cancel2_step + 1 && timer_diff < time_wait_ms)
     {
         return false;
     }
 
-    if (step == 4)
+    if (step == armor2_step)
     {
-        ChangeFullArmor(5, 16);
+        ChangeFullArmor(bag_idx, starting_slid_idx);
         ++step;
 
         return false;
     }
-    if (timer_diff > 400)
+    if (step == armor2_step + 1 && timer_diff > time_wait_ms)
     {
         timer = TIMER_INIT();
     }
-    else
+    else if (step == armor2_step + 1 && timer_diff < time_wait_ms)
     {
         return false;
     }
@@ -518,14 +491,14 @@ bool FusePull::Routine()
 
 void FusePull::Update()
 {
-    if (state_fuse_pull_routine == ModuleState::ACTIVE)
+    if (state == ModuleState::ACTIVE)
     {
         StateOnHold(state_emo_casting_routine);
         const auto done = Routine();
 
         if (done)
         {
-            state_fuse_pull_routine = ModuleState::INACTIVE;
+            state = ModuleState::INACTIVE;
             StateOnActive(state_emo_casting_routine);
         }
     }

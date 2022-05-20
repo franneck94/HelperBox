@@ -23,11 +23,11 @@ ModuleState StateNegation(const ModuleState state)
     }
 }
 
-void ResetState(ActionState &state)
+void ResetState(RoutineState &state)
 {
-    if (ActionState::FINISHED == state)
+    if (RoutineState::FINISHED == state)
     {
-        state = ActionState::NONE;
+        state = RoutineState::NONE;
     }
 }
 
