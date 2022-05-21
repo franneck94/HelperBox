@@ -37,6 +37,8 @@
 
 #include "EmoWindow.h"
 
+constexpr uint32_t ALLEGIANCE_ALLY = 0x1;
+
 namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
@@ -68,9 +70,7 @@ void DrawButton(ActionState &action_state, const ImVec4 color, std::string_view 
     if (ImGui::Button(text.data(), BUTTON_SIZE))
     {
         if (IsExplorable())
-        {
             action_state = StateNegation(action_state);
-        }
     }
     if (pushed_style)
         ImGui::PopStyleColor();
@@ -111,16 +111,12 @@ RoutineState Pumping::Routine()
     const auto timer_diff = TIMER_DIFF(timer);
 
     if (timer_diff < MIN_CYCLE_TIME_MS)
-    {
         return RoutineState::ACTIVE;
-    }
 
     timer = TIMER_INIT();
 
     if (!player->CanCast())
-    {
         return RoutineState::FINISHED;
-    }
 
     const bool found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
     const bool found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
@@ -131,21 +127,21 @@ RoutineState Pumping::Routine()
 
     if (player->skillbar.ether.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player->skillbar.ether.idx, player->id);
+        (void)SafeUseSkill(player->skillbar.ether.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
     const bool balth_avail = player->skillbar.balth.CanBeCasted(player->energy);
     if (!found_balth && balth_avail)
     {
-        SafeUseSkill(player->skillbar.balth.idx, player->id);
+        (void)SafeUseSkill(player->skillbar.balth.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
     const bool bond_avail = player->skillbar.bond.CanBeCasted(player->energy);
     if (!found_bond && bond_avail)
     {
-        SafeUseSkill(player->skillbar.bond.idx, player->id);
+        (void)SafeUseSkill(player->skillbar.bond.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
@@ -160,7 +156,7 @@ RoutineState Pumping::Routine()
     const bool sb_avail = player->skillbar.sb.CanBeCasted(player->energy);
     if (found_ether && sb_needed && sb_avail)
     {
-        SafeUseSkill(player->skillbar.sb.idx, player->id);
+        (void)SafeUseSkill(player->skillbar.sb.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
@@ -168,7 +164,7 @@ RoutineState Pumping::Routine()
     const bool burning_avail = player->skillbar.burning.CanBeCasted(player->energy);
     if (found_ether && need_burning && burning_avail)
     {
-        SafeUseSkill(player->skillbar.burning.idx, player->id);
+        (void)SafeUseSkill(player->skillbar.burning.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
@@ -181,7 +177,7 @@ void Pumping::Update()
 
     if (action_state == ActionState::ACTIVE)
     {
-        static_cast<void>(Routine());
+        (void)(Routine());
     }
 }
 
@@ -240,14 +236,14 @@ RoutineState TankBonding::Routine()
         }
     }
 
-    if (player->target->type != 0xDB)
+    if (player->target->type != GW::Constants::AgentType::Living)
     {
         return RoutineState::FINISHED;
     }
 
     const auto target_living = player->target->GetAsAgentLiving();
 
-    if (target_living->allegiance != 0x1 || target_living->GetIsDead())
+    if (target_living->allegiance != ALLEGIANCE_ALLY || target_living->GetIsDead())
     {
         return RoutineState::FINISHED;
     }
@@ -258,19 +254,19 @@ RoutineState TankBonding::Routine()
 
     if (!found_balth && player->skillbar.balth.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
+        (void)SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
     if (!found_bond && player->skillbar.bond.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
+        (void)SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
     if (!found_life && player->skillbar.life.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player->skillbar.life.idx, player->target->agent_id);
+        (void)SafeUseSkill(player->skillbar.life.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
@@ -309,14 +305,14 @@ RoutineState PlayerBonding::Routine()
         return RoutineState::ACTIVE;
     }
 
-    if (!player->target || player->target->type != 0xDB)
+    if (!player->target || player->target->type != GW::Constants::AgentType::Living)
     {
         return RoutineState::FINISHED;
     }
 
     const auto target_living = player->target->GetAsAgentLiving();
 
-    if (target_living->allegiance != 0x1 || target_living->GetIsDead())
+    if (target_living->allegiance != ALLEGIANCE_ALLY || target_living->GetIsDead())
     {
         return RoutineState::FINISHED;
     }
@@ -326,13 +322,13 @@ RoutineState PlayerBonding::Routine()
 
     if (!found_balth && player->skillbar.balth.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
+        (void)SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
     if (!found_bond && player->skillbar.bond.CanBeCasted(player->energy))
     {
-        SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
+        (void)SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
@@ -358,7 +354,7 @@ RoutineState FusePull::Routine()
 {
     ResetState(routine_state);
 
-    if (!player->target || player->target->type != 0xDB)
+    if (!player->target || player->target->type != GW::Constants::AgentType::Living)
     {
         ResetData();
         return RoutineState::FINISHED;
@@ -366,7 +362,7 @@ RoutineState FusePull::Routine()
 
     const auto target_living = player->target->GetAsAgentLiving();
 
-    if (target_living->allegiance != 0x1 || target_living->GetIsDead())
+    if (target_living->allegiance != ALLEGIANCE_ALLY || target_living->GetIsDead())
     {
         ResetData();
         return RoutineState::FINISHED;
@@ -455,7 +451,7 @@ RoutineState FusePull::Routine()
 
         if (player->skillbar.fuse.CanBeCasted(player->energy))
         {
-            SafeUseSkill(player->skillbar.fuse.idx, player->target->agent_id);
+            (void)SafeUseSkill(player->skillbar.fuse.idx, player->target->agent_id);
         }
         ++step;
         return RoutineState::ACTIVE;
