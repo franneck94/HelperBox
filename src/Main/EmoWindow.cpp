@@ -149,7 +149,14 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-    const bool sb_needed = (player->hp_perc < 0.90F) || !found_sb;
+    const float moving_flag = static_cast<float>(player->living->GetIsMoving());
+    const float moving_offset_hp = moving_flag * 0.10F;
+    const float moving_offset_energy = moving_flag * 0.20F;
+
+    const bool low_hp = player->hp_perc < (0.90F - moving_offset_hp);
+    const bool low_energy = player->energy_perc < (0.90F - moving_offset_energy);
+
+    const bool sb_needed = low_hp || !found_sb;
     const bool sb_avail = player->skillbar.sb.CanBeCasted(player->energy);
     if (found_ether && sb_needed && sb_avail)
     {
@@ -157,7 +164,7 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-    const bool need_burning = (player->energy_perc < 0.905F || !found_burning);
+    const bool need_burning = low_hp || low_energy || !found_burning;
     const bool burning_avail = player->skillbar.burning.CanBeCasted(player->energy);
     if (found_ether && need_burning && burning_avail)
     {
