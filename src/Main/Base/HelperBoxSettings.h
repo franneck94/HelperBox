@@ -2,7 +2,7 @@
 
 #include <GWCA/Constants/Maps.h>
 
-#include <HelperBoxUIElement.h>
+#include <Base/HelperBoxUIElement.h>
 
 class HelperBoxSettings : public HelperBoxUIElement
 {

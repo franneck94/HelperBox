@@ -1,4 +1,6 @@
 file(GLOB MAIN_SOURCES
+    "Base/*.h"
+    "Base/*.cpp"
     "*.h"
     "*.cpp")
 

@@ -5,7 +5,7 @@
 #include <Defines.h>
 #include <HelperBox.h>
 
-#include <HelperBoxSettings.h>
+#include <Base/HelperBoxSettings.h>
 #include <ChatCommands.h>
 #include <MainWindow.h>
 

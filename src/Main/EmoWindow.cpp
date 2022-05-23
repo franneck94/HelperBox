@@ -43,40 +43,11 @@ namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
 
-static const auto WINDOW_SIZE = ImVec2(120.0, 370.0);
-static const auto BUTTON_SIZE = ImVec2(120.0, 80.0);
-
-static const auto ACTIVE_COLOR = ImVec4{0.0F, 200.0F, 0.0F, 80.0F};
-static const auto INACTIVE_COLOR = ImVec4{41.0F, 74.0F, 122.0F, 80.0F};
-static const auto ON_HOLD_COLOR = ImVec4{255.0F, 226.0F, 0.0F, 80.0F};
-
 static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
-
-static auto COLOR_MAPPING = std::map<uint32_t, ImVec4>{{static_cast<uint32_t>(ActionState::INACTIVE), INACTIVE_COLOR},
-                                                       {static_cast<uint32_t>(ActionState::ACTIVE), ACTIVE_COLOR},
-                                                       {static_cast<uint32_t>(ActionState::ON_HOLD), ON_HOLD_COLOR}};
 }; // namespace
 
-void DrawButton(ActionState &action_state, const ImVec4 color, std::string_view text)
-{
-    bool pushed_style = false;
 
-    if (action_state != ActionState::INACTIVE)
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, color);
-        pushed_style = true;
-    }
-
-    if (ImGui::Button(text.data(), BUTTON_SIZE))
-    {
-        if (IsExplorable())
-            action_state = StateNegation(action_state);
-    }
-    if (pushed_style)
-        ImGui::PopStyleColor();
-}
-
-void EmoAction::Draw()
+void ActionBaseClass::Draw()
 {
     const auto color = COLOR_MAPPING[static_cast<uint32_t>(action_state)];
     DrawButton(action_state, color, text);
@@ -236,7 +207,7 @@ RoutineState TankBonding::Routine()
         }
     }
 
-    if (player->target->type != GW::Constants::AgentType::Living)
+    if (player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
     {
         return RoutineState::FINISHED;
     }
@@ -305,7 +276,7 @@ RoutineState PlayerBonding::Routine()
         return RoutineState::ACTIVE;
     }
 
-    if (!player->target || player->target->type != GW::Constants::AgentType::Living)
+    if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
     {
         return RoutineState::FINISHED;
     }
@@ -354,7 +325,7 @@ RoutineState FusePull::Routine()
 {
     ResetState(routine_state);
 
-    if (!player->target || player->target->type != GW::Constants::AgentType::Living)
+    if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
     {
         ResetData();
         return RoutineState::FINISHED;

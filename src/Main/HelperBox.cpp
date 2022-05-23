@@ -26,8 +26,8 @@
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
 
-#include <HelperBoxSettings.h>
-#include <HelperBoxTheme.h>
+#include <Base/HelperBoxSettings.h>
+#include <Base/HelperBoxTheme.h>
 #include <MainWindow.h>
 
 namespace

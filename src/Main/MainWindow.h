@@ -1,6 +1,6 @@
 #pragma once
 
-#include <HelperBoxWindow.h>
+#include <Base/HelperBoxWindow.h>
 
 class MainWindow : public HelperBoxWindow
 {

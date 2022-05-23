@@ -13,15 +13,17 @@
 
 #include <Timer.h>
 
+#include <Coloring.h>
+#include <GuiUtils.h>
 #include <Player.h>
 #include <Types.h>
 
-#include <HelperBoxWindow.h>
+#include <Base/HelperBoxWindow.h>
 
-class EmoAction
+class ActionBaseClass
 {
 public:
-    EmoAction(Player *p, char *const t) : player(p), text(t)
+    ActionBaseClass(Player *p, char *const t) : player(p), text(t)
     {
     }
 
@@ -34,10 +36,10 @@ public:
     char *const text;
 };
 
-class Pumping : public EmoAction
+class Pumping : public ActionBaseClass
 {
 public:
-    Pumping(Player *p) : EmoAction(p, "Pumping")
+    Pumping(Player *p) : ActionBaseClass(p, "Pumping")
     {
     }
 
@@ -45,10 +47,10 @@ public:
     void Update() override;
 };
 
-class TankBonding : public EmoAction
+class TankBonding : public ActionBaseClass
 {
 public:
-    TankBonding(Player *p) : EmoAction(p, "Tank Bonds")
+    TankBonding(Player *p) : ActionBaseClass(p, "Tank Bonds")
     {
     }
 
@@ -56,10 +58,10 @@ public:
     void Update() override;
 };
 
-class PlayerBonding : public EmoAction
+class PlayerBonding : public ActionBaseClass
 {
 public:
-    PlayerBonding(Player *p) : EmoAction(p, "Player Bonds")
+    PlayerBonding(Player *p) : ActionBaseClass(p, "Player Bonds")
     {
     }
 
@@ -67,14 +69,14 @@ public:
     void Update() override;
 };
 
-class FusePull : public EmoAction
+class FusePull : public ActionBaseClass
 {
 public:
     static constexpr auto MIN_FUSE_PULL_RANGE = float{1200.0F};
     static constexpr auto MAX_FUSE_PULL_RANGE = float{1248.0F};
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
-    FusePull(Player *p) : timer(TIMER_INIT()), EmoAction(p, "Fuse Pull")
+    FusePull(Player *p) : timer(TIMER_INIT()), ActionBaseClass(p, "Fuse Pull")
     {
     }
 

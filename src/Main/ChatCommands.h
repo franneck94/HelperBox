@@ -7,8 +7,8 @@
 
 #include <GWCA/Managers/UIMgr.h>
 
-#include <HelperBoxModule.h>
-#include <HelperBoxUIElement.h>
+#include <Base/HelperBoxModule.h>
+#include <Base/HelperBoxUIElement.h>
 
 class ChatCommands : public HelperBoxModule
 {

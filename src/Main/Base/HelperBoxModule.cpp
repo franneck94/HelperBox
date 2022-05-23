@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
+#include <Base/HelperBoxModule.h>
 #include <HelperBox.h>
-#include <HelperBoxModule.h>
 
 namespace
 {

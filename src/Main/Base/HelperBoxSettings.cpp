@@ -15,6 +15,7 @@
 #include <EmoWindow.h>
 #include <MainWindow.h>
 #include <SettingsWindow.h>
+#include <SpikerWindow.h>
 
 #include "HelperBoxSettings.h"
 
@@ -26,6 +27,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&EmoWindow::Instance());
+    optional_modules.push_back(&SpikerWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 
     for (HelperBoxModule *module : optional_modules)

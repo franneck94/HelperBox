@@ -4,8 +4,8 @@
 
 #include <GWCA/Managers/GameThreadMgr.h>
 
-#include <HelperBoxModule.h>
-#include <HelperBoxUIElement.h>
+#include <Base/HelperBoxModule.h>
+#include <Base/HelperBoxUIElement.h>
 
 DWORD __stdcall SafeThreadEntry(LPVOID mod);
 DWORD __stdcall ThreadEntry(LPVOID);
