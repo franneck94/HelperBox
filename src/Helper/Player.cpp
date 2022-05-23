@@ -129,6 +129,9 @@ bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
 
 void Player::ChangeTarget(const uint32_t target_id)
 {
-    GW::Agents::ChangeTarget(target_id);
-    target = GW::Agents::GetTarget();
+    if (GW::Agents::GetAgentByID(target_id))
+    {
+        GW::Agents::ChangeTarget(target_id);
+        target = GW::Agents::GetTarget();
+    }
 }

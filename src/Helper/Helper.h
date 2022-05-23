@@ -43,3 +43,5 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
 void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+
+void FilterAgentsByID(std::vector<GW::AgentLiving *> &filtered_vec, const int id);

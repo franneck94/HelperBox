@@ -452,3 +452,27 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
         Log::Log("ERROR!");
     }
 }
+
+void FilterAgentsByID(std::vector<GW::AgentLiving *> &filtered_vec, const int id)
+{
+    auto agents_array = GW::Agents::GetAgentArray();
+
+    for (const auto &agent : agents_array)
+    {
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+
+        if (!living)
+            continue;
+
+        if (living->allegiance == 0x3)
+        {
+            if (living->player_number == id)
+            {
+                filtered_vec.push_back(living);
+            }
+        }
+    }
+}

@@ -36,27 +36,6 @@
 
 #include "SpikerWindow.h"
 
-void FilterAgentsByID(std::vector<GW::AgentLiving *> &filtered_vec, const int id)
-{
-    auto agents_array = GW::Agents::GetAgentArray();
-
-    for (const auto &agent : agents_array)
-    {
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-
-        if (!living)
-            continue;
-
-        if (living->allegiance == 0x3 && living->agent_id == id)
-        {
-            filtered_vec.push_back(living);
-        }
-    }
-}
-
 void SpikerWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
@@ -71,12 +50,31 @@ void SpikerWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (ImGui::Begin("SpikerWindow", nullptr, GetWinFlags()))
     {
+        uint32_t idx = 0;
         for (const auto &foe : nearby_foes)
         {
+            bool pushed = false;
+
             if (foe->GetIsHexed())
             {
-                ImGui::Text("Agent: %d", foe->agent_id);
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(255.0F, 10.0F, 1.0F, 255.0));
+                pushed = true;
             }
+            ImGui::Text("Agent: %d", foe->agent_id);
+            ImGui::SameLine();
+            const auto label = fmt::format("Target##{}", idx);
+            if (ImGui::Button(label.data()))
+            {
+                Log::Info("Clicked");
+                player.ChangeTarget(foe->agent_id);
+            }
+
+            if (pushed)
+            {
+                ImGui::PopStyleColor();
+            }
+
+            ++idx;
         }
     }
 
@@ -87,5 +85,6 @@ void SpikerWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
+    nearby_foes.clear();
     FilterAgentsByID(nearby_foes, GW::Constants::ModelID::UW::BladedAatxe);
 }
