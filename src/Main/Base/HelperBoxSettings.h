@@ -49,6 +49,7 @@ public:
 private:
     std::vector<HelperBoxModule *> optional_modules;
 
-    bool use_chest = true;
     bool use_emo = true;
+    bool use_spiker = true;
+    bool use_terra = true;
 };

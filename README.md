@@ -20,6 +20,10 @@ cd build
 cmake .. -G "Visual Studio 16 2019" -T v142 -A Win32 -B .
 ```
 
+## Usage
+
+Refer to the documentation files in [here](./docs/).
+
 ## Note
 
 If you want to use Toolbox in parallel, you have to start Toolbox **before** starting this HelperBox.

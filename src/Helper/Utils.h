@@ -49,21 +49,3 @@ bool GamePosCompare(const GW::GamePos &p1, const GW::GamePos &p2, const T epsilo
 
     return (FloatCompare(p1.x, p2.x, epsilon) && FloatCompare(p1.y, p2.y, epsilon));
 }
-
-template <typename T>
-void Wait(const T wait_time_ms)
-{
-    static_assert(std::is_integral_v<T>, "Must be integral type.");
-
-    const auto timer = TIMER_INIT();
-
-    while (true)
-    {
-        const auto diff = TIMER_DIFF(timer);
-
-        if (diff > wait_time_ms)
-        {
-            return;
-        }
-    }
-}

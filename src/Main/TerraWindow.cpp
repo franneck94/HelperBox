@@ -26,7 +26,6 @@
 #include <Timer.h>
 
 #include <Actions.h>
-#include <Coloring.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <Player.h>
@@ -35,6 +34,11 @@
 #include <Utils.h>
 
 #include "TerraWindow.h"
+
+namespace
+{
+static const auto DEFAULT_WINDOW_SIZE = ImVec2(100.0F, 100.0F);
+} // namespace
 
 void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 {
@@ -46,32 +50,33 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    ImGui::SetNextWindowSize(WINDOW_SIZE, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("TerraWindow", nullptr, GetWinFlags()))
     {
         uint32_t idx = 0;
-        for (const auto &foe : nearby_foes)
+        for (const auto &foe : filtered_foes)
         {
             bool pushed = false;
+            if (foe->hp == 0.0F)
+                continue;
 
-            if (foe->GetIsHexed())
+            if (foe->GetIsCasting() && foe->skill == static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring))
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(10.0F, 255.0F, 1.0F, 255.0));
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
                 pushed = true;
             }
-            ImGui::Text("Agent: %d", foe->agent_id);
+            ImGui::Text("Behe: %3.0f", foe->hp * 100.0F);
+            if (pushed)
+            {
+                ImGui::PopStyleColor();
+            }
+
             ImGui::SameLine();
             const auto label = fmt::format("Target##{}", idx);
             if (ImGui::Button(label.data()))
             {
-                Log::Info("Clicked");
                 player.ChangeTarget(foe->agent_id);
-            }
-
-            if (pushed)
-            {
-                ImGui::PopStyleColor();
             }
 
             ++idx;
@@ -85,6 +90,34 @@ void TerraWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    nearby_foes.clear();
-    FilterAgentsByID(nearby_foes, GW::Constants::ModelID::UW::ObsidianBehemoth);
+    if (!player.ValidateData())
+        return;
+
+    player.Update();
+
+    filtered_foes.clear();
+    auto agents_array = GW::Agents::GetAgentArray();
+    FilterAgents(player,
+                 agents_array,
+                 filtered_foes,
+                 GW::Constants::ModelID::UW::ObsidianBehemoth,
+                 GW::Constants::Range::Spellcast);
+    SortByDistance(player, filtered_foes);
+
+    if (!player.living->GetIsMoving())
+    {
+        for (const auto &foe : filtered_foes)
+        {
+            if (!foe)
+                continue;
+
+            const float sqrd = GW::GetDistance(player.pos, foe->pos);
+
+            if (sqrd < GW::Constants::Range::Earshot && foe->GetIsCasting() &&
+                foe->skill == static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring))
+            {
+                player.ChangeTarget(foe->agent_id);
+            }
+        }
+    }
 }

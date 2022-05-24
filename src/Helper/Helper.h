@@ -12,6 +12,7 @@
 
 #include <Logger.h>
 
+#include <Player.h>
 #include <Skillbars.h>
 #include <Types.h>
 #include <Utils.h>
@@ -44,4 +45,10 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
 void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
-void FilterAgentsByID(std::vector<GW::AgentLiving *> &filtered_vec, const int id);
+void FilterAgents(const Player &player,
+                  const GW::AgentArray &agents,
+                  std::vector<GW::AgentLiving *> &filtered_agents,
+                  const int id,
+                  const float max_distance = 0.0F);
+
+void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);

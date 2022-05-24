@@ -24,6 +24,7 @@
 #include <Timer.h>
 
 #include <Actions.h>
+#include <Player.h>
 
 #include "Helper.h"
 
@@ -453,11 +454,13 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
     }
 }
 
-void FilterAgentsByID(std::vector<GW::AgentLiving *> &filtered_vec, const int id)
+void FilterAgents(const Player &player,
+                  const GW::AgentArray &agents,
+                  std::vector<GW::AgentLiving *> &filtered_agents,
+                  const int id,
+                  const float max_distance)
 {
-    auto agents_array = GW::Agents::GetAgentArray();
-
-    for (const auto &agent : agents_array)
+    for (const auto &agent : agents)
     {
         if (!agent)
             continue;
@@ -467,12 +470,34 @@ void FilterAgentsByID(std::vector<GW::AgentLiving *> &filtered_vec, const int id
         if (!living)
             continue;
 
-        if (living->allegiance == 0x3)
+
+        if (living->allegiance == 0x3 && living->player_number == id)
         {
-            if (living->player_number == id)
+            if (max_distance == 0.0F)
             {
-                filtered_vec.push_back(living);
+                filtered_agents.push_back(living);
+            }
+            else
+            {
+                const float sqrd = GW::GetDistance(player.pos, agent->pos);
+
+                if (sqrd < max_distance)
+                {
+                    filtered_agents.push_back(living);
+                }
             }
         }
     }
+}
+
+void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
+{
+    const auto player_pos = player.pos;
+
+    std::sort(filtered_agents.begin(), filtered_agents.end(), [&player_pos](auto &v1, auto &v2) {
+        const float sqrd1 = GW::GetSquareDistance(player_pos, v1->pos);
+        const float sqrd2 = GW::GetSquareDistance(player_pos, v2->pos);
+
+        return sqrd1 < sqrd2;
+    });
 }

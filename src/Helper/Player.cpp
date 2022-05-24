@@ -9,6 +9,7 @@
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/EffectMgr.h>
+#include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Managers/SkillbarMgr.h>
@@ -72,6 +73,9 @@ void Player::Update()
     hp = std::get<0>(hp_tpl);
     max_hp = std::get<1>(hp_tpl);
     hp_perc = std::get<2>(hp_tpl);
+
+    primary = static_cast<GW::Constants::Profession>(me_living->primary);
+    secondary = static_cast<GW::Constants::Profession>(me_living->secondary);
 }
 
 bool Player::CanCast() const
@@ -129,9 +133,11 @@ bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
 
 void Player::ChangeTarget(const uint32_t target_id)
 {
-    if (GW::Agents::GetAgentByID(target_id))
-    {
+    if (!GW::Agents::GetAgentByID(target_id))
+        return;
+
+    GW::GameThread::Enqueue([this, target_id]() {
         GW::Agents::ChangeTarget(target_id);
         target = GW::Agents::GetTarget();
-    }
+    });
 }

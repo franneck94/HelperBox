@@ -20,7 +20,7 @@
 class TerraWindow : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player(), nearby_foes({}){};
+    TerraWindow() : player(), filtered_foes({}){};
     ~TerraWindow(){};
 
     static TerraWindow &Instance()
@@ -57,5 +57,5 @@ private:
     void Spiking();
 
     Player player;
-    std::vector<GW::AgentLiving *> nearby_foes;
+    std::vector<GW::AgentLiving *> filtered_foes;
 };

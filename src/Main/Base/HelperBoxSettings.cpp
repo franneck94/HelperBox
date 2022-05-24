@@ -49,8 +49,9 @@ void HelperBoxSettings::DrawSettingInternal()
     ImGui::Text("Enable the following features:");
     ImGui::TextDisabled("Unticking will disable a feature. Requires HelperBox restart.");
     static std::vector<std::pair<const char *, bool *>> features{
-        {"Chest", &use_chest},
         {"EMO", &use_emo},
+        {"Spiker", &use_spiker},
+        {"Terra", &use_terra},
     };
     ImGui::Columns(static_cast<int>(cols), "global_enable_cols", false);
     size_t items_per_col = (size_t)ceil(features.size() / static_cast<float>(cols));
@@ -117,15 +118,17 @@ void HelperBoxSettings::LoadSettings(CSimpleIni *ini)
 {
     HelperBoxModule::LoadSettings(ini);
     move_all = false;
-    use_chest = ini->GetBoolValue(Name(), VAR_NAME(use_chest), use_chest);
     use_emo = ini->GetBoolValue(Name(), VAR_NAME(use_emo), use_emo);
+    use_spiker = ini->GetBoolValue(Name(), VAR_NAME(use_spiker), use_spiker);
+    use_terra = ini->GetBoolValue(Name(), VAR_NAME(use_terra), use_terra);
 }
 
 void HelperBoxSettings::SaveSettings(CSimpleIni *ini)
 {
     HelperBoxModule::SaveSettings(ini);
-    ini->SetBoolValue(Name(), VAR_NAME(use_chest), use_chest);
     ini->SetBoolValue(Name(), VAR_NAME(use_emo), use_emo);
+    ini->SetBoolValue(Name(), VAR_NAME(use_spiker), use_spiker);
+    ini->SetBoolValue(Name(), VAR_NAME(use_terra), use_terra);
 }
 
 void HelperBoxSettings::Draw(IDirect3DDevice9 *)

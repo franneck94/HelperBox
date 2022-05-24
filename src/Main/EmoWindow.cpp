@@ -29,6 +29,7 @@
 #include <Timer.h>
 
 #include <Actions.h>
+#include <GuiUtils.h>
 #include <Helper.h>
 #include <Player.h>
 #include <Skillbars.h>
@@ -37,7 +38,11 @@
 
 #include "EmoWindow.h"
 
+namespace
+{
+static const auto DEFAULT_WINDOW_SIZE = ImVec2(120.0, DEFAULT_BUTTON_SIZE.x * 3.0F);
 constexpr uint32_t ALLEGIANCE_ALLY = 0x1;
+} // namespace
 
 namespace
 {
@@ -47,10 +52,10 @@ static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
 }; // namespace
 
 
-void ActionBaseClass::Draw()
+void ActionABC::Draw(const ImVec2 button_size)
 {
     const auto color = COLOR_MAPPING[static_cast<uint32_t>(action_state)];
-    DrawButton(action_state, color, text);
+    DrawButton(action_state, color, text, button_size);
 }
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
@@ -63,7 +68,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    ImGui::SetNextWindowSize(WINDOW_SIZE, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
     {
@@ -492,9 +497,11 @@ void EmoWindow::Update(float delta)
     UNREFERENCED_PARAMETER(delta);
 
     if (!player.ValidateData())
-    {
         return;
-    }
+
+    if (player.primary != GW::Constants::Profession::Elementalist ||
+        player.secondary != GW::Constants::Profession::Monk)
+        return;
 
     player.Update();
 

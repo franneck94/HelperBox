@@ -1,5 +1,8 @@
 # EMO Helper
 
+- Expected EMO Build:
+  - ...
+
 - Player Bonding:
   - Expected to have some players in the target
   - Balth and Bond will be cast, if not yet present

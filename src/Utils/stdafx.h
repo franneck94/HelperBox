@@ -12,7 +12,6 @@
 #include <array>
 #include <bitset>
 #include <chrono>
-#include <deque>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -25,13 +24,10 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <regex>
 #include <set>
 #include <sstream>
 #include <string>
 #include <thread>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 // windows headers

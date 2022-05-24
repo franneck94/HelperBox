@@ -46,7 +46,6 @@ RoutineState SafeTravel(const GW::Constants::MapID target_map,
     }
     else if (travel_finished && !IsLoading())
     {
-        Wait(10);
         state = RoutineState::FINISHED;
     }
 
