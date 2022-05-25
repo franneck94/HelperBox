@@ -38,16 +38,22 @@
 namespace
 {
 static const auto DEFAULT_WINDOW_SIZE = ImVec2(100.0F, 100.0F);
+static constexpr auto HEALING_SPRING_U16 = static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring);
+static constexpr auto MIN_IDLE_TIME_S = 0.1F;
+static constexpr auto MAX_TABLE_LENGTH = 6U;
 } // namespace
 
 void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
-    if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
+    if (IsLoading())
         return;
 
     if (!visible)
+        return;
+
+    if (IsExplorable() && GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return;
 
     ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
@@ -58,15 +64,16 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
         for (const auto &foe : filtered_foes)
         {
             bool pushed = false;
-            if (foe->hp == 0.0F)
+            if (foe->GetIsDead())
                 continue;
 
-            if (foe->GetIsCasting() && foe->skill == static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring))
+            if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
                 pushed = true;
             }
-            ImGui::Text("Behe: %3.0f", foe->hp * 100.0F);
+            const float distance = GW::GetDistance(player.pos, foe->pos);
+            ImGui::Text("Behe: %3.0f, %4.0f", foe->hp * 100.0F, distance);
             if (pushed)
             {
                 ImGui::PopStyleColor();
@@ -81,7 +88,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
             ++idx;
 
-            if (idx >= 6)
+            if (idx >= MAX_TABLE_LENGTH)
             {
                 break;
             }
@@ -124,7 +131,7 @@ void TerraWindow::Update(float delta)
     const auto nearest_behemoth = filtered_foes[0];
     const auto dist_nearest = GW::GetDistance(player.pos, nearest_behemoth->pos);
 
-    if (idle_time_ms > 0.1F && !player.living->GetIsMoving() && dist_nearest < GW::Constants::Range::Area)
+    if (idle_time_ms > MIN_IDLE_TIME_S && !player.living->GetIsMoving() && dist_nearest < GW::Constants::Range::Area)
     {
         for (const auto &foe : filtered_foes)
         {
@@ -133,8 +140,7 @@ void TerraWindow::Update(float delta)
 
             const auto dist = GW::GetDistance(player.pos, foe->pos);
 
-            if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() &&
-                foe->skill == static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring))
+            if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
             {
                 player.ChangeTarget(foe->agent_id);
             }

@@ -38,6 +38,7 @@
 namespace
 {
 static const auto DEFAULT_WINDOW_SIZE = ImVec2(100.0F, 100.0F);
+static constexpr auto MAX_TABLE_LENGTH = 6U;
 } // namespace
 
 RoutineState SpikeSet::Routine()
@@ -95,10 +96,13 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
-    if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
+    if (IsLoading())
         return;
 
     if (!visible)
+        return;
+
+    if (IsExplorable() && GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return;
 
     ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
@@ -119,7 +123,8 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0));
                 pushed = true;
             }
-            ImGui::Text("Aatxe: %3.0f", foe->hp * 100.0F);
+            const float distance = GW::GetDistance(player.pos, foe->pos);
+            ImGui::Text("Aatxe: %3.0f, %4.0f", foe->hp * 100.0F, distance);
             if (pushed)
             {
                 ImGui::PopStyleColor();
@@ -134,7 +139,7 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
 
             ++idx;
 
-            if (idx >= 6)
+            if (idx >= MAX_TABLE_LENGTH)
             {
                 break;
             }

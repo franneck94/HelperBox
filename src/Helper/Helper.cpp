@@ -479,9 +479,9 @@ void FilterAgents(const Player &player,
             }
             else
             {
-                const float sqrd = GW::GetDistance(player.pos, agent->pos);
+                const auto dist = GW::GetDistance(player.pos, agent->pos);
 
-                if (sqrd < max_distance)
+                if (dist < max_distance)
                 {
                     filtered_agents.push_back(living);
                 }
@@ -495,8 +495,8 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
     const auto player_pos = player.pos;
 
     std::sort(filtered_agents.begin(), filtered_agents.end(), [&player_pos](auto &v1, auto &v2) {
-        const float sqrd1 = GW::GetSquareDistance(player_pos, v1->pos);
-        const float sqrd2 = GW::GetSquareDistance(player_pos, v2->pos);
+        const auto sqrd1 = GW::GetSquareDistance(player_pos, v1->pos);
+        const auto sqrd2 = GW::GetSquareDistance(player_pos, v2->pos);
 
         return sqrd1 < sqrd2;
     });

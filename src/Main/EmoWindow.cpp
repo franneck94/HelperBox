@@ -62,7 +62,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
-    if (GW::Map::GetInstanceType() == GW::Constants::InstanceType::Loading)
+    if (IsLoading())
         return;
 
     if (!visible)
