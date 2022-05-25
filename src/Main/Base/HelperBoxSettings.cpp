@@ -14,8 +14,8 @@
 #include <ChatCommands.h>
 #include <EmoWindow.h>
 #include <MainWindow.h>
+#include <MesmerWindow.h>
 #include <SettingsWindow.h>
-#include <SpikerWindow.h>
 #include <TerraWindow.h>
 
 #include "HelperBoxSettings.h"
@@ -28,7 +28,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&EmoWindow::Instance());
-    optional_modules.push_back(&SpikerWindow::Instance());
+    optional_modules.push_back(&MesmerWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 
@@ -50,7 +50,7 @@ void HelperBoxSettings::DrawSettingInternal()
     ImGui::TextDisabled("Unticking will disable a feature. Requires HelperBox restart.");
     static std::vector<std::pair<const char *, bool *>> features{
         {"EMO", &use_emo},
-        {"Spiker", &use_spiker},
+        {"Mesmer", &use_spiker},
         {"Terra", &use_terra},
     };
     ImGui::Columns(static_cast<int>(cols), "global_enable_cols", false);

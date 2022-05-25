@@ -1,18 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Skill.h>
 
-#include <Skillbars.h>
-
 class Player
 {
 public:
-    Player(const uint32_t agent_id = UINT32_MAX)
-        : id(agent_id), skillbar(EmoSkillbar{}), pos(GW::GamePos{0.0F, 0.0F, 0}){};
+    Player(const uint32_t agent_id = UINT32_MAX) : id(agent_id), pos(GW::GamePos{0.0F, 0.0F, 0}){};
 
     bool ValidateData() const;
     void Update();
@@ -26,10 +24,6 @@ public:
 
 public:
     uint32_t id = UINT32_MAX;
-
-    EmoSkillbar skillbar;
-    GW::Skillbar *internal_skillbar = nullptr;
-    GW::SkillbarSkill *skillbar_skills = nullptr;
 
     GW::Agent *me = nullptr;
     GW::AgentLiving *living = nullptr;

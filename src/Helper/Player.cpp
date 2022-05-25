@@ -12,7 +12,6 @@
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
-#include <GWCA/Managers/SkillbarMgr.h>
 
 #include <Helper.h>
 
@@ -35,14 +34,6 @@ bool Player::ValidateData() const
     if (IsOutpost())
         return true;
 
-    const auto skillbar_ = GW::SkillbarMgr::GetPlayerSkillbar();
-    if (!skillbar_)
-        return false;
-
-    const auto skillbar_skills_ = skillbar_->skills;
-    if (!skillbar_skills_)
-        return false;
-
     return true;
 }
 
@@ -60,10 +51,6 @@ void Player::Update()
 
     target = GW::Agents::GetTarget();
 
-    internal_skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
-    skillbar_skills = internal_skillbar->skills;
-    skillbar.Update(skillbar_skills);
-
     const auto energy_tpl = GetEnergy();
     energy = std::get<0>(energy_tpl);
     max_energy = std::get<1>(energy_tpl);
@@ -80,8 +67,7 @@ void Player::Update()
 
 bool Player::CanCast() const
 {
-    if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() ||
-        (internal_skillbar && internal_skillbar->casting))
+    if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting())
     {
         return false;
     }

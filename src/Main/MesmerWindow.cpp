@@ -33,7 +33,7 @@
 #include <Types.h>
 #include <Utils.h>
 
-#include "SpikerWindow.h"
+#include "MesmerWindow.h"
 
 namespace
 {
@@ -63,13 +63,13 @@ RoutineState SpikeSet::Routine()
 
     if (state_idx == 0)
     {
-        (void)SafeUseSkill(demise_idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->demise.idx, player->target->agent_id);
         ++state_idx;
         return RoutineState::ACTIVE;
     }
     else if (state_idx == 1)
     {
-        (void)SafeUseSkill(worry_idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->worry.idx, player->target->agent_id);
         ++state_idx;
         return RoutineState::ACTIVE;
     }
@@ -91,7 +91,7 @@ void SpikeSet::Update()
     }
 }
 
-void SpikerWindow::Draw(IDirect3DDevice9 *pDevice)
+void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
@@ -103,7 +103,7 @@ void SpikerWindow::Draw(IDirect3DDevice9 *pDevice)
 
     ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("SpikerWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin("MesmerWindow", nullptr, GetWinFlags()))
     {
         spike_set.Draw(ImVec2(ImGui::GetWindowWidth(), 35.0F));
 
@@ -133,20 +133,29 @@ void SpikerWindow::Draw(IDirect3DDevice9 *pDevice)
             }
 
             ++idx;
+
+            if (idx >= 6)
+            {
+                break;
+            }
         }
     }
 
     ImGui::End();
 }
 
-void SpikerWindow::Update(float delta)
+void MesmerWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
     if (!player.ValidateData())
         return;
-
     player.Update();
+
+    if (!skillbar.ValidateData())
+        return;
+    skillbar.Update();
+
     spike_set.Update();
 
     filtered_foes.clear();

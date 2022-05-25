@@ -27,10 +27,30 @@ public:
     virtual void Update() = 0;
 
     Player *player = nullptr;
-    ActionState action_state = ActionState::INACTIVE;
     char *const text;
+
+    ActionState action_state = ActionState::INACTIVE;
 };
 
+class EmoActionABC : public ActionABC
+{
+public:
+    EmoActionABC(Player *p, char *const t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
+    {
+    }
+
+    EmoSkillbar *skillbar;
+};
+
+class MesmerActionABC : public ActionABC
+{
+public:
+    MesmerActionABC(Player *p, char *const t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
+    {
+    }
+
+    MesmerSkillbar *skillbar;
+};
 
 RoutineState SafeTravel(const GW::Constants::MapID target_map,
                         const GW::Constants::MapRegion target_region = GW::Constants::MapRegion::European,
@@ -41,11 +61,3 @@ RoutineState SafeWalk(GW::GamePos target_position, const bool reset = false);
 RoutineState SafeUseSkill(const uint32_t skill_idx, const uint32_t target = 0, const uint32_t call_target = 0);
 
 RoutineState SafeLoadSkillTemplate(std::string_view code);
-
-RoutineState SafeChangeTarget(const TargetType type);
-
-RoutineState SafeGotoTarget();
-
-RoutineState SafeOpenChest();
-
-RoutineState SafeResign(bool issue_resign);

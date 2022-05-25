@@ -68,6 +68,10 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
+    if (player.primary != GW::Constants::Profession::Elementalist ||
+        player.secondary != GW::Constants::Profession::Monk)
+        return;
+
     ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
@@ -101,23 +105,23 @@ RoutineState Pumping::Routine()
     const bool found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
     const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
 
-    if (player->skillbar.ether.CanBeCasted(player->energy))
+    if (skillbar->ether.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(player->skillbar.ether.idx, player->id);
+        (void)SafeUseSkill(skillbar->ether.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
-    const bool balth_avail = player->skillbar.balth.CanBeCasted(player->energy);
+    const bool balth_avail = skillbar->balth.CanBeCasted(player->energy);
     if (!found_balth && balth_avail)
     {
-        (void)SafeUseSkill(player->skillbar.balth.idx, player->id);
+        (void)SafeUseSkill(skillbar->balth.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
-    const bool bond_avail = player->skillbar.bond.CanBeCasted(player->energy);
+    const bool bond_avail = skillbar->prot.CanBeCasted(player->energy);
     if (!found_bond && bond_avail)
     {
-        (void)SafeUseSkill(player->skillbar.bond.idx, player->id);
+        (void)SafeUseSkill(skillbar->prot.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
@@ -129,18 +133,18 @@ RoutineState Pumping::Routine()
     const bool low_energy = player->energy_perc < (0.90F - moving_offset_energy);
 
     const bool sb_needed = low_hp || !found_sb;
-    const bool sb_avail = player->skillbar.sb.CanBeCasted(player->energy);
+    const bool sb_avail = skillbar->sb.CanBeCasted(player->energy);
     if (found_ether && sb_needed && sb_avail)
     {
-        (void)SafeUseSkill(player->skillbar.sb.idx, player->id);
+        (void)SafeUseSkill(skillbar->sb.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
     const bool need_burning = low_hp || low_energy || !found_burning;
-    const bool burning_avail = player->skillbar.burning.CanBeCasted(player->energy);
+    const bool burning_avail = skillbar->burning.CanBeCasted(player->energy);
     if (found_ether && need_burning && burning_avail)
     {
-        (void)SafeUseSkill(player->skillbar.burning.idx, player->id);
+        (void)SafeUseSkill(skillbar->burning.idx, player->id);
         return RoutineState::ACTIVE;
     }
 
@@ -154,6 +158,11 @@ void Pumping::Update()
     if (action_state == ActionState::ACTIVE)
     {
         (void)(Routine());
+    }
+
+    if (GW::PartyMgr::GetIsPartyDefeated())
+    {
+        action_state = ActionState::INACTIVE;
     }
 }
 
@@ -228,21 +237,21 @@ RoutineState TankBonding::Routine()
     const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player->target->agent_id);
     const bool found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, player->target->agent_id);
 
-    if (!found_balth && player->skillbar.balth.CanBeCasted(player->energy))
+    if (!found_balth && skillbar->balth.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->balth.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
-    if (!found_bond && player->skillbar.bond.CanBeCasted(player->energy))
+    if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->prot.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
-    if (!found_life && player->skillbar.life.CanBeCasted(player->energy))
+    if (!found_life && skillbar->life.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(player->skillbar.life.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->life.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
@@ -260,6 +269,11 @@ void TankBonding::Update()
         {
             action_state = ActionState::INACTIVE;
             StateOnActive(*emo_casting_action_state);
+        }
+
+        if (GW::PartyMgr::GetIsPartyDefeated())
+        {
+            action_state = ActionState::INACTIVE;
         }
     }
 }
@@ -296,15 +310,15 @@ RoutineState PlayerBonding::Routine()
     const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player->target->agent_id);
     const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player->target->agent_id);
 
-    if (!found_balth && player->skillbar.balth.CanBeCasted(player->energy))
+    if (!found_balth && skillbar->balth.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(player->skillbar.balth.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->balth.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
-    if (!found_bond && player->skillbar.bond.CanBeCasted(player->energy))
+    if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(player->skillbar.bond.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->prot.idx, player->target->agent_id);
         return RoutineState::ACTIVE;
     }
 
@@ -322,6 +336,11 @@ void PlayerBonding::Update()
         {
             action_state = ActionState::INACTIVE;
             StateOnActive(*emo_casting_action_state);
+        }
+
+        if (GW::PartyMgr::GetIsPartyDefeated())
+        {
+            action_state = ActionState::INACTIVE;
         }
     }
 }
@@ -376,44 +395,25 @@ RoutineState FusePull::Routine()
         return RoutineState::ACTIVE;
     }
 
-    constexpr auto cancel1_step = 0;
-    constexpr auto armor1_step = 1;
-    constexpr auto fuse_step = 2;
-    constexpr auto cancel2_step = 3;
-    constexpr auto armor2_step = 4;
+    constexpr auto cancel_step = 0;
+    constexpr auto fuse_step = 1;
+
     constexpr auto time_wait_ms = 600;
-    constexpr auto bag_idx = 5;
-    constexpr auto starting_slid_idx = 16;
 
     const auto timer_diff = TIMER_DIFF(timer);
 
-    if (step == cancel1_step)
+    if (step == cancel_step)
     {
         GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         ++step;
 
         return RoutineState::ACTIVE;
     }
-    if (step == cancel1_step + 1 && timer_diff > time_wait_ms)
+    if (step == cancel_step + 1 && timer_diff > time_wait_ms)
     {
         timer = TIMER_INIT();
     }
-    else if (step == cancel1_step + 1 && timer_diff < time_wait_ms)
-    {
-        return RoutineState::ACTIVE;
-    }
-
-    if (step == armor1_step)
-    {
-        ChangeFullArmor(bag_idx, starting_slid_idx);
-        ++step;
-        return RoutineState::ACTIVE;
-    }
-    if (step == armor1_step + 1 && timer_diff > time_wait_ms)
-    {
-        timer = TIMER_INIT();
-    }
-    else if (step == armor1_step + 1 && timer_diff < time_wait_ms)
+    else if (step == cancel_step + 1 && timer_diff < time_wait_ms)
     {
         return RoutineState::ACTIVE;
     }
@@ -425,9 +425,9 @@ RoutineState FusePull::Routine()
             return RoutineState::ACTIVE;
         }
 
-        if (player->skillbar.fuse.CanBeCasted(player->energy))
+        if (skillbar->fuse.CanBeCasted(player->energy))
         {
-            (void)SafeUseSkill(player->skillbar.fuse.idx, player->target->agent_id);
+            (void)SafeUseSkill(skillbar->fuse.idx, player->target->agent_id);
         }
         ++step;
         return RoutineState::ACTIVE;
@@ -437,38 +437,6 @@ RoutineState FusePull::Routine()
         timer = TIMER_INIT();
     }
     else if (step == fuse_step + 1 && timer_diff < time_wait_ms + 200)
-    {
-        return RoutineState::ACTIVE;
-    }
-
-    if (step == cancel2_step)
-    {
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
-        ++step;
-
-        return RoutineState::ACTIVE;
-    }
-    if (step == cancel2_step + 1 && timer_diff > time_wait_ms)
-    {
-        timer = TIMER_INIT();
-    }
-    else if (step == cancel2_step + 1 && timer_diff < time_wait_ms)
-    {
-        return RoutineState::ACTIVE;
-    }
-
-    if (step == armor2_step)
-    {
-        ChangeFullArmor(bag_idx, starting_slid_idx);
-        ++step;
-
-        return RoutineState::ACTIVE;
-    }
-    if (step == armor2_step + 1 && timer_diff > time_wait_ms)
-    {
-        timer = TIMER_INIT();
-    }
-    else if (step == armor2_step + 1 && timer_diff < time_wait_ms)
     {
         return RoutineState::ACTIVE;
     }
@@ -489,6 +457,11 @@ void FusePull::Update()
             action_state = ActionState::INACTIVE;
             StateOnActive(*emo_casting_action_state);
         }
+
+        if (GW::PartyMgr::GetIsPartyDefeated())
+        {
+            action_state = ActionState::INACTIVE;
+        }
     }
 }
 
@@ -498,12 +471,15 @@ void EmoWindow::Update(float delta)
 
     if (!player.ValidateData())
         return;
+    player.Update();
+
+    if (!skillbar.ValidateData())
+        return;
+    skillbar.Update();
 
     if (player.primary != GW::Constants::Profession::Elementalist ||
         player.secondary != GW::Constants::Profession::Monk)
         return;
-
-    player.Update();
 
     tank_bonding.Update();
     player_bonding.Update();

@@ -20,7 +20,7 @@
 class TerraWindow : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player(), filtered_foes({}){};
+    TerraWindow() : player({}), filtered_foes({}){};
     ~TerraWindow(){};
 
     static TerraWindow &Instance()

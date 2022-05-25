@@ -20,10 +20,10 @@
 
 #include <Base/HelperBoxWindow.h>
 
-class Pumping : public ActionABC
+class Pumping : public EmoActionABC
 {
 public:
-    Pumping(Player *p) : ActionABC(p, "Pumping")
+    Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
     {
     }
 
@@ -31,10 +31,10 @@ public:
     void Update() override;
 };
 
-class TankBonding : public ActionABC
+class TankBonding : public EmoActionABC
 {
 public:
-    TankBonding(Player *p) : ActionABC(p, "Tank Bonds")
+    TankBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Tank Bonds", s)
     {
     }
 
@@ -42,10 +42,10 @@ public:
     void Update() override;
 };
 
-class PlayerBonding : public ActionABC
+class PlayerBonding : public EmoActionABC
 {
 public:
-    PlayerBonding(Player *p) : ActionABC(p, "Player Bonds")
+    PlayerBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Player Bonds", s)
     {
     }
 
@@ -53,14 +53,14 @@ public:
     void Update() override;
 };
 
-class FusePull : public ActionABC
+class FusePull : public EmoActionABC
 {
 public:
     static constexpr auto MIN_FUSE_PULL_RANGE = float{1200.0F};
     static constexpr auto MAX_FUSE_PULL_RANGE = float{1248.0F};
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
-    FusePull(Player *p) : timer(TIMER_INIT()), ActionABC(p, "Fuse Pull")
+    FusePull(Player *p, EmoSkillbar *s) : timer(TIMER_INIT()), EmoActionABC(p, "Fuse Pull", s)
     {
     }
 
@@ -87,7 +87,15 @@ public:
 class EmoWindow : public HelperBoxWindow
 {
 public:
-    EmoWindow() : player(), fuse_pull(&player), pumping(&player), tank_bonding(&player), player_bonding(&player){};
+    EmoWindow()
+        : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar),
+          tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
+    {
+        if (skillbar.ValidateData())
+        {
+            skillbar.Load();
+        }
+    };
     ~EmoWindow(){};
 
     static EmoWindow &Instance()
@@ -127,6 +135,8 @@ private:
     bool EmoFusePull();
 
     Player player;
+    EmoSkillbar skillbar;
+
     FusePull fuse_pull;
     Pumping pumping;
     TankBonding tank_bonding;

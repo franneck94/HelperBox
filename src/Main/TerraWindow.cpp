@@ -80,6 +80,11 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
             }
 
             ++idx;
+
+            if (idx >= 6)
+            {
+                break;
+            }
         }
     }
 
@@ -88,7 +93,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
 void TerraWindow::Update(float delta)
 {
-    UNREFERENCED_PARAMETER(delta);
+    static float idle_time_ms = 0;
 
     if (!player.ValidateData())
         return;
@@ -106,14 +111,29 @@ void TerraWindow::Update(float delta)
 
     if (!player.living->GetIsMoving())
     {
+        idle_time_ms += delta;
+    }
+    else
+    {
+        idle_time_ms = 0.0F;
+    }
+
+    if (filtered_foes.size() == 0)
+        return;
+
+    const auto nearest_behemoth = filtered_foes[0];
+    const auto dist_nearest = GW::GetDistance(player.pos, nearest_behemoth->pos);
+
+    if (idle_time_ms > 0.1F && !player.living->GetIsMoving() && dist_nearest < GW::Constants::Range::Area)
+    {
         for (const auto &foe : filtered_foes)
         {
             if (!foe)
                 continue;
 
-            const float sqrd = GW::GetDistance(player.pos, foe->pos);
+            const auto dist = GW::GetDistance(player.pos, foe->pos);
 
-            if (sqrd < GW::Constants::Range::Earshot && foe->GetIsCasting() &&
+            if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() &&
                 foe->skill == static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring))
             {
                 player.ChangeTarget(foe->agent_id);

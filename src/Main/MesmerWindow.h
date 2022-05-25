@@ -18,13 +18,10 @@
 
 #include <Base/HelperBoxWindow.h>
 
-class SpikeSet : public ActionABC
+class SpikeSet : public MesmerActionABC
 {
 public:
-    constexpr static uint32_t demise_idx = 0;
-    constexpr static uint32_t worry_idx = 1;
-
-    SpikeSet(Player *p) : ActionABC(p, "SpikeSet")
+    SpikeSet(Player *p, MesmerSkillbar *s) : MesmerActionABC(p, "SpikeSet", s)
     {
     }
 
@@ -32,21 +29,27 @@ public:
     void Update() override;
 };
 
-class SpikerWindow : public HelperBoxWindow
+class MesmerWindow : public HelperBoxWindow
 {
 public:
-    SpikerWindow() : player({}), spike_set(&player), filtered_foes({}){};
-    ~SpikerWindow(){};
-
-    static SpikerWindow &Instance()
+    MesmerWindow() : player({}), skillbar({}), spike_set(&player, &skillbar), filtered_foes({})
     {
-        static SpikerWindow instance;
+        if (skillbar.ValidateData())
+        {
+            skillbar.Load();
+        }
+    };
+    ~MesmerWindow(){};
+
+    static MesmerWindow &Instance()
+    {
+        static MesmerWindow instance;
         return instance;
     }
 
     const char *Name() const override
     {
-        return "SpikerWindow";
+        return "MesmerWindow";
     }
 
     void Initialize() override
@@ -72,6 +75,7 @@ private:
     void Spiking();
 
     Player player;
+    MesmerSkillbar skillbar;
     std::vector<GW::AgentLiving *> filtered_foes;
 
     SpikeSet spike_set;
