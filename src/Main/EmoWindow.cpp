@@ -42,12 +42,7 @@ namespace
 {
 static const auto DEFAULT_WINDOW_SIZE = ImVec2(120.0, DEFAULT_BUTTON_SIZE.x * 3.0F);
 constexpr uint32_t ALLEGIANCE_ALLY = 0x1;
-} // namespace
-
-namespace
-{
 static ActionState *emo_casting_action_state = nullptr;
-
 static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
 }; // namespace
 
@@ -153,9 +148,11 @@ RoutineState Pumping::Routine()
 
 void Pumping::Update()
 {
-    emo_casting_action_state = &action_state;
-
-    if (action_state == ActionState::ACTIVE)
+    if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
+    {
+        action_state = ActionState::ON_HOLD;
+    }
+    else if (action_state == ActionState::ACTIVE)
     {
         (void)(Routine());
     }
@@ -480,6 +477,8 @@ void EmoWindow::Update(float delta)
     if (player.primary != GW::Constants::Profession::Elementalist ||
         player.secondary != GW::Constants::Profession::Monk)
         return;
+
+    emo_casting_action_state = &pumping.action_state;
 
     tank_bonding.Update();
     player_bonding.Update();

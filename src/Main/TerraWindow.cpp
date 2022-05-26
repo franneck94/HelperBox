@@ -73,7 +73,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                 pushed = true;
             }
             const float distance = GW::GetDistance(player.pos, foe->pos);
-            ImGui::Text("Behe: %3.0f, %4.0f", foe->hp * 100.0F, distance);
+            ImGui::Text("B: %3.0f, %4.0f", foe->hp * 100.0F, distance);
             if (pushed)
             {
                 ImGui::PopStyleColor();

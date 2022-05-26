@@ -124,7 +124,7 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
                 pushed = true;
             }
             const float distance = GW::GetDistance(player.pos, foe->pos);
-            ImGui::Text("Aatxe: %3.0f, %4.0f", foe->hp * 100.0F, distance);
+            ImGui::Text("A: %3.0f, %4.0f", foe->hp * 100.0F, distance);
             if (pushed)
             {
                 ImGui::PopStyleColor();
@@ -153,6 +153,8 @@ void MesmerWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
+    filtered_foes.clear();
+
     if (!player.ValidateData())
         return;
     player.Update();
@@ -163,7 +165,6 @@ void MesmerWindow::Update(float delta)
 
     spike_set.Update();
 
-    filtered_foes.clear();
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
                  agents_array,
