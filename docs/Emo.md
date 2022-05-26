@@ -8,7 +8,7 @@ The window will only be rendered if you are on an E/MO.
 
 - Tank Bonding:
   - If no target is selected then 2nd last player will be targeted in UW, elsewhere the first player
-  - Blath, Life and Bond will be cast if not present
+  - Balth, Life and Bond will be cast if not present
 
 - Fuse Pull:
   - Steps
@@ -17,6 +17,7 @@ The window will only be rendered if you are on an E/MO.
     3. Fuse
 
 - Pumping:
+  - On-hold while walking (yellow colored)
   - Cast Balth and Bond on self, if not present
   - Whenever Ether is castable, cast it
   - Whenever SB or Burning is not up, cast it

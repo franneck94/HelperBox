@@ -19,7 +19,7 @@ public:
 
     const char *Name() const override
     {
-        return "HelperBox Settings";
+        return "HelperBox";
     }
 
     const char *Icon() const override

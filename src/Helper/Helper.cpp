@@ -471,7 +471,7 @@ void FilterAgents(const Player &player,
             continue;
 
 
-        if (living->allegiance == 0x3 && living->player_number == id)
+        if (living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy) && living->player_number == id)
         {
             if (max_distance == 0.0F)
             {

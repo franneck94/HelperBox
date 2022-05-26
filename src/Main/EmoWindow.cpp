@@ -41,7 +41,6 @@
 namespace
 {
 static const auto DEFAULT_WINDOW_SIZE = ImVec2(120.0, DEFAULT_BUTTON_SIZE.x * 3.0F);
-constexpr uint32_t ALLEGIANCE_ALLY = 0x1;
 static ActionState *emo_casting_action_state = nullptr;
 static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
 }; // namespace
@@ -148,13 +147,22 @@ RoutineState Pumping::Routine()
 
 void Pumping::Update()
 {
+    static auto paused = false;
+
     if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
     {
         action_state = ActionState::ON_HOLD;
+        paused = true;
     }
     else if (action_state == ActionState::ACTIVE)
     {
         (void)(Routine());
+    }
+
+    if (paused && !player->living->GetIsMoving())
+    {
+        paused = false;
+        action_state = ActionState::ACTIVE;
     }
 
     if (GW::PartyMgr::GetIsPartyDefeated())
@@ -225,7 +233,8 @@ RoutineState TankBonding::Routine()
 
     const auto target_living = player->target->GetAsAgentLiving();
 
-    if (target_living->allegiance != ALLEGIANCE_ALLY || target_living->GetIsDead())
+    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
+        target_living->GetIsDead())
     {
         return RoutineState::FINISHED;
     }
@@ -299,7 +308,8 @@ RoutineState PlayerBonding::Routine()
 
     const auto target_living = player->target->GetAsAgentLiving();
 
-    if (target_living->allegiance != ALLEGIANCE_ALLY || target_living->GetIsDead())
+    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
+        target_living->GetIsDead())
     {
         return RoutineState::FINISHED;
     }
@@ -354,7 +364,8 @@ RoutineState FusePull::Routine()
 
     const auto target_living = player->target->GetAsAgentLiving();
 
-    if (target_living->allegiance != ALLEGIANCE_ALLY || target_living->GetIsDead())
+    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
+        target_living->GetIsDead())
     {
         ResetData();
         return RoutineState::FINISHED;

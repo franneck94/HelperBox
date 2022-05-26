@@ -109,43 +109,64 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (ImGui::Begin("MesmerWindow", nullptr, GetWinFlags()))
     {
-        spike_set.Draw(ImVec2(ImGui::GetWindowWidth(), 35.0F));
+        //if (player.primary == GW::Constants::Profession::Mesmer)
+        const auto width = ImGui::GetWindowWidth();
+        spike_set.Draw(ImVec2(width, 35.0F));
 
-        uint32_t idx = 0;
-        for (const auto &foe : filtered_foes)
+        if (ImGui::BeginTable("AatxeTable", 3))
         {
-            bool pushed = false;
-            if (foe->hp == 0.0F)
-                continue;
+            ImGui::TableSetupColumn("HP (%%)", ImGuiTableColumnFlags_WidthFixed, width * 0.3);
+            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25);
+            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.45);
 
-            if (foe->GetIsHexed())
-            {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0));
-                pushed = true;
-            }
-            const float distance = GW::GetDistance(player.pos, foe->pos);
-            ImGui::Text("A: %3.0f, %4.0f", foe->hp * 100.0F, distance);
-            if (pushed)
-            {
-                ImGui::PopStyleColor();
-            }
+            ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+            ImGui::TableNextColumn();
+            ImGui::Text("HP (%%)");
+            ImGui::TableNextColumn();
+            ImGui::Text("Dist.");
+            ImGui::TableNextColumn();
+            ImGui::Text("Target");
 
-            ImGui::SameLine();
-            const auto label = fmt::format("Target##{}", idx);
-            if (ImGui::Button(label.data()))
+            uint32_t idx = 0;
+            for (const auto &foe : filtered_foes)
             {
-                player.ChangeTarget(foe->agent_id);
-            }
+                ImGui::TableNextRow();
 
-            ++idx;
+                bool pushed = false;
+                if (foe->hp == 0.0F)
+                    continue;
 
-            if (idx >= MAX_TABLE_LENGTH)
-            {
-                break;
+                if (foe->GetIsHexed())
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0));
+                    pushed = true;
+                }
+                const float distance = GW::GetDistance(player.pos, foe->pos);
+                ImGui::TableNextColumn();
+                ImGui::Text("%3.0f", foe->hp * 100.0F);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4.0f", distance);
+                if (pushed)
+                {
+                    ImGui::PopStyleColor();
+                }
+                const auto label = fmt::format("Target##{}", idx);
+                ImGui::TableNextColumn();
+                if (ImGui::Button(label.data()))
+                {
+                    player.ChangeTarget(foe->agent_id);
+                }
+
+                ++idx;
+
+                if (idx >= MAX_TABLE_LENGTH)
+                {
+                    break;
+                }
             }
         }
+        ImGui::EndTable();
     }
-
     ImGui::End();
 }
 

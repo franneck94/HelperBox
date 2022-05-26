@@ -25,7 +25,7 @@ public:
 
     const char *SettingsName() const override
     {
-        return "HelperBox Settings";
+        return "HelperBox";
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;

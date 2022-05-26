@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -17,10 +18,21 @@
 
 #include <Base/HelperBoxWindow.h>
 
+class AutoTargetAction : public ActionABC
+{
+public:
+    AutoTargetAction(Player *p) : ActionABC(p, "AutoTarget")
+    {
+    }
+
+    RoutineState Routine() override;
+    void Update() override;
+};
+
 class TerraWindow : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player({}), filtered_foes({}){};
+    TerraWindow() : player({}), filtered_foes({}), auto_target(&player){};
     ~TerraWindow(){};
 
     static TerraWindow &Instance()
@@ -58,4 +70,7 @@ private:
 
     Player player;
     std::vector<GW::AgentLiving *> filtered_foes;
+    std::map<uint32_t, float> last_casted_times_ms;
+
+    AutoTargetAction auto_target;
 };

@@ -41,7 +41,17 @@ static const auto DEFAULT_WINDOW_SIZE = ImVec2(100.0F, 100.0F);
 static constexpr auto HEALING_SPRING_U16 = static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring);
 static constexpr auto MIN_IDLE_TIME_S = 0.1F;
 static constexpr auto MAX_TABLE_LENGTH = 6U;
+static auto auto_target_active = false;
 } // namespace
+
+void AutoTargetAction::Update()
+{
+}
+
+RoutineState AutoTargetAction::Routine()
+{
+    return RoutineState::NONE;
+}
 
 void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 {
@@ -60,54 +70,85 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (ImGui::Begin("TerraWindow", nullptr, GetWinFlags()))
     {
-        uint32_t idx = 0;
-        for (const auto &foe : filtered_foes)
+        const auto width = ImGui::GetWindowWidth();
+        auto_target.Draw(ImVec2(width, 35.0F));
+
+        if (ImGui::BeginTable("BehemothTable", 4))
         {
-            bool pushed = false;
-            if (foe->GetIsDead())
-                continue;
+            ImGui::TableSetupColumn("HP (%%)", ImGuiTableColumnFlags_WidthFixed, width * 0.2);
+            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.15);
+            ImGui::TableSetupColumn("Cast. (s)", ImGuiTableColumnFlags_WidthFixed, width * 0.25);
+            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.4);
 
-            if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
-            {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
-                pushed = true;
-            }
-            const float distance = GW::GetDistance(player.pos, foe->pos);
-            ImGui::Text("B: %3.0f, %4.0f", foe->hp * 100.0F, distance);
-            if (pushed)
-            {
-                ImGui::PopStyleColor();
-            }
+            ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+            ImGui::TableNextColumn();
+            ImGui::Text("HP (%%)");
+            ImGui::TableNextColumn();
+            ImGui::Text("Dist.");
+            ImGui::TableNextColumn();
+            ImGui::Text("Cast. (s)");
+            ImGui::TableNextColumn();
+            ImGui::Text("Target");
 
-            ImGui::SameLine();
-            const auto label = fmt::format("Target##{}", idx);
-            if (ImGui::Button(label.data()))
+            uint32_t idx = 0;
+            for (const auto &foe : filtered_foes)
             {
-                player.ChangeTarget(foe->agent_id);
-            }
+                ImGui::TableNextRow();
 
-            ++idx;
+                bool pushed = false;
+                if (foe->GetIsDead())
+                    continue;
 
-            if (idx >= MAX_TABLE_LENGTH)
-            {
-                break;
+                if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
+                    pushed = true;
+                }
+                const float distance = GW::GetDistance(player.pos, foe->pos);
+                ImGui::TableNextColumn();
+                ImGui::Text("%3.0f", foe->hp * 100.0F);
+                ImGui::TableNextColumn();
+                ImGui::Text("%4.0f", distance);
+                ImGui::TableNextColumn();
+                ImGui::Text("%2.0f", last_casted_times_ms[foe->agent_id]);
+                if (pushed)
+                {
+                    ImGui::PopStyleColor();
+                }
+
+                ImGui::TableNextColumn();
+                const auto label = fmt::format("Target##{}", idx);
+                if (ImGui::Button(label.data()))
+                {
+                    player.ChangeTarget(foe->agent_id);
+                }
+
+                ++idx;
+
+                if (idx >= MAX_TABLE_LENGTH)
+                {
+                    break;
+                }
             }
+            ImGui::EndTable();
         }
+        ImGui::End();
     }
-
-    ImGui::End();
 }
 
 void TerraWindow::Update(float delta)
 {
     static float idle_time_ms = 0;
 
+    filtered_foes.clear();
+    last_casted_times_ms.clear();
+
     if (!player.ValidateData())
         return;
 
     player.Update();
+    auto_target.Update();
 
-    filtered_foes.clear();
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
                  agents_array,
@@ -115,6 +156,11 @@ void TerraWindow::Update(float delta)
                  GW::Constants::ModelID::UW::ObsidianBehemoth,
                  GW::Constants::Range::Spellcast);
     SortByDistance(player, filtered_foes);
+
+    for (const auto &foe : filtered_foes)
+    {
+        last_casted_times_ms[foe->agent_id] = 0.0F;
+    }
 
     if (!player.living->GetIsMoving())
     {
@@ -124,6 +170,9 @@ void TerraWindow::Update(float delta)
     {
         idle_time_ms = 0.0F;
     }
+
+    if (!auto_target_active)
+        return;
 
     if (filtered_foes.size() == 0)
         return;

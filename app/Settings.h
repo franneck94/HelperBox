@@ -2,7 +2,6 @@
 
 struct Settings
 {
-    bool localdll = true;
     uint32_t pid;
 };
 
