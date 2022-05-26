@@ -183,11 +183,6 @@ void TerraWindow::Update(float delta)
                  GW::Constants::Range::Spellcast);
     SortByDistance(player, filtered_foes);
 
-    // for (const auto &foe : filtered_foes)
-    // {
-    //     last_casted_times_ms[foe->agent_id] = 0;
-    // }
-
     if (!auto_target_active)
         return;
 

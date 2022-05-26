@@ -83,6 +83,8 @@ public:
     SkillData prot = SkillData{GW::Constants::SkillID::Protective_Bond, static_cast<uint32_t>(-1)};
     SkillData life = SkillData{GW::Constants::SkillID::Life_Bond, static_cast<uint32_t>(-1)};
     SkillData balth = SkillData{GW::Constants::SkillID::Balthazars_Spirit, static_cast<uint32_t>(-1)};
+    SkillData gdw = SkillData{GW::Constants::SkillID::Great_Dwarf_Weapon, static_cast<uint32_t>(-1)};
+    SkillData wisdom = SkillData{GW::Constants::SkillID::Ebon_Battle_Standard_of_Wisdom, static_cast<uint32_t>(-1)};
 
 public:
     virtual void LoadInternal(const GW::SkillbarSkill *skillbar_skills) override
@@ -120,6 +122,14 @@ public:
             {
                 balth.idx = idx;
             }
+            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(gdw.id))
+            {
+                gdw.idx = idx;
+            }
+            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(wisdom.id))
+            {
+                wisdom.idx = idx;
+            }
         }
     }
 
@@ -142,6 +152,10 @@ public:
             life.Update(skillbar_skills);
         if (balth.idx != static_cast<uint32_t>(-1))
             balth.Update(skillbar_skills);
+        if (gdw.idx != static_cast<uint32_t>(-1))
+            gdw.Update(skillbar_skills);
+        if (wisdom.idx != static_cast<uint32_t>(-1))
+            wisdom.Update(skillbar_skills);
     }
 };
 

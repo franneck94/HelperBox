@@ -119,12 +119,8 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-    const float moving_flag = static_cast<float>(player->living->GetIsMoving());
-    const float moving_offset_hp = moving_flag * 0.10F;
-    const float moving_offset_energy = moving_flag * 0.20F;
-
-    const bool low_hp = player->hp_perc < (0.90F - moving_offset_hp);
-    const bool low_energy = player->energy_perc < (0.90F - moving_offset_energy);
+    const bool low_hp = player->hp_perc < 0.90F;
+    const bool low_energy = player->energy_perc < 0.90F;
 
     const bool sb_needed = low_hp || !found_sb;
     const bool sb_avail = skillbar->sb.CanBeCasted(player->energy);
@@ -148,6 +144,7 @@ RoutineState Pumping::Routine()
 void Pumping::Update()
 {
     static auto paused = false;
+    static auto paused_by_reaper = false;
 
     if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
     {
@@ -158,11 +155,14 @@ void Pumping::Update()
     {
         const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-        if (player->target->agent_id == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers) &&
-            dist < GW::Constants::Range::Adjacent)
+        const auto living_target = player->target->GetAsAgentLiving();
+
+        if (living_target->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers) &&
+            dist < GW::Constants::Range::Earshot / 2.0F)
         {
             action_state = ActionState::ON_HOLD;
             paused = true;
+            paused_by_reaper = true;
         }
     }
 
@@ -176,10 +176,12 @@ void Pumping::Update()
         paused = false;
         action_state = ActionState::ACTIVE;
     }
-    else if (paused && (!player->target ||
-                        player->target->agent_id != static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers)))
+    else if (paused && paused_by_reaper &&
+             (!player->target ||
+              player->target->agent_id != static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers)))
     {
         paused = false;
+        paused_by_reaper = false;
         action_state = ActionState::ACTIVE;
     }
 
