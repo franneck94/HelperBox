@@ -46,6 +46,21 @@ static auto auto_target_active = false;
 
 void AutoTargetAction::Update()
 {
+    if (!IsExplorable())
+    {
+        auto_target_active = false;
+        action_state = ActionState::INACTIVE;
+    }
+
+    if (action_state == ActionState::ACTIVE)
+    {
+        auto_target_active = true;
+    }
+    else
+    {
+        auto_target_active = false;
+        action_state = ActionState::INACTIVE;
+    }
 }
 
 RoutineState AutoTargetAction::Routine()
@@ -75,18 +90,18 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (ImGui::BeginTable("BehemothTable", 4))
         {
-            ImGui::TableSetupColumn("HP (%%)", ImGuiTableColumnFlags_WidthFixed, width * 0.2);
-            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.15);
-            ImGui::TableSetupColumn("Cast. (s)", ImGuiTableColumnFlags_WidthFixed, width * 0.25);
+            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.15);
+            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.2);
+            ImGui::TableSetupColumn("Cast.", ImGuiTableColumnFlags_WidthFixed, width * 0.2);
             ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.4);
 
             ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
             ImGui::TableNextColumn();
-            ImGui::Text("HP (%%)");
+            ImGui::Text("HP");
             ImGui::TableNextColumn();
             ImGui::Text("Dist.");
             ImGui::TableNextColumn();
-            ImGui::Text("Cast. (s)");
+            ImGui::Text("Cast.");
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
@@ -103,14 +118,25 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
                     pushed = true;
+
+                    last_casted_times_ms[foe->agent_id] = clock();
                 }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
                 ImGui::TableNextColumn();
-                ImGui::Text("%3.0f", foe->hp * 100.0F);
+                ImGui::Text("%3.0f%%", foe->hp * 100.0F);
                 ImGui::TableNextColumn();
                 ImGui::Text("%4.0f", distance);
                 ImGui::TableNextColumn();
-                ImGui::Text("%2.0f", last_casted_times_ms[foe->agent_id]);
+                const auto timer_diff_ms = TIMER_DIFF(last_casted_times_ms[foe->agent_id]);
+                const auto timer_diff_s = timer_diff_ms / 1000;
+                if (timer_diff_s > 40)
+                {
+                    ImGui::Text(" - ");
+                }
+                else
+                {
+                    ImGui::Text("%2ds", timer_diff_s);
+                }
                 if (pushed)
                 {
                     ImGui::PopStyleColor();
@@ -138,10 +164,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
 void TerraWindow::Update(float delta)
 {
-    static float idle_time_ms = 0;
-
     filtered_foes.clear();
-    last_casted_times_ms.clear();
+
+    if (IsLoading())
+        last_casted_times_ms.clear();
 
     if (!player.ValidateData())
         return;
@@ -157,42 +183,24 @@ void TerraWindow::Update(float delta)
                  GW::Constants::Range::Spellcast);
     SortByDistance(player, filtered_foes);
 
-    for (const auto &foe : filtered_foes)
-    {
-        last_casted_times_ms[foe->agent_id] = 0.0F;
-    }
-
-    if (!player.living->GetIsMoving())
-    {
-        idle_time_ms += delta;
-    }
-    else
-    {
-        idle_time_ms = 0.0F;
-    }
+    // for (const auto &foe : filtered_foes)
+    // {
+    //     last_casted_times_ms[foe->agent_id] = 0;
+    // }
 
     if (!auto_target_active)
         return;
 
-    if (filtered_foes.size() == 0)
-        return;
-
-    const auto nearest_behemoth = filtered_foes[0];
-    const auto dist_nearest = GW::GetDistance(player.pos, nearest_behemoth->pos);
-
-    if (idle_time_ms > MIN_IDLE_TIME_S && !player.living->GetIsMoving() && dist_nearest < GW::Constants::Range::Area)
+    for (const auto &foe : filtered_foes)
     {
-        for (const auto &foe : filtered_foes)
+        if (!foe)
+            continue;
+
+        const auto dist = GW::GetDistance(player.pos, foe->pos);
+
+        if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
         {
-            if (!foe)
-                continue;
-
-            const auto dist = GW::GetDistance(player.pos, foe->pos);
-
-            if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
-            {
-                player.ChangeTarget(foe->agent_id);
-            }
+            player.ChangeTarget(foe->agent_id);
         }
     }
 }

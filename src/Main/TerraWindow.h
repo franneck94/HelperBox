@@ -32,7 +32,7 @@ public:
 class TerraWindow : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player({}), filtered_foes({}), auto_target(&player){};
+    TerraWindow() : player({}), filtered_foes({}), auto_target(&player), last_casted_times_ms({}){};
     ~TerraWindow(){};
 
     static TerraWindow &Instance()
@@ -70,7 +70,7 @@ private:
 
     Player player;
     std::vector<GW::AgentLiving *> filtered_foes;
-    std::map<uint32_t, float> last_casted_times_ms;
+    std::map<uint32_t, clock_t> last_casted_times_ms;
 
     AutoTargetAction auto_target;
 };
