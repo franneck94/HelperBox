@@ -154,12 +154,30 @@ void Pumping::Update()
         action_state = ActionState::ON_HOLD;
         paused = true;
     }
-    else if (action_state == ActionState::ACTIVE)
+    else if (player->target && action_state == ActionState::ACTIVE)
+    {
+        const auto dist = GW::GetDistance(player->pos, player->target->pos);
+
+        if (player->target->agent_id == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers) &&
+            dist < GW::Constants::Range::Adjacent)
+        {
+            action_state = ActionState::ON_HOLD;
+            paused = true;
+        }
+    }
+
+    if (action_state == ActionState::ACTIVE)
     {
         (void)(Routine());
     }
 
     if (paused && !player->living->GetIsMoving())
+    {
+        paused = false;
+        action_state = ActionState::ACTIVE;
+    }
+    else if (paused && (!player->target ||
+                        player->target->agent_id != static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers)))
     {
         paused = false;
         action_state = ActionState::ACTIVE;
