@@ -48,6 +48,9 @@ static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
 
 void ActionABC::Draw(const ImVec2 button_size)
 {
+    if (!IsExplorable())
+        action_state = ActionState::INACTIVE;
+
     const auto color = COLOR_MAPPING[static_cast<uint32_t>(action_state)];
     DrawButton(action_state, color, text, button_size);
 }
@@ -176,7 +179,7 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-    const auto is_at_dhuum = true; // IsAtDhuumFight(player);
+    const auto is_at_dhuum = IsAtDhuumFight(player);
 
     if (is_at_dhuum)
     {

@@ -504,26 +504,38 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
 
 bool IsAtDhuumFight(const Player *player)
 {
-    const auto dhuum_center_dist = GW::GetDistance(player->pos, GW::GamePos{});
-
-    if (dhuum_center_dist < GW::Constants::Range::Spellcast)
-    {
-        auto agents_array = GW::Agents::GetAgentArray();
-
-        const auto it = std::find_if(agents_array.begin(), agents_array.end(), [](const auto agent) {
-            return agent->agent_id == GW::Constants::ModelID::UW::Dhuum;
-        });
-
-        if (it != agents_array.end())
-        {
-            const auto dhuum_living = (*it)->GetAsAgentLiving();
-
-            if (dhuum_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
-            {
-                return true;
-            }
-        }
-
+    if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return false;
+
+    const auto dhuum_center_pos = GW::GamePos{-16105.50F, 17284.84F, player->pos.zplane};
+    const auto dhuum_center_dist = GW::GetDistance(player->pos, dhuum_center_pos);
+
+    if (dhuum_center_dist > GW::Constants::Range::Spellcast)
+        return false;
+
+    auto agents_array = GW::Agents::GetAgentArray();
+    if (agents_array.size() < 2)
+        return false;
+
+    const auto it = std::find_if(agents_array.begin(), agents_array.end(), [](const auto agent) {
+        return agent->agent_id == GW::Constants::ModelID::UW::Dhuum;
+    });
+
+    if (it != agents_array.end())
+    {
+        const auto dhuum_living = (*it)->GetAsAgentLiving();
+        if (!dhuum_living)
+            return false;
+
+        if (dhuum_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
+
+    return false;
 }
