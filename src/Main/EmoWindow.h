@@ -9,7 +9,10 @@
 #include <string_view>
 
 #include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Managers/StoCMgr.h>
 #include <GWCA/Packets/Opcodes.h>
+#include <GWCA/Packets/StoC.h>
+#include <GWCA/Utilities/Hook.h>
 
 #include <Timer.h>
 
@@ -25,10 +28,32 @@ class Pumping : public EmoActionABC
 public:
     Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
     {
+        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
+            &Summon_AgentAdd_Entry,
+            [&](GW::HookStatus *, GW::Packet::StoC::AgentAdd *pak) -> void {
+                if (pak->type != 1)
+                    return;
+
+                if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+                    return;
+
+                uint32_t player_number = (pak->agent_type ^ 0x20000000);
+
+                if (player_number != 514) // Turtle id
+                    return;
+
+                Log::Info("Summoned turtle");
+                found_turtle = true;
+                turtle_id = pak->agent_id;
+            });
     }
 
     RoutineState Routine() override;
     void Update() override;
+
+    GW::HookEntry Summon_AgentAdd_Entry;
+    bool found_turtle = false;
+    uint32_t turtle_id = 0;
 };
 
 class TankBonding : public EmoActionABC

@@ -119,6 +119,44 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
+    if (found_turtle && turtle_id && GW::Agents::GetAgentByID(turtle_id))
+    {
+        const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
+
+        const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
+
+        if (dist < GW::Constants::Range::Spellcast)
+        {
+            const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
+            const bool found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
+
+            if (!found_bond)
+            {
+                (void)SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
+                return RoutineState::ACTIVE;
+            }
+
+            if (!found_life)
+            {
+                (void)SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
+                return RoutineState::ACTIVE;
+            }
+
+            const auto turtle_living = turtle_agent->GetAsAgentLiving();
+
+            if (turtle_living && turtle_living->hp < 0.7F)
+            {
+                (void)SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
+                return RoutineState::ACTIVE;
+            }
+            else if (turtle_living && turtle_living->hp < 0.9F)
+            {
+                (void)SafeUseSkill(skillbar->sb.idx, turtle_agent->agent_id);
+                return RoutineState::ACTIVE;
+            }
+        }
+    }
+
     const bool low_hp = player->hp_perc < 0.90F;
     const bool low_energy = player->energy_perc < 0.90F;
 
@@ -376,6 +414,10 @@ RoutineState FusePull::Routine()
 {
     ResetState(routine_state);
 
+    constexpr auto cancel_step1 = 0;
+    constexpr auto cancel_step2 = 1;
+    constexpr auto fuse_step = 2;
+
     if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
     {
         ResetData();
@@ -391,6 +433,24 @@ RoutineState FusePull::Routine()
         return RoutineState::FINISHED;
     }
 
+    const auto timer_diff = TIMER_DIFF(timer);
+
+    if ((routine_state == RoutineState::NONE) && (step == cancel_step1))
+    {
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        ++step;
+
+        return RoutineState::ACTIVE;
+    }
+    if (step == cancel_step1 + 1 && timer_diff > 300)
+    {
+        timer = TIMER_INIT();
+    }
+    else if (step == cancel_step1 + 1 && timer_diff < 300)
+    {
+        return RoutineState::ACTIVE;
+    }
+
     const auto me_pos = player->pos;
     const auto target_pos = player->target->pos;
 
@@ -398,8 +458,6 @@ RoutineState FusePull::Routine()
 
     if ((routine_state == RoutineState::NONE) && (d < MIN_FUSE_PULL_RANGE || d > MAX_FUSE_PULL_RANGE))
     {
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
-
         requested_pos = GW::GamePos{};
 
         const auto m_x = me_pos.x;
@@ -423,25 +481,18 @@ RoutineState FusePull::Routine()
         return RoutineState::ACTIVE;
     }
 
-    constexpr auto cancel_step = 0;
-    constexpr auto fuse_step = 1;
-
-    constexpr auto time_wait_ms = 600;
-
-    const auto timer_diff = TIMER_DIFF(timer);
-
-    if (step == cancel_step)
+    if (step == cancel_step2)
     {
         GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         ++step;
 
         return RoutineState::ACTIVE;
     }
-    if (step == cancel_step + 1 && timer_diff > time_wait_ms)
+    if (step == cancel_step2 + 1 && timer_diff > 300)
     {
         timer = TIMER_INIT();
     }
-    else if (step == cancel_step + 1 && timer_diff < time_wait_ms)
+    else if (step == cancel_step2 + 1 && timer_diff < 300)
     {
         return RoutineState::ACTIVE;
     }
@@ -458,14 +509,6 @@ RoutineState FusePull::Routine()
             (void)SafeUseSkill(skillbar->fuse.idx, player->target->agent_id);
         }
         ++step;
-        return RoutineState::ACTIVE;
-    }
-    if (step == fuse_step + 1 && timer_diff > time_wait_ms + 200)
-    {
-        timer = TIMER_INIT();
-    }
-    else if (step == fuse_step + 1 && timer_diff < time_wait_ms + 200)
-    {
         return RoutineState::ACTIVE;
     }
 

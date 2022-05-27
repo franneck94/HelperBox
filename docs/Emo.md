@@ -12,15 +12,17 @@ The window will only be rendered if you are on an E/MO.
 
 - Fuse Pull:
   - Steps
-    1. Walk to the target at distance of 1220
-    2. Cancel Animation
-    3. Fuse
+    1. Cancel Animation
+    2. Walk to the target at distance of 1220
+    3. Cancel Animation
+    4. Fuse
 
 - Pumping:
-  - On-hold while walking (yellow colored)
+  - On-hold while walking or talking to reaper (yellow colored)
   - Cast Balth and Bond on self, if not present
   - Whenever Ether is castable, cast it
   - Whenever SB or Burning is not up, cast it
   - If HP or Energy is low, cast sb or burning
-    - While moving below 70%
-    - While standing below 90%
+  - If turtle is nearby spawned, cast bond and life on it
+  - If turtle hp <70% fuse
+  - Else If turtle hp <90% sb
