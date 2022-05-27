@@ -52,3 +52,5 @@ void FilterAgents(const Player &player,
                   const float max_distance = 0.0F);
 
 void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
+
+bool IsAtDhuumFight(const Player *player);

@@ -176,6 +176,65 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
+    const auto is_at_dhuum = true; // IsAtDhuumFight(player);
+
+    if (is_at_dhuum)
+    {
+        static bool printed_first = false;
+
+        if (!printed_first)
+        {
+            Log::Info("Dhuum fight started!");
+
+            printed_first = true;
+        }
+
+        if (skillbar->wisdom.SkillFound())
+        {
+            const bool wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
+            (void)SafeUseSkill(skillbar->wisdom.idx);
+            return RoutineState::ACTIVE;
+        }
+
+        std::vector<PlayerMapping> party_members;
+        bool success = GetPartyMembers(party_members);
+        static size_t last_idx = 0;
+
+        if (success && skillbar->gdw.SkillFound())
+        {
+            if (last_idx >= party_members.size())
+            {
+                last_idx = 0;
+            }
+
+            const auto id = party_members[last_idx].id;
+
+            if (id == player->id)
+            {
+                ++last_idx;
+                return RoutineState::ACTIVE;
+            }
+
+            const auto agent = GW::Agents::GetAgentByID(id);
+            if (!agent)
+            {
+                ++last_idx;
+                return RoutineState::ACTIVE;
+            }
+
+            const auto dist = GW::GetDistance(player->pos, agent->pos);
+            if (dist > GW::Constants::Range::Spellcast)
+            {
+                ++last_idx;
+                return RoutineState::ACTIVE;
+            }
+
+            (void)SafeUseSkill(skillbar->gdw.idx, id);
+            ++last_idx;
+            return RoutineState::ACTIVE;
+        }
+    }
+
     return RoutineState::FINISHED;
 }
 

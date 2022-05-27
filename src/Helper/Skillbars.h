@@ -25,16 +25,16 @@ public:
     void Update(const GW::SkillbarSkill *const skillbar_skills)
     {
         recharge = skillbar_skills[idx].GetRecharge();
-
-        if (recharge >= UINT16_MAX)
-        {
-            recharge = 0U;
-        }
     }
 
     bool CanBeCasted(const uint32_t current_energy) const
     {
         return (current_energy > energy_cost && recharge == 0);
+    }
+
+    bool SkillFound() const
+    {
+        return idx != static_cast<uint32_t>(-1);
     }
 };
 
@@ -138,23 +138,23 @@ public:
         if (!skillbar_skills)
             return;
 
-        if (burning.idx != static_cast<uint32_t>(-1))
+        if (burning.SkillFound())
             burning.Update(skillbar_skills);
-        if (sb.idx != static_cast<uint32_t>(-1))
+        if (sb.SkillFound())
             sb.Update(skillbar_skills);
-        if (fuse.idx != static_cast<uint32_t>(-1))
+        if (fuse.SkillFound())
             fuse.Update(skillbar_skills);
-        if (ether.idx != static_cast<uint32_t>(-1))
+        if (ether.SkillFound())
             ether.Update(skillbar_skills);
-        if (prot.idx != static_cast<uint32_t>(-1))
+        if (prot.SkillFound())
             prot.Update(skillbar_skills);
-        if (life.idx != static_cast<uint32_t>(-1))
+        if (life.SkillFound())
             life.Update(skillbar_skills);
-        if (balth.idx != static_cast<uint32_t>(-1))
+        if (balth.SkillFound())
             balth.Update(skillbar_skills);
-        if (gdw.idx != static_cast<uint32_t>(-1))
+        if (gdw.SkillFound())
             gdw.Update(skillbar_skills);
-        if (wisdom.idx != static_cast<uint32_t>(-1))
+        if (wisdom.SkillFound())
             wisdom.Update(skillbar_skills);
     }
 };
@@ -189,9 +189,9 @@ public:
         if (!skillbar_skills)
             return;
 
-        if (demise.idx != static_cast<uint32_t>(-1))
+        if (demise.SkillFound())
             demise.Update(skillbar_skills);
-        if (worry.idx != static_cast<uint32_t>(-1))
+        if (worry.SkillFound())
             worry.Update(skillbar_skills);
     }
 };

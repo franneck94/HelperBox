@@ -501,3 +501,29 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
         return sqrd1 < sqrd2;
     });
 }
+
+bool IsAtDhuumFight(const Player *player)
+{
+    const auto dhuum_center_dist = GW::GetDistance(player->pos, GW::GamePos{});
+
+    if (dhuum_center_dist < GW::Constants::Range::Spellcast)
+    {
+        auto agents_array = GW::Agents::GetAgentArray();
+
+        const auto it = std::find_if(agents_array.begin(), agents_array.end(), [](const auto agent) {
+            return agent->agent_id == GW::Constants::ModelID::UW::Dhuum;
+        });
+
+        if (it != agents_array.end())
+        {
+            const auto dhuum_living = (*it)->GetAsAgentLiving();
+
+            if (dhuum_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
