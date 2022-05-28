@@ -48,6 +48,24 @@ bool IsMapReady()
     return (!IsLoading() && !GW::Map::GetIsObserving());
 }
 
+static bool _IsEndGameEntryOutpost()
+{
+    return (GW::Map::GetMapID() != GW::Constants::MapID::Embark_Beach ||
+            GW::Map::GetMapID() != GW::Constants::MapID::Temple_of_the_Ages ||
+            GW::Map::GetMapID() != GW::Constants::MapID::Chantry_of_Secrets_outpost ||
+            GW::Map::GetMapID() != GW::Constants::MapID::Zin_Ku_Corridor_outpost);
+}
+
+bool IsUwEntryOutpost()
+{
+    return _IsEndGameEntryOutpost();
+}
+
+bool IsFowEntryOutpost()
+{
+    return _IsEndGameEntryOutpost();
+}
+
 GW::EffectArray *GetEffects(const uint32_t agent_id)
 {
     GW::AgentEffectsArray agent_effects = GW::Effects::GetPartyEffectArray();
@@ -305,6 +323,28 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
     return false;
 }
 
+bool PartyPlayerHasEffect(const GW::Constants::SkillID effect_skill_id, const uint32_t party_idx)
+{
+    const GW::AgentEffectsArray &effects = GW::Effects::GetPartyEffectArray();
+
+    if (!effects.valid())
+        return false;
+
+    if (effects.size() < party_idx)
+        return false;
+
+    const auto agent_effects = effects[party_idx].effects;
+
+    if (agent_effects.size() == 0)
+        return false;
+
+    for (const auto &eff : agent_effects)
+    {
+        if (eff.skill_id == static_cast<uint32_t>(effect_skill_id))
+            return true;
+    }
+}
+
 bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
 {
     if (!GW::PartyMgr::GetIsPartyLoaded())
@@ -502,7 +542,7 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
     });
 }
 
-bool IsAtDhuumFight(const Player *player)
+bool IsInDhuumRoom(const Player *player)
 {
     if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return false;
@@ -513,6 +553,11 @@ bool IsAtDhuumFight(const Player *player)
     if (dhuum_center_dist > GW::Constants::Range::Spellcast)
         return false;
 
+    return true;
+}
+
+bool IsInDhuumFight(uint32_t *dhuum_id)
+{
     auto agents_array = GW::Agents::GetAgentArray();
     if (agents_array.size() < 2)
         return false;
@@ -523,6 +568,11 @@ bool IsAtDhuumFight(const Player *player)
 
     if (it != agents_array.end())
     {
+        if (!dhuum_id)
+        {
+            *dhuum_id = (*it)->agent_id;
+        }
+
         const auto dhuum_living = (*it)->GetAsAgentLiving();
         if (!dhuum_living)
             return false;
