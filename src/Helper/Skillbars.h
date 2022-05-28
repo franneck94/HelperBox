@@ -85,6 +85,7 @@ public:
     SkillData balth = SkillData{GW::Constants::SkillID::Balthazars_Spirit, static_cast<uint32_t>(-1)};
     SkillData gdw = SkillData{GW::Constants::SkillID::Great_Dwarf_Weapon, static_cast<uint32_t>(-1)};
     SkillData wisdom = SkillData{GW::Constants::SkillID::Ebon_Battle_Standard_of_Wisdom, static_cast<uint32_t>(-1)};
+    SkillData pi = SkillData{GW::Constants::SkillID::Pain_Inverter, static_cast<uint32_t>(-1)};
 
 public:
     virtual void LoadInternal(const GW::SkillbarSkill *skillbar_skills) override
@@ -94,42 +95,26 @@ public:
 
         for (uint32_t idx = 0; idx < 8; ++idx)
         {
-            if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(burning.id))
-            {
+            if (skillbar_skills[idx].skill_id == burning.id)
                 burning.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(sb.id))
-            {
+            else if (skillbar_skills[idx].skill_id == sb.id)
                 sb.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(fuse.id))
-            {
+            else if (skillbar_skills[idx].skill_id == fuse.id)
                 fuse.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(ether.id))
-            {
+            else if (skillbar_skills[idx].skill_id == ether.id)
                 ether.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(prot.id))
-            {
+            else if (skillbar_skills[idx].skill_id == prot.id)
                 prot.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(life.id))
-            {
+            else if (skillbar_skills[idx].skill_id == life.id)
                 life.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(balth.id))
-            {
+            else if (skillbar_skills[idx].skill_id == balth.id)
                 balth.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(gdw.id))
-            {
+            else if (skillbar_skills[idx].skill_id == gdw.id)
                 gdw.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(wisdom.id))
-            {
+            else if (skillbar_skills[idx].skill_id == wisdom.id)
                 wisdom.idx = idx;
-            }
+            else if (skillbar_skills[idx].skill_id == pi.id)
+                pi.idx = idx;
         }
     }
 
@@ -156,6 +141,8 @@ public:
             gdw.Update(skillbar_skills);
         if (wisdom.SkillFound())
             wisdom.Update(skillbar_skills);
+        if (pi.SkillFound())
+            pi.Update(skillbar_skills);
     }
 };
 
@@ -164,6 +151,7 @@ class MesmerSkillbar : public SkillbarABC
 public:
     SkillData demise = SkillData{GW::Constants::SkillID::Wastrels_Demise, static_cast<uint32_t>(-1)};
     SkillData worry = SkillData{GW::Constants::SkillID::Wastrels_Worry, static_cast<uint32_t>(-1)};
+    SkillData pi = SkillData{GW::Constants::SkillID::Pain_Inverter, static_cast<uint32_t>(-1)};
 
 public:
     virtual void LoadInternal(const GW::SkillbarSkill *skillbar_skills) override
@@ -173,14 +161,12 @@ public:
 
         for (uint32_t idx = 0; idx < 8; ++idx)
         {
-            if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(demise.id))
-            {
+            if (skillbar_skills[idx].skill_id == demise.id)
                 demise.idx = idx;
-            }
-            else if (skillbar_skills[idx].skill_id == static_cast<uint32_t>(worry.id))
-            {
+            else if (skillbar_skills[idx].skill_id == worry.id)
                 worry.idx = idx;
-            }
+            else if (skillbar_skills[idx].skill_id == pi.id)
+                pi.idx = idx;
         }
     }
 
@@ -193,5 +179,7 @@ public:
             demise.Update(skillbar_skills);
         if (worry.SkillFound())
             worry.Update(skillbar_skills);
+        if (pi.SkillFound())
+            pi.Update(skillbar_skills);
     }
 };

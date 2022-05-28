@@ -122,6 +122,34 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
+    const bool low_hp = player->hp_perc < 0.90F;
+    const bool low_energy = player->energy_perc < 0.90F;
+
+    const bool sb_needed = low_hp || !found_sb;
+    const bool sb_avail = skillbar->sb.CanBeCasted(player->energy);
+    if (found_ether && sb_needed && sb_avail)
+    {
+        (void)SafeUseSkill(skillbar->sb.idx, player->id);
+        return RoutineState::ACTIVE;
+    }
+
+    const bool need_burning = low_hp || low_energy || !found_burning;
+    const bool burning_avail = skillbar->burning.CanBeCasted(player->energy);
+    if (found_ether && need_burning && burning_avail)
+    {
+        (void)SafeUseSkill(skillbar->burning.idx, player->id);
+        return RoutineState::ACTIVE;
+    }
+
+#ifdef _DEBUG
+    const auto is_in_dhuum_room = true;
+#else
+    const auto is_in_dhuum_room = IsInDhuumRoom(player);
+#endif
+
+    if (!is_in_dhuum_room)
+        return RoutineState::FINISHED;
+
     if (found_turtle && turtle_id && GW::Agents::GetAgentByID(turtle_id))
     {
         const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
@@ -130,8 +158,8 @@ RoutineState Pumping::Routine()
 
         if (dist < GW::Constants::Range::Spellcast)
         {
-            const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
-            const bool found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
+            const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
+            const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
 
             if (!found_bond)
             {
@@ -160,80 +188,68 @@ RoutineState Pumping::Routine()
         }
     }
 
-    const bool low_hp = player->hp_perc < 0.90F;
-    const bool low_energy = player->energy_perc < 0.90F;
+    uint32_t dhuum_id = 0;
+#ifdef _DEBUG
+    const auto is_in_dhuum_fight = true;
+#else
+    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
+#endif
 
-    const bool sb_needed = low_hp || !found_sb;
-    const bool sb_avail = skillbar->sb.CanBeCasted(player->energy);
-    if (found_ether && sb_needed && sb_avail)
+    if (!is_in_dhuum_fight)
+        return RoutineState::FINISHED;
+
+    if (skillbar->pi.SkillFound())
     {
-        (void)SafeUseSkill(skillbar->sb.idx, player->id);
-        return RoutineState::ACTIVE;
-    }
+        const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
 
-    const bool need_burning = low_hp || low_energy || !found_burning;
-    const bool burning_avail = skillbar->burning.CanBeCasted(player->energy);
-    if (found_ether && need_burning && burning_avail)
-    {
-        (void)SafeUseSkill(skillbar->burning.idx, player->id);
-        return RoutineState::ACTIVE;
-    }
-
-    const auto is_at_dhuum = IsAtDhuumFight(player);
-
-    if (is_at_dhuum)
-    {
-        static bool printed_first = false;
-
-        if (!printed_first)
+        if (dhuum_agent)
         {
-            Log::Info("Dhuum fight started!");
+            const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
 
-            printed_first = true;
-        }
-
-        if (skillbar->wisdom.SkillFound())
-        {
-            const bool wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
-            (void)SafeUseSkill(skillbar->wisdom.idx);
-            return RoutineState::ACTIVE;
-        }
-
-        std::vector<PlayerMapping> party_members;
-        bool success = GetPartyMembers(party_members);
-        static size_t last_idx = 0;
-
-        if (success && skillbar->gdw.SkillFound())
-        {
-            if (last_idx >= party_members.size())
+            if (dhuum_living && dhuum_living->GetIsCasting() &&
+                dhuum_living->skill == static_cast<uint32_t>(GW::Constants::SkillID::Dhuums_Rest))
             {
-                last_idx = 0;
+                const bool pi_avail = skillbar->wisdom.CanBeCasted(player->energy);
+                if (pi_avail)
+                {
+                    (void)SafeUseSkill(skillbar->pi.idx, dhuum_id);
+                    return RoutineState::ACTIVE;
+                }
             }
+        }
+    }
 
-            const auto id = party_members[last_idx].id;
+    if (skillbar->wisdom.SkillFound())
+    {
+        const bool wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
+        (void)SafeUseSkill(skillbar->wisdom.idx);
+        return RoutineState::ACTIVE;
+    }
+
+    std::vector<PlayerMapping> party_members;
+    bool success = GetPartyMembers(party_members);
+
+    if (success && skillbar->gdw.SkillFound())
+    {
+        for (size_t idx = 0; idx < party_members.size(); idx++)
+        {
+            const auto id = party_members[idx].id;
 
             if (id == player->id)
-            {
-                ++last_idx;
-                return RoutineState::ACTIVE;
-            }
+                continue;
 
             const auto agent = GW::Agents::GetAgentByID(id);
             if (!agent)
-            {
-                ++last_idx;
-                return RoutineState::ACTIVE;
-            }
+                continue;
 
             const auto dist = GW::GetDistance(player->pos, agent->pos);
             if (dist > GW::Constants::Range::Spellcast)
-            {
-                ++last_idx;
-                return RoutineState::ACTIVE;
-            }
+                continue;
+
+            if (PartyPlayerHasEffect(GW::Constants::SkillID::Great_Dwarf_Weapon, idx))
+                continue;
 
             (void)SafeUseSkill(skillbar->gdw.idx, id);
-            ++last_idx;
             return RoutineState::ACTIVE;
         }
     }
@@ -325,7 +341,9 @@ RoutineState TankBonding::Routine()
         switch (GW::Map::GetMapID())
         {
         case GW::Constants::MapID::The_Underworld:
-        case GW::Constants::MapID::Isle_of_the_Nameless: /* Debug area ;) */
+#ifdef _DEBUG
+        case GW::Constants::MapID::Isle_of_the_Nameless:
+#endif
         {
             tank_idx = party_members.size() - 2;
             break;

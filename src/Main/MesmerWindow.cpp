@@ -102,7 +102,8 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (IsExplorable() && GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+    if ((IsExplorable() && GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld) ||
+        (IsOutpost() && !IsUwEntryOutpost()))
         return;
 
     ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
@@ -147,22 +148,16 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
                 ImGui::TableNextColumn();
                 ImGui::Text("%4.0f", distance);
                 if (pushed)
-                {
                     ImGui::PopStyleColor();
-                }
                 const auto label = fmt::format("Target##{}", idx);
                 ImGui::TableNextColumn();
                 if (ImGui::Button(label.data()))
-                {
                     player.ChangeTarget(foe->agent_id);
-                }
 
                 ++idx;
 
                 if (idx >= MAX_TABLE_LENGTH)
-                {
                     break;
-                }
             }
         }
         ImGui::EndTable();
