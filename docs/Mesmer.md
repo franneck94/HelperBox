@@ -5,6 +5,6 @@
 
 
 - Nearby Aatxe
-    - Displayed if distance is less than Spirit Range
+    - Displayed if the distance is less than Spirit Range
     - Target Button
     - If already hexed, the text is colored red

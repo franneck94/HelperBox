@@ -16,7 +16,7 @@ tasklist # for standard cmd
 Then launch the HelperBox.exe from the CMD:
 
 ```bash
-cd .../HelperBoxDir/HelperBox.exe /pid PID
+HelperBox.exe /pid PID
 ```
 
 ## Developement

@@ -5,4 +5,4 @@
         - Target Button
         - If behemoth is casting healing spring, the text is colored green-ish
     - If *Auto Target* is activated
-        - If the behemoth is casting healing spring within earshot distance the behemoth is targeted
+        - If the behemoth is casting a healing spring within earshot distance the behemoth is targeted
