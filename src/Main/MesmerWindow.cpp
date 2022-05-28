@@ -116,13 +116,13 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (ImGui::BeginTable("AatxeTable", 3))
         {
-            ImGui::TableSetupColumn("HP (%%)", ImGuiTableColumnFlags_WidthFixed, width * 0.3);
+            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.3);
             ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25);
             ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.45);
 
             ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
             ImGui::TableNextColumn();
-            ImGui::Text("HP (%%)");
+            ImGui::Text("HP");
             ImGui::TableNextColumn();
             ImGui::Text("Dist.");
             ImGui::TableNextColumn();
@@ -144,7 +144,7 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
                 }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
                 ImGui::TableNextColumn();
-                ImGui::Text("%3.0f", foe->hp * 100.0F);
+                ImGui::Text("%3.0f%%", foe->hp * 100.0F);
                 ImGui::TableNextColumn();
                 ImGui::Text("%4.0f", distance);
                 if (pushed)
@@ -168,6 +168,9 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
 void MesmerWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
+
+    if (!IsExplorable())
+        return;
 
     filtered_foes.clear();
 

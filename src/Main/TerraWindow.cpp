@@ -164,6 +164,9 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
 void TerraWindow::Update(float delta)
 {
+    if (!IsExplorable())
+        return;
+
     filtered_foes.clear();
 
     if (IsLoading())

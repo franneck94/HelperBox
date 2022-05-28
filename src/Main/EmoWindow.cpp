@@ -620,6 +620,9 @@ void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
+    if (!IsExplorable())
+        return;
+
     if (!player.ValidateData())
         return;
     player.Update();
