@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>
@@ -22,6 +23,29 @@
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>
+
+class Move
+{
+public:
+    Move(const float _x, const float _y, const float _range, const char *_name)
+        : x(_x), y(_y), range(_range), pos({x, y, 0})
+    {
+        strncpy(name, _name, 140);
+    };
+
+    float x = 0.0;
+    float y = 0.0;
+    float range = 0.0;
+    GW::GamePos pos;
+    char name[140] = "Move";
+
+    const char *Name() const
+    {
+        return name;
+    }
+
+    void Execute();
+};
 
 class Pumping : public EmoActionABC
 {
@@ -52,6 +76,7 @@ public:
     void Update() override;
 
     GW::HookEntry Summon_AgentAdd_Entry;
+    GW::HookEntry OnDialog_Entry;
     bool found_turtle = false;
     uint32_t turtle_id = 0;
 };
@@ -94,7 +119,6 @@ public:
 
     void ResetData()
     {
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         timer = TIMER_INIT();
         routine_state = RoutineState::NONE;
         requested_pos = GW::GamePos{};
@@ -112,15 +136,7 @@ public:
 class EmoWindow : public HelperBoxWindow
 {
 public:
-    EmoWindow()
-        : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar),
-          tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
-    {
-        if (skillbar.ValidateData())
-        {
-            skillbar.Load();
-        }
-    };
+    EmoWindow();
     ~EmoWindow(){};
 
     static EmoWindow &Instance()
@@ -166,4 +182,9 @@ private:
     Pumping pumping;
     TankBonding tank_bonding;
     PlayerBonding player_bonding;
+
+    uint32_t move_idx = 0;
+    std::vector<Move> moves;
+
+    GW::HookEntry MapLoaded_Entry;
 };

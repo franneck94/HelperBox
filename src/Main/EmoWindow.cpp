@@ -40,11 +40,26 @@
 
 namespace
 {
-static const auto DEFAULT_WINDOW_SIZE = ImVec2(120.0, DEFAULT_BUTTON_SIZE.x * 3.0F);
-static ActionState *emo_casting_action_state = nullptr;
 static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
+
+static ActionState *emo_casting_action_state = nullptr;
+static bool send_move = false;
+static bool reset_template = false;
 }; // namespace
 
+void Move::Execute()
+{
+    if (!CanMove())
+        return;
+    GW::Agent *me = GW::Agents::GetPlayer();
+    double dist = GW::GetDistance(me->pos, GW::Vec2f(x, y));
+    if (range != 0 && dist > range)
+        return;
+    GW::Agents::Move(x, y);
+    Log::Info("Moving to (%.0f, %.0f)", x, y);
+
+    send_move = true;
+}
 
 void ActionABC::Draw(const ImVec2 button_size)
 {
@@ -54,6 +69,59 @@ void ActionABC::Draw(const ImVec2 button_size)
     const auto color = COLOR_MAPPING[static_cast<uint32_t>(action_state)];
     DrawButton(action_state, color, text, button_size);
 }
+
+EmoWindow::EmoWindow()
+    : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar),
+      tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar), moves({})
+{
+    if (skillbar.ValidateData())
+        skillbar.Load();
+
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
+        &MapLoaded_Entry,
+        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
+            UNREFERENCED_PARAMETER(status);
+            UNREFERENCED_PARAMETER(packet);
+            switch (GW::Map::GetInstanceType())
+            {
+            case GW::Constants::InstanceType::Explorable:
+                reset_template = true;
+                break;
+            case GW::Constants::InstanceType::Outpost:
+            case GW::Constants::InstanceType::Loading:
+            default:
+                reset_template = false;
+                break;
+            }
+        });
+
+    moves.push_back(Move{1248.0F, 6965.509766F, 5000.0F, "Spawn"});
+    moves.push_back(Move{-583.28F, 9275.68F, 5000.0F, "Lab Stairs1"});
+    moves.push_back(Move{-2730.79F, 10159.21F, 5000.0F, "Lab Stairs2"});
+    moves.push_back(Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"});
+    moves.push_back(Move{-6459.410156F, 9943.219727F, 5000.0F, "Fuse Pull 1"});
+    moves.push_back(Move{-6241.24F, 7945.73F, 5000.0F, "Basement"});
+    moves.push_back(Move{-8763.36F, 5551.18F, 5000.0F, "Basement Stairs"});
+    moves.push_back(Move{-7980.55F, 4308.90F, 5000.0F, "Fuse Pull 2"});
+    moves.push_back(Move{-8764.08F, 2156.60F, 5000.0F, "Vale Entry"});
+    moves.push_back(Move{-12264.129883F, 1821.180054F, 5000.0F, "Vale House"});
+    moves.push_back(Move{-13872.34F, 2332.34F, 5000.0F, "Spirits 1"});
+    moves.push_back(Move{-13760.19F, 358.15F, 5000.0F, "Spirits 2"});
+    moves.push_back(Move{-12145.44F, 1101.74F, 5000.0F, "Spirits 3"});
+    moves.push_back(Move{-8764.08F, 2156.60F, 5000.0F, "Vale Entry"});
+    moves.push_back(Move{-7980.55F, 4308.90F, 5000.0F, "Basement Stairs"});
+    moves.push_back(Move{-6241.24F, 7945.73F, 5000.0F, "Basement"});
+    moves.push_back(Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"});
+    moves.push_back(Move{-6035.58F, 11274.30F, 5000.0F, "Keeper 1/2"});
+    moves.push_back(Move{-3881.71F, 11280.04F, 5000.0F, "Keeper 3"});
+    moves.push_back(Move{-1502.45F, 9737.64F, 5000.0F, "Keeper 4/5"});
+    moves.push_back(Move{-266.03F, 9304.26F, 5000.0F, "Lab Stairs1"});
+    moves.push_back(Move{1207.05F, 7732.16F, 5000.0F, "Keeper 6"});
+    moves.push_back(Move{1354.31F, 10063.58F, 5000.0F, "To Wastes 1"});
+    moves.push_back(Move{3489.18F, 8177.49F, 5000.0F, "To Wastes 2"});
+    moves.push_back(Move{5385.25F, 8866.17F, 5000.0F, "To Wastes 3"});
+    moves.push_back(Move{6022.19F, 11318.40F, 5000.0F, "To Wastes 3"});
+};
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 {
@@ -69,7 +137,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
         player.secondary != GW::Constants::Profession::Monk)
         return;
 
-    ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
     {
@@ -77,9 +145,68 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
         tank_bonding.Draw();
         player_bonding.Draw();
         fuse_pull.Draw();
+
+        if (ImGui::Button(moves[move_idx].Name(), DEFAULT_BUTTON_SIZE))
+        {
+            moves[move_idx].Execute();
+        }
+        if (ImGui::Button("Prev.", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.0F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+        {
+            if (move_idx > 0)
+                --move_idx;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Next", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.0F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+        {
+            if (move_idx < moves.size() - 1)
+                ++move_idx;
+        }
     }
 
     ImGui::End();
+}
+
+void EmoWindow::Update(float delta)
+{
+    UNREFERENCED_PARAMETER(delta);
+
+    if (IsLoading() || IsOutpost())
+        move_idx = 0;
+
+    if (!IsUwEntryOutpost() && !IsUw())
+        return;
+
+    if (!player.ValidateData())
+        return;
+    player.Update();
+
+    if (!skillbar.ValidateData())
+        return;
+
+    if (reset_template)
+    {
+        skillbar.Load();
+        reset_template = false;
+    }
+
+    skillbar.Update();
+
+    if (player.primary != GW::Constants::Profession::Elementalist ||
+        player.secondary != GW::Constants::Profession::Monk)
+        return;
+
+    emo_casting_action_state = &pumping.action_state;
+
+    if (send_move && (move_idx < moves.size() - 1) && GamePosCompare(player.pos, moves[move_idx].pos))
+    {
+        send_move = false;
+        ++move_idx;
+    }
+
+    tank_bonding.Update();
+    player_bonding.Update();
+    fuse_pull.Update();
+    pumping.Update();
 }
 
 RoutineState Pumping::Routine()
@@ -206,9 +333,9 @@ RoutineState Pumping::Routine()
         {
             const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
 
-            if (dhuum_living && dhuum_living->GetIsCasting() &&
-                dhuum_living->skill == static_cast<uint32_t>(GW::Constants::SkillID::Dhuums_Rest))
+            if (dhuum_living && dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
             {
+                Log::Info("Dhuum is casting: %d", dhuum_living->skill);
                 const bool pi_avail = skillbar->wisdom.CanBeCasted(player->energy);
                 if (pi_avail)
                 {
@@ -614,31 +741,4 @@ void FusePull::Update()
             action_state = ActionState::INACTIVE;
         }
     }
-}
-
-void EmoWindow::Update(float delta)
-{
-    UNREFERENCED_PARAMETER(delta);
-
-    if (!IsExplorable())
-        return;
-
-    if (!player.ValidateData())
-        return;
-    player.Update();
-
-    if (!skillbar.ValidateData())
-        return;
-    skillbar.Update();
-
-    if (player.primary != GW::Constants::Profession::Elementalist ||
-        player.secondary != GW::Constants::Profession::Monk)
-        return;
-
-    emo_casting_action_state = &pumping.action_state;
-
-    tank_bonding.Update();
-    player_bonding.Update();
-    fuse_pull.Update();
-    pumping.Update();
 }
