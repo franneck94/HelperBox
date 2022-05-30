@@ -37,7 +37,6 @@
 
 namespace
 {
-static const auto DEFAULT_WINDOW_SIZE = ImVec2(100.0F, 100.0F);
 static constexpr auto HEALING_SPRING_U16 = static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring);
 static constexpr auto MIN_IDLE_TIME_S = 0.1F;
 static constexpr auto MAX_TABLE_LENGTH = 6U;
@@ -78,10 +77,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (IsExplorable() && GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+    if ((IsExplorable() && !IsUw()) || (IsOutpost() && !IsUwEntryOutpost()))
         return;
 
-    ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(100.0F, 100.0F), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("TerraWindow", nullptr, GetWinFlags()))
     {
@@ -156,10 +155,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                     break;
                 }
             }
-            ImGui::EndTable();
         }
-        ImGui::End();
+        ImGui::EndTable();
     }
+    ImGui::End();
 }
 
 void TerraWindow::Update(float delta)

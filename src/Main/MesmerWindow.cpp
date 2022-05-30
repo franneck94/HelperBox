@@ -37,7 +37,6 @@
 
 namespace
 {
-static const auto DEFAULT_WINDOW_SIZE = ImVec2(100.0F, 100.0F);
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 } // namespace
 
@@ -102,15 +101,13 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if ((IsExplorable() && GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld) ||
-        (IsOutpost() && !IsUwEntryOutpost()))
+    if ((IsExplorable() && !IsUw()) || (IsOutpost() && !IsUwEntryOutpost()))
         return;
 
-    ImGui::SetNextWindowSize(DEFAULT_WINDOW_SIZE, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(100.0F, 100.0F), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("MesmerWindow", nullptr, GetWinFlags()))
     {
-        //if (player.primary == GW::Constants::Profession::Mesmer)
         const auto width = ImGui::GetWindowWidth();
         spike_set.Draw(ImVec2(width, 35.0F));
 
