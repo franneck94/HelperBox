@@ -6,3 +6,7 @@
         - If behemoth is casting healing spring, the text is colored green-ish
     - If *Auto Target* is activated
         - If the behemoth is casting a healing spring within earshot distance the behemoth is targeted
+
+- Nearby Skeles
+    - List them if their distance is less than cast range
+    - Also in the upper list, but the text is colored blue

@@ -38,6 +38,10 @@
 namespace
 {
 static constexpr auto MAX_TABLE_LENGTH = 6U;
+
+static const auto IDS = std::array<uint32_t, 3>{GW::Constants::ModelID::UW::BladedAatxe,
+                                                GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
 RoutineState SpikeSet::Routine()
@@ -134,9 +138,16 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
                 if (foe->hp == 0.0F)
                     continue;
 
-                if (foe->GetIsHexed())
+                if (foe->GetIsHexed() &&
+                    foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe))
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0));
+                    pushed = true;
+                }
+                else if (foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
+                         foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0F, 0.0F, 1.0F, 1.0));
                     pushed = true;
                 }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
@@ -182,10 +193,6 @@ void MesmerWindow::Update(float delta)
     spike_set.Update();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player,
-                 agents_array,
-                 filtered_foes,
-                 GW::Constants::ModelID::UW::BladedAatxe,
-                 GW::Constants::Range::Spirit);
+    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Spirit);
     SortByDistance(player, filtered_foes);
 }

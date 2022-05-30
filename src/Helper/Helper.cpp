@@ -510,42 +510,6 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
     }
 }
 
-void FilterAgents(const Player &player,
-                  const GW::AgentArray &agents,
-                  std::vector<GW::AgentLiving *> &filtered_agents,
-                  const int id,
-                  const float max_distance)
-{
-    for (const auto &agent : agents)
-    {
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-
-        if (!living)
-            continue;
-
-
-        if (living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy) && living->player_number == id)
-        {
-            if (max_distance == 0.0F)
-            {
-                filtered_agents.push_back(living);
-            }
-            else
-            {
-                const auto dist = GW::GetDistance(player.pos, agent->pos);
-
-                if (dist < max_distance)
-                {
-                    filtered_agents.push_back(living);
-                }
-            }
-        }
-    }
-}
-
 void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
 {
     const auto player_pos = player.pos;

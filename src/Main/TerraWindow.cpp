@@ -41,6 +41,10 @@ static constexpr auto HEALING_SPRING_U16 = static_cast<uint16_t>(GW::Constants::
 static constexpr auto MIN_IDLE_TIME_S = 0.1F;
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 static auto auto_target_active = false;
+
+static const auto IDS = std::array<uint32_t, 3>{GW::Constants::ModelID::UW::ObsidianBehemoth,
+                                                GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
 void AutoTargetAction::Update()
@@ -113,12 +117,19 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                 if (foe->GetIsDead())
                     continue;
 
-                if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
+                if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16 &&
+                    foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth))
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
                     pushed = true;
 
                     last_casted_times_ms[foe->agent_id] = clock();
+                }
+                else if (foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
+                         foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0F, 0.0F, 1.0F, 1.0));
+                    pushed = true;
                 }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
                 ImGui::TableNextColumn();
@@ -178,11 +189,7 @@ void TerraWindow::Update(float delta)
     auto_target.Update();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player,
-                 agents_array,
-                 filtered_foes,
-                 GW::Constants::ModelID::UW::ObsidianBehemoth,
-                 GW::Constants::Range::Spellcast);
+    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Spellcast);
     SortByDistance(player, filtered_foes);
 
     if (!auto_target_active)
