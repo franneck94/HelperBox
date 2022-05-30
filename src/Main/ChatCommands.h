@@ -12,9 +12,6 @@
 
 class ChatCommands : public HelperBoxModule
 {
-    const float DEFAULT_CAM_SPEED = 1000.f;                      // 600 units per sec
-    const float ROTATION_SPEED = static_cast<float>(M_PI) / 3.f; // 6 seconds for full rotation
-
     ChatCommands(){};
     ~ChatCommands(){};
 
@@ -43,5 +40,5 @@ public:
     bool WndProc(UINT Message, WPARAM wParam, LPARAM lParam);
     void Update(float delta) override;
 
-    static void CmdTB(const wchar_t *message, int argc, LPWSTR *argv);
+    static void CmdHB(const wchar_t *message, int argc, LPWSTR *argv);
 };

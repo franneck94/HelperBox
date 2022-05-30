@@ -28,7 +28,7 @@ void ChatCommands::SaveSettings(CSimpleIni *ini)
 void ChatCommands::Initialize()
 {
     HelperBoxModule::Initialize();
-    GW::Chat::CreateCommand(L"hb", ChatCommands::CmdTB);
+    GW::Chat::CreateCommand(L"hb", ChatCommands::CmdHB);
 }
 
 void ChatCommands::Update(float delta)
@@ -41,7 +41,7 @@ bool ChatCommands::WndProc(UINT, WPARAM, LPARAM)
     return false;
 };
 
-void ChatCommands::CmdTB(const wchar_t *message, int argc, LPWSTR *argv)
+void ChatCommands::CmdHB(const wchar_t *message, int argc, LPWSTR *argv)
 {
     UNREFERENCED_PARAMETER(message);
 

@@ -28,7 +28,7 @@
 
 #include <Base/HelperBoxSettings.h>
 #include <Base/HelperBoxTheme.h>
-#include <MainWindow.h>
+#include <Base/MainWindow.h>
 
 namespace
 {

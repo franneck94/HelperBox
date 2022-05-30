@@ -11,9 +11,9 @@
 #include <Defines.h>
 #include <HelperBox.h>
 
+#include <Base/MainWindow.h>
 #include <ChatCommands.h>
 #include <EmoWindow.h>
-#include <MainWindow.h>
 #include <MesmerWindow.h>
 #include <SettingsWindow.h>
 #include <TerraWindow.h>

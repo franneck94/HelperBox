@@ -3,7 +3,7 @@
 #include <HelperBox.h>
 #include <Logger.h>
 
-#include <MainWindow.h>
+#include "MainWindow.h"
 
 void MainWindow::LoadSettings(CSimpleIni *ini)
 {
