@@ -111,22 +111,24 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
             uint32_t idx = 0;
             for (const auto &foe : filtered_foes)
             {
+                if (!foe)
+                    continue;
+
                 ImGui::TableNextRow();
 
                 bool pushed = false;
                 if (foe->GetIsDead())
                     continue;
 
-                if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16 &&
-                    foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth))
+                if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
                     pushed = true;
 
                     last_casted_times_ms[foe->agent_id] = clock();
                 }
-                else if (foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
-                         foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
+                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
+                         foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.611F, 0.821F, 1.0F, 1.0));
                     pushed = true;

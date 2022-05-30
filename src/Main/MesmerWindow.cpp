@@ -132,20 +132,22 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
             uint32_t idx = 0;
             for (const auto &foe : filtered_foes)
             {
+                if (!foe)
+                    continue;
+
                 ImGui::TableNextRow();
 
                 bool pushed = false;
                 if (foe->hp == 0.0F)
                     continue;
 
-                if (foe->GetIsHexed() &&
-                    foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe))
+                if (foe->GetIsHexed())
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0));
                     pushed = true;
                 }
-                else if (foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
-                         foe->login_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
+                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
+                         foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0F, 0.0F, 1.0F, 1.0));
                     pushed = true;
