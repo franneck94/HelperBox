@@ -27,7 +27,7 @@ public:
     virtual void Update() = 0;
 
     Player *player = nullptr;
-    char *const text;
+    char *const text = nullptr;
 
     ActionState action_state = ActionState::INACTIVE;
 };
@@ -39,7 +39,7 @@ public:
     {
     }
 
-    EmoSkillbar *skillbar;
+    EmoSkillbar *skillbar = nullptr;
 };
 
 class MesmerActionABC : public ActionABC
@@ -49,7 +49,7 @@ public:
     {
     }
 
-    MesmerSkillbar *skillbar;
+    MesmerSkillbar *skillbar = nullptr;
 };
 
 RoutineState SafeTravel(const GW::Constants::MapID target_map,
