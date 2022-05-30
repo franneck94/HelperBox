@@ -29,6 +29,8 @@ bool IsUwEntryOutpost();
 
 bool IsFowEntryOutpost();
 
+bool IsUw();
+
 bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
 
 GW::EffectArray *GetEffects(const uint32_t agent_id);
@@ -62,3 +64,5 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
 bool IsInDhuumRoom(const Player *player);
 
 bool IsInDhuumFight(uint32_t *dhuum_id = nullptr);
+
+bool CanMove();

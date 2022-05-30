@@ -50,10 +50,15 @@ bool IsMapReady()
 
 static bool _IsEndGameEntryOutpost()
 {
-    return (GW::Map::GetMapID() != GW::Constants::MapID::Embark_Beach ||
-            GW::Map::GetMapID() != GW::Constants::MapID::Temple_of_the_Ages ||
-            GW::Map::GetMapID() != GW::Constants::MapID::Chantry_of_Secrets_outpost ||
-            GW::Map::GetMapID() != GW::Constants::MapID::Zin_Ku_Corridor_outpost);
+    return (
+#ifdef _DEBUG
+        GW::Map::GetMapID() != GW::Constants::MapID::Great_Temple_of_Balthazar_outpost ||
+        GW::Map::GetMapID() != GW::Constants::MapID::Isle_of_the_Nameless ||
+#endif
+        GW::Map::GetMapID() != GW::Constants::MapID::Embark_Beach ||
+        GW::Map::GetMapID() != GW::Constants::MapID::Temple_of_the_Ages ||
+        GW::Map::GetMapID() != GW::Constants::MapID::Chantry_of_Secrets_outpost ||
+        GW::Map::GetMapID() != GW::Constants::MapID::Zin_Ku_Corridor_outpost);
 }
 
 bool IsUwEntryOutpost()
@@ -64,6 +69,15 @@ bool IsUwEntryOutpost()
 bool IsFowEntryOutpost()
 {
     return _IsEndGameEntryOutpost();
+}
+
+bool IsUw()
+{
+#ifdef _DEBUG
+    return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld ||
+            GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless);
+#endif
+    return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld);
 }
 
 GW::EffectArray *GetEffects(const uint32_t agent_id)
@@ -343,6 +357,8 @@ bool PartyPlayerHasEffect(const GW::Constants::SkillID effect_skill_id, const ui
         if (eff.skill_id == static_cast<uint32_t>(effect_skill_id))
             return true;
     }
+
+    return false;
 }
 
 bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
@@ -588,4 +604,9 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
     }
 
     return false;
+}
+
+bool CanMove()
+{
+    return !IsLoading() && !GW::Map::GetIsObserving() && GW::MemoryMgr::GetGWWindowHandle() == GetActiveWindow();
 }
