@@ -3,8 +3,6 @@
 #include "stdafx.h"
 
 #include <cstdint>
-#include <string>
-#include <string_view>
 #include <vector>
 
 #include <GWCA/GameEntities/Agent.h>

@@ -15,7 +15,6 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Managers/PlayerMgr.h>
@@ -207,6 +206,30 @@ void EmoWindow::Update(float delta)
     player_bonding.Update();
     fuse_pull.Update();
     pumping.Update();
+}
+
+Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
+{
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
+        &Summon_AgentAdd_Entry,
+        [&](GW::HookStatus *, GW::Packet::StoC::AgentAdd *pak) -> void {
+            if (pak->type != 1)
+                return;
+
+            uint32_t player_number = (pak->agent_type ^ 0x20000000);
+
+#ifdef _DEBUG
+            if (!IsExplorable() || player_number != 514 && player_number != 467) // Mercantile id
+                return;
+#else
+            if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld || player_number != 514) // Turtle id
+                return;
+#endif
+
+            Log::Info("Summoned turtle");
+            found_turtle = true;
+            turtle_id = pak->agent_id;
+        });
 }
 
 RoutineState Pumping::Routine()

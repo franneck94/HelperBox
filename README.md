@@ -9,8 +9,7 @@ If you want to use ToolBox++ in parallel, you have to start Toolbox **before** s
 If you want to launch the HelperBox for a certain GW instance (Multi-launcher use-case), you have to get the process id of the GW instance:
 
 ```bash
-tasklist | grep Gw # for unix like shell
-tasklist # for standard cmd
+tasklist # Search for the GW entries
 ```
 
 Then launch the HelperBox.exe from the CMD:

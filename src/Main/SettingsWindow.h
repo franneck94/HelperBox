@@ -29,14 +29,11 @@ public:
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
 
-    // Draw user interface. Will be called every frame if the element is visible
     void Draw(IDirect3DDevice9 *pDevice) override;
-
     bool DrawSettingsSection(const char *section);
 
     size_t sep = 0;
 
 private:
     std::map<std::string, bool> drawn_settings{};
-    bool hide_when_entering_explorable = false;
 };

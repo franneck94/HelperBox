@@ -4,8 +4,6 @@
 
 #include <cstdint>
 #include <map>
-#include <string>
-#include <string_view>
 #include <vector>
 
 #include <GWCA/GameEntities/Agent.h>

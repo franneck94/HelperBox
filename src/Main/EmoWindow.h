@@ -4,10 +4,7 @@
 
 #include <cstdint>
 #include <cstring>
-#include <map>
-#include <set>
 #include <string>
-#include <string_view>
 
 #include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/StoCMgr.h>
@@ -15,11 +12,10 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Timer.h>
-
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Player.h>
+#include <Timer.h>
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>
@@ -50,37 +46,7 @@ public:
 class Pumping : public EmoActionABC
 {
 public:
-    Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
-    {
-        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
-            &Summon_AgentAdd_Entry,
-            [&](GW::HookStatus *, GW::Packet::StoC::AgentAdd *pak) -> void {
-                if (pak->type != 1)
-                    return;
-
-#ifdef _DEBUG
-                if (!IsExplorable())
-#else
-                if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
-#endif
-                    return;
-
-                uint32_t player_number = (pak->agent_type ^ 0x20000000);
-
-#ifdef _DEBUG
-                if (player_number != 514 && player_number != 467) // Mercantile id
-#else
-                if (player_number != 514) // Turtle id
-#endif
-                {
-                    return;
-                }
-
-                Log::Info("Summoned turtle");
-                found_turtle = true;
-                turtle_id = pak->agent_id;
-            });
-    }
+    Pumping(Player *p, EmoSkillbar *s);
 
     RoutineState Routine() override;
     void Update() override;
@@ -132,14 +98,12 @@ public:
         timer = TIMER_INIT();
         routine_state = RoutineState::NONE;
         requested_pos = GW::GamePos{};
-        stuck_counter = 0;
         step = 0;
     }
 
     clock_t timer;
     RoutineState routine_state = RoutineState::NONE;
     GW::GamePos requested_pos = GW::GamePos{};
-    uint32_t stuck_counter = 0;
     uint32_t step = 0;
 };
 
