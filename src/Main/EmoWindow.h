@@ -58,13 +58,23 @@ public:
                 if (pak->type != 1)
                     return;
 
+#ifdef _DEBUG
+                if (!IsExplorable())
+#else
                 if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+#endif
                     return;
 
                 uint32_t player_number = (pak->agent_type ^ 0x20000000);
 
+#ifdef _DEBUG
+                if (player_number != 514 && player_number != 467) // Mercantile id
+#else
                 if (player_number != 514) // Turtle id
+#endif
+                {
                     return;
+                }
 
                 Log::Info("Summoned turtle");
                 found_turtle = true;
