@@ -14,7 +14,7 @@ static auto COLOR_MAPPING = std::map<uint32_t, ImVec4>{{static_cast<uint32_t>(Ac
                                                        {static_cast<uint32_t>(ActionState::ACTIVE), ACTIVE_COLOR},
                                                        {static_cast<uint32_t>(ActionState::ON_HOLD), ON_HOLD_COLOR}};
 
-static const auto DEFAULT_BUTTON_SIZE = ImVec2(100.0, 60.0);
+static const auto DEFAULT_BUTTON_SIZE = ImVec2(100.0, 50.0);
 
 void DrawButton(ActionState &action_state,
                 const ImVec4 color,
