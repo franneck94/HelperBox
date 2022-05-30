@@ -1,3 +1,5 @@
+#include <GWCA/GameContainers/GamePos.h>
+
 #include "Utils.h"
 
 bool FloatCompare(const float a, const float b, const float epsilon)

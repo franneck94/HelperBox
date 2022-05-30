@@ -5,7 +5,6 @@
 #include <HelperBox.h>
 #include <Logger.h>
 
-// Do all your startup things here instead.
 DWORD WINAPI init(HMODULE hModule) noexcept
 {
     if (!Log::InitializeLog())
@@ -47,7 +46,6 @@ DWORD WINAPI init(HMODULE hModule) noexcept
     return 0;
 }
 
-// DLL entry point, dont do things in this thread unless you know what you are doing.
 BOOL WINAPI DllMain(_In_ HMODULE _HDllHandle, _In_ DWORD _Reason, _In_opt_ LPVOID _Reserved)
 {
     UNREFERENCED_PARAMETER(_Reserved);

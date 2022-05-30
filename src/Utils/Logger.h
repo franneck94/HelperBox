@@ -23,9 +23,6 @@ void Log(const char *msg, ...);
 // printf-style wide-string log
 void LogW(const wchar_t *msg, ...);
 
-// flushes log file.
-//static void FlushFile() { fflush(logfile); }
-
 // === Game chat logging ===
 // Shows to the user in the form of a white chat message
 void Info(const char *format, ...);
