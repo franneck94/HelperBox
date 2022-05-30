@@ -291,11 +291,11 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-#ifdef _DEBUG
-    const auto is_in_dhuum_room = true;
-#else
+    // #ifdef __DEBUG
+    //     const auto is_in_dhuum_room = true;
+    // #else
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
-#endif
+    //#endif
 
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
@@ -339,11 +339,7 @@ RoutineState Pumping::Routine()
     }
 
     uint32_t dhuum_id = 0;
-#ifdef _DEBUG
-    const auto is_in_dhuum_fight = true;
-#else
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
-#endif
 
     if (!is_in_dhuum_fight)
         return RoutineState::FINISHED;
@@ -644,10 +640,6 @@ RoutineState FusePull::Routine()
 {
     ResetState(routine_state);
 
-    constexpr auto cancel_step1 = 0;
-    constexpr auto cancel_step2 = 1;
-    constexpr auto fuse_step = 2;
-
     if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
     {
         ResetData();
@@ -663,23 +655,6 @@ RoutineState FusePull::Routine()
         return RoutineState::FINISHED;
     }
 
-    const auto timer_diff = TIMER_DIFF(timer);
-
-    if ((routine_state == RoutineState::NONE) && (step == cancel_step1))
-    {
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
-        ++step;
-
-        return RoutineState::ACTIVE;
-    }
-    if (step == cancel_step1 + 1 && timer_diff > 300)
-    {
-        timer = TIMER_INIT();
-    }
-    else if (step == cancel_step1 + 1 && timer_diff < 300)
-    {
-        return RoutineState::ACTIVE;
-    }
 
     const auto me_pos = player->pos;
     const auto target_pos = player->target->pos;
@@ -711,36 +686,15 @@ RoutineState FusePull::Routine()
         return RoutineState::ACTIVE;
     }
 
-    if (step == cancel_step2)
-    {
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
-        ++step;
+    // if (!player->CanCast())
+    // {
+    //     return RoutineState::ACTIVE;
+    // }
 
-        return RoutineState::ACTIVE;
-    }
-    if (step == cancel_step2 + 1 && timer_diff > 300)
-    {
-        timer = TIMER_INIT();
-    }
-    else if (step == cancel_step2 + 1 && timer_diff < 300)
-    {
-        return RoutineState::ACTIVE;
-    }
-
-    if (step == fuse_step)
-    {
-        if (!player->CanCast())
-        {
-            return RoutineState::ACTIVE;
-        }
-
-        if (skillbar->fuse.CanBeCasted(player->energy))
-        {
-            (void)SafeUseSkill(skillbar->fuse.idx, player->target->agent_id);
-        }
-        ++step;
-        return RoutineState::ACTIVE;
-    }
+    // if (skillbar->fuse.CanBeCasted(player->energy))
+    // {
+    //     (void)SafeUseSkill(skillbar->fuse.idx, player->target->agent_id);
+    // }
 
     ResetData();
     return RoutineState::FINISHED;
