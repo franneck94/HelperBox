@@ -34,18 +34,6 @@ T RandomFloat(T lower, T upper)
     return dist(gen);
 }
 
-template <typename T>
-bool FloatCompare(const T a, const T b, const T epsilon = 1e-3F)
-{
-    static_assert(std::is_floating_point_v<T>, "Must be floating point type.");
+bool FloatCompare(const float a, const float b, const float epsilon = 1e-3F);
 
-    return fabs(a - b) <= ((fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
-}
-
-template <typename T>
-bool GamePosCompare(const GW::GamePos &p1, const GW::GamePos &p2, const T epsilon = 1e-3F)
-{
-    static_assert(std::is_floating_point_v<T>, "Must be floating point type.");
-
-    return (FloatCompare(p1.x, p2.x, epsilon) && FloatCompare(p1.y, p2.y, epsilon));
-}
+bool GamePosCompare(const GW::GamePos &p1, const GW::GamePos &p2, const float epsilon = 1e-3F);
