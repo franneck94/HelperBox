@@ -2,6 +2,8 @@
 
 The window will only be rendered if you are on an E/MO.
 
+Atm it is expected to swap to low armor by yourself.
+
 - Player Bonding:
     - Expected to have some players in the target
     - Balth and Bond will be cast, if not yet present
