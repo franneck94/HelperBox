@@ -38,8 +38,6 @@ GW::EffectArray *GetEffects(const uint32_t agent_id);
 
 bool PartyPlayerHasEffect(const GW::Constants::SkillID effect_skill_id, const uint32_t party_idx);
 
-bool DetectNotMoving(const uint32_t threshold = 100U);
-
 bool DetectPlayerIsDead();
 
 std::tuple<uint32_t, uint32_t, float> GetEnergy();

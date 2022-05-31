@@ -128,7 +128,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
         {
         case TargetType::Gadget:
         {
-            const GW::AgentGadget *const gadget = agent->GetAsAgentGadget();
+            const auto gadget = agent->GetAsAgentGadget();
             if (!gadget)
             {
                 continue;
@@ -137,12 +137,12 @@ bool TargetNearest(const TargetType type, const float max_distance)
         }
         case TargetType::Item:
         {
-            const GW::AgentItem *const item_agent = agent->GetAsAgentItem();
+            const auto item_agent = agent->GetAsAgentItem();
             if (!item_agent)
             {
                 continue;
             }
-            const GW::Item *const item = GW::Items::GetItemById(item_agent->item_id);
+            const auto item = GW::Items::GetItemById(item_agent->item_id);
             if (!item)
             {
                 continue;
@@ -151,7 +151,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
         }
         case TargetType::Npc:
         {
-            const GW::AgentLiving *const living_agent = agent->GetAsAgentLiving();
+            const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->IsNPC() || !living_agent->GetIsAlive())
             {
                 continue;
@@ -160,7 +160,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
         }
         case TargetType::Player:
         {
-            const GW::AgentLiving *const living_agent = agent->GetAsAgentLiving();
+            const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->IsPlayer())
             {
                 continue;
@@ -169,7 +169,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
         }
         case TargetType::Living:
         {
-            const GW::AgentLiving *const living_agent = agent->GetAsAgentLiving();
+            const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->GetIsAlive())
             {
                 continue;
@@ -204,75 +204,28 @@ bool DetectPlayerIsDead()
 {
     const auto me = GW::Agents::GetPlayer();
 
-    if (nullptr == me)
-    {
+    if (!me)
         return false;
-    }
 
     const auto living_me = me->GetAsAgentLiving();
 
-    if (nullptr == living_me)
-    {
+    if (!living_me)
         return false;
-    }
 
     return living_me->GetIsDead();
-}
-
-bool DetectNotMoving(const uint32_t threshold)
-{
-    static auto not_moving_counter = uint32_t{0};
-
-    if (!IsMapReady())
-    {
-        return false;
-    }
-
-    const auto me = GW::Agents::GetPlayer();
-
-    if (nullptr == me)
-    {
-        return false;
-    }
-
-    const auto living_me = me->GetAsAgentLiving();
-
-    if (nullptr == living_me)
-    {
-        return false;
-    }
-
-    if (!living_me->GetIsMoving())
-    {
-        ++not_moving_counter;
-    }
-
-    if (not_moving_counter == threshold)
-    {
-        not_moving_counter = 0;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 
 std::tuple<uint32_t, uint32_t, float> GetEnergy()
 {
     const auto me = GW::Agents::GetPlayer();
 
-    if (nullptr == me)
-    {
+    if (!me)
         return std::make_tuple(0, 0, 0.0F);
-    }
 
     const auto living_me = me->GetAsAgentLiving();
 
-    if (nullptr == living_me)
-    {
+    if (!living_me)
         return std::make_tuple(0, 0, 0.0F);
-    }
 
     const auto max_energy = living_me->max_energy;
     const auto energy_perc = living_me->energy;
@@ -285,17 +238,13 @@ std::tuple<uint32_t, uint32_t, float> GetHp()
 {
     const auto me = GW::Agents::GetPlayer();
 
-    if (nullptr == me)
-    {
+    if (!me)
         return std::make_tuple(0, 0, 0.0F);
-    }
 
     const auto living_me = me->GetAsAgentLiving();
 
-    if (nullptr == living_me)
-    {
+    if (!living_me)
         return std::make_tuple(0, 0, 0.0F);
-    }
 
     const auto max_hp = living_me->max_hp;
     const auto hp_perc = living_me->hp;
@@ -570,13 +519,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
         return false;
 
     if (dhuum_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
-    {
         return true;
-    }
-    else
-    {
-        return false;
-    }
 
     return false;
 }
@@ -620,6 +563,9 @@ uint32_t GetTankId()
 bool IsAliveAlly(const GW::Agent *target)
 {
     if (!target)
+        return false;
+
+    if (!target->GetIsLivingType())
         return false;
 
     const auto target_living = target->GetAsAgentLiving();

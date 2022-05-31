@@ -59,8 +59,7 @@ RoutineState SpikeSet::Routine()
     }
 
     const auto target_living = player->target->GetAsAgentLiving();
-
-    if (target_living->GetIsDead())
+    if (!target_living || target_living->GetIsDead())
     {
         return RoutineState::FINISHED;
     }

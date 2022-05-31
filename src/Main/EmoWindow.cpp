@@ -422,8 +422,9 @@ void Pumping::Update()
 
         const auto living_target = player->target->GetAsAgentLiving();
 
-        if (living_target->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers) &&
-            dist < GW::Constants::Range::Earshot / 2.0F)
+        if (living_target &&
+            (living_target->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers)) &&
+            (dist < GW::Constants::Range::Earshot / 2.0F))
         {
             action_state = ActionState::ON_HOLD;
             paused = true;
