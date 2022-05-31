@@ -50,10 +50,15 @@ void Move::Execute()
 {
     if (!CanMove())
         return;
+
     GW::Agent *me = GW::Agents::GetPlayer();
+    if (!me)
+        return;
+
     double dist = GW::GetDistance(me->pos, GW::Vec2f(x, y));
     if (range != 0 && dist > range)
         return;
+
     GW::Agents::Move(x, y);
     Log::Info("Moving to (%.0f, %.0f)", x, y);
 
@@ -258,18 +263,21 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-    const bool balth_avail = skillbar->balth.CanBeCasted(player->energy);
-    if (!found_balth && balth_avail)
+    if (player->energy_perc > 0.5)
     {
-        (void)SafeUseSkill(skillbar->balth.idx, player->id);
-        return RoutineState::ACTIVE;
-    }
+        const bool balth_avail = skillbar->balth.CanBeCasted(player->energy);
+        if (!found_balth && balth_avail)
+        {
+            (void)SafeUseSkill(skillbar->balth.idx, player->id);
+            return RoutineState::ACTIVE;
+        }
 
-    const bool bond_avail = skillbar->prot.CanBeCasted(player->energy);
-    if (!found_bond && bond_avail)
-    {
-        (void)SafeUseSkill(skillbar->prot.idx, player->id);
-        return RoutineState::ACTIVE;
+        const bool bond_avail = skillbar->prot.CanBeCasted(player->energy);
+        if (!found_bond && bond_avail)
+        {
+            (void)SafeUseSkill(skillbar->prot.idx, player->id);
+            return RoutineState::ACTIVE;
+        }
     }
 
     const bool low_hp = player->hp_perc < 0.90F;
@@ -291,12 +299,7 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
-    // #ifdef __DEBUG
-    //     const auto is_in_dhuum_room = true;
-    // #else
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
-    //#endif
-
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
@@ -455,96 +458,74 @@ void Pumping::Update()
 
 RoutineState TankBonding::Routine()
 {
+    static uint32_t target_id = 0;
     static auto timer = TIMER_INIT();
     const auto timer_diff = TIMER_DIFF(timer);
 
     if (timer_diff < MIN_CYCLE_TIME_MS)
-    {
         return RoutineState::ACTIVE;
-    }
 
     timer = TIMER_INIT();
 
     if (!player->CanCast())
-    {
         return RoutineState::ACTIVE;
-    }
 
     // If no other player selected as target
-    if ((!player->target || player->target->agent_id == player->id))
+    const auto no_target_or_self = (!player->target || player->target->agent_id == player->id);
+    const auto target_not_self = (player->target && player->target->agent_id != player->id);
+
+    if (!target_id && no_target_or_self)
     {
-        std::vector<PlayerMapping> party_members;
-
-        bool success = GetPartyMembers(party_members);
-
-        if (party_members.size() < 2)
-        {
-            return RoutineState::FINISHED;
-        }
-
-        uint32_t tank_idx = 0;
-
-        switch (GW::Map::GetMapID())
-        {
-        case GW::Constants::MapID::The_Underworld:
-#ifdef _DEBUG
-        case GW::Constants::MapID::Isle_of_the_Nameless:
-#endif
-        {
-            tank_idx = party_members.size() - 2;
-            break;
-        }
-        default:
-        {
-            tank_idx = 0;
-            break;
-        }
-        }
-
-        const auto tank = party_members[tank_idx];
-        player->ChangeTarget(tank.id);
-
-        if (!success || !player->target)
-        {
-            return RoutineState::FINISHED;
-        }
+        target_id = GetTankId();
+        player->ChangeTarget(target_id);
     }
-
-    if (player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
+    else if (!target_id && target_not_self)
     {
+        target_id = player->target->agent_id;
+    }
+    else if (!target_id)
+    {
+        target_id = 0;
         return RoutineState::FINISHED;
     }
 
-    const auto target_living = player->target->GetAsAgentLiving();
-
-    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
-        target_living->GetIsDead())
+    const auto target = GW::Agents::GetAgentByID(target_id);
+    if (!target)
     {
+        target_id = 0;
         return RoutineState::FINISHED;
     }
 
-    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player->target->agent_id);
-    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player->target->agent_id);
-    const bool found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, player->target->agent_id);
+    const auto is_alive_ally = IsAliveAlly(target);
+    if (!is_alive_ally)
+    {
+        target_id = 0;
+        return RoutineState::FINISHED;
+    }
+
+    const auto found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
+    const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
+    const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, target_id);
 
     if (!found_balth && skillbar->balth.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(skillbar->balth.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->balth.idx, target_id);
         return RoutineState::ACTIVE;
     }
 
     if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(skillbar->prot.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->prot.idx, target_id);
         return RoutineState::ACTIVE;
     }
 
     if (!found_life && skillbar->life.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(skillbar->life.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->life.idx, target_id);
         return RoutineState::ACTIVE;
     }
 
+    target_id = 0;
     return RoutineState::FINISHED;
 }
 
@@ -570,6 +551,7 @@ void TankBonding::Update()
 
 RoutineState PlayerBonding::Routine()
 {
+    static uint32_t target_id = 0;
     static auto timer = TIMER_INIT();
     const auto timer_diff = TIMER_DIFF(timer);
 
@@ -581,38 +563,47 @@ RoutineState PlayerBonding::Routine()
     timer = TIMER_INIT();
 
     if (!player->CanCast())
-    {
         return RoutineState::ACTIVE;
-    }
 
-    if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
+    if (!target_id && !player->target)
     {
+        target_id = 0;
         return RoutineState::FINISHED;
     }
 
-    const auto target_living = player->target->GetAsAgentLiving();
+    if (!target_id)
+        target_id = player->target->agent_id;
 
-    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
-        target_living->GetIsDead())
+    const auto target = GW::Agents::GetAgentByID(target_id);
+    if (!target)
     {
+        target_id = 0;
         return RoutineState::FINISHED;
     }
 
-    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, player->target->agent_id);
-    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, player->target->agent_id);
+    const auto is_alive_ally = IsAliveAlly(target);
+    if (!is_alive_ally)
+    {
+        target_id = 0;
+        return RoutineState::FINISHED;
+    }
+
+    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
+    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
 
     if (!found_balth && skillbar->balth.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(skillbar->balth.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->balth.idx, target_id);
         return RoutineState::ACTIVE;
     }
 
     if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
     {
-        (void)SafeUseSkill(skillbar->prot.idx, player->target->agent_id);
+        (void)SafeUseSkill(skillbar->prot.idx, target_id);
         return RoutineState::ACTIVE;
     }
 
+    target_id = 0;
     return RoutineState::FINISHED;
 }
 
@@ -640,21 +631,18 @@ RoutineState FusePull::Routine()
 {
     ResetState(routine_state);
 
-    if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
+    if (!player->target)
     {
         ResetData();
         return RoutineState::FINISHED;
     }
 
-    const auto target_living = player->target->GetAsAgentLiving();
-
-    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
-        target_living->GetIsDead())
+    const auto is_alive_ally = IsAliveAlly(player->target);
+    if (!is_alive_ally)
     {
         ResetData();
         return RoutineState::FINISHED;
     }
-
 
     const auto me_pos = player->pos;
     const auto target_pos = player->target->pos;

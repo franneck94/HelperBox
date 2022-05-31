@@ -585,3 +585,50 @@ bool CanMove()
 {
     return !IsLoading() && !GW::Map::GetIsObserving() && GW::MemoryMgr::GetGWWindowHandle() == GetActiveWindow();
 }
+
+uint32_t GetTankId()
+{
+    std::vector<PlayerMapping> party_members;
+    bool success = GetPartyMembers(party_members);
+
+    if (!success || party_members.size() < 2)
+        return 0;
+
+    uint32_t tank_idx = 0;
+
+    switch (GW::Map::GetMapID())
+    {
+    case GW::Constants::MapID::The_Underworld:
+#ifdef _DEBUG
+    case GW::Constants::MapID::Isle_of_the_Nameless:
+#endif
+    {
+        tank_idx = party_members.size() - 2;
+        break;
+    }
+    default:
+    {
+        tank_idx = 0;
+        break;
+    }
+    }
+
+    const auto tank = party_members[tank_idx];
+    return tank.id;
+}
+
+bool IsAliveAlly(const GW::Agent *target)
+{
+    if (!target)
+        return false;
+
+    const auto target_living = target->GetAsAgentLiving();
+    if (!target_living)
+        return false;
+
+    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
+        target_living->GetIsDead())
+        return false;
+
+    return true;
+}

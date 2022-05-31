@@ -103,3 +103,7 @@ bool IsInDhuumRoom(const Player *player);
 bool IsInDhuumFight(uint32_t *dhuum_id = nullptr);
 
 bool CanMove();
+
+uint32_t GetTankId();
+
+bool IsAliveAlly(const GW::Agent *target);
