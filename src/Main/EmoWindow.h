@@ -113,7 +113,7 @@ class FusePull : public EmoActionABC
 public:
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
-    FusePull(Player *p, EmoSkillbar *s) : timer(TIMER_INIT()), EmoActionABC(p, "Fuse Pull", s)
+    FusePull(Player *p, EmoSkillbar *s) : timer(TIMER_INIT()), EmoActionABC(p, "Fuse Range", s)
     {
     }
 
