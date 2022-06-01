@@ -18,7 +18,6 @@ class HelperBox
     HelperBox(){};
     ~HelperBox(){};
 
-
 public:
     static HelperBox &Instance()
     {
@@ -41,10 +40,6 @@ public:
     void StartSelfDestruct()
     {
         SaveSettings();
-        for (HelperBoxModule *module : modules)
-        {
-            module->SignalTerminate();
-        }
         must_self_destruct = true;
     }
     bool must_self_destruct = false;
@@ -55,6 +50,7 @@ public:
             return modules.push_back(m), true;
         return false;
     }
+
     bool RegisterUIElement(HelperBoxUIElement *e)
     {
         if (std::find(uielements.begin(), uielements.end(), e) == uielements.end())
@@ -66,10 +62,12 @@ public:
     {
         return modules;
     }
+
     const std::vector<HelperBoxModule *> &GetCoreModules() const
     {
         return core_modules;
     }
+
     const std::vector<HelperBoxUIElement *> &GetUIElements() const
     {
         return uielements;

@@ -82,29 +82,20 @@ DWORD __stdcall ThreadEntry(LPVOID)
     });
 
     Log::Log("Installed dx hooks\n");
-
     Log::InitializeChat();
-
     Log::Log("Installed chat hooks\n");
-
     GW::HookBase::EnableHooks();
-
     Log::Log("Hooks Enabled!\n");
-
     GW::GameThread::Enqueue([]() { HelperBox::Instance().Initialize(); });
 
     while (!tb_destroyed)
-    {
         Sleep(100);
-    }
     while (GW::HookBase::GetInHookCount())
         Sleep(16);
-
     Sleep(16);
 
 leave:
     GW::Terminate();
-
     FreeLibraryAndExitThread(dllmodule, EXIT_SUCCESS);
 }
 
@@ -132,10 +123,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     }
 
     if (!(!GW::PreGameContext::instance() && imgui_initialized && tb_initialized && !tb_destroyed))
-    {
         return CallWindowProc((WNDPROC)OldWndProc, hWnd, Message, wParam, lParam);
-    }
-
 
     if (Message == WM_RBUTTONUP)
         right_mouse_down = false;
@@ -145,9 +133,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         right_mouse_down = true;
 
     HelperBox::Instance().right_mouse_down = right_mouse_down;
-
     bool skip_mouse_capture = right_mouse_down || GW::UI::GetIsWorldMapShowing();
-
     ImGuiIO &io = ImGui::GetIO();
 
     switch (Message)
@@ -219,14 +205,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     HelperBox &helper_box = HelperBox::Instance();
     switch (Message)
     {
-    case WM_LBUTTONUP:
-    case WM_RBUTTONUP:
-        for (HelperBoxModule *m : helper_box.GetModules())
-        {
-            m->WndProc(Message, wParam, lParam);
-        }
-        break;
-
     case WM_LBUTTONDOWN:
     case WM_LBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
@@ -237,16 +215,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         if (io.WantCaptureMouse && !skip_mouse_capture)
             return true;
         bool captured = false;
-        for (HelperBoxModule *m : helper_box.GetModules())
-        {
-            if (m->WndProc(Message, wParam, lParam))
-                captured = true;
-        }
         if (captured)
             return true;
+        break;
     }
-    break;
-
     case WM_KEYUP:
     case WM_SYSKEYUP:
         if (io.WantTextInput)
@@ -262,32 +234,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     case WM_MBUTTONDOWN:
     case WM_MBUTTONDBLCLK:
     case WM_MBUTTONUP:
+    {
         if (io.WantTextInput)
-        {
             return true;
-        }
-        {
-            bool captured = false;
-            for (HelperBoxModule *m : helper_box.GetModules())
-            {
-                if (m->WndProc(Message, wParam, lParam))
-                    captured = true;
-            }
-            if (captured)
-                return true;
-        }
+        bool captured = false;
+        if (captured)
+            return true;
         break;
-
+    }
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
     case WM_SIZE:
-        break;
     default:
-        if (Message >= 0xC000 && Message <= 0xFFFF)
-        {
-            for (HelperBoxModule *m : helper_box.GetModules())
-            {
-                m->WndProc(Message, wParam, lParam);
-            }
-        }
         break;
     }
 
@@ -308,7 +266,6 @@ void HelperBox::Initialize()
 
     Log::Log("Creating HelperBox\n");
     GW::GameThread::RegisterGameThreadCallback(&Update_Entry, HelperBox::Update);
-
     OpenSettingsFile();
 
     core_modules.push_back(&HelperBoxTheme::Instance());
@@ -322,17 +279,14 @@ void HelperBox::Initialize()
     }
 
     HelperBoxSettings::Instance().LoadModules(inifile);
-
     tb_initialized = true;
 }
 
 void HelperBox::OpenSettingsFile()
 {
     Log::Log("Opening ini file");
-    if (inifile == nullptr)
-    {
+    if (!inifile)
         inifile = new CSimpleIni(false, false, false);
-    }
     inifile->Reset();
 
     const auto filename = std::wstring{L"HelperBox.ini"};
@@ -344,9 +298,7 @@ void HelperBox::OpenSettingsFile()
 void HelperBox::LoadModuleSettings()
 {
     for (HelperBoxModule *module : modules)
-    {
         module->LoadSettings(inifile);
-    }
 }
 
 void HelperBox::SaveSettings()
@@ -354,9 +306,7 @@ void HelperBox::SaveSettings()
     Log::Log("Saving ini file");
 
     for (HelperBoxModule *module : modules)
-    {
         module->SaveSettings(inifile);
-    }
 
     if (inifile)
     {
@@ -389,28 +339,18 @@ void HelperBox::Terminate()
     SaveSettings();
 
     if (inifile)
-    {
         inifile->Reset();
-    }
 
     GW::GameThread::RemoveGameThreadCallback(&Update_Entry);
 
     for (HelperBoxModule *module : modules)
-    {
         module->Terminate();
-    }
 }
 
 void HelperBox::Draw(IDirect3DDevice9 *device)
 {
     if (tb_initialized && HelperBox::Instance().must_self_destruct)
     {
-        for (HelperBoxModule *module : HelperBox::Instance().modules)
-        {
-            if (!module->CanTerminate())
-                return;
-        }
-
         HelperBox::Instance().Terminate();
         if (imgui_initialized)
         {
@@ -467,7 +407,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
 
         for (HelperBoxUIElement *uielement : HelperBox::Instance().uielements)
         {
-            if (world_map_showing && !uielement->ShowOnWorldMap())
+            if (world_map_showing)
                 continue;
             uielement->Draw(device);
         }
@@ -500,9 +440,7 @@ void HelperBox::Update(GW::HookStatus *)
         float delta_f = delta / 1000.f;
 
         for (HelperBoxModule *module : helper_box.modules)
-        {
             module->Update(delta_f);
-        }
 
         last_tick_count = tick;
     }
