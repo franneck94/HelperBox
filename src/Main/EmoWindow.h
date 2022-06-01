@@ -13,6 +13,7 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
+#include <Callbacks.h>
 #include <GuiUtils.h>
 #include <Player.h>
 #include <Timer.h>
@@ -54,9 +55,11 @@ public:
     void Update() override;
 
     GW::HookEntry Summon_AgentAdd_Entry;
-    GW::HookEntry OnDialog_Entry;
     bool found_turtle = false;
     uint32_t turtle_id = 0;
+
+    bool interrupted = false;
+    GW::HookEntry GenericValueSelf_Entry;
 };
 
 class TankBonding : public EmoActionABC
@@ -64,10 +67,22 @@ class TankBonding : public EmoActionABC
 public:
     TankBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Tank Bonds", s)
     {
+        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
+            &GenericValueSelf_Entry,
+            [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
+                UNREFERENCED_PARAMETER(status);
+                if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
+                {
+                    interrupted = true;
+                }
+            });
     }
 
     RoutineState Routine() override;
     void Update() override;
+
+    bool interrupted = false;
+    GW::HookEntry GenericValueSelf_Entry;
 };
 
 class PlayerBonding : public EmoActionABC
@@ -75,17 +90,27 @@ class PlayerBonding : public EmoActionABC
 public:
     PlayerBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Player Bonds", s)
     {
+        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
+            &GenericValueSelf_Entry,
+            [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
+                UNREFERENCED_PARAMETER(status);
+                if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
+                {
+                    interrupted = true;
+                }
+            });
     }
 
     RoutineState Routine() override;
     void Update() override;
+
+    bool interrupted = false;
+    GW::HookEntry GenericValueSelf_Entry;
 };
 
 class FusePull : public EmoActionABC
 {
 public:
-    static constexpr auto MIN_FUSE_PULL_RANGE = float{1200.0F};
-    static constexpr auto MAX_FUSE_PULL_RANGE = float{1248.0F};
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
     FusePull(Player *p, EmoSkillbar *s) : timer(TIMER_INIT()), EmoActionABC(p, "Fuse Pull", s)
@@ -160,7 +185,33 @@ private:
     PlayerBonding player_bonding;
 
     uint32_t move_idx = 0;
-    std::vector<Move> moves;
+    std::array<Move, 26> moves = {Move{1248.0F, 6965.509766F, 5000.0F, "Spawn"},
+                                  Move{-583.28F, 9275.68F, 5000.0F, "Lab Stairs1"},
+                                  Move{-2730.79F, 10159.21F, 5000.0F, "Lab Stairs2"},
+                                  Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"},
+                                  Move{-6459.410156F, 9943.219727F, 5000.0F, "Fuse Pull 1"},
+                                  Move{-6241.24F, 7945.73F, 5000.0F, "Basement"},
+                                  Move{-8763.36F, 5551.18F, 5000.0F, "Basement Stairs"},
+                                  Move{-7980.55F, 4308.90F, 5000.0F, "Fuse Pull 2"},
+                                  Move{-8764.08F, 2156.60F, 5000.0F, "Vale Entry"},
+                                  Move{-12264.129883F, 1821.180054F, 5000.0F, "Vale House"},
+                                  Move{-13872.34F, 2332.34F, 5000.0F, "Spirits 1"},
+                                  Move{-13760.19F, 358.15F, 5000.0F, "Spirits 2"},
+                                  Move{-12145.44F, 1101.74F, 5000.0F, "Spirits 3"},
+                                  Move{-8764.08F, 2156.60F, 5000.0F, "Vale Entry"},
+                                  Move{-7980.55F, 4308.90F, 5000.0F, "Basement Stairs"},
+                                  Move{-6241.24F, 7945.73F, 5000.0F, "Basement"},
+                                  Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"},
+                                  Move{-6035.58F, 11274.30F, 5000.0F, "Keeper 1/2"},
+                                  Move{-3881.71F, 11280.04F, 5000.0F, "Keeper 3"},
+                                  Move{-1502.45F, 9737.64F, 5000.0F, "Keeper 4/5"},
+                                  Move{-266.03F, 9304.26F, 5000.0F, "Lab Stairs1"},
+                                  Move{1207.05F, 7732.16F, 5000.0F, "Keeper 6"},
+                                  Move{1354.31F, 10063.58F, 5000.0F, "To Wastes 1"},
+                                  Move{3489.18F, 8177.49F, 5000.0F, "To Wastes 2"},
+                                  Move{5385.25F, 8866.17F, 5000.0F, "To Wastes 3"},
+                                  Move{6022.19F, 11318.40F, 5000.0F, "To Wastes 3"}};
 
     GW::HookEntry MapLoaded_Entry;
+    GW::HookEntry GenericValueSelf_Entry;
 };

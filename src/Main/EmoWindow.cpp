@@ -25,7 +25,6 @@
 
 #include <HelperBox.h>
 #include <Logger.h>
-#include <Timer.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
@@ -39,11 +38,8 @@
 
 namespace
 {
-static constexpr auto MIN_CYCLE_TIME_MS = uint32_t{100};
-
 static ActionState *emo_casting_action_state = nullptr;
 static bool send_move = false;
-static bool reset_template = false;
 }; // namespace
 
 void Move::Execute()
@@ -76,7 +72,7 @@ void ActionABC::Draw(const ImVec2 button_size)
 
 EmoWindow::EmoWindow()
     : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar),
-      tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar), moves({})
+      tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -89,42 +85,15 @@ EmoWindow::EmoWindow()
             switch (GW::Map::GetInstanceType())
             {
             case GW::Constants::InstanceType::Explorable:
-                reset_template = true;
+                if (skillbar.ValidateData())
+                    skillbar.Load();
                 break;
             case GW::Constants::InstanceType::Outpost:
             case GW::Constants::InstanceType::Loading:
             default:
-                reset_template = false;
                 break;
             }
         });
-
-    moves.push_back(Move{1248.0F, 6965.509766F, 5000.0F, "Spawn"});
-    moves.push_back(Move{-583.28F, 9275.68F, 5000.0F, "Lab Stairs1"});
-    moves.push_back(Move{-2730.79F, 10159.21F, 5000.0F, "Lab Stairs2"});
-    moves.push_back(Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"});
-    moves.push_back(Move{-6459.410156F, 9943.219727F, 5000.0F, "Fuse Pull 1"});
-    moves.push_back(Move{-6241.24F, 7945.73F, 5000.0F, "Basement"});
-    moves.push_back(Move{-8763.36F, 5551.18F, 5000.0F, "Basement Stairs"});
-    moves.push_back(Move{-7980.55F, 4308.90F, 5000.0F, "Fuse Pull 2"});
-    moves.push_back(Move{-8764.08F, 2156.60F, 5000.0F, "Vale Entry"});
-    moves.push_back(Move{-12264.129883F, 1821.180054F, 5000.0F, "Vale House"});
-    moves.push_back(Move{-13872.34F, 2332.34F, 5000.0F, "Spirits 1"});
-    moves.push_back(Move{-13760.19F, 358.15F, 5000.0F, "Spirits 2"});
-    moves.push_back(Move{-12145.44F, 1101.74F, 5000.0F, "Spirits 3"});
-    moves.push_back(Move{-8764.08F, 2156.60F, 5000.0F, "Vale Entry"});
-    moves.push_back(Move{-7980.55F, 4308.90F, 5000.0F, "Basement Stairs"});
-    moves.push_back(Move{-6241.24F, 7945.73F, 5000.0F, "Basement"});
-    moves.push_back(Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"});
-    moves.push_back(Move{-6035.58F, 11274.30F, 5000.0F, "Keeper 1/2"});
-    moves.push_back(Move{-3881.71F, 11280.04F, 5000.0F, "Keeper 3"});
-    moves.push_back(Move{-1502.45F, 9737.64F, 5000.0F, "Keeper 4/5"});
-    moves.push_back(Move{-266.03F, 9304.26F, 5000.0F, "Lab Stairs1"});
-    moves.push_back(Move{1207.05F, 7732.16F, 5000.0F, "Keeper 6"});
-    moves.push_back(Move{1354.31F, 10063.58F, 5000.0F, "To Wastes 1"});
-    moves.push_back(Move{3489.18F, 8177.49F, 5000.0F, "To Wastes 2"});
-    moves.push_back(Move{5385.25F, 8866.17F, 5000.0F, "To Wastes 3"});
-    moves.push_back(Move{6022.19F, 11318.40F, 5000.0F, "To Wastes 3"});
 };
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
@@ -154,13 +123,13 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
         {
             moves[move_idx].Execute();
         }
-        if (ImGui::Button("Prev.", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.0F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+        if (ImGui::Button("Prev.", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
         {
             if (move_idx > 0)
                 --move_idx;
         }
         ImGui::SameLine();
-        if (ImGui::Button("Next", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.0F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+        if (ImGui::Button("Next", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
         {
             if (move_idx < moves.size() - 1)
                 ++move_idx;
@@ -186,12 +155,6 @@ void EmoWindow::Update(float delta)
 
     if (!skillbar.ValidateData())
         return;
-
-    if (reset_template)
-    {
-        skillbar.Load();
-        reset_template = false;
-    }
 
     skillbar.Update();
 
@@ -235,27 +198,32 @@ Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
             found_turtle = true;
             turtle_id = pak->agent_id;
         });
+
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
+        &GenericValueSelf_Entry,
+        [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
+            UNREFERENCED_PARAMETER(status);
+            if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
+            {
+                interrupted = true;
+            }
+        });
 }
 
 RoutineState Pumping::Routine()
 {
-    static auto timer = TIMER_INIT();
-    const auto timer_diff = TIMER_DIFF(timer);
-
-    if (timer_diff < MIN_CYCLE_TIME_MS)
-        return RoutineState::ACTIVE;
-
-    timer = TIMER_INIT();
-
     if (!player->CanCast())
         return RoutineState::FINISHED;
 
-    const bool found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
-    const bool found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
+    if (interrupted)
+    {
+        interrupted = true;
+        return RoutineState::FINISHED;
+    }
 
     const bool found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
-    const bool found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
-    const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
+    const bool found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
+    const bool found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
 
     if (skillbar->ether.CanBeCasted(player->energy))
     {
@@ -279,6 +247,9 @@ RoutineState Pumping::Routine()
             return RoutineState::ACTIVE;
         }
     }
+
+    const bool found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
+    const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
 
     const bool low_hp = player->hp_perc < 0.90F;
     const bool low_energy = player->energy_perc < 0.90F;
@@ -306,37 +277,39 @@ RoutineState Pumping::Routine()
     if (found_turtle && turtle_id && GW::Agents::GetAgentByID(turtle_id))
     {
         const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
-
-        const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
-
-        if (dist < GW::Constants::Range::Spellcast)
+        if (turtle_agent)
         {
-            const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
-            const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
+            const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
 
-            if (!found_bond)
+            if (dist < GW::Constants::Range::Spellcast)
             {
-                (void)SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
-                return RoutineState::ACTIVE;
-            }
+                const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
+                const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
 
-            if (!found_life)
-            {
-                (void)SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
-                return RoutineState::ACTIVE;
-            }
+                if (!found_bond)
+                {
+                    (void)SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
+                    return RoutineState::ACTIVE;
+                }
 
-            const auto turtle_living = turtle_agent->GetAsAgentLiving();
+                if (!found_life)
+                {
+                    (void)SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
+                    return RoutineState::ACTIVE;
+                }
 
-            if (turtle_living && turtle_living->hp < 0.7F)
-            {
-                (void)SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
-                return RoutineState::ACTIVE;
-            }
-            else if (turtle_living && turtle_living->hp < 0.9F)
-            {
-                (void)SafeUseSkill(skillbar->sb.idx, turtle_agent->agent_id);
-                return RoutineState::ACTIVE;
+                const auto turtle_living = turtle_agent->GetAsAgentLiving();
+
+                if (turtle_living && turtle_living->hp < 0.7F)
+                {
+                    (void)SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
+                    return RoutineState::ACTIVE;
+                }
+                else if (turtle_living && turtle_living->hp < 0.9F)
+                {
+                    (void)SafeUseSkill(skillbar->sb.idx, turtle_agent->agent_id);
+                    return RoutineState::ACTIVE;
+                }
             }
         }
     }
@@ -460,16 +433,15 @@ void Pumping::Update()
 RoutineState TankBonding::Routine()
 {
     static uint32_t target_id = 0;
-    static auto timer = TIMER_INIT();
-    const auto timer_diff = TIMER_DIFF(timer);
-
-    if (timer_diff < MIN_CYCLE_TIME_MS)
-        return RoutineState::ACTIVE;
-
-    timer = TIMER_INIT();
 
     if (!player->CanCast())
         return RoutineState::ACTIVE;
+
+    if (interrupted)
+    {
+        interrupted = false;
+        return RoutineState::FINISHED;
+    }
 
     // If no other player selected as target
     const auto no_target_or_self = (!player->target || player->target->agent_id == player->id);
@@ -490,8 +462,14 @@ RoutineState TankBonding::Routine()
         return RoutineState::FINISHED;
     }
 
-    const auto target = GW::Agents::GetAgentByID(target_id);
-    if (!target)
+    auto target = player->target;
+    if (!target || target->agent_id == player->id)
+    {
+        player->ChangeTarget(target_id);
+        target = player->target;
+    }
+
+    if (target->agent_id != target_id)
     {
         target_id = 0;
         return RoutineState::FINISHED;
@@ -553,15 +531,13 @@ void TankBonding::Update()
 RoutineState PlayerBonding::Routine()
 {
     static uint32_t target_id = 0;
-    static auto timer = TIMER_INIT();
-    const auto timer_diff = TIMER_DIFF(timer);
 
-    if (timer_diff < MIN_CYCLE_TIME_MS)
+    if (interrupted)
     {
-        return RoutineState::ACTIVE;
+        target_id = 0;
+        interrupted = false;
+        return RoutineState::FINISHED;
     }
-
-    timer = TIMER_INIT();
 
     if (!player->CanCast())
         return RoutineState::ACTIVE;
@@ -575,8 +551,14 @@ RoutineState PlayerBonding::Routine()
     if (!target_id)
         target_id = player->target->agent_id;
 
-    const auto target = GW::Agents::GetAgentByID(target_id);
-    if (!target)
+    auto target = player->target;
+    if (!target || target->agent_id == player->id)
+    {
+        player->ChangeTarget(target_id);
+        target = player->target;
+    }
+
+    if (target->agent_id != target_id)
     {
         target_id = 0;
         return RoutineState::FINISHED;
@@ -650,7 +632,7 @@ RoutineState FusePull::Routine()
 
     const auto d = GW::GetDistance(me_pos, target_pos);
 
-    if ((routine_state == RoutineState::NONE) && (d < MIN_FUSE_PULL_RANGE || d > MAX_FUSE_PULL_RANGE))
+    if (routine_state == RoutineState::NONE)
     {
         requested_pos = GW::GamePos{};
 

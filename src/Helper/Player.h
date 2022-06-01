@@ -3,8 +3,11 @@
 #include <cstdint>
 #include <memory>
 
+#include <GWCA/Constants/Constants.h>
+#include <GWCA/Constants/Skills.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Skill.h>
 
 class Player
