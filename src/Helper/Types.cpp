@@ -10,10 +10,6 @@ ActionState StateNegation(const ActionState state)
         break;
     }
     case ActionState::ON_HOLD:
-    {
-        return ActionState::ON_HOLD;
-        break;
-    }
     case ActionState::ACTIVE:
     default:
     {
