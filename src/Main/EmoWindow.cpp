@@ -76,24 +76,6 @@ EmoWindow::EmoWindow()
 {
     if (skillbar.ValidateData())
         skillbar.Load();
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
-        &MapLoaded_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-            UNREFERENCED_PARAMETER(status);
-            UNREFERENCED_PARAMETER(packet);
-            switch (GW::Map::GetInstanceType())
-            {
-            case GW::Constants::InstanceType::Explorable:
-                if (skillbar.ValidateData())
-                    skillbar.Load();
-                break;
-            case GW::Constants::InstanceType::Outpost:
-            case GW::Constants::InstanceType::Loading:
-            default:
-                break;
-            }
-        });
 };
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
@@ -155,7 +137,6 @@ void EmoWindow::Update(float delta)
 
     if (!skillbar.ValidateData())
         return;
-
     skillbar.Update();
 
     if (player.primary != GW::Constants::Profession::Elementalist ||
@@ -186,15 +167,9 @@ Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
 
             uint32_t player_number = (pak->agent_type ^ 0x20000000);
 
-#ifdef _DEBUG
-            if (!IsExplorable() || player_number != 514 && player_number != 467) // Mercantile id
-                return;
-#else
             if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld || player_number != 514) // Turtle id
                 return;
-#endif
 
-            Log::Info("Summoned turtle");
             found_turtle = true;
             turtle_id = pak->agent_id;
         });
@@ -249,10 +224,7 @@ RoutineState Pumping::Routine()
     }
 
     const bool found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
-    const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
-
     const bool low_hp = player->hp_perc < 0.90F;
-    const bool low_energy = player->energy_perc < 0.90F;
 
     const bool sb_needed = low_hp || !found_sb;
     const bool sb_avail = skillbar->sb.CanBeCasted(player->energy);
@@ -261,6 +233,9 @@ RoutineState Pumping::Routine()
         (void)SafeUseSkill(skillbar->sb.idx, player->id);
         return RoutineState::ACTIVE;
     }
+
+    const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
+    const bool low_energy = player->energy_perc < 0.90F;
 
     const bool need_burning = low_hp || low_energy || !found_burning;
     const bool burning_avail = skillbar->burning.CanBeCasted(player->energy);
@@ -274,7 +249,7 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
-    if (found_turtle && turtle_id && GW::Agents::GetAgentByID(turtle_id))
+    if (found_turtle && turtle_id)
     {
         const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
         if (turtle_agent)
