@@ -9,24 +9,6 @@ void PathGetExeFullPath(wchar_t *path, size_t length)
         path[0] = 0;
 }
 
-void PathRemoveFileName(wchar_t *path, size_t length, const wchar_t *src)
-{
-    assert(MAX_PATH <= length);
-
-    if (path != src)
-        StrCopyW(path, length, src);
-    PathRemoveFileSpecW(path);
-}
-
-void PathRemovePath(wchar_t *path, size_t length, const wchar_t *src)
-{
-    assert(MAX_PATH <= length);
-
-    if (path != src)
-        StrCopyW(path, length, src);
-    PathStripPathW(path);
-}
-
 void PathGetProgramDirectory(wchar_t *path, size_t length)
 {
     PathGetExeFullPath(path, length);

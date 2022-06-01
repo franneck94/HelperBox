@@ -40,7 +40,6 @@ private:
 private:
     HWND m_hCharacters;
     HWND m_hLaunchButton;
-    HWND m_hRestartAsAdmin;
     HWND m_hSettings;
 
     int m_Selected;

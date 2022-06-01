@@ -268,8 +268,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
     return InjectReply_Inject;
 }
 
-InjectWindow::InjectWindow()
-    : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_hRestartAsAdmin(nullptr), m_hSettings(nullptr), m_Selected(-1)
+InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_hSettings(nullptr), m_Selected(-1)
 {
 }
 
