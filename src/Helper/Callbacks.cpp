@@ -16,10 +16,7 @@ bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet, const Player *
         return false;
 
     if (value_id == GW::Packet::StoC::GenericValueID::skill_stopped)
-    {
-        Log::Info("skill_stopped - caster_id: %d", caster_id);
         return true;
-    }
 
     return false;
 }

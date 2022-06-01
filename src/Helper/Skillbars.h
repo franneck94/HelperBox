@@ -6,7 +6,12 @@
 
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/GameEntities/Skill.h>
+#include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/SkillbarMgr.h>
+#include <GWCA/Managers/StoCMgr.h>
+#include <GWCA/Packets/Opcodes.h>
+#include <GWCA/Packets/StoC.h>
+#include <GWCA/Utilities/Hook.h>
 
 struct SkillData
 {
@@ -41,6 +46,27 @@ public:
 class SkillbarABC
 {
 public:
+    SkillbarABC()
+    {
+        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
+            &MapLoaded_Entry,
+            [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
+                UNREFERENCED_PARAMETER(status);
+                UNREFERENCED_PARAMETER(packet);
+                switch (GW::Map::GetInstanceType())
+                {
+                case GW::Constants::InstanceType::Explorable:
+                    reset = true;
+                    break;
+                case GW::Constants::InstanceType::Outpost:
+                case GW::Constants::InstanceType::Loading:
+                default:
+                    reset = false;
+                    break;
+                }
+            });
+    }
+
     bool ValidateData()
     {
         const auto skillbar_ = GW::SkillbarMgr::GetPlayerSkillbar();
@@ -68,9 +94,18 @@ public:
         const auto internal_skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
         const auto skillbar_skills = internal_skillbar->skills;
         UpdateInternal(skillbar_skills);
+
+        if (reset)
+        {
+            Load();
+            reset = false;
+        }
     }
 
     virtual void UpdateInternal(const GW::SkillbarSkill *skillbar_skills) = 0;
+
+    bool reset = false;
+    GW::HookEntry MapLoaded_Entry;
 };
 
 class EmoSkillbar : public SkillbarABC
