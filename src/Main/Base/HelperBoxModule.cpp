@@ -29,11 +29,8 @@ void HelperBoxModule::Initialize()
 
 void HelperBoxModule::RegisterSettingsContent()
 {
-    if (!HasSettings())
-        return;
     RegisterSettingsContent(
         SettingsName(),
-        Icon(),
         [this](const std::string *section, bool is_showing) {
             UNREFERENCED_PARAMETER(section);
             if (is_showing)
@@ -43,7 +40,6 @@ void HelperBoxModule::RegisterSettingsContent()
 }
 
 void HelperBoxModule::RegisterSettingsContent(const char *section,
-                                              const char *,
                                               SectionDrawCallback callback,
                                               float weighting)
 {

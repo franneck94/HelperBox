@@ -22,11 +22,6 @@ public:
         return "HelperBox";
     }
 
-    const char *Icon() const override
-    {
-        return nullptr;
-    }
-
     void LoadModules(CSimpleIni *ini);
 
     void Update(float delta) override;
@@ -36,8 +31,6 @@ public:
     void DrawSettingInternal() override;
     void Draw(IDirect3DDevice9 *) override;
     void ShowVisibleRadio() override{};
-
-    void DrawFreezeSetting();
 
     const std::vector<HelperBoxModule *> &GetOptionalModules() const
     {

@@ -7,10 +7,6 @@
 
 #include "ChatCommands.h"
 
-void ChatCommands::DrawHelp()
-{
-}
-
 void ChatCommands::DrawSettingInternal()
 {
 }
@@ -35,11 +31,6 @@ void ChatCommands::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 }
-
-bool ChatCommands::WndProc(UINT, WPARAM, LPARAM)
-{
-    return false;
-};
 
 void ChatCommands::CmdHB(const wchar_t *message, int argc, LPWSTR *argv)
 {

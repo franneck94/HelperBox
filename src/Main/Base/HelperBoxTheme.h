@@ -8,13 +8,9 @@ class HelperBoxTheme : public HelperBoxUIElement
     ~HelperBoxTheme()
     {
         if (windows_ini)
-        {
             delete windows_ini;
-        }
         if (inifile)
-        {
             delete inifile;
-        }
     }
 
 public:
@@ -27,10 +23,6 @@ public:
     const char *Name() const override
     {
         return "Theme";
-    }
-    const char *Icon() const override
-    {
-        return nullptr;
     }
 
     void Terminate() override;

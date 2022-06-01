@@ -28,7 +28,7 @@ public:
     }
     const char *SettingsName() const override
     {
-        return "Game Settings";
+        return "Chat Settings";
     }
 
     void Initialize() override;
@@ -36,8 +36,6 @@ public:
     void SaveSettings(CSimpleIni *ini) override;
     void DrawSettingInternal() override;
 
-    void DrawHelp() override;
-    bool WndProc(UINT Message, WPARAM wParam, LPARAM lParam);
     void Update(float delta) override;
 
     static void CmdHB(const wchar_t *message, int argc, LPWSTR *argv);

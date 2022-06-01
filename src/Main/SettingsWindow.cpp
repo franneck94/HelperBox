@@ -45,7 +45,6 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
         ImColor sCol(102, 187, 238, 255);
         ImGui::Text("HelperBox");
 
-        HelperBoxSettings::Instance().DrawFreezeSetting();
         DrawSettingsSection(HelperBoxSettings::Instance().SettingsName());
 
         const std::vector<HelperBoxModule *> &optional_modules = HelperBoxSettings::Instance().GetOptionalModules();
@@ -53,16 +52,15 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
         {
             if (i == sep)
                 ImGui::Text("Components:");
-            DrawSettingsSection(optional_modules[i]->SettingsName());
+            if (optional_modules[i]->SettingsName() != "Chat Settings")
+                DrawSettingsSection(optional_modules[i]->SettingsName());
         }
     }
 
     float w = ImGui::GetWindowContentRegionWidth();
 
     if (ImGui::Button("Save Now", ImVec2(w, 0)))
-    {
         HelperBox::Instance().SaveSettings();
-    }
 
     if (ImGui::Button("Load Now", ImVec2(w, 0)))
     {

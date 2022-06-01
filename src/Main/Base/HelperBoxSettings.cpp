@@ -42,7 +42,6 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 void HelperBoxSettings::DrawSettingInternal()
 {
     ImGui::Separator();
-    DrawFreezeSetting();
     const size_t cols = (size_t)floor(ImGui::GetWindowWidth() / (170.0f * ImGui::GetIO().FontGlobalScale));
     ImGui::Separator();
     ImGui::PushID("global_enable");
@@ -81,7 +80,7 @@ void HelperBoxSettings::DrawSettingInternal()
         for (size_t i = 0; i < ui.size(); i++)
         {
             auto &window = ui[i];
-            if ((window->IsWidget() || window->IsWindow()) && window->can_show_in_main_window)
+            if (window->can_show_in_main_window)
             {
                 valid_elements.push_back(window);
             }
@@ -95,8 +94,6 @@ void HelperBoxSettings::DrawSettingInternal()
         for (size_t i = 0; i < valid_elements.size(); i++)
         {
             auto window = valid_elements[i];
-            if (ImGui::Checkbox(window->Name(), &window->show_menubutton))
-                MainWindow::Instance().pending_refresh_buttons = true;
             col_count++;
             if (col_count == items_per_col)
             {
@@ -107,11 +104,6 @@ void HelperBoxSettings::DrawSettingInternal()
         ImGui::Columns(1);
         ImGui::TreePop();
     }
-}
-
-void HelperBoxSettings::DrawFreezeSetting()
-{
-    ImGui::Checkbox("Unlock Move All", &move_all);
 }
 
 void HelperBoxSettings::LoadSettings(CSimpleIni *ini)

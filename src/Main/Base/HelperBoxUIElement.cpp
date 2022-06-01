@@ -9,16 +9,7 @@
 
 const char *HelperBoxUIElement::UIName() const
 {
-    if (Icon())
-    {
-        static char buf[128];
-        sprintf(buf, "%s  %s", Icon(), Name());
-        return buf;
-    }
-    else
-    {
-        return Name();
-    }
+    return Name();
 }
 
 void HelperBoxUIElement::Initialize()
@@ -53,7 +44,6 @@ void HelperBoxUIElement::RegisterSettingsContent()
 {
     HelperBoxModule::RegisterSettingsContent(
         SettingsName(),
-        Icon(),
         [this](const std::string *section, bool is_showing) {
             UNREFERENCED_PARAMETER(section);
             ShowVisibleRadio();
@@ -77,8 +67,6 @@ void HelperBoxUIElement::DrawSizeAndPositionSettings()
     }
     if (is_movable || is_resizable)
     {
-        char buf[128];
-        sprintf(buf, "You need to show the %s for this control to work", TypeName());
         if (is_movable)
         {
             if (ImGui::DragFloat2("Position", reinterpret_cast<float *>(&pos), 1.0f, 0.0f, 0.0f, "%.0f"))
@@ -133,7 +121,7 @@ void HelperBoxUIElement::ShowVisibleRadio()
     ImGui::PopID();
 }
 
-bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *, bool show_icon, bool show_text, bool center_align_text)
+bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *)
 {
     ImGui::PushStyleColor(ImGuiCol_Button, visible ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImVec4(0, 0, 0, 0));
     ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -141,35 +129,14 @@ bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *, bool show_icon, bool 
     float width = ImGui::GetWindowWidth();
 
     float img_size = 0;
-    if (show_icon)
-    {
-        img_size = ImGui::GetTextLineHeightWithSpacing();
-    }
+
     float text_x;
-    if (center_align_text)
-    {
-        text_x = pos.x + img_size + (width - img_size - textsize.x) / 2;
-    }
-    else
-    {
-        text_x = pos.x + img_size + ImGui::GetStyle().ItemSpacing.x;
-    }
+    text_x = pos.x + img_size + ImGui::GetStyle().ItemSpacing.x;
     bool clicked = ImGui::Button("", ImVec2(width, ImGui::GetTextLineHeightWithSpacing()));
-    if (show_icon)
-    {
-        if (Icon())
-        {
-            ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x, pos.y + ImGui::GetStyle().ItemSpacing.y / 2),
-                                                ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]),
-                                                Icon());
-        }
-    }
-    if (show_text)
-    {
-        ImGui::GetWindowDrawList()->AddText(ImVec2(text_x, pos.y + ImGui::GetStyle().ItemSpacing.y / 2),
-                                            ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]),
-                                            Name());
-    }
+
+    ImGui::GetWindowDrawList()->AddText(ImVec2(text_x, pos.y + ImGui::GetStyle().ItemSpacing.y / 2),
+                                        ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]),
+                                        Name());
 
     if (clicked)
         visible = !visible;

@@ -6,15 +6,6 @@
 class HelperBoxWindow : public HelperBoxUIElement
 {
 public:
-    bool IsWindow() const override
-    {
-        return true;
-    }
-    const char *TypeName() const override
-    {
-        return "window";
-    }
-
     virtual void Initialize() override
     {
         HelperBoxUIElement::Initialize();

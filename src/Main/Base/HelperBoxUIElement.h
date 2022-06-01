@@ -15,33 +15,7 @@ public:
 
     virtual void LoadSettings(CSimpleIni *ini) override;
     virtual void SaveSettings(CSimpleIni *ini) override;
-    virtual bool DrawTabButton(IDirect3DDevice9 *device,
-                               bool show_icon = true,
-                               bool show_text = true,
-                               bool center_align_text = true);
-
-    virtual bool ToggleVisible()
-    {
-        return visible = !visible;
-    }
-
-    virtual bool IsWindow() const
-    {
-        return false;
-    }
-    virtual bool IsWidget() const
-    {
-        return false;
-    }
-    virtual bool ShowOnWorldMap() const
-    {
-        return false;
-    }
-
-    virtual const char *TypeName() const
-    {
-        return "ui element";
-    }
+    virtual bool DrawTabButton(IDirect3DDevice9 *device);
 
     virtual void RegisterSettingsContent() override;
 

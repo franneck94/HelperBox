@@ -38,15 +38,5 @@ public:
     bool pending_refresh_buttons = true;
 
 private:
-    bool one_panel_at_time_only = false;
-    bool show_icons = true;
-    bool center_align_text = false;
-
-    float GetModuleWeighting(HelperBoxUIElement *m)
-    {
-        auto found = module_weightings.find(m->Name());
-        return found == module_weightings.end() ? 1.0f : found->second;
-    }
     std::vector<std::pair<float, HelperBoxUIElement *>> modules_to_draw{};
-    const std::unordered_map<std::string, float> module_weightings{{"Chests", 0.5f}, {"Emo", 0.52f}};
 };

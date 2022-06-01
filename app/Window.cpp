@@ -21,13 +21,9 @@ LRESULT CALLBACK Window::MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
     }
 
     if (window != nullptr)
-    {
         return window->WndProc(hWnd, uMsg, wParam, lParam);
-    }
     else
-    {
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
-    }
 }
 
 Window::Window()

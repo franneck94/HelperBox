@@ -9,7 +9,6 @@ void MainWindow::LoadSettings(CSimpleIni *ini)
 {
     HelperBoxWindow::LoadSettings(ini);
     pending_refresh_buttons = true;
-    show_icons = false;
 }
 
 void MainWindow::SaveSettings(CSimpleIni *ini)
@@ -25,7 +24,6 @@ void MainWindow::RegisterSettingsContent()
 {
     HelperBoxModule::RegisterSettingsContent(
         SettingsName(),
-        Icon(),
         [this](const std::string *section, bool is_showing) {
             UNREFERENCED_PARAMETER(section);
             if (!is_showing)
@@ -50,7 +48,7 @@ void MainWindow::RefreshButtons()
             continue;
         }
 
-        float weighting = GetModuleWeighting(ui_module);
+        float weighting = 1.0F;
         auto it = modules_to_draw.begin();
         for (it = modules_to_draw.begin(); it != modules_to_draw.end(); it++)
         {
@@ -91,31 +89,12 @@ void MainWindow::Draw(IDirect3DDevice9 *device)
 
             drawn = true;
             auto &ui_module = modules_to_draw[i].second;
-            if (ui_module->DrawTabButton(device, show_icons, true, center_align_text))
-            {
-                if (one_panel_at_time_only && ui_module->visible && ui_module->IsWindow())
-                {
-                    for (auto &ui_module2 : modules_to_draw)
-                    {
-                        if (ui_module2.second == ui_module)
-                        {
-                            continue;
-                        }
-                        if (!ui_module2.second->IsWindow())
-                        {
-                            continue;
-                        }
-                        ui_module2.second->visible = false;
-                    }
-                }
-            }
+            ui_module->DrawTabButton(device);
             ImGui::PopID();
         }
     }
     ImGui::End();
 
     if (!open)
-    {
         HelperBox::Instance().StartSelfDestruct();
-    }
 }

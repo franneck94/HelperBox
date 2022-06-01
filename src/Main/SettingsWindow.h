@@ -21,10 +21,6 @@ public:
     {
         return "Settings";
     }
-    const char *Icon() const override
-    {
-        return nullptr;
-    }
 
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;

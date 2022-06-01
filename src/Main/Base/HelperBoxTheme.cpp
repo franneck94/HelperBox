@@ -46,10 +46,8 @@ void HelperBoxTheme::LoadSettings(CSimpleIni *ini)
 {
     HelperBoxModule::LoadSettings(ini);
 
-    if (inifile == nullptr)
-    {
+    if (!inifile)
         inifile = new CSimpleIni(false, false, false);
-    }
 
     layout_dirty = true;
 }
@@ -81,9 +79,7 @@ void HelperBoxTheme::SaveUILayout()
 CSimpleIni *HelperBoxTheme::GetLayoutIni()
 {
     if (!windows_ini)
-    {
         windows_ini = new CSimpleIni(false, false, false);
-    }
 
     windows_ini->Reset();
     std::wstring filename = GetPath(WindowPositionsFilename);
@@ -111,9 +107,7 @@ void HelperBoxTheme::LoadUILayout()
     for (ImGuiWindow *window : windows)
     {
         if (!window)
-        {
             continue;
-        }
         ImVec2 pos = window->Pos;
         ImVec2 size = window->Size;
         char key[128];
@@ -139,16 +133,13 @@ void HelperBoxTheme::LoadUILayout()
 void HelperBoxTheme::SaveSettings(CSimpleIni *ini)
 {
     HelperBoxModule::SaveSettings(ini);
-
     SaveUILayout();
 }
 
 void HelperBoxTheme::Draw(IDirect3DDevice9 *)
 {
     if (layout_dirty)
-    {
         LoadUILayout();
-    }
 }
 
 void HelperBoxTheme::DrawSettingInternal()
