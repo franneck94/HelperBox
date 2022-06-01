@@ -23,17 +23,19 @@
 class Move
 {
 public:
+    static constexpr size_t NAME_LEN = 140U;
+
     Move(const float _x, const float _y, const float _range, const char *_name)
         : x(_x), y(_y), range(_range), pos({x, y, 0})
     {
-        strncpy(name, _name, 140);
+        strncpy(name, _name, NAME_LEN);
     };
 
     float x = 0.0;
     float y = 0.0;
     float range = 0.0;
     GW::GamePos pos;
-    char name[140] = "Move";
+    char name[NAME_LEN] = "Move";
 
     const char *Name() const
     {
