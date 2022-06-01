@@ -130,7 +130,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                 else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
                          foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.611F, 0.821F, 1.0F, 1.0));
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0));
                     pushed = true;
                 }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
