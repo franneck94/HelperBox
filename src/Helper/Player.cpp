@@ -28,12 +28,6 @@ bool Player::ValidateData() const
     if (me_agent == nullptr || me_living == nullptr)
         return false;
 
-    if (me_agent->agent_id == UINT32_MAX)
-        return false;
-
-    if (IsOutpost())
-        return true;
-
     return true;
 }
 
@@ -41,6 +35,7 @@ void Player::Update()
 {
     const auto me_agent = GW::Agents::GetPlayer();
     const auto me_living = GW::Agents::GetPlayerAsAgentLiving();
+
     id = me_agent->agent_id;
     pos = me_living->pos;
 
