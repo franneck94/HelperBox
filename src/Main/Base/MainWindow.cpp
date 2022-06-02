@@ -1,7 +1,11 @@
 #include "stdafx.h"
 
+#include <cstdint>
+
 #include <HelperBox.h>
 #include <Logger.h>
+
+#include <imgui.h>
 
 #include "MainWindow.h"
 
@@ -32,8 +36,7 @@ void MainWindow::RegisterSettingsContent()
             ShowVisibleRadio();
             DrawSizeAndPositionSettings();
             DrawSettingInternal();
-        },
-        1.0F);
+        });
 }
 
 void MainWindow::RefreshButtons()
@@ -44,18 +47,14 @@ void MainWindow::RefreshButtons()
     for (auto &ui_module : ui)
     {
         if (!ui_module->show_menubutton)
-        {
             continue;
-        }
 
         float weighting = 1.0F;
         auto it = modules_to_draw.begin();
         for (it = modules_to_draw.begin(); it != modules_to_draw.end(); it++)
         {
             if (it->first > weighting)
-            {
                 break;
-            }
         }
         modules_to_draw.insert(it, {weighting, ui_module});
     }
@@ -64,14 +63,10 @@ void MainWindow::RefreshButtons()
 void MainWindow::Draw(IDirect3DDevice9 *device)
 {
     if (!visible)
-    {
         return;
-    }
 
     if (pending_refresh_buttons)
-    {
         RefreshButtons();
-    }
 
     static bool open = true;
     ImGui::SetNextWindowSize(ImVec2(110.0f, 300.0f), ImGuiCond_FirstUseEver);
@@ -83,9 +78,7 @@ void MainWindow::Draw(IDirect3DDevice9 *device)
         {
             ImGui::PushID(static_cast<int>(i));
             if (drawn)
-            {
                 ImGui::Separator();
-            }
 
             drawn = true;
             auto &ui_module = modules_to_draw[i].second;

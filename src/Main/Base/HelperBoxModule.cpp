@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include <string>
+#include <unordered_map>
+
 #include <Base/HelperBoxModule.h>
 #include <HelperBox.h>
 
@@ -29,19 +32,14 @@ void HelperBoxModule::Initialize()
 
 void HelperBoxModule::RegisterSettingsContent()
 {
-    RegisterSettingsContent(
-        SettingsName(),
-        [this](const std::string *section, bool is_showing) {
-            UNREFERENCED_PARAMETER(section);
-            if (is_showing)
-                DrawSettingInternal();
-        },
-        1.0);
+    RegisterSettingsContent(SettingsName(), [this](const std::string *section, bool is_showing) {
+        UNREFERENCED_PARAMETER(section);
+        if (is_showing)
+            DrawSettingInternal();
+    });
 }
 
-void HelperBoxModule::RegisterSettingsContent(const char *section,
-                                              SectionDrawCallback callback,
-                                              float weighting)
+void HelperBoxModule::RegisterSettingsContent(const char *section, SectionDrawCallback callback)
 {
     if (settings_draw_callbacks.find(section) == settings_draw_callbacks.end())
     {
@@ -50,8 +48,8 @@ void HelperBoxModule::RegisterSettingsContent(const char *section,
     auto it = settings_draw_callbacks[section].begin();
     for (it = settings_draw_callbacks[section].begin(); it != settings_draw_callbacks[section].end(); it++)
     {
-        if (it->first > weighting)
+        if (it->first > 1.0F)
             break;
     }
-    settings_draw_callbacks[section].insert(it, {weighting, callback});
+    settings_draw_callbacks[section].insert(it, {1.0F, callback});
 }

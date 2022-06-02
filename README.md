@@ -14,7 +14,7 @@ Then launch the HelperBox.exe from the CMD:
 HelperBox.exe /pid PID
 ```
 
-For that you can run the **get_pids.py** python script which will scan for all open GW instances and will output the PIDs.
+For that you can run the **select_instance.py** python script which will scan for all open GW instances and will output the PIDs.
 
 ## Developement
 

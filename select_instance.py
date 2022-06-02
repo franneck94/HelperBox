@@ -1,7 +1,8 @@
 import subprocess
+import sys
 
 
-def main() -> None:
+def main() -> int:
     proc = subprocess.Popen(
         'tasklist',
         shell=True,
@@ -18,6 +19,10 @@ def main() -> None:
         info = gw_instance[:gw_instance.find(' Console')]
         pid = info[info.rfind(" "):].replace('  ', ' ')
         pids.append(pid)
+
+    if len(pids) == 0:
+        print("No GW instance found")
+        return 1
 
     print("Select PID: ")
     for idx, pid in enumerate(pids):
@@ -37,7 +42,8 @@ def main() -> None:
         stdout=subprocess.PIPE
     )
     stdout, _ = proc.communicate()
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -42,17 +42,14 @@ void HelperBoxUIElement::SaveSettings(CSimpleIni *ini)
 
 void HelperBoxUIElement::RegisterSettingsContent()
 {
-    HelperBoxModule::RegisterSettingsContent(
-        SettingsName(),
-        [this](const std::string *section, bool is_showing) {
-            UNREFERENCED_PARAMETER(section);
-            ShowVisibleRadio();
-            if (!is_showing)
-                return;
-            DrawSizeAndPositionSettings();
-            DrawSettingInternal();
-        },
-        1.0F);
+    HelperBoxModule::RegisterSettingsContent(SettingsName(), [this](const std::string *section, bool is_showing) {
+        UNREFERENCED_PARAMETER(section);
+        ShowVisibleRadio();
+        if (!is_showing)
+            return;
+        DrawSizeAndPositionSettings();
+        DrawSettingInternal();
+    });
 }
 
 void HelperBoxUIElement::DrawSizeAndPositionSettings()

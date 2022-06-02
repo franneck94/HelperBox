@@ -34,7 +34,5 @@ public:
     virtual void SaveSettings(CSimpleIni *){};
     virtual void DrawSettingInternal(){};
 
-    static void RegisterSettingsContent(const char *section,
-                                        SectionDrawCallback callback,
-                                        float weighting);
+    static void RegisterSettingsContent(const char *section, SectionDrawCallback callback);
 };

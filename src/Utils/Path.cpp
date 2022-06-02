@@ -1,7 +1,6 @@
 #include <cstdlib>
-#include <exception>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include <Logger.h>
 

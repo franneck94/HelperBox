@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-#include <array>
 #include <cstdint>
+#include <vector>
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
@@ -12,19 +12,15 @@
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Player.h>
-#include <GWCA/Managers/AgentMgr.h>
-#include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
-#include <GWCA/Managers/PlayerMgr.h>
-#include <GWCA/Managers/SkillbarMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
 #include <fmt/format.h>
 
 #include <HelperBox.h>
 #include <Logger.h>
+#include <GuiUtils.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
@@ -41,25 +37,6 @@ namespace
 static ActionState *emo_casting_action_state = nullptr;
 static bool send_move = false;
 }; // namespace
-
-void Move::Execute()
-{
-    if (!CanMove())
-        return;
-
-    GW::Agent *me = GW::Agents::GetPlayer();
-    if (!me)
-        return;
-
-    double dist = GW::GetDistance(me->pos, GW::Vec2f(x, y));
-    if (range != 0 && dist > range)
-        return;
-
-    GW::Agents::Move(x, y);
-    Log::Info("Moving to (%.0f, %.0f)", x, y);
-
-    send_move = true;
-}
 
 void ActionABC::Draw(const ImVec2 button_size)
 {
@@ -97,20 +74,24 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
         player_bonding.Draw();
         fuse_pull.Draw();
 
-        if (ImGui::Button(moves[move_idx].Name(), DEFAULT_BUTTON_SIZE))
+        if (IsUw() || IsUwEntryOutpost())
         {
-            moves[move_idx].Execute();
-        }
-        if (ImGui::Button("Prev.", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
-        {
-            if (move_idx > 0)
-                --move_idx;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Next", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
-        {
-            if (move_idx < moves.size() - 1)
-                ++move_idx;
+            if (ImGui::Button(moves[move_idx].Name(), DEFAULT_BUTTON_SIZE))
+            {
+                moves[move_idx].Execute();
+                send_move = true;
+            }
+            if (ImGui::Button("Prev.", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+            {
+                if (move_idx > 0)
+                    --move_idx;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Next", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+            {
+                if (move_idx < moves.size() - 1)
+                    ++move_idx;
+            }
         }
     }
 
@@ -137,10 +118,13 @@ void EmoWindow::Update(float delta)
 
     emo_casting_action_state = &pumping.action_state;
 
-    if (send_move && (move_idx < moves.size() - 1) && GamePosCompare(player.pos, moves[move_idx].pos))
+    if (IsUw() && send_move)
     {
-        send_move = false;
-        ++move_idx;
+        if ((move_idx < moves.size() - 1U) && GamePosCompare(player.pos, moves[move_idx].pos))
+        {
+            send_move = false;
+            ++move_idx;
+        }
     }
 
     tank_bonding.Update();
@@ -151,11 +135,8 @@ void EmoWindow::Update(float delta)
 
 bool EmoWindow::ActivationConditions()
 {
-    if (player.primary != GW::Constants::Profession::Elementalist ||
-        player.secondary != GW::Constants::Profession::Monk)
-        return false;
-
-    if (IsUwEntryOutpost() || IsUw() || IsDoa() || IsDoaEntryOutpost())
+    if (player.primary == GW::Constants::Profession::Elementalist &&
+        player.secondary == GW::Constants::Profession::Monk)
         return true;
 
     return false;
@@ -179,14 +160,188 @@ Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
         });
 
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-        &GenericValueSelf_Entry,
+        &GenericValue_Entry,
         [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
             UNREFERENCED_PARAMETER(status);
             if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
-            {
                 interrupted = true;
-            }
         });
+}
+
+RoutineState Pumping::RoutineSelfBonds()
+{
+    const auto found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
+    if (skillbar->ether.CanBeCasted(player->energy))
+        return SafeUseSkill(skillbar->ether.idx, player->id);
+
+    if (player->energy_perc > 0.5)
+    {
+        const auto found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
+        const auto balth_avail = skillbar->balth.CanBeCasted(player->energy);
+        if (!found_balth && balth_avail)
+            return SafeUseSkill(skillbar->balth.idx, player->id);
+
+        const auto found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
+        const auto bond_avail = skillbar->prot.CanBeCasted(player->energy);
+        if (!found_bond && bond_avail)
+            return SafeUseSkill(skillbar->prot.idx, player->id);
+    }
+
+    const auto found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
+    const auto low_hp = player->hp_perc < 0.90F;
+
+    const auto sb_needed = low_hp || !found_sb;
+    const auto sb_avail = skillbar->sb.CanBeCasted(player->energy);
+    if (found_ether && sb_needed && sb_avail)
+        return SafeUseSkill(skillbar->sb.idx, player->id);
+
+    const auto found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
+    const auto low_energy = player->energy_perc < 0.90F;
+
+    const auto need_burning = low_hp || low_energy || !found_burning;
+    const auto burning_avail = skillbar->burning.CanBeCasted(player->energy);
+    if (found_ether && need_burning && burning_avail)
+        return SafeUseSkill(skillbar->burning.idx, player->id);
+    return RoutineState::ACTIVE;
+}
+
+RoutineState Pumping::RoutineLT()
+{
+    if (!player->target || player->living->GetIsMoving())
+        return RoutineState::ACTIVE;
+
+    const auto target_living = player->target->GetAsAgentLiving();
+    if (!target_living || target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+        return RoutineState::ACTIVE;
+
+    const auto dist = GW::GetDistance(player->pos, player->target->pos);
+
+    if (dist < FusePull::FUSE_PULL_RANGE - 5.0F && dist > FusePull::FUSE_PULL_RANGE + 5.0F)
+        return RoutineState::ACTIVE;
+
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success)
+        return RoutineState::ACTIVE;
+
+    const auto it =
+        std::find_if(party_members.begin(), party_members.end(), [&target_living](const PlayerMapping &member) {
+            return member.id == static_cast<uint32_t>(target_living->agent_id);
+        });
+    if (it == party_members.end())
+        return RoutineState::ACTIVE;
+
+    const auto idx = std::distance(party_members.begin(), it);
+    if (idx >= GW::PartyMgr::GetPartySize())
+        return RoutineState::ACTIVE;
+
+    const auto found_sb = PartyPlayerHasEffect(GW::Constants::SkillID::Spirit_Bond, idx);
+    if (!found_sb && skillbar->sb.CanBeCasted(player->energy))
+        return SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
+
+    return RoutineState::ACTIVE;
+}
+
+RoutineState Pumping::RoutineTurtle()
+{
+    if (!found_turtle || !turtle_id)
+        return RoutineState::ACTIVE;
+
+    const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
+    if (!turtle_agent)
+        return RoutineState::ACTIVE;
+
+    const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
+
+    if (dist > GW::Constants::Range::Spellcast)
+        return RoutineState::ACTIVE;
+
+    const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
+    if (!found_bond)
+        return SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
+
+    const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
+    if (!found_life)
+        return SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
+
+    const auto turtle_living = turtle_agent->GetAsAgentLiving();
+    if (turtle_living && turtle_living->hp < 0.7F)
+        return SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
+    else if (turtle_living && turtle_living->hp < 0.9F)
+        return SafeUseSkill(skillbar->sb.idx, turtle_agent->agent_id);
+
+    return RoutineState::ACTIVE;
+}
+
+RoutineState Pumping::RoutinePI(const uint32_t dhuum_id)
+{
+    if (!skillbar->pi.SkillFound())
+        return RoutineState::ACTIVE;
+
+    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
+    if (!dhuum_agent)
+        return RoutineState::ACTIVE;
+
+    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    if (!dhuum_living)
+        return RoutineState::ACTIVE;
+
+    if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
+    {
+        const auto pi_avail = skillbar->wisdom.CanBeCasted(player->energy);
+        if (pi_avail)
+            return SafeUseSkill(skillbar->pi.idx, dhuum_id);
+    }
+
+    return RoutineState::ACTIVE;
+}
+
+RoutineState Pumping::RoutineWisdom()
+{
+    if (!skillbar->wisdom.SkillFound())
+        return RoutineState::ACTIVE;
+
+    const auto wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
+    if (wisdom_avail)
+        return SafeUseSkill(skillbar->wisdom.idx);
+
+    return RoutineState::ACTIVE;
+}
+
+RoutineState Pumping::RoutineGDW()
+{
+    if (!skillbar->gdw.SkillFound())
+        return RoutineState::ACTIVE;
+
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success)
+        return RoutineState::ACTIVE;
+
+    for (size_t idx = 0; idx < party_members.size(); idx++)
+    {
+        const auto id = party_members[idx].id;
+
+        if (id == player->id)
+            continue;
+
+        const auto agent = GW::Agents::GetAgentByID(id);
+        if (!agent)
+            continue;
+
+        const auto dist = GW::GetDistance(player->pos, agent->pos);
+        if (dist > GW::Constants::Range::Spellcast)
+            continue;
+
+        if (PartyPlayerHasEffect(GW::Constants::SkillID::Great_Dwarf_Weapon, idx))
+            continue;
+
+        return SafeUseSkill(skillbar->gdw.idx, id);
+    }
+
+    return RoutineState::ACTIVE;
 }
 
 RoutineState Pumping::Routine()
@@ -200,138 +355,21 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
     }
 
-    const bool found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
-    const bool found_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
-    const bool found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
+    const auto self_bonds_state = RoutineSelfBonds();
+    if (self_bonds_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
-    if (skillbar->ether.CanBeCasted(player->energy))
-    {
-        (void)SafeUseSkill(skillbar->ether.idx, player->id);
-        return RoutineState::ACTIVE;
-    }
-
-    if (player->energy_perc > 0.5)
-    {
-        const bool balth_avail = skillbar->balth.CanBeCasted(player->energy);
-        if (!found_balth && balth_avail)
-        {
-            (void)SafeUseSkill(skillbar->balth.idx, player->id);
-            return RoutineState::ACTIVE;
-        }
-
-        const bool bond_avail = skillbar->prot.CanBeCasted(player->energy);
-        if (!found_bond && bond_avail)
-        {
-            (void)SafeUseSkill(skillbar->prot.idx, player->id);
-            return RoutineState::ACTIVE;
-        }
-    }
-
-    const bool found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
-    const bool low_hp = player->hp_perc < 0.90F;
-
-    const bool sb_needed = low_hp || !found_sb;
-    const bool sb_avail = skillbar->sb.CanBeCasted(player->energy);
-    if (found_ether && sb_needed && sb_avail)
-    {
-        (void)SafeUseSkill(skillbar->sb.idx, player->id);
-        return RoutineState::ACTIVE;
-    }
-
-    const bool found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
-    const bool low_energy = player->energy_perc < 0.90F;
-
-    const bool need_burning = low_hp || low_energy || !found_burning;
-    const bool burning_avail = skillbar->burning.CanBeCasted(player->energy);
-    if (found_ether && need_burning && burning_avail)
-    {
-        (void)SafeUseSkill(skillbar->burning.idx, player->id);
-        return RoutineState::ACTIVE;
-    }
-
-    // If LT is in fuse range and has no SB
-    if (player->target && !player->living->GetIsMoving())
-    {
-        const auto target_living = player->target->GetAsAgentLiving();
-        if (target_living)
-        {
-            const auto target_class = target_living->primary;
-
-            if (target_class == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
-            {
-                const auto dist = GW::GetDistance(player->pos, player->target->pos);
-
-                if (dist > 1215.0F && dist < 1225.0F)
-                {
-                    std::vector<PlayerMapping> party_members;
-                    const bool success = GetPartyMembers(party_members);
-
-                    if (success)
-                    {
-                        const auto it =
-                            std::find_if(party_members.begin(),
-                                         party_members.end(),
-                                         [&target_living](const PlayerMapping &member) {
-                                             return member.id == static_cast<uint32_t>(target_living->agent_id);
-                                         });
-                        const auto idx = std::distance(party_members.begin(), it);
-                        const auto found_sb = PartyPlayerHasEffect(GW::Constants::SkillID::Spirit_Bond, idx);
-
-                        if (!found_sb && skillbar->sb.CanBeCasted(player->energy))
-                        {
-                            (void)SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
-                            return RoutineState::ACTIVE;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    const auto lt_state = RoutineLT();
+    if (lt_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
-    // If turtle spawned in dhuum room and has no bonds
-    if (found_turtle && turtle_id)
-    {
-        const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
-        if (turtle_agent)
-        {
-            const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
-
-            if (dist < GW::Constants::Range::Spellcast)
-            {
-                const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
-                const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
-
-                if (!found_bond)
-                {
-                    (void)SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
-                    return RoutineState::ACTIVE;
-                }
-
-                if (!found_life)
-                {
-                    (void)SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
-                    return RoutineState::ACTIVE;
-                }
-
-                const auto turtle_living = turtle_agent->GetAsAgentLiving();
-
-                if (turtle_living && turtle_living->hp < 0.7F)
-                {
-                    (void)SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
-                    return RoutineState::ACTIVE;
-                }
-                else if (turtle_living && turtle_living->hp < 0.9F)
-                {
-                    (void)SafeUseSkill(skillbar->sb.idx, turtle_agent->agent_id);
-                    return RoutineState::ACTIVE;
-                }
-            }
-        }
-    }
+    const auto turtle_state = RoutineTurtle();
+    if (turtle_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
     uint32_t dhuum_id = 0;
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
@@ -339,64 +377,17 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_fight)
         return RoutineState::FINISHED;
 
-    // If in dhuum fight and PI in skillbar, cast on judgement
-    if (skillbar->pi.SkillFound())
-    {
-        const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
+    const auto pi_state = RoutinePI(dhuum_id);
+    if (pi_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
-        if (dhuum_agent)
-        {
-            const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    const auto wisdom_state = RoutineWisdom();
+    if (wisdom_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
-            if (dhuum_living && dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
-            {
-                Log::Info("Dhuum is casting: %d", dhuum_living->skill);
-                const bool pi_avail = skillbar->wisdom.CanBeCasted(player->energy);
-                if (pi_avail)
-                {
-                    (void)SafeUseSkill(skillbar->pi.idx, dhuum_id);
-                    return RoutineState::ACTIVE;
-                }
-            }
-        }
-    }
-
-    // If in dhuum fight and Wisdom in skillbar, cast on recharge
-    if (skillbar->wisdom.SkillFound())
-    {
-        const bool wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
-        (void)SafeUseSkill(skillbar->wisdom.idx);
-        return RoutineState::ACTIVE;
-    }
-
-    std::vector<PlayerMapping> party_members;
-    bool success = GetPartyMembers(party_members);
-
-    // If in dhuum fight and GDW in skillbar, cast on recharge on every player
-    if (success && skillbar->gdw.SkillFound())
-    {
-        for (size_t idx = 0; idx < party_members.size(); idx++)
-        {
-            const auto id = party_members[idx].id;
-
-            if (id == player->id)
-                continue;
-
-            const auto agent = GW::Agents::GetAgentByID(id);
-            if (!agent)
-                continue;
-
-            const auto dist = GW::GetDistance(player->pos, agent->pos);
-            if (dist > GW::Constants::Range::Spellcast)
-                continue;
-
-            if (PartyPlayerHasEffect(GW::Constants::SkillID::Great_Dwarf_Weapon, idx))
-                continue;
-
-            (void)SafeUseSkill(skillbar->gdw.idx, id);
-            return RoutineState::ACTIVE;
-        }
-    }
+    const auto gdw_state = RoutineGDW();
+    if (gdw_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
     return RoutineState::FINISHED;
 }
@@ -428,9 +419,7 @@ void Pumping::Update()
     }
 
     if (action_state == ActionState::ACTIVE)
-    {
         (void)(Routine());
-    }
 
     if (paused && !player->living->GetIsMoving())
     {
@@ -447,9 +436,7 @@ void Pumping::Update()
     }
 
     if (GW::PartyMgr::GetIsPartyDefeated())
-    {
         action_state = ActionState::INACTIVE;
-    }
 }
 
 RoutineState TankBonding::Routine()
@@ -544,9 +531,7 @@ void TankBonding::Update()
         }
 
         if (GW::PartyMgr::GetIsPartyDefeated())
-        {
             action_state = ActionState::INACTIVE;
-        }
     }
 }
 
@@ -593,15 +578,14 @@ RoutineState PlayerBonding::Routine()
         return RoutineState::FINISHED;
     }
 
-    const bool found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
-    const bool found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
-
+    const auto found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
     if (!found_balth && skillbar->balth.CanBeCasted(player->energy))
     {
         (void)SafeUseSkill(skillbar->balth.idx, target_id);
         return RoutineState::ACTIVE;
     }
 
+    const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
     if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
     {
         (void)SafeUseSkill(skillbar->prot.idx, target_id);
@@ -626,9 +610,7 @@ void PlayerBonding::Update()
         }
 
         if (GW::PartyMgr::GetIsPartyDefeated())
-        {
             action_state = ActionState::INACTIVE;
-        }
     }
 }
 
@@ -652,8 +634,6 @@ RoutineState FusePull::Routine()
     const auto me_pos = player->pos;
     const auto target_pos = player->target->pos;
 
-    const auto d = GW::GetDistance(me_pos, target_pos);
-
     if (routine_state == RoutineState::NONE)
     {
         requested_pos = GW::GamePos{};
@@ -663,8 +643,9 @@ RoutineState FusePull::Routine()
         const auto t_x = target_pos.x;
         const auto t_y = target_pos.y;
 
+        const auto dist = GW::GetDistance(me_pos, target_pos);
         const auto d_t = FUSE_PULL_RANGE;
-        const auto t = d_t / d;
+        const auto t = d_t / dist;
 
         const auto p_x = ((1.0F - t) * t_x + t * m_x);
         const auto p_y = ((1.0F - t) * t_y + t * m_y);
@@ -678,16 +659,6 @@ RoutineState FusePull::Routine()
     {
         return RoutineState::ACTIVE;
     }
-
-    // if (!player->CanCast())
-    // {
-    //     return RoutineState::ACTIVE;
-    // }
-
-    // if (skillbar->fuse.CanBeCasted(player->energy))
-    // {
-    //     (void)SafeUseSkill(skillbar->fuse.idx, player->target->agent_id);
-    // }
 
     ResetData();
     return RoutineState::FINISHED;
@@ -707,8 +678,6 @@ void FusePull::Update()
         }
 
         if (GW::PartyMgr::GetIsPartyDefeated())
-        {
             action_state = ActionState::INACTIVE;
-        }
     }
 }

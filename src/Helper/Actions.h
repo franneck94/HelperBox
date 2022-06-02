@@ -52,6 +52,31 @@ public:
     MesmerSkillbar *skillbar = nullptr;
 };
 
-RoutineState SafeWalk(GW::GamePos target_position, const bool reset = false);
+RoutineState SafeWalk(const GW::GamePos target_position, const bool reset = false);
 
 RoutineState SafeUseSkill(const uint32_t skill_idx, const uint32_t target = 0, const uint32_t call_target = 0);
+
+class Move
+{
+public:
+    static constexpr size_t NAME_LEN = 140U;
+
+    Move(const float _x, const float _y, const float _range, const char *_name)
+        : x(_x), y(_y), range(_range), pos({x, y, 0})
+    {
+        strncpy(name, _name, NAME_LEN);
+    };
+
+    float x = 0.0;
+    float y = 0.0;
+    float range = 0.0;
+    GW::GamePos pos;
+    char name[NAME_LEN] = "Move";
+
+    const char *Name() const
+    {
+        return name;
+    }
+
+    void Execute();
+};

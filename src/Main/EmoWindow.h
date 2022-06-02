@@ -2,13 +2,9 @@
 
 #include "stdafx.h"
 
+#include <array>
 #include <cstdint>
-#include <cstring>
-#include <string>
 
-#include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Managers/StoCMgr.h>
-#include <GWCA/Packets/Opcodes.h>
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
@@ -21,31 +17,6 @@
 
 #include <Base/HelperBoxWindow.h>
 
-class Move
-{
-public:
-    static constexpr size_t NAME_LEN = 140U;
-
-    Move(const float _x, const float _y, const float _range, const char *_name)
-        : x(_x), y(_y), range(_range), pos({x, y, 0})
-    {
-        strncpy(name, _name, NAME_LEN);
-    };
-
-    float x = 0.0;
-    float y = 0.0;
-    float range = 0.0;
-    GW::GamePos pos;
-    char name[NAME_LEN] = "Move";
-
-    const char *Name() const
-    {
-        return name;
-    }
-
-    void Execute();
-};
-
 class Pumping : public EmoActionABC
 {
 public:
@@ -54,12 +25,20 @@ public:
     RoutineState Routine() override;
     void Update() override;
 
+private:
+    RoutineState RoutineSelfBonds();
+    RoutineState RoutineLT();
+    RoutineState RoutineTurtle();
+    RoutineState RoutinePI(const uint32_t dhuum_id);
+    RoutineState RoutineWisdom();
+    RoutineState RoutineGDW();
+
     GW::HookEntry Summon_AgentAdd_Entry;
     bool found_turtle = false;
     uint32_t turtle_id = 0;
 
     bool interrupted = false;
-    GW::HookEntry GenericValueSelf_Entry;
+    GW::HookEntry GenericValue_Entry;
 };
 
 class TankBonding : public EmoActionABC
@@ -68,13 +47,11 @@ public:
     TankBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Tank Bonds", s)
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-            &GenericValueSelf_Entry,
+            &GenericValue_Entry,
             [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
                 UNREFERENCED_PARAMETER(status);
                 if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
-                {
                     interrupted = true;
-                }
             });
     }
 
@@ -82,7 +59,7 @@ public:
     void Update() override;
 
     bool interrupted = false;
-    GW::HookEntry GenericValueSelf_Entry;
+    GW::HookEntry GenericValue_Entry;
 };
 
 class PlayerBonding : public EmoActionABC
@@ -91,13 +68,11 @@ public:
     PlayerBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Player Bonds", s)
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-            &GenericValueSelf_Entry,
+            &GenericValue_Entry,
             [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
                 UNREFERENCED_PARAMETER(status);
                 if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
-                {
                     interrupted = true;
-                }
             });
     }
 
@@ -105,7 +80,7 @@ public:
     void Update() override;
 
     bool interrupted = false;
-    GW::HookEntry GenericValueSelf_Entry;
+    GW::HookEntry GenericValue_Entry;
 };
 
 class FusePull : public EmoActionABC
@@ -113,7 +88,7 @@ class FusePull : public EmoActionABC
 public:
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
-    FusePull(Player *p, EmoSkillbar *s) : timer(TIMER_INIT()), EmoActionABC(p, "Fuse Range", s)
+    FusePull(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Fuse Range", s)
     {
     }
 
@@ -122,16 +97,12 @@ public:
 
     void ResetData()
     {
-        timer = TIMER_INIT();
         routine_state = RoutineState::NONE;
         requested_pos = GW::GamePos{};
-        step = 0;
     }
 
-    clock_t timer;
     RoutineState routine_state = RoutineState::NONE;
     GW::GamePos requested_pos = GW::GamePos{};
-    uint32_t step = 0;
 };
 
 class EmoWindow : public HelperBoxWindow
@@ -215,5 +186,5 @@ private:
                                   Move{6022.19F, 11318.40F, 5000.0F, "To Wastes 3"}};
 
     GW::HookEntry MapLoaded_Entry;
-    GW::HookEntry GenericValueSelf_Entry;
+    GW::HookEntry GenericValue_Entry;
 };

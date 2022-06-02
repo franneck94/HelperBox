@@ -6,12 +6,9 @@
 #include <vector>
 
 #include <GWCA/GameEntities/Agent.h>
-#include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Packets/Opcodes.h>
 
 #include <Actions.h>
 #include <Player.h>
-#include <Timer.h>
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>

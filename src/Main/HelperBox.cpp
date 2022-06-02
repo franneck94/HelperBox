@@ -7,10 +7,7 @@
 #include <GWCA/Context/PreGameContext.h>
 #include <GWCA/GWCA.h>
 #include <GWCA/GameContainers/Array.h>
-#include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Party.h>
-#include <GWCA/Managers/AgentMgr.h>
-#include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/MemoryMgr.h>
 #include <GWCA/Managers/RenderMgr.h>

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include <Base/HelperBoxWindow.h>
 
 class MainWindow : public HelperBoxWindow

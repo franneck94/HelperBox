@@ -10,7 +10,6 @@
 // c++ headers
 #include <algorithm>
 #include <array>
-#include <bitset>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -23,16 +22,12 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <queue>
 #include <set>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
 
 // windows headers
-#include <Windows.h>
-
 #include <DbgHelp.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
@@ -41,18 +36,20 @@
 #include <WinInet.h>
 #include <WinSock2.h>
 #include <WinUser.h>
+#include <Windows.h>
 #include <shellapi.h>
 #include <strsafe.h>
 #include <windowsx.h>
 
+// GUI headers
+#include <SimpleIni.h>
 #include <d3d9.h>
 #include <d3dx9math.h>
 #include <d3dx9tex.h>
-
-#include <SimpleIni.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
+// GWCA headers
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameContainers/List.h>

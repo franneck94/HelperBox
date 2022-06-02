@@ -7,8 +7,6 @@
 #include <vector>
 
 #include <GWCA/GameEntities/Agent.h>
-#include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Packets/Opcodes.h>
 
 #include <Player.h>
 #include <Timer.h>

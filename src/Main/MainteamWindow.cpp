@@ -6,24 +6,16 @@
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
-#include <GWCA/Context/GameContext.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
-#include <GWCA/Managers/AgentMgr.h>
-#include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Managers/EffectMgr.h>
-#include <GWCA/Managers/MapMgr.h>
-#include <GWCA/Managers/PlayerMgr.h>
-#include <GWCA/Managers/SkillbarMgr.h>
-#include <GWCA/Packets/Opcodes.h>
 
 #include <fmt/format.h>
 
+#include <GuiUtils.h>
 #include <HelperBox.h>
 #include <Logger.h>
-#include <Timer.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
