@@ -1,12 +1,10 @@
 # Helper Box
 
-## Usage
-
 Refer to the [documentation](https://franneck94.github.io/HelperBox/).
 
 If you want to use ToolBox++ in parallel, you have to start Toolbox **before** starting this HelperBox.  
 
-If you want to launch the HelperBox for a certain GW instance (Multi-launcher use-case), you have to get the process id of the GW instance:
+If you want to launch the HelperBox in a multi GW instance use-case, you have to get the process id of the GW instance:
 
 Then launch the HelperBox.exe from the CMD:
 
@@ -18,12 +16,11 @@ For that you can run the **select_instance.py** python script which will scan fo
 
 ## Developement
 
-### Requirements
-
 * CMake 3.21+
 * Visual Studio 2019 (v142)
 * C++17
 * Git
+* Python 3.6+ for the scripts and doc
 
 ```bash
 git clone --recursive https://github.com/franneck94/HelperBox.git
