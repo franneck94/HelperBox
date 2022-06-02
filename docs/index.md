@@ -12,7 +12,7 @@ Then launch the HelperBox.exe from the CMD:
 HelperBox.exe /pid PID
 ```
 
-For that you can run the **get_pids.py** python script which will scan for all open GW instances and will output the PIDs.
+For that, you can run the **get_pids.py** python script which will scan for all open GW instances and will output the PIDs.
 
 The helper windows are hidden, whenever:
 
@@ -22,7 +22,7 @@ The helper windows are hidden, whenever:
         - Ranger/Assasin
     - Emo Window
         - Elementalist/Monk
-    - Meanteam Window
+    - Mainteam Window
         - Mesmer/X
         - Ritualist/X
         - Dervish/X

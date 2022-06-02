@@ -7,6 +7,6 @@
         - If *Auto Target* is activated
             - If the behemoth is casting a healing spring within earshot distance the behemoth is targeted
     - Nearby Skeles
-        - Text in table is colored blue-ish
+        - Text in the table is colored blue-ish
     - Nearby Dryder
-        - Text in table is colored orange-ish
+        - Text in the table is colored orange-ish
