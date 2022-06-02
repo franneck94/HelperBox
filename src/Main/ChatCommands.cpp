@@ -4,6 +4,7 @@
 #include <GWCA/Managers/ChatMgr.h>
 
 #include <HelperBox.h>
+#include <Logger.h>
 
 #include "ChatCommands.h"
 
@@ -36,17 +37,14 @@ void ChatCommands::CmdHB(const wchar_t *message, int argc, LPWSTR *argv)
 {
     UNREFERENCED_PARAMETER(message);
 
-    std::cout << "Called\n";
-
     if (argc == 2)
     {
-        std::cout << "Called 2\n";
-
         const std::wstring arg = argv[1];
         if (arg == L"close" || arg == L"quit" || arg == L"exit")
-        {
             HelperBox::Instance().StartSelfDestruct();
-        }
-        return;
+        else
+            Log::Error("Unknown command!");
     }
+    else
+        Log::Error("Unknown command!");
 }

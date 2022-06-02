@@ -9,7 +9,7 @@ void PrintUsage(bool terminate)
 {
     fprintf(stderr,
             "Usage: [options]\n\n"
-            "    /pid <process id>          Process id of the target in which to inject\n");
+            "    /pid <process id>\n");
 
     if (terminate)
         exit(0);
@@ -49,11 +49,11 @@ void ParseCommandLine()
                 fprintf(stderr, "'/pid' must be followed by a process id\n");
                 PrintUsage(true);
             }
-            // @Enhancement: Replace by proper 'ParseInt' that deal with errors
+
             int pid = _wtoi(argv[i]);
             if (pid < 0)
             {
-                fprintf(stderr, "Process id must be a positive integer in the range [0, 4294967295]");
+                fprintf(stderr, "Process id must be a positive integer");
                 exit(0);
             }
             settings.pid = static_cast<uint32_t>(pid);

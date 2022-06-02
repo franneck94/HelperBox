@@ -50,8 +50,6 @@ static bool SetProcessForeground(Process *process)
         DWORD WindowPid;
         if (GetWindowThreadProcessId(hWndIt, &WindowPid) == 0)
         {
-            // @Cleanup:
-            // Not clear whether this is the return value hold an error, so we just log.
             fprintf(stderr, "GetWindowThreadProcessId returned 0\n");
             continue;
         }
@@ -98,44 +96,7 @@ INT __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, INT)
         return 0;
     }
 
-    InjectReply reply = InjectWindow::AskInjectProcess(&proc);
-
-    if (reply == InjectReply_Cancel)
-    {
-        fprintf(stderr, "InjectReply_Cancel\n");
-        return 0;
-    }
-
-    if (reply == InjectReply_PatternError)
-    {
-        MessageBoxW(0,
-                    L"Couldn't find character name RVA.\n"
-                    L"You need to update the launcher or contact the developpers.",
-                    L"HelperBox - Error",
-                    MB_OK | MB_ICONERROR);
-        return 1;
-    }
-
-    if (reply == InjectReply_NoValidProcess)
-    {
-
-        ShowError(L"Failed to inject HelperBox into Guild Wars\n");
-        fprintf(stderr, "InjectWindow::AskInjectName failed\n");
-        return 0;
-    }
-    if (reply == InjectReply_NoProcess)
-    {
-        int iRet = MessageBoxW(0,
-                               L"Couldn't find any valid process to start HelperBoxpp.\n"
-                               L"Ensure Guild Wars is running before trying to run HelperBox.\n",
-                               L"HelperBox - Error",
-                               MB_RETRYCANCEL);
-        if (iRet == IDCANCEL)
-        {
-            fprintf(stderr, "User doesn't want to retry\n");
-            return 1;
-        }
-    }
+    InjectWindow::AskInjectProcess(&proc);
 
     if (!InjectInstalledDllInProcess(&proc))
     {
