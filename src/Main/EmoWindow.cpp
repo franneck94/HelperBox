@@ -155,7 +155,7 @@ bool EmoWindow::ActivationConditions()
         player.secondary != GW::Constants::Profession::Monk)
         return false;
 
-    if (IsUwEntryOutpost() || IsUw() || IsDoa || IsDoaEntryOutpost())
+    if (IsUwEntryOutpost() || IsUw() || IsDoa() || IsDoaEntryOutpost())
         return true;
 
     return false;
@@ -249,10 +249,50 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
     }
 
+    // If LT is in fuse range and has no SB
+    if (player->target && !player->living->GetIsMoving())
+    {
+        const auto target_living = player->target->GetAsAgentLiving();
+        if (target_living)
+        {
+            const auto target_class = target_living->primary;
+
+            if (target_class == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+            {
+                const auto dist = GW::GetDistance(player->pos, player->target->pos);
+
+                if (dist > 1215.0F && dist < 1225.0F)
+                {
+                    std::vector<PlayerMapping> party_members;
+                    const bool success = GetPartyMembers(party_members);
+
+                    if (success)
+                    {
+                        const auto it =
+                            std::find_if(party_members.begin(),
+                                         party_members.end(),
+                                         [&target_living](const PlayerMapping &member) {
+                                             return member.id == static_cast<uint32_t>(target_living->agent_id);
+                                         });
+                        const auto idx = std::distance(party_members.begin(), it);
+                        const auto found_sb = PartyPlayerHasEffect(GW::Constants::SkillID::Spirit_Bond, idx);
+
+                        if (!found_sb && skillbar->sb.CanBeCasted(player->energy))
+                        {
+                            (void)SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
+                            return RoutineState::ACTIVE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
+    // If turtle spawned in dhuum room and has no bonds
     if (found_turtle && turtle_id)
     {
         const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
@@ -299,6 +339,7 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_fight)
         return RoutineState::FINISHED;
 
+    // If in dhuum fight and PI in skillbar, cast on judgement
     if (skillbar->pi.SkillFound())
     {
         const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
@@ -320,6 +361,7 @@ RoutineState Pumping::Routine()
         }
     }
 
+    // If in dhuum fight and Wisdom in skillbar, cast on recharge
     if (skillbar->wisdom.SkillFound())
     {
         const bool wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
@@ -330,6 +372,7 @@ RoutineState Pumping::Routine()
     std::vector<PlayerMapping> party_members;
     bool success = GetPartyMembers(party_members);
 
+    // If in dhuum fight and GDW in skillbar, cast on recharge on every player
     if (success && skillbar->gdw.SkillFound())
     {
         for (size_t idx = 0; idx < party_members.size(); idx++)
