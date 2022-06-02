@@ -157,6 +157,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
                 ImGui::Text("%4.0f", distance);
                 if (pushed)
                     ImGui::PopStyleColor();
+
                 const auto label = fmt::format("Target##{}", idx);
                 ImGui::TableNextColumn();
                 if (ImGui::Button(label.data()))

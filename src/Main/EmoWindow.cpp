@@ -18,9 +18,9 @@
 
 #include <fmt/format.h>
 
+#include <GuiUtils.h>
 #include <HelperBox.h>
 #include <Logger.h>
-#include <GuiUtils.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
@@ -202,6 +202,7 @@ RoutineState Pumping::RoutineSelfBonds()
     const auto burning_avail = skillbar->burning.CanBeCasted(player->energy);
     if (found_ether && need_burning && burning_avail)
         return SafeUseSkill(skillbar->burning.idx, player->id);
+
     return RoutineState::ACTIVE;
 }
 
@@ -211,12 +212,13 @@ RoutineState Pumping::RoutineLT()
         return RoutineState::ACTIVE;
 
     const auto target_living = player->target->GetAsAgentLiving();
-    if (!target_living || target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+    if (!target_living || target_living->GetIsMoving() ||
+        target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
         return RoutineState::ACTIVE;
 
     const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-    if (dist < FusePull::FUSE_PULL_RANGE - 5.0F && dist > FusePull::FUSE_PULL_RANGE + 5.0F)
+    if (dist < FusePull::FUSE_PULL_RANGE - 5.0F || dist > FusePull::FUSE_PULL_RANGE + 5.0F)
         return RoutineState::ACTIVE;
 
     std::vector<PlayerMapping> party_members;
@@ -351,7 +353,7 @@ RoutineState Pumping::Routine()
 
     if (interrupted)
     {
-        interrupted = true;
+        interrupted = false;
         return RoutineState::FINISHED;
     }
 

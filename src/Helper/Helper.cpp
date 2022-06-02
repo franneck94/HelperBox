@@ -497,10 +497,10 @@ bool IsInDhuumRoom(const Player *player)
     const auto dhuum_center_pos = GW::GamePos{-16105.50F, 17284.84F, player->pos.zplane};
     const auto dhuum_center_dist = GW::GetDistance(player->pos, dhuum_center_pos);
 
-    if (dhuum_center_dist > GW::Constants::Range::Spellcast)
-        return false;
+    if (dhuum_center_dist < GW::Constants::Range::Spellcast)
+        return true;
 
-    return true;
+    return false;
 }
 
 bool IsInDhuumFight(uint32_t *dhuum_id)
@@ -519,7 +519,11 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
         if (!agent)
             continue;
 
-        if (agent->agent_id == GW::Constants::ModelID::UW::Dhuum)
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->player_number == GW::Constants::ModelID::UW::Dhuum)
         {
             dhuum_agent = agent;
             break;

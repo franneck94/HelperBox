@@ -29,7 +29,6 @@
 namespace
 {
 static constexpr auto HEALING_SPRING_U16 = static_cast<uint16_t>(GW::Constants::SkillID::Healing_Spring);
-static constexpr auto MIN_IDLE_TIME_S = 0.1F;
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 static auto auto_target_active = false;
 
@@ -144,9 +143,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                     ImGui::Text("%2ds", timer_diff_s);
                 }
                 if (pushed)
-                {
                     ImGui::PopStyleColor();
-                }
 
                 ImGui::TableNextColumn();
                 const auto label = fmt::format("Target##{}", idx);
