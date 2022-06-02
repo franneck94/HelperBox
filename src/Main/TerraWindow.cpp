@@ -42,7 +42,8 @@ static constexpr auto MIN_IDLE_TIME_S = 0.1F;
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 static auto auto_target_active = false;
 
-static const auto IDS = std::array<uint32_t, 3>{GW::Constants::ModelID::UW::ObsidianBehemoth,
+static const auto IDS = std::array<uint32_t, 4>{GW::Constants::ModelID::UW::ObsidianBehemoth,
+                                                GW::Constants::ModelID::UW::TerrorwebDryder,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum1,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
@@ -75,13 +76,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
-    if (IsLoading())
-        return;
-
     if (!visible)
         return;
 
-    if ((IsExplorable() && !IsUw()) || (IsOutpost() && !IsUwEntryOutpost()))
+    if (!ActivationConditions())
         return;
 
     ImGui::SetNextWindowSize(ImVec2(100.0F, 100.0F), ImGuiCond_FirstUseEver);
@@ -133,6 +131,11 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0));
                     pushed = true;
                 }
+                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::TerrorwebDryder))
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94F, 0.31F, 0.09F, 1.0));
+                    pushed = true;
+                }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
                 ImGui::TableNextColumn();
                 ImGui::Text("%3.0f%%", foe->hp * 100.0F);
@@ -176,22 +179,21 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
 void TerraWindow::Update(float delta)
 {
-    if (!IsExplorable())
-        return;
-
-    filtered_foes.clear();
-
     if (IsLoading())
         last_casted_times_ms.clear();
 
     if (!player.ValidateData())
         return;
-
     player.Update();
+
+    if (!ActivationConditions())
+        return;
+
     auto_target.Update();
+    filtered_foes.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Spellcast);
+    FilterAgents(player, agents_array, filtered_foes, IDS, 1000.0F);
     SortByDistance(player, filtered_foes);
 
     if (!auto_target_active)
@@ -209,4 +211,15 @@ void TerraWindow::Update(float delta)
             player.ChangeTarget(foe->agent_id);
         }
     }
+}
+
+bool TerraWindow::ActivationConditions()
+{
+    if (player.primary != GW::Constants::Profession::Ranger || player.secondary != GW::Constants::Profession::Assassin)
+        return false;
+
+    if (IsUwEntryOutpost() || IsUw())
+        return true;
+
+    return false;
 }

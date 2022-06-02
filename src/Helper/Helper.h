@@ -28,9 +28,13 @@ bool IsMapReady();
 
 bool IsUwEntryOutpost();
 
+bool IsUw();
+
 bool IsFowEntryOutpost();
 
-bool IsUw();
+bool IsDoa();
+
+bool IsDoaEntryOutpost();
 
 bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
 

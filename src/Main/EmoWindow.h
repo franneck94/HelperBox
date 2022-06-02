@@ -171,6 +171,8 @@ public:
     void Update(float delta) override;
 
 private:
+    bool ActivationConditions();
+
     void EmoSkillRoutine();
     bool EmoBondTankRoutine();
     bool EmoBondPlayerRoutine();

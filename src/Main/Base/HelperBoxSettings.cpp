@@ -14,7 +14,7 @@
 #include <Base/MainWindow.h>
 #include <ChatCommands.h>
 #include <EmoWindow.h>
-#include <MesmerWindow.h>
+#include <MainteamWindow.h>
 #include <SettingsWindow.h>
 #include <TerraWindow.h>
 
@@ -28,7 +28,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&EmoWindow::Instance());
-    optional_modules.push_back(&MesmerWindow::Instance());
+    optional_modules.push_back(&MainteamWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 

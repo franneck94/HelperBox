@@ -64,6 +64,8 @@ public:
     void Update(float delta) override;
 
 private:
+    bool TerraWindow::ActivationConditions();
+
     void Spiking();
 
     Player player;

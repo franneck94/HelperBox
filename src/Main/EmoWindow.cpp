@@ -82,14 +82,10 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
 
-    if (IsLoading())
-        return;
-
     if (!visible)
         return;
 
-    if (player.primary != GW::Constants::Profession::Elementalist ||
-        player.secondary != GW::Constants::Profession::Monk)
+    if (!ActivationConditions())
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
@@ -125,23 +121,19 @@ void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    if (IsLoading() || IsOutpost())
-        move_idx = 0;
-
-    if (!IsUwEntryOutpost() && !IsUw())
-        return;
-
     if (!player.ValidateData())
         return;
     player.Update();
 
+    if (!ActivationConditions())
+        return;
+
+    if (IsLoading() || IsOutpost())
+        move_idx = 0;
+
     if (!skillbar.ValidateData())
         return;
     skillbar.Update();
-
-    if (player.primary != GW::Constants::Profession::Elementalist ||
-        player.secondary != GW::Constants::Profession::Monk)
-        return;
 
     emo_casting_action_state = &pumping.action_state;
 
@@ -155,6 +147,18 @@ void EmoWindow::Update(float delta)
     player_bonding.Update();
     fuse_pull.Update();
     pumping.Update();
+}
+
+bool EmoWindow::ActivationConditions()
+{
+    if (player.primary != GW::Constants::Profession::Elementalist ||
+        player.secondary != GW::Constants::Profession::Monk)
+        return false;
+
+    if (IsUwEntryOutpost() || IsUw() || IsDoa || IsDoaEntryOutpost())
+        return true;
+
+    return false;
 }
 
 Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)

@@ -33,13 +33,14 @@
 #include <Types.h>
 #include <Utils.h>
 
-#include "MesmerWindow.h"
+#include "MainteamWindow.h"
 
 namespace
 {
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 
-static const auto IDS = std::array<uint32_t, 3>{GW::Constants::ModelID::UW::BladedAatxe,
+static const auto IDS = std::array<uint32_t, 4>{GW::Constants::ModelID::UW::BladedAatxe,
+                                                GW::Constants::ModelID::UW::TerrorwebDryder,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum1,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
@@ -53,13 +54,14 @@ RoutineState SpikeSet::Routine()
         return RoutineState::ACTIVE;
     }
 
-    if (!player->target || player->target->type != static_cast<uint32_t>(GW::Constants::AgentType::Living))
+    if (!player->target)
     {
         return RoutineState::FINISHED;
     }
 
     const auto target_living = player->target->GetAsAgentLiving();
-    if (!target_living || target_living->GetIsDead())
+    if (!target_living || target_living->GetIsDead() ||
+        target_living->type != static_cast<uint32_t>(GW::Constants::Allegiance::Enemy))
     {
         return RoutineState::FINISHED;
     }
@@ -67,12 +69,14 @@ RoutineState SpikeSet::Routine()
     if (state_idx == 0)
     {
         (void)SafeUseSkill(skillbar->demise.idx, player->target->agent_id);
+        Log::Info("Casted Demise");
         ++state_idx;
         return RoutineState::ACTIVE;
     }
     else if (state_idx == 1)
     {
         (void)SafeUseSkill(skillbar->worry.idx, player->target->agent_id);
+        Log::Info("Casted Worry");
         ++state_idx;
         return RoutineState::ACTIVE;
     }
@@ -88,37 +92,35 @@ void SpikeSet::Update()
         const auto routine_state = Routine();
 
         if (routine_state == RoutineState::FINISHED)
-        {
             action_state = ActionState::INACTIVE;
-        }
     }
 }
 
-void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
+void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
-
-    if (IsLoading())
-        return;
 
     if (!visible)
         return;
 
-    if ((IsExplorable() && !IsUw()) || (IsOutpost() && !IsUwEntryOutpost()))
+    if (!ActivationConditions())
         return;
 
     ImGui::SetNextWindowSize(ImVec2(100.0F, 100.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("MesmerWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags()))
     {
         const auto width = ImGui::GetWindowWidth();
-        spike_set.Draw(ImVec2(width, 35.0F));
+        if (player.primary == GW::Constants::Profession::Mesmer)
+        {
+            spike_set.Draw(ImVec2(width, 35.0F));
+        }
 
         if (ImGui::BeginTable("AatxeTable", 3))
         {
-            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.3);
+            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.27);
             ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25);
-            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.45);
+            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.48);
 
             ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
             ImGui::TableNextColumn();
@@ -151,6 +153,11 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0));
                     pushed = true;
                 }
+                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::TerrorwebDryder))
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94F, 0.31F, 0.09F, 1.0));
+                    pushed = true;
+                }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
                 ImGui::TableNextColumn();
                 ImGui::Text("%3.0f%%", foe->hp * 100.0F);
@@ -174,26 +181,42 @@ void MesmerWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 }
 
-void MesmerWindow::Update(float delta)
+void MainteamWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
-
-    if (!IsExplorable())
-        return;
-
-    filtered_foes.clear();
 
     if (!player.ValidateData())
         return;
     player.Update();
 
-    if (!skillbar.ValidateData())
+    if (!ActivationConditions())
         return;
-    skillbar.Update();
 
-    spike_set.Update();
+    if (player.primary == GW::Constants::Profession::Mesmer)
+    {
+        if (!skillbar.ValidateData())
+            return;
+        skillbar.Update();
+
+        spike_set.Update();
+    }
+
+    filtered_foes.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Spirit);
+    FilterAgents(player, agents_array, filtered_foes, IDS, 1800.0F);
     SortByDistance(player, filtered_foes);
+}
+
+bool MainteamWindow::ActivationConditions()
+{
+    if (player.primary != GW::Constants::Profession::Mesmer && player.primary != GW::Constants::Profession::Ritualist &&
+        player.primary != GW::Constants::Profession::Dervish &&
+        player.primary != GW::Constants::Profession::Elementalist)
+        return false;
+
+    if (IsUwEntryOutpost() || IsUw())
+        return true;
+
+    return false;
 }

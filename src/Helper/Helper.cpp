@@ -52,21 +52,16 @@ static bool _IsEndGameEntryOutpost()
 {
     return (
 #ifdef _DEBUG
-        GW::Map::GetMapID() != GW::Constants::MapID::Great_Temple_of_Balthazar_outpost ||
-        GW::Map::GetMapID() != GW::Constants::MapID::Isle_of_the_Nameless ||
+        GW::Map::GetMapID() == GW::Constants::MapID::Great_Temple_of_Balthazar_outpost ||
+        GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless ||
 #endif
-        GW::Map::GetMapID() != GW::Constants::MapID::Embark_Beach ||
-        GW::Map::GetMapID() != GW::Constants::MapID::Temple_of_the_Ages ||
-        GW::Map::GetMapID() != GW::Constants::MapID::Chantry_of_Secrets_outpost ||
-        GW::Map::GetMapID() != GW::Constants::MapID::Zin_Ku_Corridor_outpost);
+        GW::Map::GetMapID() == GW::Constants::MapID::Embark_Beach ||
+        GW::Map::GetMapID() == GW::Constants::MapID::Temple_of_the_Ages ||
+        GW::Map::GetMapID() == GW::Constants::MapID::Chantry_of_Secrets_outpost ||
+        GW::Map::GetMapID() == GW::Constants::MapID::Zin_Ku_Corridor_outpost);
 }
 
 bool IsUwEntryOutpost()
-{
-    return _IsEndGameEntryOutpost();
-}
-
-bool IsFowEntryOutpost()
 {
     return _IsEndGameEntryOutpost();
 }
@@ -78,6 +73,26 @@ bool IsUw()
             GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless);
 #endif
     return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld);
+}
+
+bool IsFowEntryOutpost()
+{
+    return _IsEndGameEntryOutpost();
+}
+
+bool IsFow()
+{
+    return (GW::Map::GetMapID() == GW::Constants::MapID::The_Fissure_of_Woe);
+}
+
+bool IsDoa()
+{
+    return (GW::Map::GetMapID() == GW::Constants::MapID::Domain_of_Anguish);
+}
+
+bool IsDoaEntryOutpost()
+{
+    return (GW::Map::GetMapID() == GW::Constants::MapID::Gate_of_Torment_outpost);
 }
 
 GW::EffectArray *GetEffects(const uint32_t agent_id)

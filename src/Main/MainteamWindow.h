@@ -27,27 +27,27 @@ public:
     void Update() override;
 };
 
-class MesmerWindow : public HelperBoxWindow
+class MainteamWindow : public HelperBoxWindow
 {
 public:
-    MesmerWindow() : player({}), skillbar({}), spike_set(&player, &skillbar), filtered_foes({})
+    MainteamWindow() : player({}), skillbar({}), spike_set(&player, &skillbar), filtered_foes({})
     {
         if (skillbar.ValidateData())
         {
             skillbar.Load();
         }
     };
-    ~MesmerWindow(){};
+    ~MainteamWindow(){};
 
-    static MesmerWindow &Instance()
+    static MainteamWindow &Instance()
     {
-        static MesmerWindow instance;
+        static MainteamWindow instance;
         return instance;
     }
 
     const char *Name() const override
     {
-        return "MesmerWindow";
+        return "MainteamWindow";
     }
 
     void Initialize() override
@@ -70,6 +70,8 @@ public:
     void Update(float delta) override;
 
 private:
+    bool ActivationConditions();
+
     void Spiking();
 
     Player player;

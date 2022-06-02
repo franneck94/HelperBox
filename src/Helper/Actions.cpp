@@ -9,49 +9,6 @@
 
 #include "Actions.h"
 
-RoutineState SafeTravel(const GW::Constants::MapID target_map,
-                        const GW::Constants::MapRegion target_region,
-                        const GW::Constants::MapLanguage target_language)
-{
-    static auto state = RoutineState::NONE;
-    ResetState(state);
-
-    if (!IsMapReady())
-    {
-        return state;
-    }
-
-    if (DetectPlayerIsDead())
-    {
-        return state;
-    }
-
-    const auto current_map = GW::Map::GetMapID();
-    const auto current_region = static_cast<GW::Constants::MapRegion>(GW::Map::GetRegion());
-    const auto current_language = static_cast<GW::Constants::MapLanguage>(GW::Map::GetLanguage());
-
-    const bool travel_finished =
-        ((target_map == current_map) && (current_region == target_region) && (current_language == target_language));
-
-    if (!travel_finished)
-    {
-        if (RoutineState::NONE == state)
-        {
-            Log::Info(fmt::format("Traveling to map").data());
-
-            GW::Map::Travel(target_map, 0, static_cast<int>(target_region), static_cast<int>(target_language));
-
-            state = RoutineState::ACTIVE;
-        }
-    }
-    else if (travel_finished && !IsLoading())
-    {
-        state = RoutineState::FINISHED;
-    }
-
-    return state;
-}
-
 RoutineState SafeWalk(GW::GamePos target_position, const bool reset)
 {
     static auto map_zoned = false;
@@ -133,26 +90,6 @@ RoutineState SafeUseSkill(const uint32_t skill_idx, const uint32_t target, const
     {
         GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_idx); });
     }
-
-    return RoutineState::FINISHED;
-}
-
-RoutineState SafeLoadSkillTemplate(std::string_view code)
-{
-    if (!IsMapReady())
-    {
-        return RoutineState::NONE;
-    }
-
-    const auto me = GW::Agents::GetPlayer();
-
-    if (nullptr == me)
-    {
-        return RoutineState::NONE;
-    }
-
-    GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::LoadSkillTemplate(code.data()); });
-    Log::Info(fmt::format("Loaded template: {}", code).data());
 
     return RoutineState::FINISHED;
 }

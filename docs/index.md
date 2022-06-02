@@ -14,8 +14,22 @@ HelperBox.exe /pid PID
 
 For that you can run the **get_pids.py** python script which will scan for all open GW instances and will output the PIDs.
 
-The helper windows are hidden, whenever the player is not in the Underworld or an outpost where you can join the Underworld.
+The helper windows are hidden, whenever:
+
+- The player is not in the UW or an outpost where you can join the UW
+- A certain window is not displayed if the player is not on the profession for that window
+    - Terra Window
+        - Ranger/Assasin
+    - Emo Window
+        - Elementalist/Monk
+    - Meanteam Window
+        - Mesmer/X
+        - Ritualist/X
+        - Dervish/X
+        - Elementalist/Monk
+
+For a detailed description:
 
 - For EMO Helper see [here](./Emo.md)
-- For Mesmer (LT/Spiker) Helper see [here](./Mesmer.md)
+- For Mainteam Helper see [here](./Mainteam.md)
 - For Terra (currently T2) Helper see [here](./Terra.md)

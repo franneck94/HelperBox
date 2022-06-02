@@ -12,11 +12,8 @@ Atm it is expected to swap to low armor by yourself.
     - If no target is selected then the 2nd last player will be targeted in UW, elsewhere the first player
     - Balth, Life, and Bond will be cast if not present
 
-- Fuse Pull:
-    1. Cancel Animation
-    2. Walk to the target at a distance of 1220
-    3. Cancel Animation
-    4. Fuse
+- Fuse Range:
+    1. Walk to the target at a distance of 1220
 
 - Standard Skill Routine - Pumping:
     - On-hold while walking or talking to reaper (yellow colored)
