@@ -108,7 +108,8 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
                 if (foe->GetIsDead())
                     continue;
 
-                if (foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
+                if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
+                    foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
                     pushed = true;
