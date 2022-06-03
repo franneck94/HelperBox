@@ -33,6 +33,8 @@ private:
     RoutineState RoutineGDW();
     RoutineState RoutinePI(const uint32_t dhuum_id);
 
+    void WarnDistanceLT();
+
     GW::HookEntry Summon_AgentAdd_Entry;
     bool found_turtle = false;
     uint32_t turtle_id = 0;

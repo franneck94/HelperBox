@@ -208,7 +208,7 @@ RoutineState Pumping::RoutineSelfBonds()
 
 RoutineState Pumping::RoutineLT()
 {
-    if (!player->target || player->living->GetIsMoving())
+    if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id || player->living->GetIsMoving())
         return RoutineState::ACTIVE;
 
     const auto target_living = player->target->GetAsAgentLiving();
@@ -386,6 +386,25 @@ RoutineState Pumping::Routine()
     return RoutineState::FINISHED;
 }
 
+void Pumping::WarnDistanceLT()
+{
+    static auto warned = false;
+
+    if (!lt_agent)
+        return;
+
+    const auto dist = GW::GetDistance(player->pos, lt_agent->pos);
+
+    if (!warned && dist > GW::Constants::Range::Compass - 200.0F)
+    {
+        Log::Warning("Warning about distance to the LT!");
+        warned = true;
+        return;
+    }
+
+    warned = false;
+}
+
 void Pumping::Update()
 {
     static auto paused = false;
@@ -395,6 +414,8 @@ void Pumping::Update()
     {
         const uint32_t lt_id = GetTankId();
         lt_agent = GW::Agents::GetAgentByID(lt_id);
+
+        WarnDistanceLT();
     }
 
     const auto keyboard_move_request =
