@@ -11,6 +11,15 @@
 
 #include "Actions.h"
 
+void ActionABC::Draw(const ImVec2 button_size)
+{
+    if (!IsExplorable())
+        action_state = ActionState::INACTIVE;
+
+    const auto color = COLOR_MAPPING[static_cast<uint32_t>(action_state)];
+    DrawButton(action_state, color, text, button_size);
+}
+
 RoutineState SafeWalk(const GW::GamePos target_position, const bool reset)
 {
     static auto map_zoned = false;

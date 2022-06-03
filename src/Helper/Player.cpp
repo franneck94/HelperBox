@@ -58,7 +58,8 @@ void Player::Update()
 
 bool Player::CanCast() const
 {
-    if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() || living->GetIsMoving())
+    if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() || living->GetIsMoving() ||
+        !living->GetIsIdle())
         return false;
 
     return true;

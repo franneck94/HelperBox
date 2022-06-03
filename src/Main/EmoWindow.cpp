@@ -38,15 +38,6 @@ static ActionState *emo_casting_action_state = nullptr;
 static bool send_move = false;
 }; // namespace
 
-void ActionABC::Draw(const ImVec2 button_size)
-{
-    if (!IsExplorable())
-        action_state = ActionState::INACTIVE;
-
-    const auto color = COLOR_MAPPING[static_cast<uint32_t>(action_state)];
-    DrawButton(action_state, color, text, button_size);
-}
-
 EmoWindow::EmoWindow()
     : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar),
       tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
@@ -418,10 +409,7 @@ void Pumping::Update()
         WarnDistanceLT();
     }
 
-    const auto keyboard_move_request =
-        ImGui::IsKeyPressed(87) || ImGui::IsKeyPressed(68) || ImGui::IsKeyPressed(65) || ImGui::IsKeyPressed(83);
-    if ((player->living->GetIsMoving() || (ImGui::IsKeyPressed(VK_CONTROL) && keyboard_move_request)) &&
-        action_state == ActionState::ACTIVE)
+    if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
     {
         action_state = ActionState::ON_HOLD;
         paused = true;
@@ -448,7 +436,8 @@ void Pumping::Update()
     if (paused && !player->living->GetIsMoving())
     {
         paused = false;
-        action_state = ActionState::ACTIVE;
+        if (action_state == ActionState::ON_HOLD)
+            action_state = ActionState::ACTIVE;
     }
     else if (paused && paused_by_reaper &&
              (!player->target ||
@@ -456,7 +445,8 @@ void Pumping::Update()
     {
         paused = false;
         paused_by_reaper = false;
-        action_state = ActionState::ACTIVE;
+        if (action_state == ActionState::ON_HOLD)
+            action_state = ActionState::ACTIVE;
     }
 
     if (GW::PartyMgr::GetIsPartyDefeated())
