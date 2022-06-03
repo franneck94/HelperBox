@@ -301,7 +301,7 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
     return false;
 }
 
-bool PartyPlayerHasEffect(const GW::Constants::SkillID effect_skill_id, const uint32_t party_idx)
+bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_idx)
 {
     const GW::AgentEffectsArray &effects = GW::Effects::GetPartyEffectArray();
 
@@ -318,7 +318,7 @@ bool PartyPlayerHasEffect(const GW::Constants::SkillID effect_skill_id, const ui
 
     for (const auto &eff : agent_effects)
     {
-        if (eff.skill_id == static_cast<uint32_t>(effect_skill_id))
+        if (eff.skill_id == effect_skill_id)
             return true;
     }
 
@@ -509,9 +509,6 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
         return false;
 
     auto agents_array = GW::Agents::GetAgentArray();
-    if (agents_array.size() < 2)
-        return false;
-
     const GW::Agent *dhuum_agent = nullptr;
 
     for (const auto &agent : agents_array)
@@ -520,10 +517,14 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
             continue;
 
         const auto living = agent->GetAsAgentLiving();
+
         if (!living)
             continue;
 
-        if (living->player_number == GW::Constants::ModelID::UW::Dhuum)
+        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+            continue;
+
+        if (living->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
         {
             dhuum_agent = agent;
             break;
@@ -596,4 +597,25 @@ bool IsAliveAlly(const GW::Agent *target)
         return false;
 
     return true;
+}
+
+uint32_t GetPartyIdxByID(const uint32_t id)
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success)
+        return 0;
+
+    const auto it = std::find_if(party_members.begin(), party_members.end(), [&id](const PlayerMapping &member) {
+        return member.id == static_cast<uint32_t>(id);
+    });
+    if (it == party_members.end())
+        return 0;
+
+    const auto idx = std::distance(party_members.begin(), it);
+    if (idx >= GW::PartyMgr::GetPartySize())
+        return 0;
+
+    return idx;
 }

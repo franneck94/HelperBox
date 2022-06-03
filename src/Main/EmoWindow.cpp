@@ -218,27 +218,12 @@ RoutineState Pumping::RoutineLT()
 
     const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-    if (dist < FusePull::FUSE_PULL_RANGE - 5.0F || dist > FusePull::FUSE_PULL_RANGE + 5.0F)
+    if (dist < FusePull::FUSE_PULL_RANGE - 1.0F || dist > FusePull::FUSE_PULL_RANGE + 1.0F)
         return RoutineState::ACTIVE;
 
-    std::vector<PlayerMapping> party_members;
-    const auto success = GetPartyMembers(party_members);
+    const uint32_t player_idx = GetPartyIdxByID(target_living->agent_id);
 
-    if (!success)
-        return RoutineState::ACTIVE;
-
-    const auto it =
-        std::find_if(party_members.begin(), party_members.end(), [&target_living](const PlayerMapping &member) {
-            return member.id == static_cast<uint32_t>(target_living->agent_id);
-        });
-    if (it == party_members.end())
-        return RoutineState::ACTIVE;
-
-    const auto idx = std::distance(party_members.begin(), it);
-    if (idx >= GW::PartyMgr::GetPartySize())
-        return RoutineState::ACTIVE;
-
-    const auto found_sb = PartyPlayerHasEffect(GW::Constants::SkillID::Spirit_Bond, idx);
+    const auto found_sb = PartyPlayerHasEffect(skillbar->sb.id, player_idx);
     if (!found_sb && skillbar->sb.CanBeCasted(player->energy))
         return SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
 
@@ -278,7 +263,9 @@ RoutineState Pumping::RoutineTurtle()
 
 RoutineState Pumping::RoutinePI(const uint32_t dhuum_id)
 {
-    if (!skillbar->pi.SkillFound())
+    const auto &skill = skillbar->pi;
+
+    if (!skill.SkillFound())
         return RoutineState::ACTIVE;
 
     const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
@@ -291,9 +278,9 @@ RoutineState Pumping::RoutinePI(const uint32_t dhuum_id)
 
     if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
     {
-        const auto pi_avail = skillbar->wisdom.CanBeCasted(player->energy);
+        const auto pi_avail = skill.CanBeCasted(player->energy);
         if (pi_avail)
-            return SafeUseSkill(skillbar->pi.idx, dhuum_id);
+            return SafeUseSkill(skill.idx, dhuum_id);
     }
 
     return RoutineState::ACTIVE;
@@ -301,19 +288,23 @@ RoutineState Pumping::RoutinePI(const uint32_t dhuum_id)
 
 RoutineState Pumping::RoutineWisdom()
 {
-    if (!skillbar->wisdom.SkillFound())
+    const auto &skill = skillbar->wisdom;
+
+    if (!skill.SkillFound())
         return RoutineState::ACTIVE;
 
-    const auto wisdom_avail = skillbar->wisdom.CanBeCasted(player->energy);
+    const auto wisdom_avail = skill.CanBeCasted(player->energy);
     if (wisdom_avail)
-        return SafeUseSkill(skillbar->wisdom.idx);
+        return SafeUseSkill(skill.idx);
 
     return RoutineState::ACTIVE;
 }
 
 RoutineState Pumping::RoutineGDW()
 {
-    if (!skillbar->gdw.SkillFound())
+    const auto &skill = skillbar->gdw;
+
+    if (!skill.SkillFound())
         return RoutineState::ACTIVE;
 
     std::vector<PlayerMapping> party_members;
@@ -333,14 +324,18 @@ RoutineState Pumping::RoutineGDW()
         if (!agent)
             continue;
 
+        const auto living = agent->GetAsAgentLiving();
+        if (!living || living->GetIsMoving())
+            continue;
+
         const auto dist = GW::GetDistance(player->pos, agent->pos);
         if (dist > GW::Constants::Range::Spellcast)
             continue;
 
-        if (PartyPlayerHasEffect(GW::Constants::SkillID::Great_Dwarf_Weapon, idx))
+        if (PartyPlayerHasEffect(skill.id, idx))
             continue;
 
-        return SafeUseSkill(skillbar->gdw.idx, id);
+        return SafeUseSkill(skill.idx, id);
     }
 
     return RoutineState::ACTIVE;
@@ -373,22 +368,22 @@ RoutineState Pumping::Routine()
     if (turtle_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    uint32_t dhuum_id = 0;
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
-
-    if (!is_in_dhuum_fight)
-        return RoutineState::FINISHED;
-
-    const auto pi_state = RoutinePI(dhuum_id);
-    if (pi_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
     const auto wisdom_state = RoutineWisdom();
     if (wisdom_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     const auto gdw_state = RoutineGDW();
     if (gdw_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    uint32_t dhuum_id = 0;
+    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
+
+    if (!is_in_dhuum_fight || !dhuum_id)
+        return RoutineState::FINISHED;
+
+    const auto pi_state = RoutinePI(dhuum_id);
+    if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     return RoutineState::FINISHED;
