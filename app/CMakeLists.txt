@@ -38,3 +38,17 @@ endif()
 if(${ENABLE_LTO})
     target_enable_lto(HelperBox optimized)
 endif()
+
+# Copy <filename> to build directory
+set(copy_source_dir "${PROJECT_SOURCE_DIR}/")
+set(copy_dest_dir "${PROJECT_SOURCE_DIR}/bin/Release")
+set(copy_file_name "select_instance.py")
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${copy_dest_dir}
+)
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${copy_source_dir}/${copy_file_name}" "${copy_dest_dir}/${copy_file_name}"
+    COMMENT "Copying ${copy_file_name} to build directory"
+)
