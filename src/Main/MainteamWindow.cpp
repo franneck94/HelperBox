@@ -104,9 +104,9 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (ImGui::BeginTable("AatxeTable", 3))
         {
-            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.27);
-            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25);
-            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.48);
+            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.27F);
+            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25F);
+            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.48F);
 
             ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
             ImGui::TableNextColumn();

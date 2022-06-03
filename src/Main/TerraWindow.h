@@ -62,7 +62,7 @@ public:
     void Update(float delta) override;
 
 private:
-    bool TerraWindow::ActivationConditions();
+    bool ActivationConditions();
 
     void Spiking();
 

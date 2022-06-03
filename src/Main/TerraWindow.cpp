@@ -81,10 +81,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (ImGui::BeginTable("BehemothTable", 4))
         {
-            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.15);
-            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.2);
-            ImGui::TableSetupColumn("Cast.", ImGuiTableColumnFlags_WidthFixed, width * 0.2);
-            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.4);
+            ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.15F);
+            ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.2F);
+            ImGui::TableSetupColumn("Cast.", ImGuiTableColumnFlags_WidthFixed, width * 0.2F);
+            ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.4F);
 
             ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
             ImGui::TableNextColumn();
@@ -168,6 +168,8 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 
 void TerraWindow::Update(float delta)
 {
+    UNREFERENCED_PARAMETER(delta);
+
     if (IsLoading())
         last_casted_times_ms.clear();
 

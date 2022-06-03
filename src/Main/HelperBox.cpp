@@ -199,7 +199,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    HelperBox &helper_box = HelperBox::Instance();
+    HelperBox::Instance();
     switch (Message)
     {
     case WM_LBUTTONDOWN:

@@ -93,7 +93,6 @@ void HelperBoxSettings::DrawSettingInternal()
         items_per_col = (size_t)ceil(valid_elements.size() / static_cast<float>(cols));
         for (size_t i = 0; i < valid_elements.size(); i++)
         {
-            auto window = valid_elements[i];
             col_count++;
             if (col_count == items_per_col)
             {

@@ -666,7 +666,7 @@ void FusePull::Update()
     if (action_state == ActionState::ACTIVE)
     {
         StateOnHold(*emo_casting_action_state);
-        const auto routine_state = Routine();
+        routine_state = Routine();
 
         if (routine_state == RoutineState::FINISHED)
         {
