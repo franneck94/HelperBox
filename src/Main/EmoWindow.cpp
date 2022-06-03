@@ -152,7 +152,7 @@ Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
 
             uint32_t player_number = (pak->agent_type ^ 0x20000000);
 
-            if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld || player_number != 514) // Turtle id
+            if (!IsUw() || player_number != 514) // Turtle id
                 return;
 
             found_turtle = true;
@@ -350,7 +350,7 @@ RoutineState Pumping::Routine()
     if (self_bonds_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+    if (!IsUw())
         return RoutineState::FINISHED;
 
     const auto lt_state = RoutineLT();
@@ -390,6 +390,12 @@ void Pumping::Update()
 {
     static auto paused = false;
     static auto paused_by_reaper = false;
+
+    if (IsUw())
+    {
+        const uint32_t lt_id = GetTankId();
+        lt_agent = GW::Agents::GetAgentByID(lt_id);
+    }
 
     const auto keyboard_move_request =
         ImGui::IsKeyPressed(87) || ImGui::IsKeyPressed(68) || ImGui::IsKeyPressed(65) || ImGui::IsKeyPressed(83);

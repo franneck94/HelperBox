@@ -37,6 +37,8 @@ private:
     bool found_turtle = false;
     uint32_t turtle_id = 0;
 
+    GW::Agent *lt_agent = nullptr;
+
     bool interrupted = false;
     GW::HookEntry GenericValue_Entry;
 };
