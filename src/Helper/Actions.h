@@ -18,7 +18,7 @@
 class ActionABC
 {
 public:
-    ActionABC(Player *p, char *const t) : player(p), text(t)
+    ActionABC(Player *p, const char *const t) : player(p), text(t)
     {
     }
 
@@ -27,7 +27,7 @@ public:
     virtual void Update() = 0;
 
     Player *player = nullptr;
-    char *const text = nullptr;
+    const char *const text = nullptr;
 
     ActionState action_state = ActionState::INACTIVE;
 };
@@ -35,7 +35,7 @@ public:
 class EmoActionABC : public ActionABC
 {
 public:
-    EmoActionABC(Player *p, char *const t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
+    EmoActionABC(Player *p, const char *const t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
     {
     }
 
@@ -45,7 +45,7 @@ public:
 class MesmerActionABC : public ActionABC
 {
 public:
-    MesmerActionABC(Player *p, char *const t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
+    MesmerActionABC(Player *p, const char *const t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
     {
     }
 

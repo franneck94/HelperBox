@@ -538,8 +538,11 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
     if (!dhuum_living)
         return false;
 
-    if (dhuum_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
+    if (dhuum_living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+    {
+        *dhuum_id = dhuum_living->agent_id;
         return true;
+    }
 
     return false;
 }
@@ -605,17 +608,17 @@ uint32_t GetPartyIdxByID(const uint32_t id)
     const auto success = GetPartyMembers(party_members);
 
     if (!success)
-        return 0;
+        return 0U;
 
     const auto it = std::find_if(party_members.begin(), party_members.end(), [&id](const PlayerMapping &member) {
         return member.id == static_cast<uint32_t>(id);
     });
     if (it == party_members.end())
-        return 0;
+        return 0U;
 
-    const auto idx = std::distance(party_members.begin(), it);
+    const auto idx = static_cast<uint32_t>(std::distance(party_members.begin(), it));
     if (idx >= GW::PartyMgr::GetPartySize())
-        return 0;
+        return 0U;
 
     return idx;
 }
