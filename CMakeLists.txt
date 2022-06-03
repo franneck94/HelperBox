@@ -14,10 +14,11 @@ add_compile_definitions(
     "NOMINMAX"
     "_USE_MATH_DEFINES"
     "WIN32_LEAN_AND_MEAN"
+    "_CRT_SECURE_NO_WARNINGS"
     "HELPERBOXDLL_VERSION=\"${HELPERBOXDLL_VERSION}\"")
 
 # Options
-option(ENABLE_WARNINGS "Enable to add warnings to a target."   ON)
+option(ENABLE_WARNINGS "Enable to add warnings to a target." ON)
 
 ### CMAKE MODULES
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/)
