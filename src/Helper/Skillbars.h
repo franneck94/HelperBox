@@ -128,6 +128,17 @@ public:
         if (!skillbar_skills)
             return;
 
+        burning.idx = static_cast<uint32_t>(-1);
+        sb.idx = static_cast<uint32_t>(-1);
+        fuse.idx = static_cast<uint32_t>(-1);
+        ether.idx = static_cast<uint32_t>(-1);
+        prot.idx = static_cast<uint32_t>(-1);
+        life.idx = static_cast<uint32_t>(-1);
+        balth.idx = static_cast<uint32_t>(-1);
+        gdw.idx = static_cast<uint32_t>(-1);
+        wisdom.idx = static_cast<uint32_t>(-1);
+        pi.idx = static_cast<uint32_t>(-1);
+
         for (uint32_t idx = 0; idx < 8; ++idx)
         {
             if (skillbar_skills[idx].skill_id == burning.id)
@@ -193,6 +204,10 @@ public:
     {
         if (!skillbar_skills)
             return;
+
+        demise.idx = static_cast<uint32_t>(-1);
+        worry.idx = static_cast<uint32_t>(-1);
+        pi.idx = static_cast<uint32_t>(-1);
 
         for (uint32_t idx = 0; idx < 8; ++idx)
         {
