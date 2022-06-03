@@ -346,14 +346,11 @@ RoutineState Pumping::Routine()
     if (!player->CanCast())
         return RoutineState::FINISHED;
 
-    if (interrupted)
-    {
-        interrupted = false;
-        return RoutineState::FINISHED;
-    }
-
     const auto self_bonds_state = RoutineSelfBonds();
     if (self_bonds_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return RoutineState::FINISHED;
 
     const auto lt_state = RoutineLT();
@@ -368,18 +365,18 @@ RoutineState Pumping::Routine()
     if (turtle_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
+    uint32_t dhuum_id = 0;
+    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
+
+    if (!is_in_dhuum_fight || !dhuum_id)
+        return RoutineState::FINISHED;
+
     const auto wisdom_state = RoutineWisdom();
     if (wisdom_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     const auto gdw_state = RoutineGDW();
     if (gdw_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
-    uint32_t dhuum_id = 0;
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
-
-    if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
 
     const auto pi_state = RoutinePI(dhuum_id);
@@ -437,6 +434,12 @@ void Pumping::Update()
 
     if (GW::PartyMgr::GetIsPartyDefeated())
         action_state = ActionState::INACTIVE;
+
+    if (interrupted)
+    {
+        interrupted = false;
+        action_state = ActionState::INACTIVE;
+    }
 }
 
 RoutineState TankBonding::Routine()
@@ -456,6 +459,7 @@ RoutineState TankBonding::Routine()
     const auto no_target_or_self = (!player->target || player->target->agent_id == player->id);
     const auto target_not_self = (player->target && player->target->agent_id != player->id);
 
+    // Get target at activation, afrter keep the id
     if (!target_id && no_target_or_self)
     {
         target_id = GetTankId();

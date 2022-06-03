@@ -11,10 +11,7 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 
-#include <Logger.h>
-
 #include <Player.h>
-#include <Skillbars.h>
 #include <Types.h>
 #include <Utils.h>
 
@@ -38,7 +35,7 @@ bool IsDoaEntryOutpost();
 
 bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
 
-GW::EffectArray *GetEffects(const uint32_t agent_id);
+const GW::EffectArray *GetEffects(const uint32_t agent_id);
 
 bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_idx);
 
@@ -100,7 +97,7 @@ void FilterAgents(const Player &player,
 
 void SortByDistanceAndID(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
 
-bool IsInDhuumRoom(const Player *player);
+bool IsInDhuumRoom(const Player *const player);
 
 bool IsInDhuumFight(uint32_t *dhuum_id = nullptr);
 

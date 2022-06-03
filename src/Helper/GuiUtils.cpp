@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <Helper.h>
+#include <Types.h>
 
 #include "GuiUtils.h"
 

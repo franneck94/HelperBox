@@ -95,21 +95,17 @@ bool IsDoaEntryOutpost()
     return (GW::Map::GetMapID() == GW::Constants::MapID::Gate_of_Torment_outpost);
 }
 
-GW::EffectArray *GetEffects(const uint32_t agent_id)
+const GW::EffectArray *GetEffects(const uint32_t agent_id)
 {
-    GW::AgentEffectsArray agent_effects = GW::Effects::GetPartyEffectArray();
+    const auto agent_effects = GW::Effects::GetPartyEffectArray();
 
     if (!agent_effects.valid())
-    {
         return nullptr;
-    }
 
     for (size_t i = 0; i < agent_effects.size(); i++)
     {
         if (agent_effects[i].agent_id == agent_id && agent_effects[i].effects.valid())
-        {
             return &agent_effects[i].effects;
-        }
     }
 
     return nullptr;
@@ -117,27 +113,21 @@ GW::EffectArray *GetEffects(const uint32_t agent_id)
 
 bool TargetNearest(const TargetType type, const float max_distance)
 {
-    const GW::AgentArray agents = GW::Agents::GetAgentArray();
+    const auto agents = GW::Agents::GetAgentArray();
     if (!agents.valid())
-    {
         return false;
-    }
 
-    const GW::AgentLiving *const me = GW::Agents::GetPlayerAsAgentLiving();
-    if (me == nullptr)
-    {
+    const auto me = GW::Agents::GetPlayerAsAgentLiving();
+    if (!me)
         return false;
-    }
 
     float distance = max_distance;
     size_t closest = 0;
 
-    for (const GW::Agent *agent : agents)
+    for (const auto agent : agents)
     {
         if (!agent || agent == me)
-        {
             continue;
-        }
 
         switch (type)
         {
@@ -145,50 +135,39 @@ bool TargetNearest(const TargetType type, const float max_distance)
         {
             const auto gadget = agent->GetAsAgentGadget();
             if (!gadget)
-            {
                 continue;
-            }
             break;
         }
         case TargetType::Item:
         {
             const auto item_agent = agent->GetAsAgentItem();
             if (!item_agent)
-            {
                 continue;
-            }
+
             const auto item = GW::Items::GetItemById(item_agent->item_id);
             if (!item)
-            {
                 continue;
-            }
             break;
         }
         case TargetType::Npc:
         {
             const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->IsNPC() || !living_agent->GetIsAlive())
-            {
                 continue;
-            }
             break;
         }
         case TargetType::Player:
         {
             const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->IsPlayer())
-            {
                 continue;
-            }
             break;
         }
         case TargetType::Living:
         {
             const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->GetIsAlive())
-            {
                 continue;
-            }
             break;
         }
         default:
@@ -197,7 +176,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
         }
         }
 
-        const float newDistance = GW::GetSquareDistance(me->pos, agent->pos);
+        const auto newDistance = GW::GetSquareDistance(me->pos, agent->pos);
         if (newDistance < distance)
         {
             closest = agent->agent_id;
@@ -233,12 +212,10 @@ bool DetectPlayerIsDead()
 std::tuple<uint32_t, uint32_t, float> GetEnergy()
 {
     const auto me = GW::Agents::GetPlayer();
-
     if (!me)
         return std::make_tuple(0, 0, 0.0F);
 
     const auto living_me = me->GetAsAgentLiving();
-
     if (!living_me)
         return std::make_tuple(0, 0, 0.0F);
 
@@ -252,12 +229,10 @@ std::tuple<uint32_t, uint32_t, float> GetEnergy()
 std::tuple<uint32_t, uint32_t, float> GetHp()
 {
     const auto me = GW::Agents::GetPlayer();
-
     if (!me)
         return std::make_tuple(0, 0, 0.0F);
 
     const auto living_me = me->GetAsAgentLiving();
-
     if (!living_me)
         return std::make_tuple(0, 0, 0.0F);
 
@@ -270,19 +245,13 @@ std::tuple<uint32_t, uint32_t, float> GetHp()
 
 bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t target_agent_id)
 {
-    const GW::AgentEffectsArray &effects = GW::Effects::GetPartyEffectArray();
-
+    const auto &effects = GW::Effects::GetPartyEffectArray();
     if (!effects.valid())
-    {
         return false;
-    }
 
     const auto &buffs = effects[0].buffs;
-
     if (!buffs.valid())
-    {
         return false;
-    }
 
     for (size_t i = 0; i < buffs.size(); ++i)
     {
@@ -292,9 +261,7 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
         if (agent_id == target_agent_id)
         {
             if (skill_id == static_cast<uint32_t>(buff_skill_id))
-            {
                 return true;
-            }
         }
     }
 
@@ -303,7 +270,7 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
 
 bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_idx)
 {
-    const GW::AgentEffectsArray &effects = GW::Effects::GetPartyEffectArray();
+    const auto &effects = GW::Effects::GetPartyEffectArray();
 
     if (!effects.valid())
         return false;
@@ -312,7 +279,6 @@ bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_i
         return false;
 
     const auto agent_effects = effects[party_idx].effects;
-
     if (agent_effects.size() == 0)
         return false;
 
@@ -332,24 +298,24 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
     if (!GW::Map::GetIsMapLoaded())
         return false;
 
-    GW::PartyInfo *info = GW::PartyMgr::GetPartyInfo();
-    if (info == nullptr)
+    const auto info = GW::PartyMgr::GetPartyInfo();
+    if (!info)
         return false;
 
-    GW::PlayerArray players = GW::Agents::GetPlayerArray();
+    const auto players = GW::Agents::GetPlayerArray();
     if (!players.valid())
         return false;
 
     party_members.clear();
 
     uint32_t idx = 0;
-    for (GW::PlayerPartyMember &player : info->players)
+    for (const auto &player : info->players)
     {
         uint32_t id = players[player.login_number].agent_id;
         party_members.push_back({id, idx});
         ++idx;
 
-        for (GW::HeroPartyMember &hero : info->heroes)
+        for (const auto &hero : info->heroes)
         {
             if (hero.owner_player_id == player.login_number)
             {
@@ -358,7 +324,7 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
             }
         }
     }
-    for (GW::HenchmanPartyMember &hench : info->henchmen)
+    for (const auto &hench : info->henchmen)
     {
         party_members.push_back({hench.agent_id, idx});
         ++idx;
@@ -367,11 +333,12 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
     return true;
 }
 
-bool IsEquippable(const GW::Item *_item)
+bool IsEquippable(const GW::Item *item)
 {
-    if (!_item)
+    if (!item)
         return false;
-    switch (static_cast<GW::Constants::ItemType>(_item->type))
+
+    switch (static_cast<GW::Constants::ItemType>(item->type))
     {
     case GW::Constants::ItemType::Axe:
     case GW::Constants::ItemType::Boots:
@@ -404,49 +371,40 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
     GW::Item *item = nullptr;
 
     if (bag_idx < 1 || bag_idx > 5 || slot_idx < 1 || slot_idx > 25)
-    {
         return false;
-    }
+
     GW::Bag *b = GW::Items::GetBag(bag_idx);
     if (!b)
-    {
         return false;
-    }
+
     GW::ItemArray items = b->items;
     if (!items.valid() || slot_idx > items.size())
-    {
         return false;
-    }
     item = items.at(slot_idx - 1);
 
     if (!IsEquippable(item))
-    {
         return false;
-    }
 
     if (!item || !item->item_id)
-    {
         return false;
-    }
+
     if (item->bag && item->bag->bag_type == 2)
-    {
         return false;
-    }
+
     GW::AgentLiving *p = GW::Agents::GetCharacter();
     if (!p || p->GetIsDead())
-    {
         return false;
-    }
+
     const GW::Skillbar *s = GW::SkillbarMgr::GetPlayerSkillbar();
     if (p->GetIsKnockedDown() || (s && s->casting))
-    {
         return false;
-    }
+
     if (p->skill)
     {
         GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         return false;
     }
+
     if (p->GetIsIdle() || p->GetIsMoving())
     {
         GW::Items::EquipItem(item);
@@ -461,16 +419,9 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
 
 void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
-    bool all_done = true;
-
     for (uint32_t offset = 0; offset < 5; offset++)
     {
-        all_done = EquipItemExecute(bag_idx, start_slot_idx + offset);
-    }
-
-    if (!all_done)
-    {
-        Log::Log("ERROR!");
+        EquipItemExecute(bag_idx, start_slot_idx + offset);
     }
 }
 
@@ -487,7 +438,7 @@ void SortByDistanceAndID(const Player &player, std::vector<GW::AgentLiving *> &f
     });
 }
 
-bool IsInDhuumRoom(const Player *player)
+bool IsInDhuumRoom(const Player *const player)
 {
     if (!player)
         return false;
@@ -509,7 +460,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
     if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return false;
 
-    auto agents_array = GW::Agents::GetAgentArray();
+    const auto agents_array = GW::Agents::GetAgentArray();
     const GW::Agent *dhuum_agent = nullptr;
 
     for (const auto &agent : agents_array)
@@ -518,11 +469,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-
-        if (!living)
-            continue;
-
-        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        if (!living || living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
             continue;
 
         if (living->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))

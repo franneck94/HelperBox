@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 enum class ActionState
 {
     INACTIVE = 0,

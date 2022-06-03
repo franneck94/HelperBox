@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <GWCA/GameContainers/GamePos.h>
 
 #include "Utils.h"

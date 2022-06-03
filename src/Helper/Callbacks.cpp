@@ -4,7 +4,6 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Logger.h>
 #include <Player.h>
 
 bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet, const Player *player)

@@ -2,16 +2,12 @@
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/GameContainers/Array.h>
-#include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Skill.h>
-#include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
-#include <GWCA/Managers/MapMgr.h>
-#include <GWCA/Managers/PartyMgr.h>
 
 #include <Helper.h>
 

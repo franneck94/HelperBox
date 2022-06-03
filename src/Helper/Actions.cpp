@@ -7,6 +7,8 @@
 
 #include <fmt/format.h>
 
+#include <Logger.h>
+
 #include "Actions.h"
 
 RoutineState SafeWalk(const GW::GamePos target_position, const bool reset)
@@ -21,7 +23,7 @@ RoutineState SafeWalk(const GW::GamePos target_position, const bool reset)
     if (!me)
         return state;
 
-    auto current_position = me->pos;
+    const auto current_position = me->pos;
     const auto reached = GamePosCompare(target_position, current_position, 0.001F);
 
     if (!reached)
