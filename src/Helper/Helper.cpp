@@ -474,14 +474,15 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
     }
 }
 
-void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
+void SortByDistanceAndID(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
 {
     const auto player_pos = player.pos;
 
-    std::sort(filtered_agents.begin(), filtered_agents.end(), [&player_pos](auto &v1, auto &v2) {
-        const auto sqrd1 = GW::GetSquareDistance(player_pos, v1->pos);
-        const auto sqrd2 = GW::GetSquareDistance(player_pos, v2->pos);
-
+    std::sort(filtered_agents.begin(), filtered_agents.end(), [&player_pos](const auto a1, const auto a2) {
+        if (a1->player_number != a2->player_number)
+            return a1->player_number < a2->player_number;
+        const auto sqrd1 = GW::GetSquareDistance(player_pos, a1->pos);
+        const auto sqrd2 = GW::GetSquareDistance(player_pos, a2->pos);
         return sqrd1 < sqrd2;
     });
 }

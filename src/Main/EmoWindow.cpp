@@ -218,7 +218,7 @@ RoutineState Pumping::RoutineLT()
 
     const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-    if (dist < FusePull::FUSE_PULL_RANGE - 1.0F || dist > FusePull::FUSE_PULL_RANGE + 1.0F)
+    if (dist < FuseRange::FUSE_PULL_RANGE - 1.0F || dist > FuseRange::FUSE_PULL_RANGE + 1.0F)
         return RoutineState::ACTIVE;
 
     const uint32_t player_idx = GetPartyIdxByID(target_living->agent_id);
@@ -394,7 +394,10 @@ void Pumping::Update()
     static auto paused = false;
     static auto paused_by_reaper = false;
 
-    if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
+    const auto keyboard_move_request =
+        ImGui::IsKeyPressed(87) || ImGui::IsKeyPressed(68) || ImGui::IsKeyPressed(65) || ImGui::IsKeyPressed(83);
+    if ((player->living->GetIsMoving() || (ImGui::IsKeyPressed(VK_CONTROL) && keyboard_move_request)) &&
+        action_state == ActionState::ACTIVE)
     {
         action_state = ActionState::ON_HOLD;
         paused = true;
@@ -611,7 +614,7 @@ void PlayerBonding::Update()
     }
 }
 
-RoutineState FusePull::Routine()
+RoutineState FuseRange::Routine()
 {
     ResetState(routine_state);
 
@@ -661,7 +664,7 @@ RoutineState FusePull::Routine()
     return RoutineState::FINISHED;
 }
 
-void FusePull::Update()
+void FuseRange::Update()
 {
     if (action_state == ActionState::ACTIVE)
     {

@@ -98,7 +98,7 @@ void FilterAgents(const Player &player,
     }
 }
 
-void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
+void SortByDistanceAndID(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
 
 bool IsInDhuumRoom(const Player *player);
 

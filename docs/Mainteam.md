@@ -5,7 +5,7 @@
         - Casts Wastrel's Demise and Wastrel's Worry on target
 
 
-- The following enemies are displayed in the table whenever their distance is less than 1000
+- The following enemies are displayed in the table whenever their distance is less than 1500
     - Nearby Aatxe
         - Target Button
         - If already hexed, the text in the table is colored red-ish

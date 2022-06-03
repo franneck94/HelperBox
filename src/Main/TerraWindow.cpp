@@ -185,7 +185,7 @@ void TerraWindow::Update(float delta)
 
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player, agents_array, filtered_foes, IDS, 1000.0F);
-    SortByDistance(player, filtered_foes);
+    SortByDistanceAndID(player, filtered_foes);
 
     if (!auto_target_active)
         return;

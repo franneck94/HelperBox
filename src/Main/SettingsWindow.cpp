@@ -31,9 +31,7 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
         return;
 
     if (instance_type != last_instance_type)
-    {
         last_instance_type = instance_type;
-    }
 
     if (!visible)
         return;
@@ -52,7 +50,7 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
         {
             if (i == sep)
                 ImGui::Text("Components:");
-            if (optional_modules[i]->SettingsName() != "Chat Settings")
+            if (strcmp(optional_modules[i]->SettingsName(), "Chat Settings") != 0)
                 DrawSettingsSection(optional_modules[i]->SettingsName());
         }
     }

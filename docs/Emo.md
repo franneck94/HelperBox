@@ -13,7 +13,7 @@ Note: Currently it is expected to swap to low armor by yourself.
     - Balth, Life, and Bond will be cast if not present
 
 - Fuse Range:
-    1. Walk to the target at a distance of 1220
+    - Walk to the target at a distance of 1220
 
 - Standard Skill Routine - **Pumping**:
     - On-hold while walking or talking to reaper (yellow colored)

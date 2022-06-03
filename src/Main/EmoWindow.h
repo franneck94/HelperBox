@@ -29,9 +29,9 @@ private:
     RoutineState RoutineSelfBonds();
     RoutineState RoutineLT();
     RoutineState RoutineTurtle();
-    RoutineState RoutinePI(const uint32_t dhuum_id);
     RoutineState RoutineWisdom();
     RoutineState RoutineGDW();
+    RoutineState RoutinePI(const uint32_t dhuum_id);
 
     GW::HookEntry Summon_AgentAdd_Entry;
     bool found_turtle = false;
@@ -83,12 +83,12 @@ public:
     GW::HookEntry GenericValue_Entry;
 };
 
-class FusePull : public EmoActionABC
+class FuseRange : public EmoActionABC
 {
 public:
     static constexpr auto FUSE_PULL_RANGE = float{1220.0F};
 
-    FusePull(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Fuse Range", s)
+    FuseRange(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Fuse Range", s)
     {
     }
 
@@ -147,12 +147,12 @@ private:
     void EmoSkillRoutine();
     bool EmoBondTankRoutine();
     bool EmoBondPlayerRoutine();
-    bool EmoFusePull();
+    bool EmoFuseRange();
 
     Player player;
     EmoSkillbar skillbar;
 
-    FusePull fuse_pull;
+    FuseRange fuse_pull;
     Pumping pumping;
     TankBonding tank_bonding;
     PlayerBonding player_bonding;

@@ -192,8 +192,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
             io.KeysDown[wParam] = false;
         break;
     case WM_CHAR:
+        // You can also use ToAscii()+GetKeyboardState() to retrieve characters.
         if (wParam > 0 && wParam < 0x10000)
-            io.AddInputCharacter((unsigned short)wParam);
+            io.AddInputCharacterUTF16((unsigned short)wParam);
         break;
     default:
         break;

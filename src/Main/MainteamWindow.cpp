@@ -128,22 +128,21 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
                 if (foe->hp == 0.0F)
                     continue;
 
-
                 if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
                     foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0));
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0F));
                     pushed = true;
                 }
                 else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::TerrorwebDryder))
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94F, 0.31F, 0.09F, 1.0));
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94F, 0.31F, 0.09F, 1.0F));
                     pushed = true;
                 }
                 else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) &&
                          foe->GetIsHexed())
                 {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0));
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0F));
                     pushed = true;
                 }
                 const float distance = GW::GetDistance(player.pos, foe->pos);
@@ -194,7 +193,7 @@ void MainteamWindow::Update(float delta)
 
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player, agents_array, filtered_foes, IDS, 1500.0F);
-    SortByDistance(player, filtered_foes);
+    SortByDistanceAndID(player, filtered_foes);
 }
 
 bool MainteamWindow::ActivationConditions()
