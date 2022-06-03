@@ -12,3 +12,7 @@ target_link_libraries(HelperDll PUBLIC
     simpleini
     fmt::fmt
     UtilsDll)
+
+if (${ENABLE_WARNINGS})
+    target_set_warnings(TARGET HelperDll ENABLE ON AS_ERROR OFF)
+endif()

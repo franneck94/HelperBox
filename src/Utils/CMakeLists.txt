@@ -12,3 +12,7 @@ target_link_libraries(UtilsDll PUBLIC
     gwca
     simpleini
     fmt::fmt)
+
+if (${ENABLE_WARNINGS})
+    target_set_warnings(TARGET UtilsDll ENABLE ON AS_ERROR OFF)
+endif()

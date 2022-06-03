@@ -16,3 +16,7 @@ target_link_libraries(MainDll PUBLIC
     UtilsDll
     HelperDll
     gwca)
+
+if (${ENABLE_WARNINGS})
+    target_set_warnings(TARGET MainDll ENABLE ON AS_ERROR OFF)
+endif()
