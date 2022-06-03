@@ -40,7 +40,7 @@ bool TargetNearest(const TargetType type, const float max_distance = GW::Constan
 
 GW::EffectArray *GetEffects(const uint32_t agent_id);
 
-bool PartyPlayerHasEffect(const GW::Constants::SkillID effect_skill_id, const uint32_t party_idx);
+bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_idx);
 
 bool DetectPlayerIsDead();
 
@@ -109,3 +109,5 @@ bool CanMove();
 uint32_t GetTankId();
 
 bool IsAliveAlly(const GW::Agent *target);
+
+uint32_t GetPartyIdxByID(const uint32_t id);
