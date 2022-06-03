@@ -14,6 +14,9 @@ target_sources(gwca PRIVATE ${GWCA_SOURCES})
 target_precompile_headers(gwca PRIVATE "gwca/source/stdafx.h")
 target_include_directories(gwca PUBLIC "gwca/include/")
 target_link_libraries(gwca PUBLIC minhook)
+if (${ENABLE_WARNINGS})
+    target_set_warnings(TARGET gwca ENABLE OFF AS_ERROR OFF)
+endif()
 
 ### RING_BUFFER
 add_library(ring_buffer INTERFACE)
