@@ -357,21 +357,25 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
 
     uint32_t dhuum_id = 0;
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id);
+    float dhuum_hp = 1.0F;
+    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight || !dhuum_id)
+    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
 
     const auto wisdom_state = RoutineWisdom();
     if (wisdom_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    const auto gdw_state = RoutineGDW();
-    if (gdw_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
     const auto pi_state = RoutinePI(dhuum_id);
     if (pi_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    if (!dhuum_hp || dhuum_hp > 0.90F)
+        return RoutineState::FINISHED;
+
+    const auto gdw_state = RoutineGDW();
+    if (gdw_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     return RoutineState::FINISHED;
@@ -392,8 +396,10 @@ void Pumping::WarnDistanceLT()
         warned = true;
         return;
     }
-
-    warned = false;
+    else if (warned && dist < GW::Constants::Range::Compass - 200.0F)
+    {
+        warned = false;
+    }
 }
 
 void Pumping::Update()
