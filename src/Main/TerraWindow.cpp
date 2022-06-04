@@ -62,6 +62,68 @@ RoutineState AutoTargetAction::Routine()
     return RoutineState::NONE;
 }
 
+void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color)
+{
+    uint32_t idx = 0;
+
+    for (const auto &foe : splitted_agents)
+    {
+        if (!foe)
+            continue;
+
+        ImGui::TableNextRow();
+
+        bool pushed = false;
+        if (foe->hp == 0.0F)
+            continue;
+
+        if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
+            foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
+            pushed = true;
+            last_casted_times_ms[foe->agent_id] = clock();
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, color);
+            pushed = true;
+        }
+        const float distance = GW::GetDistance(player.pos, foe->pos);
+        ImGui::TableNextColumn();
+        ImGui::Text("%3.0f%%", foe->hp * 100.0F);
+        ImGui::TableNextColumn();
+        ImGui::Text("%4.0f", distance);
+        ImGui::TableNextColumn();
+        const auto timer_diff_ms = TIMER_DIFF(last_casted_times_ms[foe->agent_id]);
+        const auto timer_diff_s = timer_diff_ms / 1000;
+        if (timer_diff_s > 40)
+        {
+            ImGui::Text(" - ");
+        }
+        else
+        {
+            ImGui::Text("%2ds", timer_diff_s);
+        }
+        if (pushed)
+            ImGui::PopStyleColor();
+
+        ImGui::TableNextColumn();
+        const auto label = fmt::format("Target##{}", idx);
+        if (ImGui::Button(label.data()))
+        {
+            player.ChangeTarget(foe->agent_id);
+        }
+
+        ++idx;
+
+        if (idx >= MAX_TABLE_LENGTH)
+        {
+            break;
+        }
+    }
+}
+
 void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
@@ -96,70 +158,13 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            uint32_t idx = 0;
-            for (const auto &foe : filtered_foes)
-            {
-                if (!foe)
-                    continue;
-
-                ImGui::TableNextRow();
-
-                bool pushed = false;
-                if (foe->GetIsDead())
-                    continue;
-
-                if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
-                    foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
-                    pushed = true;
-
-                    last_casted_times_ms[foe->agent_id] = clock();
-                }
-                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
-                         foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0));
-                    pushed = true;
-                }
-                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::TerrorwebDryder))
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94F, 0.31F, 0.09F, 1.0));
-                    pushed = true;
-                }
-                const float distance = GW::GetDistance(player.pos, foe->pos);
-                ImGui::TableNextColumn();
-                ImGui::Text("%3.0f%%", foe->hp * 100.0F);
-                ImGui::TableNextColumn();
-                ImGui::Text("%4.0f", distance);
-                ImGui::TableNextColumn();
-                const auto timer_diff_ms = TIMER_DIFF(last_casted_times_ms[foe->agent_id]);
-                const auto timer_diff_s = timer_diff_ms / 1000;
-                if (timer_diff_s > 40)
-                {
-                    ImGui::Text(" - ");
-                }
-                else
-                {
-                    ImGui::Text("%2ds", timer_diff_s);
-                }
-                if (pushed)
-                    ImGui::PopStyleColor();
-
-                ImGui::TableNextColumn();
-                const auto label = fmt::format("Target##{}", idx);
-                if (ImGui::Button(label.data()))
-                {
-                    player.ChangeTarget(foe->agent_id);
-                }
-
-                ++idx;
-
-                if (idx >= MAX_TABLE_LENGTH)
-                {
-                    break;
-                }
-            }
+            DrawSplittedAgents(behemoth_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F));
+            if (dryder_agents.size() > 0)
+                ImGui::Separator();
+            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F));
+            if (skele_agents.size() > 0)
+                ImGui::Separator();
+            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F));
         }
         ImGui::EndTable();
     }
@@ -181,16 +186,26 @@ void TerraWindow::Update(float delta)
         return;
 
     auto_target.Update();
+
     filtered_foes.clear();
+    behemoth_agents.clear();
+    dryder_agents.clear();
+    skele_agents.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_foes, IDS, 1000.0F);
-    SortByDistanceAndID(player, filtered_foes);
+    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Earshot);
+    SplitFilteredAgents(filtered_foes, behemoth_agents, GW::Constants::ModelID::UW::ObsidianBehemoth);
+    SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
+    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    SortByDistance(player, behemoth_agents);
+    SortByDistance(player, dryder_agents);
+    SortByDistance(player, skele_agents);
 
     if (!auto_target_active)
         return;
 
-    for (const auto &foe : filtered_foes)
+    for (const auto &foe : behemoth_agents)
     {
         if (!foe)
             continue;
@@ -198,9 +213,7 @@ void TerraWindow::Update(float delta)
         const auto dist = GW::GetDistance(player.pos, foe->pos);
 
         if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
-        {
             player.ChangeTarget(foe->agent_id);
-        }
     }
 }
 

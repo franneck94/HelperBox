@@ -27,7 +27,9 @@ public:
 class MainteamWindow : public HelperBoxWindow
 {
 public:
-    MainteamWindow() : player({}), skillbar({}), spike_set(&player, &skillbar), filtered_foes({})
+    MainteamWindow()
+        : player({}), skillbar({}), spike_set(&player, &skillbar), filtered_foes({}), aatxe_agents({}),
+          dryder_agents({}), skele_agents({})
     {
         if (skillbar.ValidateData())
         {
@@ -68,12 +70,16 @@ public:
 
 private:
     bool ActivationConditions();
+    void DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color);
 
     void Spiking();
 
     Player player;
     MesmerSkillbar skillbar;
     std::vector<GW::AgentLiving *> filtered_foes;
+    std::vector<GW::AgentLiving *> aatxe_agents;
+    std::vector<GW::AgentLiving *> dryder_agents;
+    std::vector<GW::AgentLiving *> skele_agents;
 
     SpikeSet spike_set;
 };

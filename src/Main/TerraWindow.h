@@ -17,7 +17,7 @@
 class AutoTargetAction : public ActionABC
 {
 public:
-    AutoTargetAction(Player *p) : ActionABC(p, "AutoTarget")
+    AutoTargetAction(Player *p) : ActionABC(p, "Auto Target")
     {
     }
 
@@ -63,12 +63,17 @@ public:
 
 private:
     bool ActivationConditions();
+    void DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color);
 
     void Spiking();
 
     Player player;
-    std::vector<GW::AgentLiving *> filtered_foes;
     std::map<uint32_t, clock_t> last_casted_times_ms;
+
+    std::vector<GW::AgentLiving *> filtered_foes;
+    std::vector<GW::AgentLiving *> behemoth_agents;
+    std::vector<GW::AgentLiving *> dryder_agents;
+    std::vector<GW::AgentLiving *> skele_agents;
 
     AutoTargetAction auto_target;
 };

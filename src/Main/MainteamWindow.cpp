@@ -82,6 +82,51 @@ void SpikeSet::Update()
     }
 }
 
+void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color)
+{
+    uint32_t idx = 0;
+
+    for (const auto &foe : splitted_agents)
+    {
+        if (!foe)
+            continue;
+
+        ImGui::TableNextRow();
+
+        bool pushed = false;
+        if (foe->hp == 0.0F)
+            continue;
+
+        if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) && foe->GetIsHexed())
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0F));
+            pushed = true;
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, color);
+            pushed = true;
+        }
+        const float distance = GW::GetDistance(player.pos, foe->pos);
+        ImGui::TableNextColumn();
+        ImGui::Text("%3.0f%%", foe->hp * 100.0F);
+        ImGui::TableNextColumn();
+        ImGui::Text("%4.0f", distance);
+        if (pushed)
+            ImGui::PopStyleColor();
+
+        const auto label = fmt::format("Target##{}", idx);
+        ImGui::TableNextColumn();
+        if (ImGui::Button(label.data()))
+            player.ChangeTarget(foe->agent_id);
+
+        ++idx;
+
+        if (idx >= MAX_TABLE_LENGTH)
+            break;
+    }
+}
+
 void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
@@ -116,53 +161,13 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            uint32_t idx = 0;
-            for (const auto &foe : filtered_foes)
-            {
-                if (!foe)
-                    continue;
-
-                ImGui::TableNextRow();
-
-                bool pushed = false;
-                if (foe->hp == 0.0F)
-                    continue;
-
-                if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum1) ||
-                    foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::SkeletonOfDhuum2))
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.8F, 0.9F, 1.0F));
-                    pushed = true;
-                }
-                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::TerrorwebDryder))
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.94F, 0.31F, 0.09F, 1.0F));
-                    pushed = true;
-                }
-                else if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) &&
-                         foe->GetIsHexed())
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0F));
-                    pushed = true;
-                }
-                const float distance = GW::GetDistance(player.pos, foe->pos);
-                ImGui::TableNextColumn();
-                ImGui::Text("%3.0f%%", foe->hp * 100.0F);
-                ImGui::TableNextColumn();
-                ImGui::Text("%4.0f", distance);
-                if (pushed)
-                    ImGui::PopStyleColor();
-
-                const auto label = fmt::format("Target##{}", idx);
-                ImGui::TableNextColumn();
-                if (ImGui::Button(label.data()))
-                    player.ChangeTarget(foe->agent_id);
-
-                ++idx;
-
-                if (idx >= MAX_TABLE_LENGTH)
-                    break;
-            }
+            DrawSplittedAgents(aatxe_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F));
+            if (dryder_agents.size() > 0)
+                ImGui::Separator();
+            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F));
+            if (skele_agents.size() > 0)
+                ImGui::Separator();
+            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F));
         }
         ImGui::EndTable();
     }
@@ -190,10 +195,19 @@ void MainteamWindow::Update(float delta)
     }
 
     filtered_foes.clear();
+    aatxe_agents.clear();
+    dryder_agents.clear();
+    skele_agents.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_foes, IDS, 1500.0F);
-    SortByDistanceAndID(player, filtered_foes);
+    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Spellcast + 200.0F);
+    SplitFilteredAgents(filtered_foes, aatxe_agents, GW::Constants::ModelID::UW::BladedAatxe);
+    SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
+    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    SortByDistance(player, aatxe_agents);
+    SortByDistance(player, dryder_agents);
+    SortByDistance(player, aatxe_agents);
 }
 
 bool MainteamWindow::ActivationConditions()
