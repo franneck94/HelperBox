@@ -197,6 +197,11 @@ RoutineState Pumping::RoutineSelfBonds()
     return RoutineState::ACTIVE;
 }
 
+RoutineState Pumping::RoutineCanthaGuards()
+{
+    return RoutineState::ACTIVE;
+}
+
 RoutineState Pumping::RoutineLT()
 {
     if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id || player->living->GetIsMoving())
@@ -209,12 +214,10 @@ RoutineState Pumping::RoutineLT()
 
     const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-    if (dist < FuseRange::FUSE_PULL_RANGE - 1.0F || dist > FuseRange::FUSE_PULL_RANGE + 1.0F)
+    if (dist < FuseRange::FUSE_PULL_RANGE - 5.0F || dist > FuseRange::FUSE_PULL_RANGE + 5.0F)
         return RoutineState::ACTIVE;
 
-    const uint32_t player_idx = GetPartyIdxByID(target_living->agent_id);
-
-    const auto found_sb = PartyPlayerHasEffect(skillbar->sb.id, player_idx);
+    const auto found_sb = skillbar->sb.SkillFound();
     if (!found_sb && skillbar->sb.CanBeCasted(player->energy))
         return SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
 
@@ -244,10 +247,8 @@ RoutineState Pumping::RoutineTurtle()
         return SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
 
     const auto turtle_living = turtle_agent->GetAsAgentLiving();
-    if (turtle_living && turtle_living->hp < 0.7F)
+    if (turtle_living && turtle_living->hp < 0.95F)
         return SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
-    else if (turtle_living && turtle_living->hp < 0.9F)
-        return SafeUseSkill(skillbar->sb.idx, turtle_agent->agent_id);
 
     return RoutineState::ACTIVE;
 }
@@ -293,43 +294,62 @@ RoutineState Pumping::RoutineWisdom()
 
 RoutineState Pumping::RoutineGDW()
 {
+    static uint32_t last_idx = 0;
+
+    if (last_idx >= GW::PartyMgr::GetPartySize())
+        last_idx = 0;
+
     const auto &skill = skillbar->gdw;
 
     if (!skill.SkillFound())
+    {
+        last_idx = 0;
+        return RoutineState::ACTIVE;
+    }
+
+    if (!player->CanCast())
         return RoutineState::ACTIVE;
 
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
 
     if (!success)
-        return RoutineState::ACTIVE;
-
-    for (size_t idx = 0; idx < party_members.size(); idx++)
     {
-        const auto id = party_members[idx].id;
-
-        if (id == player->id)
-            continue;
-
-        const auto agent = GW::Agents::GetAgentByID(id);
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-        if (!living || living->GetIsMoving())
-            continue;
-
-        const auto dist = GW::GetDistance(player->pos, agent->pos);
-        if (dist > GW::Constants::Range::Spellcast)
-            continue;
-
-        if (PartyPlayerHasEffect(skill.id, idx))
-            continue;
-
-        return SafeUseSkill(skill.idx, id);
+        last_idx++;
+        return RoutineState::ACTIVE;
     }
 
-    return RoutineState::ACTIVE;
+    const auto id = party_members[last_idx].id;
+
+    if (id == player->id)
+    {
+        last_idx++;
+        return RoutineState::ACTIVE;
+    }
+
+    const auto agent = GW::Agents::GetAgentByID(id);
+    if (!agent)
+    {
+        last_idx++;
+        return RoutineState::ACTIVE;
+    }
+
+    const auto living = agent->GetAsAgentLiving();
+    if (!living || living->GetIsMoving())
+    {
+        last_idx++;
+        return RoutineState::ACTIVE;
+    }
+
+    const auto dist = GW::GetDistance(player->pos, agent->pos);
+    if (dist > GW::Constants::Range::Spellcast)
+    {
+        last_idx++;
+        return RoutineState::ACTIVE;
+    }
+
+    last_idx++;
+    return SafeUseSkill(skill.idx, id);
 }
 
 RoutineState Pumping::Routine()
@@ -347,6 +367,13 @@ RoutineState Pumping::Routine()
     const auto lt_state = RoutineLT();
     if (lt_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
+
+    if (IsInVale(player))
+    {
+        const auto cantha_state = RoutineCanthaGuards();
+        if (cantha_state == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+    }
 
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
     if (!is_in_dhuum_room)
