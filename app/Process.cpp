@@ -124,7 +124,7 @@ bool Process::GetName(std::wstring &name)
         }
     }
 
-    std::string::size_type pos = process_path.rfind('\\');
+    const auto pos = process_path.rfind('\\');
     if (pos == std::string::npos)
     {
         fprintf(stderr, "Invalid process path: '%ls'\n", process_path.c_str());
@@ -352,13 +352,9 @@ uintptr_t ProcessScanner::FindPattern(const char *pattern, const char *mask, int
 {
     uintptr_t rva;
     if (FindPatternRva(pattern, mask, offset, &rva))
-    {
         return m_base + rva;
-    }
     else
-    {
         return 0;
-    }
 }
 
 bool ProcessScanner::FindPatternRva(const char *pattern, const char *mask, int offset, uintptr_t *rva)

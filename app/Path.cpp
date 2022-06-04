@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "Str.h"
-
 void PathGetExeFullPath(wchar_t *path, size_t length)
 {
     DWORD result = GetModuleFileNameW(NULL, path, length);
@@ -22,7 +20,7 @@ bool PathCompose(wchar_t *dest, size_t length, const wchar_t *left, const wchar_
 {
     assert(MAX_PATH <= length);
 
-    size_t left_size = StrBytesW(left);
+    size_t left_size = (wcslen(left) + 2) * sizeof(wchar_t);
     if (length < left_size)
     {
         fprintf(stderr, "Left string too long for the destination buffer\n");

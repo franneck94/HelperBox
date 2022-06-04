@@ -72,7 +72,6 @@ int main()
 INT __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, INT)
 #endif
 {
-    ParseRegSettings();
     ParseCommandLine();
 
     Process proc;

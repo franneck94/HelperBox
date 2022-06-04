@@ -3,8 +3,6 @@
 #include <algorithm>
 
 #include "Inject.h"
-#include "Str.h"
-
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 // @Cleanup: @Remark:
@@ -236,24 +234,18 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
         InjectProcess *process = &inject_processes[i];
 
         wchar_t buffer[128];
-        StrCopyW(buffer, _countof(buffer), process->m_Charname.c_str());
+        wcsncpy(buffer, process->m_Charname.c_str(), _countof(buffer));
         if (process->m_Injected)
-        {
-            StrAppendW(buffer, _countof(buffer), L" (injected)");
-        }
+            wcsncat(buffer, L" (injected)", _countof(buffer));
 
         SendMessageW(inject.m_hCharacters, CB_ADDSTRING, 0, (LPARAM)buffer);
     }
 
     size_t TopMostIdx;
     if (FindTopMostProcess(inject_processes, &TopMostIdx))
-    {
         SendMessageW(inject.m_hCharacters, CB_SETCURSEL, static_cast<WPARAM>(TopMostIdx), 0);
-    }
     else
-    {
         SendMessageW(inject.m_hCharacters, CB_SETCURSEL, 0, 0);
-    }
 
     inject.WaitMessages();
 
