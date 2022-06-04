@@ -82,7 +82,9 @@ void SpikeSet::Update()
     }
 }
 
-void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color)
+void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents,
+                                        const ImVec4 color,
+                                        std::string_view label)
 {
     uint32_t idx = 0;
 
@@ -115,9 +117,9 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
         if (pushed)
             ImGui::PopStyleColor();
 
-        const auto label = fmt::format("Target##{}", idx);
+        const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         ImGui::TableNextColumn();
-        if (ImGui::Button(label.data()))
+        if (ImGui::Button(_label.data()))
             player.ChangeTarget(foe->agent_id);
 
         ++idx;
@@ -161,13 +163,9 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            DrawSplittedAgents(aatxe_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F));
-            if (dryder_agents.size() > 0)
-                ImGui::Separator();
-            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F));
-            if (skele_agents.size() > 0)
-                ImGui::Separator();
-            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F));
+            DrawSplittedAgents(aatxe_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "TargetAatxe");
+            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "TargetDryder");
+            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "TargetSkele");
         }
         ImGui::EndTable();
     }
@@ -200,7 +198,12 @@ void MainteamWindow::Update(float delta)
     skele_agents.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_foes, IDS, GW::Constants::Range::Spellcast + 200.0F);
+    FilterAgents(player,
+                 agents_array,
+                 filtered_foes,
+                 IDS,
+                 GW::Constants::Allegiance::Enemy,
+                 GW::Constants::Range::Spellcast + 200.0F);
     SplitFilteredAgents(filtered_foes, aatxe_agents, GW::Constants::ModelID::UW::BladedAatxe);
     SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
     SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);

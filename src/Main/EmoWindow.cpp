@@ -199,6 +199,45 @@ RoutineState Pumping::RoutineSelfBonds()
 
 RoutineState Pumping::RoutineCanthaGuards()
 {
+    static uint32_t last_gdw_id = 0;
+
+    if (!skillbar->prot.SkillFound() || !skillbar->fuse.SkillFound())
+        return RoutineState::ACTIVE;
+
+    constexpr auto ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
+    auto filtered_canthas = std::vector<GW::AgentLiving *>{};
+
+    auto agents_array = GW::Agents::GetAgentArray();
+    FilterAgents(*player,
+                 agents_array,
+                 filtered_canthas,
+                 ids,
+                 GW::Constants::Allegiance::Npc_Minipet,
+                 GW::Constants::Range::Spellcast);
+
+    for (const auto cantha : filtered_canthas)
+    {
+        if (!cantha)
+            continue;
+
+        if (cantha->hp < 0.90F)
+        {
+            const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, cantha->agent_id);
+
+            if (!found_bond)
+                return SafeUseSkill(skillbar->prot.idx, cantha->agent_id);
+        }
+
+        if (cantha->hp < 0.70F)
+            return SafeUseSkill(skillbar->fuse.idx, cantha->agent_id);
+
+        if (skillbar->gdw.SkillFound() && last_gdw_id != cantha->agent_id)
+        {
+            last_gdw_id = cantha->agent_id;
+            return SafeUseSkill(skillbar->gdw.idx, cantha->agent_id);
+        }
+    }
+
     return RoutineState::ACTIVE;
 }
 
@@ -398,7 +437,7 @@ RoutineState Pumping::Routine()
     if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    if (!dhuum_hp || dhuum_hp > 0.90F)
+    if (!dhuum_hp || dhuum_hp > 0.98F)
         return RoutineState::FINISHED;
 
     const auto gdw_state = RoutineGDW();

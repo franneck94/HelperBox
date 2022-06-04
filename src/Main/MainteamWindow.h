@@ -70,7 +70,7 @@ public:
 
 private:
     bool ActivationConditions();
-    void DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color);
+    void DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color, std::string_view label);
 
     void Spiking();
 

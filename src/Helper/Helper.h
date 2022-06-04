@@ -60,6 +60,7 @@ void FilterAgents(const Player &player,
                   const GW::AgentArray &agents,
                   std::vector<GW::AgentLiving *> &filtered_agents,
                   const std::array<uint32_t, N> &ids,
+                  const GW::Constants::Allegiance allegiance,
                   const float max_distance = 0.0F)
 {
     for (const auto &agent : agents)
@@ -72,11 +73,14 @@ void FilterAgents(const Player &player,
         if (!living)
             continue;
 
-        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        if (living->allegiance != static_cast<uint8_t>(allegiance))
             continue;
 
         for (const auto id : ids)
         {
+            if (living->GetIsDead())
+                continue;
+
             if (living->player_number == id)
             {
                 if (max_distance == 0.0F)
