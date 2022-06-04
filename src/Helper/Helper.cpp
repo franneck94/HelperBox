@@ -75,6 +75,23 @@ bool IsUw()
     return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld);
 }
 
+bool IsInVale(Player *player)
+{
+    if (!IsUw())
+        return false;
+
+    const auto pos1 = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane};
+    const auto pos2 = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane};
+
+    const auto dist1 = GW::GetDistance(player->pos, pos1);
+    const auto dist2 = GW::GetDistance(player->pos, pos2);
+
+    if (dist1 < GW::Constants::Range::Spellcast || dist2 < GW::Constants::Range::Spellcast)
+        return true;
+
+    return false;
+}
+
 bool IsFowEntryOutpost()
 {
     return _IsEndGameEntryOutpost();
@@ -268,17 +285,14 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
     return false;
 }
 
-bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_idx)
+bool PlayerHasEffect(const uint32_t effect_skill_id, const uint32_t agent_id)
 {
     const auto &effects = GW::Effects::GetPartyEffectArray();
 
     if (!effects.valid())
         return false;
 
-    if (effects.size() < party_idx)
-        return false;
-
-    const auto agent_effects = effects[party_idx].effects;
+    const auto agent_effects = effects[0].effects;
     if (agent_effects.size() == 0)
         return false;
 
@@ -425,13 +439,11 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
     }
 }
 
-void SortByDistanceAndID(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
+void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
 {
     const auto player_pos = player.pos;
 
     std::sort(filtered_agents.begin(), filtered_agents.end(), [&player_pos](const auto a1, const auto a2) {
-        if (a1->player_number != a2->player_number)
-            return a1->player_number < a2->player_number;
         const auto sqrd1 = GW::GetSquareDistance(player_pos, a1->pos);
         const auto sqrd2 = GW::GetSquareDistance(player_pos, a2->pos);
         return sqrd1 < sqrd2;
@@ -455,7 +467,7 @@ bool IsInDhuumRoom(const Player *const player)
     return false;
 }
 
-bool IsInDhuumFight(uint32_t *dhuum_id)
+bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
 {
     if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
         return false;
@@ -489,6 +501,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id)
     if (dhuum_living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
     {
         *dhuum_id = dhuum_living->agent_id;
+        *dhuum_hp = dhuum_living->hp;
         return true;
     }
 
@@ -569,4 +582,15 @@ uint32_t GetPartyIdxByID(const uint32_t id)
         return 0U;
 
     return idx;
+}
+
+void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_agents,
+                         std::vector<GW::AgentLiving *> &splitted_agents,
+                         const uint32_t id)
+{
+    for (auto agent : filtered_agents)
+    {
+        if (agent->player_number == id)
+            splitted_agents.push_back(agent);
+    }
 }

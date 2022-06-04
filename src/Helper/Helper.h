@@ -27,6 +27,8 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
+bool IsInVale(Player *player);
+
 bool IsFowEntryOutpost();
 
 bool IsDoa();
@@ -37,7 +39,7 @@ bool TargetNearest(const TargetType type, const float max_distance = GW::Constan
 
 const GW::EffectArray *GetEffects(const uint32_t agent_id);
 
-bool PartyPlayerHasEffect(const uint32_t effect_skill_id, const uint32_t party_idx);
+bool PlayerHasEffect(const uint32_t effect_skill_id, const uint32_t agent_id);
 
 bool DetectPlayerIsDead();
 
@@ -95,11 +97,15 @@ void FilterAgents(const Player &player,
     }
 }
 
-void SortByDistanceAndID(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
+void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_agents,
+                         std::vector<GW::AgentLiving *> &splitted_agents,
+                         const uint32_t id);
+
+void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
 
 bool IsInDhuumRoom(const Player *const player);
 
-bool IsInDhuumFight(uint32_t *dhuum_id = nullptr);
+bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp);
 
 bool CanMove();
 
