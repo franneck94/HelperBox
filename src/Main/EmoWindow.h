@@ -27,6 +27,7 @@ public:
 
 private:
     RoutineState RoutineSelfBonds();
+    RoutineState RoutineCanthaGuards();
     RoutineState RoutineLT();
     RoutineState RoutineTurtle();
     RoutineState RoutineWisdom();
@@ -162,11 +163,11 @@ private:
     PlayerBonding player_bonding;
 
     uint32_t move_idx = 0;
-    std::array<Move, 26> moves = {Move{1248.0F, 6965.509766F, 5000.0F, "Spawn"},
+    std::array<Move, 23> moves = {Move{1248.0F, 6965.509766F, 5000.0F, "Spawn"},
                                   Move{-583.28F, 9275.68F, 5000.0F, "Lab Stairs1"},
                                   Move{-2730.79F, 10159.21F, 5000.0F, "Lab Stairs2"},
                                   Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"},
-                                  Move{-6459.410156F, 9943.219727F, 5000.0F, "Fuse Pull 1"},
+                                  Move{-6295.77F, 9845.00F, 5000.0F, "Fuse Pull 1"},
                                   Move{-6241.24F, 7945.73F, 5000.0F, "Basement"},
                                   Move{-8763.36F, 5551.18F, 5000.0F, "Basement Stairs"},
                                   Move{-7980.55F, 4308.90F, 5000.0F, "Fuse Pull 2"},
@@ -179,15 +180,12 @@ private:
                                   Move{-7980.55F, 4308.90F, 5000.0F, "Basement Stairs"},
                                   Move{-6241.24F, 7945.73F, 5000.0F, "Basement"},
                                   Move{-5683.589844F, 12662.990234F, 5000.0F, "Lab Reaper"},
-                                  Move{-6035.58F, 11274.30F, 5000.0F, "Keeper 1/2"},
+                                  Move{-6035.29F, 11285.14F, 5000.0F, "Keeper 1"},
+                                  Move{-3793.78F, 11200.36F, 5000.0F, "Keeper 2"},
                                   Move{-3881.71F, 11280.04F, 5000.0F, "Keeper 3"},
                                   Move{-1502.45F, 9737.64F, 5000.0F, "Keeper 4/5"},
                                   Move{-266.03F, 9304.26F, 5000.0F, "Lab Stairs1"},
-                                  Move{1207.05F, 7732.16F, 5000.0F, "Keeper 6"},
-                                  Move{1354.31F, 10063.58F, 5000.0F, "To Wastes 1"},
-                                  Move{3489.18F, 8177.49F, 5000.0F, "To Wastes 2"},
-                                  Move{5385.25F, 8866.17F, 5000.0F, "To Wastes 3"},
-                                  Move{6022.19F, 11318.40F, 5000.0F, "To Wastes 3"}};
+                                  Move{1207.05F, 7732.16F, 5000.0F, "Keeper 6"}};
 
     GW::HookEntry MapLoaded_Entry;
     GW::HookEntry GenericValue_Entry;
