@@ -10,20 +10,6 @@ def check_for_boolean_value(val):
     return False
 
 
-# def FindPatternRva(pattern: str, mask: str, offset: int, rva: bytes) -> bool:
-#     length = len(mask)
-#     upattern = bytes(pattern)
-#     for i in range(10000):
-#         j = 0
-#         for j in range(length):
-#             if (mask[j] == 'x' and m_buffer[i + j] != upattern[j]):
-#                 break
-#         if j == length:
-#             *rva = i + offset;
-#             return True
-#     return False
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
