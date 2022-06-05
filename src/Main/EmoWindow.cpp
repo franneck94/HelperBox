@@ -12,6 +12,7 @@
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
@@ -172,9 +173,9 @@ RoutineState Pumping::RoutineSelfBonds()
         if (!found_balth && balth_avail)
             return SafeUseSkill(skillbar->balth.idx, player->id);
 
-        const auto found_bond = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
+        const auto found_prot = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
         const auto bond_avail = skillbar->prot.CanBeCasted(player->energy);
-        if (!found_bond && bond_avail)
+        if (!found_prot && bond_avail)
             return SafeUseSkill(skillbar->prot.idx, player->id);
     }
 
@@ -199,43 +200,63 @@ RoutineState Pumping::RoutineSelfBonds()
 
 RoutineState Pumping::RoutineCanthaGuards()
 {
-    static uint32_t last_gdw_id = 0;
+    static auto filtered_canthas = std::vector<GW::AgentLiving *>{};
+    static auto last_gdw_it = filtered_canthas.begin();
 
     if (!skillbar->prot.SkillFound() || !skillbar->fuse.SkillFound())
         return RoutineState::ACTIVE;
 
-    constexpr auto ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
-    auto filtered_canthas = std::vector<GW::AgentLiving *>{};
+    if (!player->CanCast())
+        return RoutineState::ACTIVE;
 
-    auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(*player,
-                 agents_array,
-                 filtered_canthas,
-                 ids,
-                 GW::Constants::Allegiance::Npc_Minipet,
-                 GW::Constants::Range::Spellcast);
-
-    for (const auto cantha : filtered_canthas)
+    if (filtered_canthas.size() == 0)
     {
-        if (!cantha)
-            continue;
+        auto agents_array = GW::Agents::GetAgentArray();
+        FilterAgents(*player,
+                     agents_array,
+                     filtered_canthas,
+                     cantha_ids,
+                     GW::Constants::Allegiance::Npc_Minipet,
+                     GW::Constants::Range::Spellcast);
+    }
 
-        if (cantha->hp < 0.90F)
+    if (last_gdw_it == filtered_canthas.end())
+        last_gdw_it = filtered_canthas.begin();
+
+    filtered_canthas.erase(std::remove_if(filtered_canthas.begin(),
+                                          filtered_canthas.end(),
+                                          [](const GW::AgentLiving *cantha) { return !cantha || cantha->GetIsDead(); }),
+                           filtered_canthas.end());
+
+    auto cantha = *last_gdw_it;
+
+    if (!cantha)
+    {
+        ++last_gdw_it;
+        return RoutineState::ACTIVE;
+    }
+
+    if (cantha->hp < 0.90F)
+    {
+        const auto found_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, cantha->agent_id);
+
+        if (!found_prot && skillbar->prot.CanBeCasted(player->energy))
         {
-            const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, cantha->agent_id);
-
-            if (!found_bond)
-                return SafeUseSkill(skillbar->prot.idx, cantha->agent_id);
+            ++last_gdw_it;
+            return SafeUseSkill(skillbar->prot.idx, cantha->agent_id);
         }
+    }
 
-        if (cantha->hp < 0.70F)
-            return SafeUseSkill(skillbar->fuse.idx, cantha->agent_id);
+    if (cantha->hp < 0.70F && skillbar->fuse.CanBeCasted(player->energy))
+    {
+        ++last_gdw_it;
+        return SafeUseSkill(skillbar->fuse.idx, cantha->agent_id);
+    }
 
-        if (skillbar->gdw.SkillFound() && last_gdw_id != cantha->agent_id)
-        {
-            last_gdw_id = cantha->agent_id;
-            return SafeUseSkill(skillbar->gdw.idx, cantha->agent_id);
-        }
+    if (skillbar->gdw.SkillFound() && skillbar->gdw.CanBeCasted(player->energy))
+    {
+        ++last_gdw_it;
+        return SafeUseSkill(skillbar->gdw.idx, cantha->agent_id);
     }
 
     return RoutineState::ACTIVE;
@@ -277,8 +298,8 @@ RoutineState Pumping::RoutineTurtle()
     if (dist > GW::Constants::Range::Spellcast)
         return RoutineState::ACTIVE;
 
-    const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
-    if (!found_bond)
+    const auto found_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
+    if (!found_prot)
         return SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
 
     const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
@@ -340,13 +361,7 @@ RoutineState Pumping::RoutineGDW()
 
     const auto &skill = skillbar->gdw;
 
-    if (!skill.SkillFound())
-    {
-        last_idx = 0;
-        return RoutineState::ACTIVE;
-    }
-
-    if (!player->CanCast())
+    if (!skill.SkillFound() || !player->CanCast())
         return RoutineState::ACTIVE;
 
     std::vector<PlayerMapping> party_members;
@@ -456,16 +471,15 @@ void Pumping::WarnDistanceLT()
 
     const auto dist = GW::GetDistance(player->pos, lt_agent->pos);
 
-    if (!warned && dist > GW::Constants::Range::Compass - 200.0F)
+    if (!warned && dist > GW::Constants::Range::Compass - 100.0F)
     {
-        Log::Warning("Warning about distance to the LT!");
+        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"LT is leaving EMO's compass range!");
         warned = true;
         return;
     }
-    else if (warned && dist < GW::Constants::Range::Compass - 200.0F)
-    {
+
+    if (warned && dist < GW::Constants::Range::Compass - 100.0F)
         warned = false;
-    }
 }
 
 void Pumping::Update()
@@ -585,7 +599,7 @@ RoutineState TankBonding::Routine()
     }
 
     const auto found_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
-    const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
+    const auto found_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
     const auto found_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, target_id);
 
     if (!found_balth && skillbar->balth.CanBeCasted(player->energy))
@@ -594,7 +608,7 @@ RoutineState TankBonding::Routine()
         return RoutineState::ACTIVE;
     }
 
-    if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
+    if (!found_prot && skillbar->prot.CanBeCasted(player->energy))
     {
         (void)SafeUseSkill(skillbar->prot.idx, target_id);
         return RoutineState::ACTIVE;
@@ -678,8 +692,8 @@ RoutineState PlayerBonding::Routine()
         return RoutineState::ACTIVE;
     }
 
-    const auto found_bond = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
-    if (!found_bond && skillbar->prot.CanBeCasted(player->energy))
+    const auto found_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
+    if (!found_prot && skillbar->prot.CanBeCasted(player->energy))
     {
         (void)SafeUseSkill(skillbar->prot.idx, target_id);
         return RoutineState::ACTIVE;

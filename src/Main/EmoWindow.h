@@ -36,6 +36,8 @@ private:
 
     void WarnDistanceLT();
 
+    static auto constexpr cantha_ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
+
     GW::HookEntry Summon_AgentAdd_Entry;
     bool found_turtle = false;
     uint32_t turtle_id = 0;

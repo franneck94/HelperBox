@@ -222,7 +222,11 @@ void TerraWindow::Update(float delta)
 
 bool TerraWindow::ActivationConditions()
 {
-    if (player.primary != GW::Constants::Profession::Ranger || player.secondary != GW::Constants::Profession::Assassin)
+    const auto is_ranger_terra =
+        player.primary == GW::Constants::Profession::Ranger || player.secondary == GW::Constants::Profession::Assassin;
+    const auto is_mesmer_terra = player.primary == GW::Constants::Profession::Mesmer ||
+                                 player.secondary == GW::Constants::Profession::Elementalist;
+    if (!is_ranger_terra && !is_mesmer_terra)
         return false;
 
     if (IsUwEntryOutpost() || IsUw())
