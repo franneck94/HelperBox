@@ -49,16 +49,19 @@ def main() -> int:
         print("No GW instance found")
         return 1
 
-    print("Select PID: ")
-    for idx, pid in enumerate(pids):
-        print(f"{idx}: {pid}")
+    if len(pids) > 1:
+        print("Select PID: ")
+        for idx, pid in enumerate(pids):
+            print(f"{idx}: {pid}")
 
-    if print_only:
-        return 0
+        if print_only:
+            return 0
 
-    selected_pid_idx = int(input("PID: "))
-    selected_pid = pids[selected_pid_idx].replace(" ", "")
-    print(selected_pid)
+        selected_pid_idx = int(input("PID: "))
+        selected_pid = pids[selected_pid_idx].replace(" ", "")
+        print(selected_pid)
+    else:
+        print(pids[0])
 
     full_exe_path = os.path.join(exe_path, "HelperBox.exe")
     command = f"{full_exe_path} /pid {selected_pid}"
