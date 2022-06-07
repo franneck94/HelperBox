@@ -11,6 +11,7 @@
 #include <Defines.h>
 #include <HelperBox.h>
 
+#include <AutoFollowWindow.h>
 #include <Base/MainWindow.h>
 #include <ChatCommands.h>
 #include <EmoWindow.h>
@@ -30,6 +31,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     optional_modules.push_back(&EmoWindow::Instance());
     optional_modules.push_back(&MainteamWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
+    optional_modules.push_back(&AutoFollowWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 
     for (HelperBoxModule *module : optional_modules)
@@ -51,6 +53,7 @@ void HelperBoxSettings::DrawSettingInternal()
         {"EMO", &use_emo},
         {"Mesmer", &use_spiker},
         {"Terra", &use_terra},
+        {"Follow", &use_follow},
     };
     ImGui::Columns(static_cast<int>(cols), "global_enable_cols", false);
     size_t items_per_col = (size_t)ceil(features.size() / static_cast<float>(cols));

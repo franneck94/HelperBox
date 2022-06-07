@@ -45,4 +45,5 @@ private:
     bool use_emo = true;
     bool use_spiker = true;
     bool use_terra = true;
+    bool use_follow = true;
 };
