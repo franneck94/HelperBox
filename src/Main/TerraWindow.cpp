@@ -23,6 +23,7 @@
 #include <Skillbars.h>
 #include <Types.h>
 #include <Utils.h>
+#include <UwHelper.h>
 
 #include "TerraWindow.h"
 
