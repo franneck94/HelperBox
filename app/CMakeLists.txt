@@ -42,7 +42,7 @@ endif()
 # Copy <filename> to build directory
 set(copy_source_dir "${PROJECT_SOURCE_DIR}/")
 set(copy_dest_dir_rel "${PROJECT_SOURCE_DIR}/bin/Release")
-set(copy_dest_dir_debug "${PROJECT_SOURCE_DIR}/bin/Release")
+set(copy_dest_dir_debug "${PROJECT_SOURCE_DIR}/bin/Debug")
 set(copy_file_name "select_instance.py")
 # release copy
 add_custom_command(
