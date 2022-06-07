@@ -26,17 +26,6 @@ void MainWindow::DrawSettingInternal()
 
 void MainWindow::RegisterSettingsContent()
 {
-    HelperBoxModule::RegisterSettingsContent(
-        SettingsName(),
-        [this](const std::string *section, bool is_showing) {
-            UNREFERENCED_PARAMETER(section);
-            if (!is_showing)
-                return;
-            ImGui::Text("Main Window Visibility");
-            ShowVisibleRadio();
-            DrawSizeAndPositionSettings();
-            DrawSettingInternal();
-        });
 }
 
 void MainWindow::RefreshButtons()
