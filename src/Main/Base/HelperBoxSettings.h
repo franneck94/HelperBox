@@ -43,7 +43,8 @@ private:
     std::vector<HelperBoxModule *> optional_modules;
 
     bool use_emo = true;
-    bool use_spiker = true;
+    bool use_mainteam = true;
     bool use_terra = true;
     bool use_follow = true;
+    bool use_cancel = true;
 };
