@@ -53,7 +53,10 @@ void AutoFollowWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(100.0F, 100.0F), ImGuiCond_FirstUseEver);
+    if (IsLoading())
+        return;
+
+    ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("AutoFollowWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoDecoration))
     {

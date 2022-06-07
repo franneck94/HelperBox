@@ -140,7 +140,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!ActivationConditions())
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(100.0F, 100.0F), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(190.0F, 235.0F), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags()))
     {
