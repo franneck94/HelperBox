@@ -1,10 +1,15 @@
+#include <GWCA/Constants/Maps.h>
+#include <GWCA/GameEntities/Map.h>
 #include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/StoCMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
 #include <Player.h>
+
+#include "Callbacks.h"
 
 bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet, const Player *player)
 {
@@ -18,4 +23,21 @@ bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet, const Player *
         return true;
 
     return false;
+}
+
+bool MapLoadCallback(GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet)
+{
+    UNREFERENCED_PARAMETER(status);
+    UNREFERENCED_PARAMETER(packet);
+    switch (GW::Map::GetInstanceType())
+    {
+    case GW::Constants::InstanceType::Explorable:
+        return true;
+        break;
+    case GW::Constants::InstanceType::Outpost:
+    case GW::Constants::InstanceType::Loading:
+    default:
+        return false;
+        break;
+    }
 }

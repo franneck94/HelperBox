@@ -73,10 +73,12 @@ void Move::Execute()
     if (!me)
         return;
 
-    const auto dist = GW::GetDistance(me->pos, GW::Vec2f(x, y));
-    if (range != 0 && dist > range)
-        return;
-
     GW::Agents::Move(x, y);
     Log::Info("Moving to (%.0f, %.0f)", x, y);
+
+    if (callback.has_value())
+    {
+        Log::Info("Calling the callback");
+        callback.value()();
+    }
 }

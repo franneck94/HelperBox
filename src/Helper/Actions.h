@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
+#include <optional>
 #include <string_view>
 
 #include <GWCA/Constants/Constants.h>
@@ -61,17 +63,10 @@ class Move
 public:
     static constexpr size_t NAME_LEN = 140U;
 
-    Move(const float _x, const float _y, const float _range, const char *_name)
-        : x(_x), y(_y), range(_range), pos({x, y, 0})
-    {
-        strncpy(name, _name, NAME_LEN);
-    };
+    Move(const float _x, const float _y, const char *_name, std::function<bool()> _callback)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback){};
 
-    float x = 0.0;
-    float y = 0.0;
-    float range = 0.0;
-    GW::GamePos pos;
-    char name[NAME_LEN] = "Move";
+    Move(const float _x, const float _y, const char *_name) : x(_x), y(_y), pos({x, y, 0}), name(_name){};
 
     const char *Name() const
     {
@@ -79,4 +74,13 @@ public:
     }
 
     void Execute();
+
+private:
+    float x = 0.0;
+    float y = 0.0;
+
+public:
+    GW::GamePos pos;
+    const char *name;
+    std::optional<std::function<bool()>> callback = std::nullopt;
 };
