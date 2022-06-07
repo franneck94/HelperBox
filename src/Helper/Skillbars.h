@@ -13,6 +13,8 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include <Callbacks.h>
+
 struct SkillData
 {
 public:
@@ -51,19 +53,7 @@ public:
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
             &MapLoaded_Entry,
             [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-                UNREFERENCED_PARAMETER(status);
-                UNREFERENCED_PARAMETER(packet);
-                switch (GW::Map::GetInstanceType())
-                {
-                case GW::Constants::InstanceType::Explorable:
-                    reset = true;
-                    break;
-                case GW::Constants::InstanceType::Outpost:
-                case GW::Constants::InstanceType::Loading:
-                default:
-                    reset = false;
-                    break;
-                }
+                reset = MapLoadCallback(status, packet);
             });
     }
 
