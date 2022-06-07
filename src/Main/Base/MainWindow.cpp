@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include <HelperBox.h>
-#include <Logger.h>
 
 #include <imgui.h>
 

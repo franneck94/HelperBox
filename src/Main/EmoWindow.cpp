@@ -17,11 +17,8 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <fmt/format.h>
-
 #include <GuiUtils.h>
 #include <HelperBox.h>
-#include <Logger.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
@@ -128,7 +125,6 @@ void EmoWindow::Update(float delta)
 
     if (IsUw() && load_cb_triggered)
     {
-        Log::Info("load_cb_triggered");
         tank_bonding.action_state = ActionState::ACTIVE;
         load_cb_triggered = false;
     }
@@ -289,12 +285,11 @@ RoutineState Pumping::RoutineLT()
     if (dist < FuseRange::FUSE_PULL_RANGE - 5.0F || dist > FuseRange::FUSE_PULL_RANGE + 5.0F)
         return RoutineState::ACTIVE;
 
+    if (skillbar->fuse.SkillFound() && target_living->hp < 0.80F && skillbar->fuse.CanBeCasted(player->energy))
+        return SafeUseSkill(skillbar->fuse.idx, target_living->agent_id);
+
     if (skillbar->sb.SkillFound() && skillbar->sb.CanBeCasted(player->energy))
         return SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
-
-    if (!skillbar->sb.SkillFound() && skillbar->fuse.SkillFound() && target_living->hp < 0.80F &&
-        skillbar->fuse.CanBeCasted(player->energy))
-        return SafeUseSkill(skillbar->fuse.idx, target_living->agent_id);
 
     return RoutineState::ACTIVE;
 }
@@ -451,7 +446,9 @@ RoutineState Pumping::Routine()
         swapped_armor_in_dhuum_room = false;
         return RoutineState::FINISHED;
     }
-    else if (!swapped_armor_in_dhuum_room && is_in_dhuum_room)
+
+    const auto swap_to_low_armor = !swapped_armor_in_dhuum_room && is_in_dhuum_room;
+    if (swap_to_low_armor)
     {
         swapped_armor_in_dhuum_room = true;
         if (bag_idx && start_slot_idx)
@@ -464,10 +461,22 @@ RoutineState Pumping::Routine()
 
     uint32_t dhuum_id = 0;
     float dhuum_hp = 1.0F;
+    static auto dhuum_fight_started = false;
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+
+    const auto swap_to_high_armor = !is_in_dhuum_fight && dhuum_fight_started;
+    if (swap_to_high_armor)
+    {
+        if (bag_idx && start_slot_idx)
+            ChangeFullArmor(*bag_idx, *start_slot_idx);
+        dhuum_fight_started = false;
+    }
 
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
+
+    if (is_in_dhuum_fight && !dhuum_fight_started)
+        dhuum_fight_started = true;
 
     const auto wisdom_state = RoutineWisdom();
     if (wisdom_state == RoutineState::FINISHED)
@@ -490,20 +499,20 @@ RoutineState Pumping::Routine()
 void Pumping::WarnDistanceLT()
 {
     static auto warned = false;
+    constexpr auto warn_dist = GW::Constants::Range::Compass - 100.0F;
 
     if (!lt_agent)
         return;
 
     const auto dist = GW::GetDistance(player->pos, lt_agent->pos);
-
-    if (!warned && dist > GW::Constants::Range::Compass - 100.0F)
+    if (!warned && dist > warn_dist)
     {
-        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"LT is leaving EMO's compass range!");
+        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_WARNING, L"LT is leaving EMO's compass range!");
         warned = true;
         return;
     }
 
-    if (warned && dist < GW::Constants::Range::Compass - 100.0F)
+    if (warned && dist < warn_dist)
         warned = false;
 }
 

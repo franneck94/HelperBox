@@ -18,11 +18,6 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <fmt/format.h>
-
-#include <Logger.h>
-#include <Timer.h>
-
 #include <Actions.h>
 #include <Player.h>
 

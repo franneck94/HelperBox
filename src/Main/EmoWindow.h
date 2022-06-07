@@ -11,9 +11,7 @@
 #include <Actions.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
-#include <Logger.h>
 #include <Player.h>
-#include <Timer.h>
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>

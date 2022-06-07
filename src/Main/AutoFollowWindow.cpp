@@ -9,8 +9,6 @@
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
 
-#include <fmt/format.h>
-
 #include <HelperBox.h>
 
 #include <Actions.h>

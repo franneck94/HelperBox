@@ -39,7 +39,8 @@ RoutineState SafeWalk(const GW::GamePos target_position, const bool reset)
     {
         if (RoutineState::NONE == state)
         {
-            Log::Info(fmt::format("Traveling to coords {} {}", target_position.x, target_position.y).data());
+            const auto message = fmt::format("Traveling to coords {} {}", target_position.x, target_position.y);
+            Log::Info(message.data());
             GW::Agents::Move(target_position);
             state = RoutineState::ACTIVE;
         }
