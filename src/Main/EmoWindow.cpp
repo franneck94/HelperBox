@@ -30,6 +30,7 @@
 #include <Skillbars.h>
 #include <Types.h>
 #include <Utils.h>
+#include <UwHelper.h>
 
 #include "EmoWindow.h"
 
@@ -40,11 +41,17 @@ static bool send_move = false;
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar),
+    : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar, &bag_idx, &start_slot_idx),
       tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
+
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
+        &MapLoaded_Entry,
+        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
+            load_cb_triggered = MapLoadCallback(status, packet);
+        });
 };
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
@@ -119,6 +126,13 @@ void EmoWindow::Update(float delta)
         }
     }
 
+    if (IsUw() && load_cb_triggered)
+    {
+        Log::Info("load_cb_triggered");
+        tank_bonding.action_state = ActionState::ACTIVE;
+        load_cb_triggered = false;
+    }
+
     tank_bonding.Update();
     player_bonding.Update();
     fuse_pull.Update();
@@ -134,7 +148,8 @@ bool EmoWindow::ActivationConditions()
     return false;
 }
 
-Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
+Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start_slot_idx)
+    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), start_slot_idx(_start_slot_idx)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
         &Summon_AgentAdd_Entry,
@@ -149,14 +164,6 @@ Pumping::Pumping(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Pumping", s)
 
             found_turtle = true;
             turtle_id = pak->agent_id;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-        &GenericValue_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
-            UNREFERENCED_PARAMETER(status);
-            if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
-                interrupted = true;
         });
 }
 
@@ -220,8 +227,13 @@ RoutineState Pumping::RoutineCanthaGuards()
                      GW::Constants::Range::Spellcast);
     }
 
+    // Still empty
+    if (filtered_canthas.size() == 0)
+        return RoutineState::ACTIVE;
+
     if (last_gdw_it == filtered_canthas.end())
         last_gdw_it = filtered_canthas.begin();
+
 
     filtered_canthas.erase(std::remove_if(filtered_canthas.begin(),
                                           filtered_canthas.end(),
@@ -264,11 +276,11 @@ RoutineState Pumping::RoutineCanthaGuards()
 
 RoutineState Pumping::RoutineLT()
 {
-    if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id || player->living->GetIsMoving())
+    if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id)
         return RoutineState::ACTIVE;
 
     const auto target_living = player->target->GetAsAgentLiving();
-    if (!target_living || target_living->GetIsMoving() ||
+    if (!target_living || target_living->GetIsMoving() || player->living->GetIsMoving() ||
         target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
         return RoutineState::ACTIVE;
 
@@ -277,9 +289,12 @@ RoutineState Pumping::RoutineLT()
     if (dist < FuseRange::FUSE_PULL_RANGE - 5.0F || dist > FuseRange::FUSE_PULL_RANGE + 5.0F)
         return RoutineState::ACTIVE;
 
-    const auto found_sb = skillbar->sb.SkillFound();
-    if (!found_sb && skillbar->sb.CanBeCasted(player->energy))
+    if (skillbar->sb.SkillFound() && skillbar->sb.CanBeCasted(player->energy))
         return SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
+
+    if (!skillbar->sb.SkillFound() && skillbar->fuse.SkillFound() && target_living->hp < 0.80F &&
+        skillbar->fuse.CanBeCasted(player->energy))
+        return SafeUseSkill(skillbar->fuse.idx, target_living->agent_id);
 
     return RoutineState::ACTIVE;
 }
@@ -429,9 +444,19 @@ RoutineState Pumping::Routine()
             return RoutineState::FINISHED;
     }
 
+    static auto swapped_armor_in_dhuum_room = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
     if (!is_in_dhuum_room)
+    {
+        swapped_armor_in_dhuum_room = false;
         return RoutineState::FINISHED;
+    }
+    else if (!swapped_armor_in_dhuum_room && is_in_dhuum_room)
+    {
+        swapped_armor_in_dhuum_room = true;
+        if (bag_idx && start_slot_idx)
+            ChangeFullArmor(*bag_idx, *start_slot_idx);
+    }
 
     const auto turtle_state = RoutineTurtle();
     if (turtle_state == RoutineState::FINISHED)
@@ -537,12 +562,6 @@ void Pumping::Update()
 
     if (GW::PartyMgr::GetIsPartyDefeated())
         action_state = ActionState::INACTIVE;
-
-    if (interrupted)
-    {
-        interrupted = false;
-        action_state = ActionState::INACTIVE;
-    }
 }
 
 RoutineState TankBonding::Routine()
