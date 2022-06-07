@@ -1,5 +1,3 @@
-pymem
-
 # Documentation
 mkdocs
 mkdocstrings
