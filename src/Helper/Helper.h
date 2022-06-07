@@ -23,12 +23,6 @@ bool IsOutpost();
 
 bool IsMapReady();
 
-bool IsUwEntryOutpost();
-
-bool IsUw();
-
-bool IsInVale(Player *player);
-
 bool IsFowEntryOutpost();
 
 bool IsDoa();
@@ -53,7 +47,7 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 
 bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
-void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+bool ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
 template <uint32_t N>
 void FilterAgents(const Player &player,
@@ -106,10 +100,6 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_agents,
                          const uint32_t id);
 
 void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents);
-
-bool IsInDhuumRoom(const Player *const player);
-
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp);
 
 bool CanMove();
 
