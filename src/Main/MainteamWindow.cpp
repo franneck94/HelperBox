@@ -20,10 +20,10 @@
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <MathUtils.h>
 #include <Player.h>
 #include <Skillbars.h>
 #include <Types.h>
-#include <Utils.h>
 #include <UwHelper.h>
 
 #include "MainteamWindow.h"

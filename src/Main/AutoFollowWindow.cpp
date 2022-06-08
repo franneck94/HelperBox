@@ -14,9 +14,9 @@
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <MathUtils.h>
 #include <Player.h>
 #include <Types.h>
-#include <Utils.h>
 
 #include "AutoFollowWindow.h"
 

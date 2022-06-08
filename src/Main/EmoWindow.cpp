@@ -23,10 +23,10 @@
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <MathUtils.h>
 #include <Player.h>
 #include <Skillbars.h>
 #include <Types.h>
-#include <Utils.h>
 #include <UwHelper.h>
 
 #include "EmoWindow.h"
@@ -50,6 +50,43 @@ EmoWindow::EmoWindow()
             load_cb_triggered = MapLoadCallback(status, packet);
         });
 };
+
+void EmoWindow::WarnDistanceLT()
+{
+    static auto warned = false;
+    constexpr auto warn_dist = GW::Constants::Range::Compass - 20.0F;
+
+    const uint32_t lt_id = GetTankId();
+    const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
+
+    if (!lt_agent)
+        return;
+
+    const auto dist = GW::GetDistance(player.pos, lt_agent->pos);
+    if (!warned && dist > warn_dist)
+    {
+        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GLOBAL, L"LT is leaving EMO's compass range!");
+        warned = true;
+
+        // const auto end_pos = moves[move_idx].pos;
+
+        // const auto intermediate_x = Lerp(player.pos.x, end_pos.x, 0.1F);
+        // const auto intermediate_y = Lerp(player.pos.y, end_pos.y, 0.1F);
+        // const auto intermediate_pos = GW::GamePos{intermediate_x, intermediate_y, player.pos.zplane};
+        // const auto new_dist = GW::GetDistance(intermediate_pos, lt_agent->pos);
+
+        // if (new_dist < dist)
+        // {
+        //     moves[move_idx].Execute();
+        //     send_move = true;
+        // }
+
+        return;
+    }
+
+    if (warned && dist < warn_dist)
+        warned = false;
+}
 
 void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 {
@@ -98,6 +135,9 @@ void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
+    static auto triggered_tank_bonds_at_start = false;
+    static auto triggered_move_start = false;
+
     if (!player.ValidateData())
         return;
     player.Update();
@@ -123,11 +163,30 @@ void EmoWindow::Update(float delta)
         }
     }
 
-    if (IsUw() && load_cb_triggered)
+    // START Automated Actions at UW Entry
+    if (IsUw())
     {
-        tank_bonding.action_state = ActionState::ACTIVE;
-        load_cb_triggered = false;
+        if (load_cb_triggered)
+        {
+            tank_bonding.action_state = ActionState::ACTIVE;
+            load_cb_triggered = false;
+            triggered_tank_bonds_at_start = true;
+        }
+        if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
+        {
+            moves[0].Execute();
+            triggered_tank_bonds_at_start = false;
+            triggered_move_start = true;
+            send_move = true;
+        }
+        if (triggered_move_start && move_idx == 1 && TankIsSoloLT())
+        {
+            pumping.action_state = ActionState::ACTIVE;
+        }
+
+        WarnDistanceLT();
     }
+    // END Automated Actions at UW Entry
 
     tank_bonding.Update();
     player_bonding.Update();
@@ -204,7 +263,7 @@ RoutineState Pumping::RoutineSelfBonds()
 RoutineState Pumping::RoutineCanthaGuards()
 {
     static auto filtered_canthas = std::vector<GW::AgentLiving *>{};
-    static auto last_gdw_it = filtered_canthas.begin();
+    static auto last_gdw_idx = 0;
 
     if (!skillbar->prot.SkillFound() || !skillbar->fuse.SkillFound())
         return RoutineState::ACTIVE;
@@ -212,59 +271,35 @@ RoutineState Pumping::RoutineCanthaGuards()
     if (!player->CanCast())
         return RoutineState::ACTIVE;
 
-    if (filtered_canthas.size() == 0)
-    {
-        auto agents_array = GW::Agents::GetAgentArray();
-        FilterAgents(*player,
-                     agents_array,
-                     filtered_canthas,
-                     cantha_ids,
-                     GW::Constants::Allegiance::Npc_Minipet,
-                     GW::Constants::Range::Spellcast);
-    }
+    auto agents_array = GW::Agents::GetAgentArray();
+    FilterAgents(*player,
+                 agents_array,
+                 filtered_canthas,
+                 cantha_ids,
+                 GW::Constants::Allegiance::Npc_Minipet,
+                 GW::Constants::Range::Spellcast);
 
-    // Still empty
     if (filtered_canthas.size() == 0)
         return RoutineState::ACTIVE;
 
-    if (last_gdw_it == filtered_canthas.end())
-        last_gdw_it = filtered_canthas.begin();
-
-
-    filtered_canthas.erase(std::remove_if(filtered_canthas.begin(),
-                                          filtered_canthas.end(),
-                                          [](const GW::AgentLiving *cantha) { return !cantha || cantha->GetIsDead(); }),
-                           filtered_canthas.end());
-
-    auto cantha = *last_gdw_it;
-
-    if (!cantha)
+    for (const auto &cantha : filtered_canthas)
     {
-        ++last_gdw_it;
-        return RoutineState::ACTIVE;
-    }
+        if (!cantha || cantha->GetIsDead())
+            continue;
 
-    if (cantha->hp < 0.90F)
-    {
-        const auto found_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, cantha->agent_id);
-
-        if (!found_prot && skillbar->prot.CanBeCasted(player->energy))
+        if (cantha->hp < 0.90F)
         {
-            ++last_gdw_it;
-            return SafeUseSkill(skillbar->prot.idx, cantha->agent_id);
+            const auto found_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, cantha->agent_id);
+
+            if (!found_prot && skillbar->prot.CanBeCasted(player->energy))
+                return SafeUseSkill(skillbar->prot.idx, cantha->agent_id);
         }
-    }
 
-    if (cantha->hp < 0.70F && skillbar->fuse.CanBeCasted(player->energy))
-    {
-        ++last_gdw_it;
-        return SafeUseSkill(skillbar->fuse.idx, cantha->agent_id);
-    }
+        if (cantha->hp < 0.70F && skillbar->fuse.CanBeCasted(player->energy))
+            return SafeUseSkill(skillbar->fuse.idx, cantha->agent_id);
 
-    if (skillbar->gdw.SkillFound() && skillbar->gdw.CanBeCasted(player->energy))
-    {
-        ++last_gdw_it;
-        return SafeUseSkill(skillbar->gdw.idx, cantha->agent_id);
+        if (skillbar->gdw.SkillFound() && skillbar->gdw.CanBeCasted(player->energy))
+            return SafeUseSkill(skillbar->gdw.idx, cantha->agent_id);
     }
 
     return RoutineState::ACTIVE;
@@ -425,6 +460,10 @@ RoutineState Pumping::Routine()
     if (self_bonds_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
+    const auto cantha_state = RoutineCanthaGuards();
+    if (cantha_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
     if (!IsUw())
         return RoutineState::FINISHED;
 
@@ -432,12 +471,12 @@ RoutineState Pumping::Routine()
     if (lt_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    if (IsInVale(player))
-    {
-        const auto cantha_state = RoutineCanthaGuards();
-        if (cantha_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
-    }
+    // if (IsInVale(player))
+    // {
+    //     const auto cantha_state = RoutineCanthaGuards();
+    //     if (cantha_state == RoutineState::FINISHED)
+    //         return RoutineState::FINISHED;
+    // }
 
     static auto swapped_armor_in_dhuum_room = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
@@ -496,26 +535,6 @@ RoutineState Pumping::Routine()
     return RoutineState::FINISHED;
 }
 
-void Pumping::WarnDistanceLT()
-{
-    static auto warned = false;
-    constexpr auto warn_dist = GW::Constants::Range::Compass - 100.0F;
-
-    if (!lt_agent)
-        return;
-
-    const auto dist = GW::GetDistance(player->pos, lt_agent->pos);
-    if (!warned && dist > warn_dist)
-    {
-        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_WARNING, L"LT is leaving EMO's compass range!");
-        warned = true;
-        return;
-    }
-
-    if (warned && dist < warn_dist)
-        warned = false;
-}
-
 void Pumping::Update()
 {
     static auto paused = false;
@@ -525,8 +544,6 @@ void Pumping::Update()
     {
         const uint32_t lt_id = GetTankId();
         lt_agent = GW::Agents::GetAgentByID(lt_id);
-
-        WarnDistanceLT();
     }
 
     if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)

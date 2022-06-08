@@ -13,6 +13,7 @@
 #include <GuiUtils.h>
 #include <Player.h>
 #include <Types.h>
+#include <UwHelper.h>
 
 #include <Base/HelperBoxWindow.h>
 
@@ -32,8 +33,6 @@ private:
     RoutineState RoutineWisdom();
     RoutineState RoutineGDW();
     RoutineState RoutinePI(const uint32_t dhuum_id);
-
-    void WarnDistanceLT();
 
     static auto constexpr cantha_ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
 
@@ -181,6 +180,8 @@ private:
     bool EmoBondPlayerRoutine();
     bool EmoFuseRange();
 
+    void WarnDistanceLT();
+
     Player player;
     EmoSkillbar skillbar;
 
@@ -191,11 +192,18 @@ private:
         Move{+1248.00F, +6965.51F, "Spawn"},
         Move{-583.28F, +9275.68F, "Lab Stairs1"},
         Move{-2730.79F, 10159.21F, "Lab Stairs2"},
-        Move{-5751.45F, 12746.52F, "Lab Reaper"},
-        Move{-6263.69F, 9863.36F, "Fuse Pull 1", [&]() { return ChangeFullArmor(bag_idx, start_slot_idx); }},
+        Move{-5751.45F,
+             12746.52F,
+             "Lab Reaper",
+             [&]() {
+                 const auto reaper_id = GetClosestReaperID(player);
+                 player.ChangeTarget(reaper_id);
+                 return true;
+             }},
+        Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { return ChangeFullArmor(bag_idx, start_slot_idx); }},
         Move{-6241.24F, 7945.73F, "Basement"},
         Move{-8763.36F, 5551.18F, "Basement Stairs"},
-        Move{-7814.81F, 4397.92F, "Fuse Pull 2"},
+        Move{-7829.98F, 4324.09F, "Fuse Pull 2"},
         Move{-8764.08F, 2156.60F, "Vale Entry", [&]() { return ChangeFullArmor(bag_idx, start_slot_idx); }},
         Move{-12264.12F, 1821.18F, "Vale House"},
         Move{-13872.34F, 2332.34F, "Spirits 1"},
@@ -204,7 +212,14 @@ private:
         Move{-8764.08F, 2156.60F, "Vale Entry"},
         Move{-7980.55F, 4308.90F, "Basement Stairs"},
         Move{-6241.24F, 7945.73F, "Basement"},
-        Move{-5751.45F, 12746.52F, "Lab Reaper"},
+        Move{-5751.45F,
+             12746.52F,
+             "Lab Reaper",
+             [&]() {
+                 const auto reaper_id = GetClosestReaperID(player);
+                 player.ChangeTarget(reaper_id);
+                 return true;
+             }},
         Move{-6035.29F, 11285.14F, "Keeper 1"},
         Move{-3793.78F, 11200.36F, "Keeper 2"},
         Move{-3881.71F, 11280.04F, "Keeper 3"},
