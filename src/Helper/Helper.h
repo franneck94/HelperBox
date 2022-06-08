@@ -11,9 +11,9 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 
+#include <MathUtils.h>
 #include <Player.h>
 #include <Types.h>
-#include <Utils.h>
 
 bool IsLoading();
 
