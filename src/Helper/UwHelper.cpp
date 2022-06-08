@@ -5,9 +5,10 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 
+#include <Helper.h>
+#include <MathUtils.h>
 #include <Player.h>
 #include <Types.h>
-#include <Utils.h>
 
 #include "UwHelper.h"
 
@@ -91,6 +92,67 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
         *dhuum_hp = dhuum_living->hp;
         return true;
     }
+
+    return false;
+}
+
+uint32_t GetClosestReaperID(Player &player)
+{
+    auto agents_array = GW::Agents::GetAgentArray();
+    std::vector<GW::AgentLiving *> reapers;
+    FilterAgents(player,
+                 agents_array,
+                 reapers,
+                 std::array<uint32_t, 1>{GW::Constants::ModelID::UW::Reapers},
+                 GW::Constants::Allegiance::Npc_Minipet,
+                 GW::Constants::Range::Compass);
+
+    if (reapers.size() == 0)
+        return 0;
+
+    return reapers[0]->agent_id;
+}
+
+bool TankIsFullteamLT()
+{
+    const uint32_t lt_id = GetTankId();
+    if (!lt_id)
+        return false;
+
+    const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
+
+    if (!lt_agent)
+        return false;
+
+    const auto lt_living = lt_agent->GetAsAgentLiving();
+    if (!lt_living)
+        return false;
+
+    if (lt_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer) &&
+        lt_living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Assassin))
+        return true;
+
+    return false;
+}
+
+bool TankIsSoloLT()
+{
+    const uint32_t lt_id = GetTankId();
+    if (!lt_id)
+        return false;
+
+    const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
+
+    if (!lt_agent)
+        return false;
+
+    const auto lt_living = lt_agent->GetAsAgentLiving();
+    if (!lt_living)
+        return false;
+
+    if (lt_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer) &&
+        lt_living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Elementalist))
+        return true;
 
     return false;
 }
