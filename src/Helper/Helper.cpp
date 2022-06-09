@@ -254,26 +254,6 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
     return false;
 }
 
-bool PlayerHasEffect(const uint32_t effect_skill_id, const uint32_t agent_id)
-{
-    const auto &effects = GW::Effects::GetPartyEffectArray();
-
-    if (!effects.valid())
-        return false;
-
-    const auto agent_effects = effects[0].effects;
-    if (agent_effects.size() == 0)
-        return false;
-
-    for (const auto &eff : agent_effects)
-    {
-        if (eff.skill_id == effect_skill_id)
-            return true;
-    }
-
-    return false;
-}
-
 bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
 {
     if (!GW::PartyMgr::GetIsPartyLoaded())

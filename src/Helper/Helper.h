@@ -33,8 +33,6 @@ bool TargetNearest(const TargetType type, const float max_distance = GW::Constan
 
 const GW::EffectArray *GetEffects(const uint32_t agent_id);
 
-bool PlayerHasEffect(const uint32_t effect_skill_id, const uint32_t agent_id);
-
 bool DetectPlayerIsDead();
 
 std::tuple<uint32_t, uint32_t, float> GetEnergy();
