@@ -189,7 +189,7 @@ private:
     uint32_t start_slot_idx = static_cast<uint32_t>(-1);
     uint32_t move_idx = 0;
     std::array<Move, 26> moves = {
-        Move{+1248.00F, +6965.51F, "Spawn"},
+        Move{1248.00F, 6965.51F, "Spawn"},
         Move{-583.28F, +9275.68F, "Lab Stairs1"},
         Move{-2730.79F, 10159.21F, "Lab Stairs2"},
         Move{-5751.45F,
@@ -199,16 +199,16 @@ private:
                  const auto reaper_id = GetClosestReaperID(player);
                  player.ChangeTarget(reaper_id);
              }},
-        Move{player.pos.x,
-             player.pos.x,
+        Move{0.0F,
+             0.0F,
              "Take Restore",
              [&]() {
                  if (!TargetIsReaper(player))
                      return;
                  GW::Agents::SendDialog(GW::Constants::QuestID::UW::Restore);
              }},
-        Move{player.pos.x,
-             player.pos.x,
+        Move{0.0F,
+             0.0F,
              "Take Escort",
              [&]() {
                  if (!TargetIsReaper(player))
@@ -235,8 +235,8 @@ private:
                  player.ChangeTarget(reaper_id);
                  return;
              }},
-        Move{player.pos.x,
-             player.pos.x,
+        Move{0.0F,
+             0.0F,
              "Take UWG",
              [&]() {
                  if (!TargetIsReaper(player))

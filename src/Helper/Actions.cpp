@@ -74,8 +74,11 @@ void Move::Execute()
     if (!me)
         return;
 
-    GW::Agents::Move(x, y);
-    Log::Info("Moving to (%.0f, %.0f)", x, y);
+    if (x != 0.0F && y != 0.0F)
+    {
+        GW::Agents::Move(x, y);
+        Log::Info("Moving to (%.0f, %.0f)", x, y);
+    }
 
     if (callback.has_value())
     {

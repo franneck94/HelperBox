@@ -156,7 +156,7 @@ void EmoWindow::Update(float delta)
 
     if (IsUw() && send_move)
     {
-        if ((move_idx < moves.size() - 1U) && GamePosCompare(player.pos, moves[move_idx].pos))
+        if ((move_idx < moves.size() - 1U) && GamePosCompare(player.pos, moves[move_idx].pos, 0.1))
         {
             send_move = false;
             ++move_idx;
@@ -272,6 +272,7 @@ RoutineState Pumping::RoutineCanthaGuards()
         return RoutineState::ACTIVE;
 
     auto agents_array = GW::Agents::GetAgentArray();
+    filtered_canthas.clear();
     FilterAgents(*player,
                  agents_array,
                  filtered_canthas,
@@ -284,7 +285,7 @@ RoutineState Pumping::RoutineCanthaGuards()
 
     for (const auto &cantha : filtered_canthas)
     {
-        if (!cantha || cantha->GetIsDead())
+        if (!cantha || cantha->GetIsDead() && cantha->hp == 0.0F)
             continue;
 
         if (cantha->hp < 0.90F)
@@ -460,10 +461,6 @@ RoutineState Pumping::Routine()
     if (self_bonds_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    const auto cantha_state = RoutineCanthaGuards();
-    if (cantha_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
     if (!IsUw())
         return RoutineState::FINISHED;
 
@@ -471,12 +468,12 @@ RoutineState Pumping::Routine()
     if (lt_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    // if (IsInVale(player))
-    // {
-    //     const auto cantha_state = RoutineCanthaGuards();
-    //     if (cantha_state == RoutineState::FINISHED)
-    //         return RoutineState::FINISHED;
-    // }
+    if (IsInVale(player))
+    {
+        const auto cantha_state = RoutineCanthaGuards();
+        if (cantha_state == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+    }
 
     static auto swapped_armor_in_dhuum_room = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
@@ -555,11 +552,7 @@ void Pumping::Update()
     {
         const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-        const auto living_target = player->target->GetAsAgentLiving();
-
-        if (living_target &&
-            (living_target->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers)) &&
-            (dist < GW::Constants::Range::Earshot / 2.0F))
+        if (TargetIsReaper(*player) && (dist < GW::Constants::Range::Earshot / 2.0F))
         {
             action_state = ActionState::ON_HOLD;
             paused = true;
@@ -576,9 +569,7 @@ void Pumping::Update()
         if (action_state == ActionState::ON_HOLD)
             action_state = ActionState::ACTIVE;
     }
-    else if (paused && paused_by_reaper &&
-             (!player->target ||
-              player->target->agent_id != static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers)))
+    else if (paused && paused_by_reaper && !TargetIsReaper(*player))
     {
         paused = false;
         paused_by_reaper = false;
