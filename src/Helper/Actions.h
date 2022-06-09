@@ -63,7 +63,7 @@ class Move
 public:
     static constexpr size_t NAME_LEN = 140U;
 
-    Move(const float _x, const float _y, const char *_name, std::function<bool()> _callback)
+    Move(const float _x, const float _y, const char *_name, std::function<void()> _callback)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback){};
 
     Move(const float _x, const float _y, const char *_name) : x(_x), y(_y), pos({x, y, 0}), name(_name){};
@@ -82,5 +82,5 @@ private:
 public:
     GW::GamePos pos;
     const char *name;
-    std::optional<std::function<bool()>> callback = std::nullopt;
+    std::optional<std::function<void()>> callback = std::nullopt;
 };
