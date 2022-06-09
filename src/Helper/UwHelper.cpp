@@ -156,3 +156,15 @@ bool TankIsSoloLT()
 
     return false;
 }
+
+bool TargetIsReaper(Player &player)
+{
+    if (!player.target)
+        return false;
+
+    const auto living_target = player.target->GetAsAgentLiving();
+    if (!living_target || !living_target->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers))
+        return false;
+
+    return true;
+}

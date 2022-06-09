@@ -21,3 +21,5 @@ uint32_t GetClosestReaperID(Player &player);
 bool TankIsFullteamLT();
 
 bool TankIsSoloLT();
+
+bool TargetIsReaper(Player &player);
