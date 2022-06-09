@@ -1,5 +1,8 @@
 #include <windows.h>
 
+#include <psapi.h>
+#include <stdio.h>
+#include <tchar.h>
 #include <tlhelp32.h>
 
 #include <cstdint>
@@ -52,15 +55,51 @@ bool tryParse(std::string &input, int &output)
     return true;
 }
 
+void CheckForInjectedDll(const std::vector<DWORD> &pids, std::vector<bool> &is_injected)
+{
+    for (const auto pid : pids)
+    {
+        HMODULE hMods[1024];
+        HANDLE hProcess;
+        DWORD cbNeeded;
+        unsigned int i;
+
+        hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+        if (NULL == hProcess)
+            return;
+
+        if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+        {
+            for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+            {
+                wchar_t szModName[MAX_PATH];
+                if (GetModuleBaseNameW(hProcess, hMods[i], szModName, _countof(szModName)))
+                {
+                    printf("%ls\n", szModName);
+                    if (szModName == L"HelperBox.dll")
+                    {
+                        is_injected[0] = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
 int main()
 {
     std::vector<DWORD> pids;
     GetAllProcessIdsByName("Gw.exe", pids);
 
+    std::vector<bool> is_injected(pids.size(), false);
+    CheckForInjectedDll(pids, is_injected);
+
     for (int i = 0; i < pids.size(); ++i)
     {
-        std::cout << i << " - GW Process ID: " << pids[i] << '\n';
+        std::cout << i << " - GW Process ID: " << pids[i] << " is injected: " << std::boolalpha << is_injected[i]
+                  << '\n';
     }
+
     DWORD pid = 0;
     std::cout << "Select GW Process: ";
 
