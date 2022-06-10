@@ -196,7 +196,7 @@ void TerraWindow::Update(float delta)
                  filtered_foes,
                  IDS,
                  GW::Constants::Allegiance::Enemy,
-                 GW::Constants::Range::Earshot);
+                 GW::Constants::Range::Earshot - 200.0F);
     SplitFilteredAgents(filtered_foes, behemoth_agents, GW::Constants::ModelID::UW::ObsidianBehemoth);
     SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
     SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);

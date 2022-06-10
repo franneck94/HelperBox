@@ -68,19 +68,6 @@ void EmoWindow::WarnDistanceLT()
         GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GLOBAL, L"LT is leaving EMO's compass range!");
         warned = true;
 
-        // const auto end_pos = moves[move_idx].pos;
-
-        // const auto intermediate_x = Lerp(player.pos.x, end_pos.x, 0.1F);
-        // const auto intermediate_y = Lerp(player.pos.y, end_pos.y, 0.1F);
-        // const auto intermediate_pos = GW::GamePos{intermediate_x, intermediate_y, player.pos.zplane};
-        // const auto new_dist = GW::GetDistance(intermediate_pos, lt_agent->pos);
-
-        // if (new_dist < dist)
-        // {
-        //     moves[move_idx].Execute();
-        //     send_move = true;
-        // }
-
         return;
     }
 
@@ -522,7 +509,7 @@ RoutineState Pumping::Routine()
     if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    if (!dhuum_hp || dhuum_hp > 0.98F)
+    if (!dhuum_hp || dhuum_hp > 0.99F)
         return RoutineState::FINISHED;
 
     const auto gdw_state = RoutineGDW();
