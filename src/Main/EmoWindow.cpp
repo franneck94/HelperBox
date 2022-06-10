@@ -35,6 +35,10 @@ namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
 static bool send_move = false;
+
+const auto SKIP_BUTTON_X = DEFAULT_BUTTON_SIZE.x / 2.25F;
+const auto SKIP_BUTTON_Y = DEFAULT_BUTTON_SIZE.y / 2.0F;
+const auto SKIP_BUTTON_SIZE = ImVec2(SKIP_BUTTON_X, SKIP_BUTTON_Y);
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -51,7 +55,7 @@ EmoWindow::EmoWindow()
         });
 };
 
-void EmoWindow::WarnDistanceLT()
+void EmoWindow::WarnDistanceLT() const
 {
     static auto warned = false;
     constexpr auto warn_dist = GW::Constants::Range::Compass - 20.0F;
@@ -101,13 +105,13 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
                 moves[move_idx].Execute();
                 send_move = true;
             }
-            if (ImGui::Button("Prev.", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+            if (ImGui::Button("Prev.", SKIP_BUTTON_SIZE))
             {
                 if (move_idx > 0)
                     --move_idx;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Next", ImVec2(DEFAULT_BUTTON_SIZE.x / 2.25F, DEFAULT_BUTTON_SIZE.y / 2.0F)))
+            if (ImGui::Button("Next", SKIP_BUTTON_SIZE))
             {
                 if (move_idx < moves.size() - 1)
                     ++move_idx;
@@ -181,7 +185,7 @@ void EmoWindow::Update(float delta)
     pumping.Update();
 }
 
-bool EmoWindow::ActivationConditions()
+bool EmoWindow::ActivationConditions() const
 {
     if (player.primary == GW::Constants::Profession::Elementalist &&
         player.secondary == GW::Constants::Profession::Monk)
@@ -209,7 +213,7 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start
         });
 }
 
-RoutineState Pumping::RoutineSelfBonds()
+RoutineState Pumping::RoutineSelfBonds() const
 {
     const auto found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
     if (skillbar->ether.CanBeCasted(player->energy))
@@ -247,7 +251,7 @@ RoutineState Pumping::RoutineSelfBonds()
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutineCanthaGuards()
+RoutineState Pumping::RoutineCanthaGuards() const
 {
     static auto last_gdw_idx = 0;
 
@@ -291,7 +295,7 @@ RoutineState Pumping::RoutineCanthaGuards()
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutineLT()
+RoutineState Pumping::RoutineLT() const
 {
     if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id)
         return RoutineState::ACTIVE;
@@ -315,7 +319,7 @@ RoutineState Pumping::RoutineLT()
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutineTurtle()
+RoutineState Pumping::RoutineTurtle() const
 {
     if (!found_turtle || !turtle_id)
         return RoutineState::ACTIVE;
@@ -344,7 +348,7 @@ RoutineState Pumping::RoutineTurtle()
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutinePI(const uint32_t dhuum_id)
+RoutineState Pumping::RoutinePI(const uint32_t dhuum_id) const
 {
     const auto &skill = skillbar->pi;
 
@@ -369,7 +373,7 @@ RoutineState Pumping::RoutinePI(const uint32_t dhuum_id)
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutineWisdom()
+RoutineState Pumping::RoutineWisdom() const
 {
     const auto &skill = skillbar->wisdom;
 
@@ -383,7 +387,7 @@ RoutineState Pumping::RoutineWisdom()
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutineGDW()
+RoutineState Pumping::RoutineGDW() const
 {
     static uint32_t last_idx = 0;
 
@@ -443,7 +447,7 @@ RoutineState Pumping::RoutineGDW()
     return SafeUseSkill(skill.idx, id);
 }
 
-RoutineState Pumping::RoutineKeepPlayerAlive()
+RoutineState Pumping::RoutineKeepPlayerAlive() const
 {
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);

@@ -26,14 +26,14 @@ public:
     void Update() override;
 
 private:
-    RoutineState RoutineSelfBonds();
-    RoutineState RoutineCanthaGuards();
-    RoutineState RoutineLT();
-    RoutineState RoutineTurtle();
-    RoutineState RoutineWisdom();
-    RoutineState RoutineGDW();
-    RoutineState RoutinePI(const uint32_t dhuum_id);
-    RoutineState RoutineKeepPlayerAlive();
+    RoutineState RoutineSelfBonds() const;
+    RoutineState RoutineCanthaGuards() const;
+    RoutineState RoutineLT() const;
+    RoutineState RoutineTurtle() const;
+    RoutineState RoutineWisdom() const;
+    RoutineState RoutineGDW() const;
+    RoutineState RoutinePI(const uint32_t dhuum_id) const;
+    RoutineState RoutineKeepPlayerAlive() const;
 
     static auto constexpr cantha_ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
 
@@ -174,14 +174,8 @@ public:
     void Update(float delta) override;
 
 private:
-    bool ActivationConditions();
-
-    void EmoSkillRoutine();
-    bool EmoBondTankRoutine();
-    bool EmoBondPlayerRoutine();
-    bool EmoFuseRange();
-
-    void WarnDistanceLT();
+    bool ActivationConditions() const;
+    void WarnDistanceLT() const;
 
     Player player;
     EmoSkillbar skillbar;
