@@ -143,7 +143,7 @@ void EmoWindow::Update(float delta)
 
     if (IsUw() && send_move)
     {
-        if ((move_idx < moves.size() - 1U) && GamePosCompare(player.pos, moves[move_idx].pos, 0.1))
+        if ((move_idx < moves.size() - 1U) && GamePosCompare(player.pos, moves[move_idx].pos, 0.1F))
         {
             send_move = false;
             ++move_idx;
