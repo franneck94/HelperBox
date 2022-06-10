@@ -36,7 +36,7 @@ public:
 
     bool CanBeCasted(const uint32_t current_energy) const
     {
-        return (current_energy > energy_cost && recharge == 0);
+        return SkillFound() && (current_energy > energy_cost && recharge == 0);
     }
 
     bool SkillFound() const
