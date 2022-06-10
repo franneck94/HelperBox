@@ -33,6 +33,7 @@ private:
     RoutineState RoutineWisdom();
     RoutineState RoutineGDW();
     RoutineState RoutinePI(const uint32_t dhuum_id);
+    RoutineState RoutineKeepPlayerAlive();
 
     static auto constexpr cantha_ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
 
