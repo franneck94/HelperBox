@@ -417,9 +417,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
 
 
     if (tb_destroyed && defer_close)
-    {
         SendMessageW(gw_window_handle, WM_CLOSE, NULL, NULL);
-    }
 }
 
 void HelperBox::Update(GW::HookStatus *)
@@ -431,11 +429,12 @@ void HelperBox::Update(GW::HookStatus *)
     HelperBox &helper_box = HelperBox::Instance();
     if (!tb_initialized)
         HelperBox::Instance().Initialize();
+
     if (tb_initialized && imgui_initialized && !HelperBox::Instance().must_self_destruct)
     {
-        DWORD tick = GetTickCount();
-        DWORD delta = tick - last_tick_count;
-        float delta_f = delta / 1000.f;
+        const auto tick = GetTickCount();
+        const auto delta = tick - last_tick_count;
+        const auto delta_f = delta / 1000.f;
 
         for (HelperBoxModule *module : helper_box.modules)
             module->Update(delta_f);
