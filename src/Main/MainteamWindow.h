@@ -79,6 +79,7 @@ private:
     std::vector<GW::AgentLiving *> filtered_foes;
     std::vector<GW::AgentLiving *> aatxe_agents;
     std::vector<GW::AgentLiving *> dryder_agents;
+    std::vector<GW::AgentLiving *> nightmare_agents;
     std::vector<GW::AgentLiving *> skele_agents;
 
     SpikeSet spike_set;
