@@ -214,7 +214,7 @@ private:
              [&]() {
                  if (!TargetIsReaper(player))
                      return;
-                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::Restore);
+                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::Escort);
              }},
         Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { return ChangeFullArmor(bag_idx, start_slot_idx); }},
         Move{-6241.24F, 7945.73F, "Basement"},
@@ -242,7 +242,7 @@ private:
              [&]() {
                  if (!TargetIsReaper(player))
                      return;
-                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::Restore);
+                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::UWG);
              }},
         Move{-6035.29F, 11285.14F, "Keeper 1"},
         Move{-3793.78F, 11200.36F, "Keeper 2"},
