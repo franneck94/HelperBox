@@ -13,6 +13,8 @@ Or you can launch it by yourself:
 HelperBox.exe /pid PID
 ```
 
+## Features
+
 Auto-Follow Button:
 
 - If is active (button is green) the targeted player is followed
@@ -23,6 +25,7 @@ Cancel Action Button:
 - If clicked, send interrupt signal (useful for weapon change etc.)
 
 The following helper windows are displayed in the UW
+
 - Terra Window
     - Ranger/Assasin
     - Mesmer/Elementalist
