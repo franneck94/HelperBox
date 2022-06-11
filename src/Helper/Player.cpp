@@ -8,6 +8,7 @@
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
+#include <GWCA/Managers/PartyMgr.h>
 
 #include <Helper.h>
 
@@ -15,6 +16,9 @@
 
 bool Player::ValidateData() const
 {
+    if (!GW::PartyMgr::GetIsPartyLoaded())
+        return false;
+
     if (IsLoading())
         return false;
 

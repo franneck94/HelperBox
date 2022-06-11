@@ -9,6 +9,7 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/Managers/PartyMgr.h>
 
 #include <fmt/format.h>
 
@@ -173,6 +174,11 @@ void TerraWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
+    filtered_foes.clear();
+    behemoth_agents.clear();
+    dryder_agents.clear();
+    skele_agents.clear();
+
     if (IsLoading())
         last_casted_times_ms.clear();
 
@@ -184,11 +190,6 @@ void TerraWindow::Update(float delta)
         return;
 
     auto_target.Update();
-
-    filtered_foes.clear();
-    behemoth_agents.clear();
-    dryder_agents.clear();
-    skele_agents.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
@@ -227,6 +228,9 @@ bool TerraWindow::ActivationConditions()
     const auto is_mesmer_terra = player.primary == GW::Constants::Profession::Mesmer ||
                                  player.secondary == GW::Constants::Profession::Elementalist;
     if (!is_ranger_terra && !is_mesmer_terra)
+        return false;
+
+    if (!GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
     if (IsUwEntryOutpost() || IsUw())

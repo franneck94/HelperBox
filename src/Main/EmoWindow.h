@@ -183,7 +183,7 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t start_slot_idx = static_cast<uint32_t>(-1);
     uint32_t move_idx = 0;
-    std::array<Move, 26> moves = {
+    std::array<Move, 23> moves = {
         Move{1248.00F, 6965.51F, "Spawn"},
         Move{-583.28F, +9275.68F, "Lab Stairs1"},
         Move{-2730.79F, 10159.21F, "Lab Stairs2"},
@@ -193,22 +193,6 @@ private:
              [&]() {
                  const auto reaper_id = GetClosestReaperID(player);
                  player.ChangeTarget(reaper_id);
-             }},
-        Move{0.0F,
-             0.0F,
-             "Take Restore",
-             [&]() {
-                 if (!TargetIsReaper(player))
-                     return;
-                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::Restore);
-             }},
-        Move{0.0F,
-             0.0F,
-             "Take Escort",
-             [&]() {
-                 if (!TargetIsReaper(player))
-                     return;
-                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::Escort);
              }},
         Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { return ChangeFullArmor(bag_idx, start_slot_idx); }},
         Move{-6241.24F, 7945.73F, "Basement"},
@@ -222,14 +206,6 @@ private:
         Move{-8764.08F, 2156.60F, "Vale Entry"},
         Move{-7980.55F, 4308.90F, "Basement Stairs"},
         Move{-6241.24F, 7945.73F, "Basement"},
-        Move{-5751.45F,
-             12746.52F,
-             "Lab Reaper",
-             [&]() {
-                 const auto reaper_id = GetClosestReaperID(player);
-                 player.ChangeTarget(reaper_id);
-                 return;
-             }},
         Move{0.0F,
              0.0F,
              "Take UWG",

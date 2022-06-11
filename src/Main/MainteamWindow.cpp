@@ -10,6 +10,7 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/Managers/PartyMgr.h>
 
 #include <fmt/format.h>
 
@@ -177,6 +178,12 @@ void MainteamWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
+    filtered_foes.clear();
+    aatxe_agents.clear();
+    nightmare_agents.clear();
+    dryder_agents.clear();
+    skele_agents.clear();
+
     if (!player.ValidateData())
         return;
     player.Update();
@@ -192,11 +199,6 @@ void MainteamWindow::Update(float delta)
 
         spike_set.Update();
     }
-
-    filtered_foes.clear();
-    aatxe_agents.clear();
-    dryder_agents.clear();
-    skele_agents.clear();
 
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
@@ -221,6 +223,9 @@ bool MainteamWindow::ActivationConditions()
     if (player.primary != GW::Constants::Profession::Mesmer && player.primary != GW::Constants::Profession::Ritualist &&
         player.primary != GW::Constants::Profession::Dervish &&
         player.primary != GW::Constants::Profession::Elementalist)
+        return false;
+
+    if (!GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
     if (IsUwEntryOutpost() || IsUw())

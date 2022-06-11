@@ -187,6 +187,9 @@ void EmoWindow::Update(float delta)
 
 bool EmoWindow::ActivationConditions() const
 {
+    if (!GW::PartyMgr::GetIsPartyLoaded())
+        return false;
+
     if (player.primary == GW::Constants::Profession::Elementalist &&
         player.secondary == GW::Constants::Profession::Monk)
         return true;
@@ -620,11 +623,15 @@ RoutineState TankBonding::Routine()
 {
     static uint32_t target_id = 0;
 
-    if (!player->CanCast())
+    if (!player || !player->id || !player->CanCast())
+    {
+        target_id = 0;
         return RoutineState::ACTIVE;
+    }
 
     if (interrupted)
     {
+        target_id = 0;
         interrupted = false;
         return RoutineState::FINISHED;
     }
@@ -633,7 +640,7 @@ RoutineState TankBonding::Routine()
     const auto no_target_or_self = (!player->target || player->target->agent_id == player->id);
     const auto target_not_self = (player->target && player->target->agent_id != player->id);
 
-    // Get target at activation, afrter keep the id
+    // Get target at activation, after keep the id
     if (!target_id && no_target_or_self)
     {
         target_id = GetTankId();
