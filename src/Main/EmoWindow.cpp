@@ -264,7 +264,7 @@ RoutineState Pumping::RoutineCanthaGuards() const
     if (!player->CanCast())
         return RoutineState::ACTIVE;
 
-    auto agents_array = GW::Agents::GetAgentArray();
+    const auto agents_array = GW::Agents::GetAgentArray();
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterAgents(*player,
                  agents_array,
@@ -392,7 +392,7 @@ RoutineState Pumping::RoutineWisdom() const
 
 RoutineState Pumping::RoutineGDW() const
 {
-    static uint32_t last_idx = 0;
+    static auto last_idx = uint32_t{0};
 
     if (last_idx >= GW::PartyMgr::GetPartySize())
         last_idx = 0;
@@ -529,18 +529,10 @@ RoutineState Pumping::Routine()
     if (turtle_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    uint32_t dhuum_id = 0;
-    float dhuum_hp = 1.0F;
+    auto dhuum_id = uint32_t{0};
+    auto dhuum_hp = float{1.0F};
     static auto dhuum_fight_started = false;
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-
-    const auto swap_to_high_armor = !is_in_dhuum_fight && dhuum_fight_started;
-    if (swap_to_high_armor)
-    {
-        if (bag_idx && start_slot_idx)
-            ChangeFullArmor(*bag_idx, *start_slot_idx);
-        dhuum_fight_started = false;
-    }
 
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
@@ -577,7 +569,7 @@ void Pumping::Update()
 
     if (IsUw())
     {
-        const uint32_t lt_id = GetTankId();
+        const auto lt_id = GetTankId();
         lt_agent = GW::Agents::GetAgentByID(lt_id);
     }
 
@@ -621,7 +613,7 @@ void Pumping::Update()
 
 RoutineState TankBonding::Routine()
 {
-    static uint32_t target_id = 0;
+    static auto target_id = uint32_t{0};
 
     if (!player || !player->id || !player->CanCast())
     {
@@ -721,7 +713,7 @@ void TankBonding::Update()
 
 RoutineState PlayerBonding::Routine()
 {
-    static uint32_t target_id = 0;
+    static auto target_id = uint32_t{0};
 
     if (interrupted)
     {
