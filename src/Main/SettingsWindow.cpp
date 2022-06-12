@@ -24,8 +24,8 @@ void SettingsWindow::SaveSettings(CSimpleIni *ini)
 void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
-    static GW::Constants::InstanceType last_instance_type = GW::Constants::InstanceType::Loading;
-    GW::Constants::InstanceType instance_type = GW::Map::GetInstanceType();
+    static auto last_instance_type = GW::Constants::InstanceType::Loading;
+    auto instance_type = GW::Map::GetInstanceType();
 
     if (instance_type == GW::Constants::InstanceType::Loading)
         return;
@@ -45,7 +45,7 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
 
         DrawSettingsSection(HelperBoxSettings::Instance().SettingsName());
 
-        const std::vector<HelperBoxModule *> &optional_modules = HelperBoxSettings::Instance().GetOptionalModules();
+        const auto &optional_modules = HelperBoxSettings::Instance().GetOptionalModules();
         for (unsigned i = 0; i < optional_modules.size(); ++i)
         {
             if (i == sep)
@@ -55,7 +55,7 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
         }
     }
 
-    float w = ImGui::GetWindowContentRegionWidth();
+    const auto w = ImGui::GetWindowContentRegionWidth();
 
     if (ImGui::Button("Save Now", ImVec2(w, 0)))
         HelperBox::Instance().SaveSettings();
@@ -84,7 +84,7 @@ bool SettingsWindow::DrawSettingsSection(const char *section)
     static char buf[128];
     sprintf(buf, "      %s", section);
     auto pos = ImGui::GetCursorScreenPos();
-    const bool &is_showing = ImGui::CollapsingHeader(buf, ImGuiTreeNodeFlags_AllowItemOverlap);
+    const auto is_showing = ImGui::CollapsingHeader(buf, ImGuiTreeNodeFlags_AllowItemOverlap);
 
     const char *icon = nullptr;
     auto it = icons.find(section);
@@ -101,7 +101,7 @@ bool SettingsWindow::DrawSettingsSection(const char *section)
 
     if (is_showing)
         ImGui::PushID(section);
-    size_t i = 0;
+    auto i = size_t{0};
     for (auto &entry : settings_section->second)
     {
         ImGui::PushID(&settings_section->second);

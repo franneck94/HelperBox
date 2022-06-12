@@ -42,7 +42,7 @@ static const auto IDS = std::array<uint32_t, 5>{GW::Constants::ModelID::UW::Blad
 
 RoutineState SpikeSet::Routine()
 {
-    static uint32_t state_idx = 0;
+    static auto state_idx = uint32_t{0};
 
     if (!player->CanCast())
         return RoutineState::ACTIVE;
@@ -89,7 +89,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
                                         const ImVec4 color,
                                         std::string_view label)
 {
-    uint32_t idx = 0;
+    auto idx = uint32_t{0};
 
     for (const auto &foe : splitted_agents)
     {
@@ -98,7 +98,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
 
         ImGui::TableNextRow();
 
-        bool pushed = false;
+        auto pushed = false;
         if (foe->hp == 0.0F)
             continue;
 
@@ -112,7 +112,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
             ImGui::PushStyleColor(ImGuiCol_Text, color);
             pushed = true;
         }
-        const float distance = GW::GetDistance(player.pos, foe->pos);
+        const auto distance = GW::GetDistance(player.pos, foe->pos);
         ImGui::TableNextColumn();
         ImGui::Text("%3.0f%%", foe->hp * 100.0F);
         ImGui::TableNextColumn();
@@ -200,7 +200,7 @@ void MainteamWindow::Update(float delta)
         spike_set.Update();
     }
 
-    auto agents_array = GW::Agents::GetAgentArray();
+    const auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
                  agents_array,
                  filtered_foes,

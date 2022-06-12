@@ -76,7 +76,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
 
         ImGui::TableNextRow();
 
-        bool pushed = false;
+        auto pushed = false;
         if (foe->hp == 0.0F)
             continue;
 
@@ -92,7 +92,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
             ImGui::PushStyleColor(ImGuiCol_Text, color);
             pushed = true;
         }
-        const float distance = GW::GetDistance(player.pos, foe->pos);
+        const auto distance = GW::GetDistance(player.pos, foe->pos);
         ImGui::TableNextColumn();
         ImGui::Text("%3.0f%%", foe->hp * 100.0F);
         ImGui::TableNextColumn();

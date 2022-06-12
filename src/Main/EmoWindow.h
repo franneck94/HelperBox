@@ -150,8 +150,9 @@ public:
 
     void DrawSettingInternal() override
     {
-        static int _bag_idx = bag_idx;
-        static int _start_slot_idx = start_slot_idx;
+        static auto _bag_idx = static_cast<int>(bag_idx);
+        static auto _start_slot_idx = static_cast<int>(start_slot_idx);
+
         const auto width = ImGui::GetWindowWidth();
         ImGui::Text("Low HP Armor Slots:");
 
