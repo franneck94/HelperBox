@@ -517,38 +517,26 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
     }
 
-    const auto swap_to_low_armor = !swapped_armor_in_dhuum_room && is_in_dhuum_room;
-    if (swap_to_low_armor)
-    {
-        swapped_armor_in_dhuum_room = true;
-        if (bag_idx && start_slot_idx)
-            ChangeFullArmor(*bag_idx, *start_slot_idx);
-    }
-
     const auto turtle_state = RoutineTurtle();
     if (turtle_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     auto dhuum_id = uint32_t{0};
     auto dhuum_hp = float{1.0F};
-    static auto dhuum_fight_started = false;
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
 
-    if (is_in_dhuum_fight && !dhuum_fight_started)
-        dhuum_fight_started = true;
-
     const auto wisdom_state = RoutineWisdom();
     if (wisdom_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    const auto pi_state = RoutinePI(dhuum_id);
-    if (pi_state == RoutineState::FINISHED)
+    if (!dhuum_hp || dhuum_hp > 0.99F)
         return RoutineState::FINISHED;
 
-    if (!dhuum_hp || dhuum_hp > 0.99F)
+    const auto pi_state = RoutinePI(dhuum_id);
+    if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     const auto gdw_state = RoutineGDW();
