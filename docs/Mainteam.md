@@ -1,10 +1,5 @@
 # Mesmer Helper
 
-- If a player is on Mesmer
-    - Spike Set Button
-        - Casts Wastrel's Demise and Wastrel's Worry on target
-
-
 - The following enemies are displayed in the table whenever their distance is less than 1500
     - Nearby Aatxe
         - Target Button

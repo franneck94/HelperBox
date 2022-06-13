@@ -23,7 +23,6 @@
 #include <Helper.h>
 #include <MathUtils.h>
 #include <Player.h>
-#include <Skillbars.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -40,51 +39,6 @@ static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Blad
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum1,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
-
-RoutineState SpikeSet::Routine()
-{
-    static auto state_idx = uint32_t{0};
-
-    if (!player->CanCast())
-        return RoutineState::ACTIVE;
-
-    if (!player->target)
-        return RoutineState::FINISHED;
-
-    const auto target_living = player->target->GetAsAgentLiving();
-    if (!target_living || target_living->GetIsDead() ||
-        target_living->type != static_cast<uint32_t>(GW::Constants::Allegiance::Enemy))
-        return RoutineState::FINISHED;
-
-    if (state_idx == 0)
-    {
-        (void)SafeUseSkill(skillbar->demise.idx, player->target->agent_id);
-        Log::Info("Casted Demise");
-        ++state_idx;
-        return RoutineState::ACTIVE;
-    }
-    else if (state_idx == 1)
-    {
-        (void)SafeUseSkill(skillbar->worry.idx, player->target->agent_id);
-        Log::Info("Casted Worry");
-        ++state_idx;
-        return RoutineState::ACTIVE;
-    }
-
-    state_idx = 0;
-    return RoutineState::FINISHED;
-}
-
-void SpikeSet::Update()
-{
-    if (action_state == ActionState::ACTIVE)
-    {
-        const auto routine_state = Routine();
-
-        if (routine_state == RoutineState::FINISHED)
-            action_state = ActionState::INACTIVE;
-    }
-}
 
 void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents,
                                         const ImVec4 color,
@@ -148,8 +102,6 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
     if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags()))
     {
         const auto width = ImGui::GetWindowWidth();
-        if (player.primary == GW::Constants::Profession::Mesmer)
-            spike_set.Draw(ImVec2(width, 35.0F));
 
         if (ImGui::BeginTable("AatxeTable", 3))
         {
@@ -193,15 +145,6 @@ void MainteamWindow::Update(float delta)
 
     if (!ActivationConditions())
         return;
-
-    if (player.primary == GW::Constants::Profession::Mesmer)
-    {
-        if (!skillbar.ValidateData())
-            return;
-        skillbar.Update();
-
-        spike_set.Update();
-    }
 
     const auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
