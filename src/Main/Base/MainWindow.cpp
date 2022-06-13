@@ -30,14 +30,14 @@ void MainWindow::RegisterSettingsContent()
 void MainWindow::RefreshButtons()
 {
     pending_refresh_buttons = false;
-    const std::vector<HelperBoxUIElement *> &ui = HelperBox::Instance().GetUIElements();
+    const auto &ui = HelperBox::Instance().GetUIElements();
     modules_to_draw.clear();
     for (auto &ui_module : ui)
     {
         if (!ui_module->show_menubutton)
             continue;
 
-        float weighting = 1.0F;
+        const auto weighting = 1.0F;
         auto it = modules_to_draw.begin();
         for (it = modules_to_draw.begin(); it != modules_to_draw.end(); it++)
         {
@@ -60,8 +60,8 @@ void MainWindow::Draw(IDirect3DDevice9 *device)
     ImGui::SetNextWindowSize(ImVec2(110.0f, 300.0f), ImGuiCond_FirstUseEver);
     if (ImGui::Begin(Name(), show_closebutton ? &open : nullptr, GetWinFlags()))
     {
-        bool drawn = false;
-        const size_t msize = modules_to_draw.size();
+        auto drawn = false;
+        const auto msize = modules_to_draw.size();
         for (size_t i = 0; i < msize; i++)
         {
             ImGui::PushID(static_cast<int>(i));

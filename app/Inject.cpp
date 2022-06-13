@@ -84,9 +84,9 @@ static void GetGuildWarsProcesses(std::vector<Process> &processes)
 
     for (Process &process : buffer)
     {
-        DWORD pid = process.GetProcessId();
+        const auto pid = process.GetProcessId();
 
-        bool found = false;
+        auto found = false;
         for (Process &it : processes)
         {
             if (it.GetProcessId() == pid)
@@ -142,18 +142,14 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
             continue;
         }
 
-        bool injected;
+        auto injected = false;
         ProcessModule module2;
         if (process.GetModule(&module2, L"HelperBoxDll.dll"))
         {
             injected = true;
         }
-        else
-        {
-            injected = false;
-        }
 
-        uint32_t charname_ptr;
+        auto charname_ptr = uint32_t{0};
         if (!process.Read(module.base + charname_rva, &charname_ptr, 4))
         {
             fprintf(stderr,
@@ -162,7 +158,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
                     process.GetProcessId());
             continue;
         }
-        uint32_t email_ptr = 0;
+        auto email_ptr = uint32_t{0};
         if (!process.Read(module.base + email_rva, &email_ptr, 4))
         {
             fprintf(stderr,

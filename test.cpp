@@ -115,8 +115,8 @@ int main()
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
-    uint64_t size = 100;
-    char *message = new char[size]{};
+    const auto size = uint64_t{100};
+    auto message = new char[size]{};
     const auto num_bytes = size * sizeof(char);
 
     std::uintptr_t dwAddr = 0x010892F0;

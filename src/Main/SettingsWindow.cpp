@@ -93,7 +93,7 @@ bool SettingsWindow::DrawSettingsSection(const char *section)
     if (icon)
     {
         const auto &style = ImGui::GetStyle();
-        const float text_offset_x = ImGui::GetTextLineHeightWithSpacing() + 4.0f; // TODO: find a proper number
+        const auto text_offset_x = ImGui::GetTextLineHeightWithSpacing() + 4.0f; // TODO: find a proper number
         ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + text_offset_x, pos.y + style.ItemSpacing.y / 2),
                                             ImColor(style.Colors[ImGuiCol_Text]),
                                             icon);

@@ -29,20 +29,20 @@
 
 namespace
 {
-HMODULE dllmodule = 0;
+auto dllmodule = HMODULE{0};
 
-long OldWndProc = 0;
-bool tb_initialized = false;
-bool tb_destroyed = false;
-bool imgui_initialized = false;
+auto OldWndProc = long{0};
+auto tb_initialized = false;
+auto tb_destroyed = false;
+auto imgui_initialized = false;
 
-bool drawing_world = 0;
-int drawing_passes = 0;
-int last_drawing_passes = 0;
+auto drawing_world = false;
+auto drawing_passes = int{0};
+auto last_drawing_passes = int{0};
 
-bool defer_close = false;
+auto defer_close = false;
 
-static HWND gw_window_handle = 0;
+static auto gw_window_handle = HWND{0};
 } // namespace
 
 HMODULE HelperBox::GetDLLModule()
@@ -110,7 +110,7 @@ LRESULT CALLBACK SafeWndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
-    static bool right_mouse_down = false;
+    static auto right_mouse_down = false;
 
     if (Message == WM_CLOSE)
     {
@@ -130,7 +130,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         right_mouse_down = true;
 
     HelperBox::Instance().right_mouse_down = right_mouse_down;
-    bool skip_mouse_capture = right_mouse_down || GW::UI::GetIsWorldMapShowing();
+    const auto skip_mouse_capture = right_mouse_down || GW::UI::GetIsWorldMapShowing();
     ImGuiIO &io = ImGui::GetIO();
 
     switch (Message)
@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     {
         if (io.WantCaptureMouse && !skip_mouse_capture)
             return true;
-        bool captured = false;
+        const auto captured = false;
         if (captured)
             return true;
         break;
@@ -235,7 +235,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     {
         if (io.WantTextInput)
             return true;
-        bool captured = false;
+        const auto captured = false;
         if (captured)
             return true;
         break;
@@ -384,7 +384,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
         if (!GW::UI::GetIsUIDrawn())
             return;
 
-        bool world_map_showing = GW::UI::GetIsWorldMapShowing();
+        const auto world_map_showing = GW::UI::GetIsWorldMapShowing();
 
         if (GW::PreGameContext::instance())
             return;

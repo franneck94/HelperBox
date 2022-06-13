@@ -75,7 +75,7 @@ void HelperBoxUIElement::DrawSizeAndPositionSettings()
                 ImGui::SetWindowSize(Name(), size);
         }
     }
-    bool new_line = false;
+    auto new_line = false;
     if (is_movable)
     {
         if (new_line)
@@ -123,12 +123,11 @@ bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *)
     ImGui::PushStyleColor(ImGuiCol_Button, visible ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImVec4(0, 0, 0, 0));
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImVec2 textsize = ImGui::CalcTextSize(Name());
-    float width = ImGui::GetWindowWidth();
+    const auto width = ImGui::GetWindowWidth();
 
-    float img_size = 0;
+    auto img_size = 0.0F;
 
-    float text_x;
-    text_x = pos.x + img_size + ImGui::GetStyle().ItemSpacing.x;
+    const auto text_x = pos.x + img_size + ImGui::GetStyle().ItemSpacing.x;
     bool clicked = ImGui::Button("", ImVec2(width, ImGui::GetTextLineHeightWithSpacing()));
 
     ImGui::GetWindowDrawList()->AddText(ImVec2(text_x, pos.y + ImGui::GetStyle().ItemSpacing.y / 2),

@@ -289,7 +289,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
     EnumWindowUserParam *UserParam = reinterpret_cast<EnumWindowUserParam *>(lParam);
 
     WCHAR ClassName[256];
-    int iCopied = GetClassNameW(hWnd, ClassName, _countof(ClassName));
+    const auto iCopied = GetClassNameW(hWnd, ClassName, _countof(ClassName));
     if (iCopied <= 0)
         return TRUE;
 
@@ -359,8 +359,8 @@ uintptr_t ProcessScanner::FindPattern(const char *pattern, const char *mask, int
 
 bool ProcessScanner::FindPatternRva(const char *pattern, const char *mask, int offset, uintptr_t *rva)
 {
-    size_t length = strlen(mask);
-    const uint8_t *upattern = reinterpret_cast<const uint8_t *>(pattern);
+    auto length = strlen(mask);
+    const auto *upattern = reinterpret_cast<const uint8_t *>(pattern);
     for (size_t i = 0; i < m_size; i++)
     {
         size_t j;

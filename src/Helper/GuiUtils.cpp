@@ -9,7 +9,7 @@
 
 void DrawButton(ActionState &action_state, const ImVec4 color, std::string_view text, const ImVec2 button_size)
 {
-    bool pushed_style = false;
+    auto pushed_style = false;
 
     if (action_state != ActionState::INACTIVE)
     {

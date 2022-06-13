@@ -34,7 +34,7 @@
 namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
-static bool send_move = false;
+static auto send_move = false;
 
 const auto SKIP_BUTTON_X = DEFAULT_BUTTON_SIZE.x / 2.25F;
 const auto SKIP_BUTTON_Y = DEFAULT_BUTTON_SIZE.y / 2.0F;
@@ -60,7 +60,7 @@ void EmoWindow::WarnDistanceLT() const
     static auto warned = false;
     constexpr auto warn_dist = GW::Constants::Range::Compass - 20.0F;
 
-    const uint32_t lt_id = GetTankId();
+    const auto lt_id = GetTankId();
     const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
 
     if (!lt_agent)
@@ -206,7 +206,7 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start
             if (pak->type != 1)
                 return;
 
-            uint32_t player_number = (pak->agent_type ^ 0x20000000);
+            const auto player_number = (pak->agent_type ^ 0x20000000);
 
             if (!IsUw() || player_number != 514) // Turtle id
                 return;

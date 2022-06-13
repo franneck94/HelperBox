@@ -41,10 +41,11 @@ void ChatCommands::CmdHB(const wchar_t *message, int argc, LPWSTR *argv)
     {
         const std::wstring arg = argv[1];
         if (arg == L"close" || arg == L"quit" || arg == L"exit")
+        {
             HelperBox::Instance().StartSelfDestruct();
-        else
-            Log::Error("Unknown command!");
+            return;
+        }
     }
-    else
-        Log::Error("Unknown command!");
+
+    Log::Error("Unknown command!");
 }

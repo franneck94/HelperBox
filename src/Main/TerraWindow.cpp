@@ -68,7 +68,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
                                      const ImVec4 color,
                                      std::string_view label)
 {
-    uint32_t idx = 0;
+    auto idx = uint32_t{0};
 
     for (const auto foe : splitted_agents)
     {

@@ -7,8 +7,8 @@ Settings settings;
 void ParseCommandLine()
 {
     int argc;
-    LPWSTR CmdLine = GetCommandLineW();
-    LPWSTR *argv = CommandLineToArgvW(CmdLine, &argc);
+    auto CmdLine = GetCommandLineW();
+    auto *argv = CommandLineToArgvW(CmdLine, &argc);
     if (argv == nullptr)
     {
         fprintf(stderr, "CommandLineToArgvW failed (%lu)\n", GetLastError());
@@ -17,7 +17,7 @@ void ParseCommandLine()
 
     for (int i = 1; i < argc; ++i)
     {
-        wchar_t *arg = argv[i];
+        auto arg = argv[i];
 
         if (wcscmp(arg, L"/pid") == 0)
         {
@@ -26,7 +26,7 @@ void ParseCommandLine()
                 fprintf(stderr, "'/pid' must be followed by a process id\n");
             }
 
-            int pid = _wtoi(argv[i]);
+            auto pid = _wtoi(argv[i]);
             if (pid < 0)
             {
                 fprintf(stderr, "Process id must be a positive integer");

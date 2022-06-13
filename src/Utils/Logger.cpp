@@ -21,7 +21,7 @@ enum LogType : uint8_t
     LogType_Error
 };
 
-bool crash_dumped = false;
+auto crash_dumped = false;
 } // namespace
 
 static void GWCALogHandler(void *context,
@@ -128,7 +128,7 @@ void Log::LogW(const wchar_t *msg, ...)
 // === Game chat logging ===
 static void _chatlog(LogType log_type, const wchar_t *message)
 {
-    uint32_t color;
+    auto color = uint32_t{0};
     switch (log_type)
     {
     case LogType::LogType_Error:
