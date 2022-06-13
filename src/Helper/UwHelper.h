@@ -10,7 +10,9 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
-bool IsInVale(Player *player);
+bool IsInVale(const Player *const player);
+
+bool IsAtFusePulls(const Player *const player);
 
 bool IsInDhuumRoom(const Player *const player);
 

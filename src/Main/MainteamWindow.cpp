@@ -46,15 +46,14 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
 {
     auto idx = uint32_t{0};
 
-    for (const auto &foe : splitted_agents)
+    for (const auto foe : splitted_agents)
     {
         if (!foe)
             continue;
 
         ImGui::TableNextRow();
 
-        auto pushed = false;
-        if (foe->hp == 0.0F)
+        if (foe->hp == 0.0F || foe->GetIsDead())
             continue;
 
         if ((foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) ||
@@ -62,20 +61,17 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
             foe->GetIsHexed())
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0F));
-            pushed = true;
         }
         else
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color);
-            pushed = true;
         }
         const auto distance = GW::GetDistance(player.pos, foe->pos);
         ImGui::TableNextColumn();
         ImGui::Text("%3.0f%%", foe->hp * 100.0F);
         ImGui::TableNextColumn();
         ImGui::Text("%4.0f", distance);
-        if (pushed)
-            ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
 
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         ImGui::TableNextColumn();

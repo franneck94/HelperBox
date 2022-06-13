@@ -498,9 +498,12 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    const auto lt_state = RoutineLT();
-    if (lt_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
+    if (IsAtFusePulls(player))
+    {
+        const auto lt_state = RoutineLT();
+        if (lt_state == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+    }
 
     if (IsInVale(player))
     {
@@ -509,13 +512,9 @@ RoutineState Pumping::Routine()
             return RoutineState::FINISHED;
     }
 
-    static auto swapped_armor_in_dhuum_room = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
     if (!is_in_dhuum_room)
-    {
-        swapped_armor_in_dhuum_room = false;
         return RoutineState::FINISHED;
-    }
 
     const auto turtle_state = RoutineTurtle();
     if (turtle_state == RoutineState::FINISHED)

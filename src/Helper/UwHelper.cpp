@@ -21,13 +21,13 @@ bool IsUw()
     return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld);
 }
 
-bool IsInVale(Player *player)
+bool IsInVale(const Player *const player)
 {
     if (!IsUw())
         return false;
 
-    const auto pos1 = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane};
-    const auto pos2 = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane};
+    const auto pos1 = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane}; // Spirits 1
+    const auto pos2 = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane};  // Spirits 2
 
     const auto dist1 = GW::GetDistance(player->pos, pos1);
     const auto dist2 = GW::GetDistance(player->pos, pos2);
@@ -38,12 +38,26 @@ bool IsInVale(Player *player)
     return false;
 }
 
-bool IsInDhuumRoom(const Player *const player)
+bool IsAtFusePulls(const Player *const player)
 {
-    if (!player)
+    if (!IsUw())
         return false;
 
-    if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+    const auto pos1 = GW::GamePos{-6263.33F, 9899.79F, player->pos.zplane}; // Fuse 1
+    const auto pos2 = GW::GamePos{-7829.98F, 4324.09F, player->pos.zplane}; // Fuse 2
+
+    const auto dist1 = GW::GetDistance(player->pos, pos1);
+    const auto dist2 = GW::GetDistance(player->pos, pos2);
+
+    if (dist1 < GW::Constants::Range::Spirit || dist2 < GW::Constants::Range::Spirit)
+        return true;
+
+    return false;
+}
+
+bool IsInDhuumRoom(const Player *const player)
+{
+    if (!IsUw())
         return false;
 
     const auto dhuum_center_pos = GW::GamePos{-16105.50F, 17284.84F, player->pos.zplane};
@@ -57,13 +71,13 @@ bool IsInDhuumRoom(const Player *const player)
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
 {
-    if (GW::Map::GetMapID() != GW::Constants::MapID::The_Underworld)
+    if (!IsUw())
         return false;
 
     const auto agents_array = GW::Agents::GetAgentArray();
     const GW::Agent *dhuum_agent = nullptr;
 
-    for (const auto &agent : agents_array)
+    for (const auto agent : agents_array)
     {
         if (!agent)
             continue;
@@ -115,7 +129,7 @@ uint32_t GetClosestReaperID(Player &player)
 
 bool TankIsFullteamLT()
 {
-    const uint32_t lt_id = GetTankId();
+    const auto lt_id = GetTankId();
     if (!lt_id)
         return false;
 
@@ -137,7 +151,7 @@ bool TankIsFullteamLT()
 
 bool TankIsSoloLT()
 {
-    const uint32_t lt_id = GetTankId();
+    const auto lt_id = GetTankId();
     if (!lt_id)
         return false;
 

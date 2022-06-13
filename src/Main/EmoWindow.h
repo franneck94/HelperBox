@@ -207,13 +207,12 @@ private:
         Move{-8764.08F, 2156.60F, "Vale Entry"},
         Move{-7980.55F, 4308.90F, "Basement Stairs"},
         Move{-6241.24F, 7945.73F, "Basement"},
-        Move{0.0F,
-             0.0F,
-             "Take UWG",
+        Move{-5751.45F,
+             12746.52F,
+             "Lab Reaper",
              [&]() {
-                 if (!TargetIsReaper(player))
-                     return;
-                 GW::Agents::SendDialog(GW::Constants::QuestID::UW::UWG);
+                 const auto reaper_id = GetClosestReaperID(player);
+                 player.ChangeTarget(reaper_id);
              }},
         Move{-6035.29F, 11285.14F, "Keeper 1"},
         Move{-3793.78F, 11200.36F, "Keeper 2"},

@@ -107,8 +107,8 @@ bool TargetNearest(const TargetType type, const float max_distance)
     if (!me)
         return false;
 
-    float distance = max_distance;
-    size_t closest = 0;
+    auto distance = max_distance;
+    auto closest = size_t{0};
 
     for (const auto agent : agents)
     {
@@ -173,7 +173,6 @@ bool TargetNearest(const TargetType type, const float max_distance)
     if (closest)
     {
         GW::Agents::ChangeTarget(closest);
-
         return true;
     }
 
@@ -183,12 +182,10 @@ bool TargetNearest(const TargetType type, const float max_distance)
 bool DetectPlayerIsDead()
 {
     const auto me = GW::Agents::GetPlayer();
-
     if (!me)
         return false;
 
     const auto living_me = me->GetAsAgentLiving();
-
     if (!living_me)
         return false;
 
@@ -271,10 +268,10 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
 
     party_members.clear();
 
-    uint32_t idx = 0;
+    auto idx = uint32_t{0};
     for (const auto &player : info->players)
     {
-        uint32_t id = players[player.login_number].agent_id;
+        const auto id = players[player.login_number].agent_id;
         party_members.push_back({id, idx});
         ++idx;
 
@@ -336,11 +333,11 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
     if (bag_idx < 1 || bag_idx > 5 || slot_idx < 1 || slot_idx > 25)
         return false;
 
-    GW::Bag *b = GW::Items::GetBag(bag_idx);
+    const auto b = GW::Items::GetBag(bag_idx);
     if (!b)
         return false;
 
-    GW::ItemArray items = b->items;
+    auto items = b->items;
     if (!items.valid() || slot_idx > items.size())
         return false;
     item = items.at(slot_idx - 1);
@@ -354,11 +351,11 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
     if (item->bag && item->bag->bag_type == 2)
         return false;
 
-    GW::AgentLiving *p = GW::Agents::GetCharacter();
+    const auto p = GW::Agents::GetCharacter();
     if (!p || p->GetIsDead())
         return false;
 
-    const GW::Skillbar *s = GW::SkillbarMgr::GetPlayerSkillbar();
+    const auto s = GW::SkillbarMgr::GetPlayerSkillbar();
     if (p->GetIsKnockedDown() || (s && s->casting))
         return false;
 
@@ -410,12 +407,12 @@ bool CanMove()
 uint32_t GetTankId()
 {
     std::vector<PlayerMapping> party_members;
-    bool success = GetPartyMembers(party_members);
+    const auto success = GetPartyMembers(party_members);
 
     if (!success || party_members.size() < 2)
         return 0;
 
-    uint32_t tank_idx = 0;
+    auto tank_idx = uint32_t{0};
 
     switch (GW::Map::GetMapID())
     {

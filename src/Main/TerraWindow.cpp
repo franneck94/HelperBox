@@ -70,28 +70,25 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
 {
     uint32_t idx = 0;
 
-    for (const auto &foe : splitted_agents)
+    for (const auto foe : splitted_agents)
     {
         if (!foe)
             continue;
 
         ImGui::TableNextRow();
 
-        auto pushed = false;
-        if (foe->hp == 0.0F)
+        if (foe->hp == 0.0F || foe->GetIsDead())
             continue;
 
         if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
             foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
-            pushed = true;
             last_casted_times_ms[foe->agent_id] = clock();
         }
         else
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color);
-            pushed = true;
         }
         const auto distance = GW::GetDistance(player.pos, foe->pos);
         ImGui::TableNextColumn();
@@ -109,8 +106,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
         {
             ImGui::Text("%2ds", timer_diff_s);
         }
-        if (pushed)
-            ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
 
         ImGui::TableNextColumn();
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
