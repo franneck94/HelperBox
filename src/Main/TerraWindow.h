@@ -74,6 +74,7 @@ private:
     std::vector<GW::AgentLiving *> behemoth_agents;
     std::vector<GW::AgentLiving *> dryder_agents;
     std::vector<GW::AgentLiving *> skele_agents;
+    std::vector<GW::AgentLiving *> horseman_agents;
 
     AutoTargetAction auto_target;
 };

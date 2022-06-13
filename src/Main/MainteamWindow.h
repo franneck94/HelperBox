@@ -81,6 +81,7 @@ private:
     std::vector<GW::AgentLiving *> dryder_agents;
     std::vector<GW::AgentLiving *> nightmare_agents;
     std::vector<GW::AgentLiving *> skele_agents;
+    std::vector<GW::AgentLiving *> horseman_agents;
 
     SpikeSet spike_set;
 };

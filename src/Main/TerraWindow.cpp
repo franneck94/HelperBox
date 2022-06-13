@@ -33,8 +33,9 @@ static constexpr auto HEALING_SPRING_U16 = static_cast<uint16_t>(GW::Constants::
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 static auto auto_target_active = false;
 
-static const auto IDS = std::array<uint32_t, 4>{GW::Constants::ModelID::UW::ObsidianBehemoth,
+static const auto IDS = std::array<uint32_t, 5>{GW::Constants::ModelID::UW::ObsidianBehemoth,
                                                 GW::Constants::ModelID::UW::TerrorwebDryder,
+                                                GW::Constants::ModelID::UW::FourHorseman,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum1,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
@@ -161,9 +162,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            DrawSplittedAgents(behemoth_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "TargetBehemoth");
-            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "TargetDryder");
-            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "TargetSkele");
+            DrawSplittedAgents(horseman_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Horseman");
+            DrawSplittedAgents(behemoth_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Behemoth");
+            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
+            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
         }
         ImGui::EndTable();
     }
@@ -178,6 +180,7 @@ void TerraWindow::Update(float delta)
     behemoth_agents.clear();
     dryder_agents.clear();
     skele_agents.clear();
+    horseman_agents.clear();
 
     if (IsLoading())
         last_casted_times_ms.clear();
@@ -202,9 +205,11 @@ void TerraWindow::Update(float delta)
     SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
     SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
     SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    SplitFilteredAgents(filtered_foes, horseman_agents, GW::Constants::ModelID::UW::FourHorseman);
     SortByDistance(player, behemoth_agents);
     SortByDistance(player, dryder_agents);
     SortByDistance(player, skele_agents);
+    SortByDistance(player, horseman_agents);
 
     if (!auto_target_active)
         return;

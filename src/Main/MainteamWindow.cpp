@@ -31,11 +31,12 @@
 
 namespace
 {
-static constexpr auto MAX_TABLE_LENGTH = 10U;
+static constexpr auto MAX_TABLE_LENGTH = 6U;
 
-static const auto IDS = std::array<uint32_t, 5>{GW::Constants::ModelID::UW::BladedAatxe,
+static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::BladedAatxe,
                                                 GW::Constants::ModelID::UW::DyingNightmare,
                                                 GW::Constants::ModelID::UW::TerrorwebDryder,
+                                                GW::Constants::ModelID::UW::FourHorseman,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum1,
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
@@ -164,6 +165,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
+            DrawSplittedAgents(horseman_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Horseman");
             DrawSplittedAgents(aatxe_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Aatxe");
             DrawSplittedAgents(nightmare_agents, ImVec4(0.6F, 0.4F, 1.0F, 1.0F), "Nightmare");
             DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
@@ -183,6 +185,7 @@ void MainteamWindow::Update(float delta)
     nightmare_agents.clear();
     dryder_agents.clear();
     skele_agents.clear();
+    horseman_agents.clear();
 
     if (!player.ValidateData())
         return;
@@ -210,12 +213,14 @@ void MainteamWindow::Update(float delta)
     SplitFilteredAgents(filtered_foes, aatxe_agents, GW::Constants::ModelID::UW::BladedAatxe);
     SplitFilteredAgents(filtered_foes, nightmare_agents, GW::Constants::ModelID::UW::DyingNightmare);
     SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
+    SplitFilteredAgents(filtered_foes, horseman_agents, GW::Constants::ModelID::UW::FourHorseman);
     SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
     SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
     SortByDistance(player, aatxe_agents);
     SortByDistance(player, nightmare_agents);
+    SortByDistance(player, horseman_agents);
     SortByDistance(player, dryder_agents);
-    SortByDistance(player, aatxe_agents);
+    SortByDistance(player, skele_agents);
 }
 
 bool MainteamWindow::ActivationConditions()
