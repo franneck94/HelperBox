@@ -57,7 +57,9 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
         if (foe->hp == 0.0F)
             continue;
 
-        if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) && foe->GetIsHexed())
+        if ((foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) ||
+             foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::FourHorseman)) &&
+            foe->GetIsHexed())
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0F));
             pushed = true;
@@ -117,7 +119,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            DrawSplittedAgents(horseman_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Horseman");
+            DrawSplittedAgents(horseman_agents, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
             DrawSplittedAgents(aatxe_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Aatxe");
             DrawSplittedAgents(nightmare_agents, ImVec4(0.6F, 0.4F, 1.0F, 1.0F), "Nightmare");
             DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
