@@ -115,16 +115,12 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
         ImGui::TableNextColumn();
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         if (ImGui::Button(_label.data()))
-        {
             player.ChangeTarget(foe->agent_id);
-        }
 
         ++idx;
 
         if (idx >= MAX_TABLE_LENGTH)
-        {
             break;
-        }
     }
 }
 
@@ -162,7 +158,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            DrawSplittedAgents(horseman_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Horseman");
+            DrawSplittedAgents(horseman_agents, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
             DrawSplittedAgents(behemoth_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Behemoth");
             DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
             DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
