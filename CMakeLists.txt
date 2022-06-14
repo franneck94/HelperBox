@@ -41,19 +41,9 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(fmt)
 
-FetchContent_Declare(
-    simpleini
-    GIT_REPOSITORY https://github.com/brofield/simpleini
-    GIT_TAG v4.19
-    GIT_SHALLOW TRUE)
-FetchContent_MakeAvailable(simpleini)
-
 if (${ENABLE_WARNINGS})
     target_set_warnings(TARGET nlohmann_json ENABLE OFF AS_ERROR OFF)
     target_set_warnings(TARGET fmt ENABLE OFF AS_ERROR OFF)
-    target_set_warnings(TARGET simpleini ENABLE OFF AS_ERROR OFF)
-    target_set_warnings(TARGET imgui ENABLE OFF AS_ERROR OFF)
-    target_set_warnings(TARGET implot ENABLE OFF AS_ERROR OFF)
 endif()
 
 # Outputs dll, exe, and pdb into a /bin/config folder

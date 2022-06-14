@@ -1,3 +1,14 @@
+### SIMPLEINI
+set(simpleini_SOURCES
+    "simpleini/ConvertUTF.c"
+    "simpleini/ConvertUTF.h"
+    "simpleini/SimpleIni.h")
+add_library(simpleini STATIC ${simpleini_SOURCES})
+target_include_directories(simpleini PUBLIC "simpleini")
+if (${ENABLE_WARNINGS})
+    target_set_warnings(TARGET simpleini ENABLE OFF AS_ERROR OFF)
+endif()
+
 ### GWCA
 add_library(gwca)
 file(GLOB GWCA_SOURCES
@@ -74,10 +85,10 @@ target_link_libraries(impl PUBLIC
     directx)
 
 if (${ENABLE_WARNINGS})
-target_set_warnings(TARGET gwca ENABLE OFF AS_ERROR OFF)
-target_set_warnings(TARGET imgui ENABLE OFF AS_ERROR OFF)
-target_set_warnings(TARGET implot ENABLE OFF AS_ERROR OFF)
-target_set_warnings(TARGET impl ENABLE OFF AS_ERROR OFF)
+    target_set_warnings(TARGET gwca ENABLE OFF AS_ERROR OFF)
+    target_set_warnings(TARGET imgui ENABLE OFF AS_ERROR OFF)
+    target_set_warnings(TARGET implot ENABLE OFF AS_ERROR OFF)
+    target_set_warnings(TARGET impl ENABLE OFF AS_ERROR OFF)
 endif()
 
 if(${ENABLE_LTO})
