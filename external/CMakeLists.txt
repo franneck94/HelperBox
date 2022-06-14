@@ -14,16 +14,6 @@ target_sources(gwca PRIVATE ${GWCA_SOURCES})
 target_precompile_headers(gwca PRIVATE "gwca/source/stdafx.h")
 target_include_directories(gwca PUBLIC "gwca/include/")
 target_link_libraries(gwca PUBLIC minhook)
-if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET gwca ENABLE OFF AS_ERROR OFF)
-endif()
-
-### RING_BUFFER
-add_library(ring_buffer INTERFACE)
-target_include_directories(ring_buffer INTERFACE "ring_buffer")
-if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET ring_buffer ENABLE OFF AS_ERROR OFF)
-endif()
 
 ### MINIHOOK
 set(MINHOOK_FOLDER "${PROJECT_SOURCE_DIR}/external/GWCA/Dependencies/minhook/")
@@ -47,18 +37,7 @@ target_link_libraries(directx INTERFACE
     "${DIRECTX_FOLDER}/lib/x86/d3d9.lib"
     "${DIRECTX_FOLDER}/lib/x86/d3dx9.lib")
 
-### SIMPLEINI
-set(simpleini_SOURCES
-    "simpleini/ConvertUTF.c"
-    "simpleini/ConvertUTF.h"
-    "simpleini/SimpleIni.h")
-add_library(simpleini STATIC ${simpleini_SOURCES})
-target_include_directories(simpleini PUBLIC "simpleini")
-if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET simpleini ENABLE OFF AS_ERROR OFF)
-endif()
-
-### IMGUI
+    ### IMGUI
 set(IMGUI_SOURCES
     "imgui/imgui.h"
     "imgui/imgui_internal.h"
@@ -70,9 +49,6 @@ set(IMGUI_SOURCES
 add_library(imgui STATIC ${IMGUI_SOURCES})
 target_include_directories(imgui PUBLIC "imgui")
 set_target_properties(imgui PROPERTIES FOLDER "external/")
-if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET imgui ENABLE OFF AS_ERROR OFF)
-endif()
 
 ### IMPLOT
 set(IMPLOT_SOURCES
@@ -83,9 +59,6 @@ set(IMPLOT_SOURCES
 add_library(implot STATIC ${IMPLOT_SOURCES})
 target_include_directories(implot PUBLIC "implot")
 target_link_libraries(implot PUBLIC imgui)
-if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET implot ENABLE OFF AS_ERROR OFF)
-endif()
 
 ### ALL GRAPHICAL LIBS
 set(IMPL_SOURCES
@@ -99,8 +72,12 @@ target_link_libraries(impl PUBLIC
     imgui
     implot
     directx)
+
 if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET impl ENABLE OFF AS_ERROR OFF)
+target_set_warnings(TARGET gwca ENABLE OFF AS_ERROR OFF)
+target_set_warnings(TARGET imgui ENABLE OFF AS_ERROR OFF)
+target_set_warnings(TARGET implot ENABLE OFF AS_ERROR OFF)
+target_set_warnings(TARGET impl ENABLE OFF AS_ERROR OFF)
 endif()
 
 if(${ENABLE_LTO})
