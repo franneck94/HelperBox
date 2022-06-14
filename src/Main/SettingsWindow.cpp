@@ -40,7 +40,6 @@ void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
     if (ImGui::Begin(Name(), GetVisiblePtr(), GetWinFlags()))
     {
         drawn_settings.clear();
-        ImColor sCol(102, 187, 238, 255);
         ImGui::Text("HelperBox");
 
         DrawSettingsSection(HelperBoxSettings::Instance().SettingsName());

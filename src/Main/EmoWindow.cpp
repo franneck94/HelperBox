@@ -69,7 +69,7 @@ void EmoWindow::WarnDistanceLT() const
     const auto dist = GW::GetDistance(player.pos, lt_agent->pos);
     if (!warned && dist > warn_dist)
     {
-        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GLOBAL, L"LT is leaving EMO's compass range!");
+        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"LT is leaving EMO's compass range!");
         warned = true;
 
         return;
