@@ -44,7 +44,7 @@ public:
     RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0)
     {
         if (!CanBeCasted(current_energy))
-            return RoutineState::FINISHED;
+            return RoutineState::ACTIVE;
 
         if (target_id != 0)
             GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(idx, target_id); });

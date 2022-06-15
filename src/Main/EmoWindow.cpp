@@ -422,7 +422,7 @@ RoutineState Pumping::RoutineGDW() const
     }
 
     last_idx++;
-    return skillbar->gdw.Cast(player->energy);
+    return skillbar->gdw.Cast(player->energy, living->agent_id);
 }
 
 RoutineState Pumping::RoutineKeepPlayerAlive() const
@@ -447,11 +447,11 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
                 return RoutineState::FINISHED;
 
-        if (living->hp < 0.60F)
+        if (living->hp < 0.50F)
             return skillbar->fuse.Cast(player->energy, living->agent_id);
     }
 
-    return RoutineState::FINISHED;
+    return RoutineState::ACTIVE;
 }
 
 RoutineState Pumping::Routine()
