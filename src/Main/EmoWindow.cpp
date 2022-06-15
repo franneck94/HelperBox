@@ -470,14 +470,14 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
 
         const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, living->agent_id);
         const auto prot_avail = skillbar->fuse.CanBeCasted(player->energy);
-        if (!has_prot && prot_avail && living->hp < 0.70F &&
+        if (!has_prot && prot_avail && living->hp < 0.90F &&
             living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
         {
             return SafeUseSkill(skillbar->prot.idx, living->agent_id);
         }
 
         const auto fuse_avail = skillbar->fuse.CanBeCasted(player->energy);
-        if (fuse_avail && living->hp < 0.40F)
+        if (fuse_avail && living->hp < 0.60F)
         {
             return SafeUseSkill(skillbar->fuse.idx, living->agent_id);
         }
