@@ -24,6 +24,7 @@ public:
     bool HasEffect(const GW::Constants::SkillID effect_skill_id) const;
 
     bool CastEffectIfNotAvailable(const SkillData &skill_data);
+    bool SpamEffect(const SkillData &skill_data);
 
     void ChangeTarget(const uint32_t target_id);
 

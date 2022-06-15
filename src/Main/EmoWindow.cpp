@@ -226,6 +226,8 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start
 RoutineState Pumping::RoutineSelfBonds() const
 {
     const auto found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
+    const auto found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
+    const auto found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
 
     if (player->CastEffectIfNotAvailable(skillbar->ether))
         return RoutineState::FINISHED;
@@ -239,11 +241,10 @@ RoutineState Pumping::RoutineSelfBonds() const
             return RoutineState::FINISHED;
     }
 
-    if ((found_ether && player->hp_perc < 0.90F) ||
-        (player->hp_perc < 0.50F) && player->CastEffectIfNotAvailable(skillbar->sb))
+    if (found_ether && (player->hp_perc < 0.90F || !found_sb) && player->SpamEffect(skillbar->sb))
         return RoutineState::FINISHED;
 
-    if (found_ether && player->energy_perc < 0.90F && player->CastEffectIfNotAvailable(skillbar->burning))
+    if (found_ether && (player->energy_perc < 0.90F || !found_burning) && player->SpamEffect(skillbar->burning))
         return RoutineState::FINISHED;
 
     return RoutineState::ACTIVE;

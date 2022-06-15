@@ -112,13 +112,25 @@ bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
     return false;
 }
 
-
 bool Player::CastEffectIfNotAvailable(const SkillData &skill_data)
 {
     const auto has_bond = HasEffect(static_cast<GW::Constants::SkillID>(skill_data.id));
     const auto bond_avail = skill_data.CanBeCasted(energy);
 
     if (!has_bond && bond_avail)
+    {
+        GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_data.idx, id); });
+        return true;
+    }
+
+    return false;
+}
+
+bool Player::SpamEffect(const SkillData &skill_data)
+{
+    const auto bond_avail = skill_data.CanBeCasted(energy);
+
+    if (bond_avail)
     {
         GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_data.idx, id); });
         return true;
