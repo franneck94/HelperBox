@@ -225,10 +225,11 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start
 RoutineState Pumping::RoutineSelfBonds() const
 {
     const auto found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
-    if (skillbar->ether.CanBeCasted(player->energy))
-        return SafeUseSkill(skillbar->ether.idx, player->id);
 
-    if (player->energy_perc > 0.5)
+    if (player->CastEffectIfNotAvailable(skillbar->ether))
+        return RoutineState::FINISHED;
+
+    if (player->energy > 30U)
     {
         if (CastBondIfNotAvailable(skillbar->balth, player->id, player))
             return RoutineState::FINISHED;
@@ -237,21 +238,12 @@ RoutineState Pumping::RoutineSelfBonds() const
             return RoutineState::FINISHED;
     }
 
-    const auto found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
-    const auto low_hp = player->hp_perc < 0.90F;
+    if ((found_ether && player->hp_perc < 0.90F) ||
+        (player->hp_perc < 0.50F) && player->CastEffectIfNotAvailable(skillbar->sb))
+        return RoutineState::FINISHED;
 
-    const auto sb_needed = low_hp || !found_sb;
-    const auto sb_avail = skillbar->sb.CanBeCasted(player->energy);
-    if (found_ether && sb_needed && sb_avail)
-        return SafeUseSkill(skillbar->sb.idx, player->id);
-
-    const auto found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
-    const auto low_energy = player->energy_perc < 0.90F;
-
-    const auto need_burning = low_hp || low_energy || !found_burning;
-    const auto burning_avail = skillbar->burning.CanBeCasted(player->energy);
-    if (found_ether && need_burning && burning_avail)
-        return SafeUseSkill(skillbar->burning.idx, player->id);
+    if (found_ether && player->energy_perc < 0.90F && player->CastEffectIfNotAvailable(skillbar->burning))
+        return RoutineState::FINISHED;
 
     return RoutineState::ACTIVE;
 }
@@ -259,9 +251,6 @@ RoutineState Pumping::RoutineSelfBonds() const
 RoutineState Pumping::RoutineCanthaGuards() const
 {
     static auto last_gdw_idx = 0;
-
-    if (!skillbar->prot.SkillFound() || !skillbar->fuse.SkillFound())
-        return RoutineState::ACTIVE;
 
     if (!player->CanCast())
         return RoutineState::ACTIVE;
@@ -283,18 +272,14 @@ RoutineState Pumping::RoutineCanthaGuards() const
         if (!cantha || cantha->GetIsDead() && cantha->hp == 0.0F)
             continue;
 
-        if (cantha->hp < 0.90F)
-        {
-            const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, cantha->agent_id);
-            if (!has_prot && skillbar->prot.CanBeCasted(player->energy))
-                return SafeUseSkill(skillbar->prot.idx, cantha->agent_id);
-        }
+        if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player))
+            return RoutineState::FINISHED;
 
-        if (cantha->hp < 0.70F && skillbar->fuse.CanBeCasted(player->energy))
-            return SafeUseSkill(skillbar->fuse.idx, cantha->agent_id);
+        if (cantha->hp < 0.70F)
+            return skillbar->fuse.Cast(player->energy, cantha->agent_id);
 
-        if (skillbar->gdw.CanBeCasted(player->energy) && !cantha->GetIsWeaponSpelled())
-            return SafeUseSkill(skillbar->gdw.idx, cantha->agent_id);
+        if (!cantha->GetIsWeaponSpelled())
+            return skillbar->gdw.Cast(player->energy, cantha->agent_id);
     }
 
     return RoutineState::ACTIVE;
@@ -315,11 +300,11 @@ RoutineState Pumping::RoutineLT() const
     if (dist < FuseRange::FUSE_PULL_RANGE - 5.0F || dist > FuseRange::FUSE_PULL_RANGE + 5.0F)
         return RoutineState::ACTIVE;
 
-    if (skillbar->fuse.CanBeCasted(player->energy) && target_living->hp < 0.80F)
-        return SafeUseSkill(skillbar->fuse.idx, target_living->agent_id);
+    if (target_living->hp < 0.80F)
+        return skillbar->fuse.Cast(player->energy, target_living->agent_id);
 
-    if (skillbar->sb.CanBeCasted(player->energy))
-        return SafeUseSkill(skillbar->sb.idx, target_living->agent_id);
+    if (target_living->hp < 0.99F)
+        return skillbar->sb.Cast(player->energy, target_living->agent_id);
 
     return RoutineState::ACTIVE;
 }
@@ -333,6 +318,10 @@ RoutineState Pumping::RoutineTurtle() const
     if (!turtle_agent)
         return RoutineState::ACTIVE;
 
+    const auto turtle_living = turtle_agent->GetAsAgentLiving();
+    if (!turtle_living)
+        return RoutineState::ACTIVE;
+
     const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
 
     if (dist > GW::Constants::Range::Spellcast)
@@ -344,9 +333,8 @@ RoutineState Pumping::RoutineTurtle() const
     if (CastBondIfNotAvailable(skillbar->life, turtle_agent->agent_id, player))
         return RoutineState::FINISHED;
 
-    const auto turtle_living = turtle_agent->GetAsAgentLiving();
-    if (turtle_living && turtle_living->hp < 0.95F)
-        return SafeUseSkill(skillbar->fuse.idx, turtle_agent->agent_id);
+    if (turtle_living->hp < 0.95F)
+        return skillbar->fuse.Cast(player->energy, turtle_agent->agent_id);
 
     return RoutineState::ACTIVE;
 }
@@ -367,27 +355,14 @@ RoutineState Pumping::RoutinePI(const uint32_t dhuum_id) const
         return RoutineState::ACTIVE;
 
     if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
-    {
-        const auto pi_avail = skill.CanBeCasted(player->energy);
-        if (pi_avail)
-            return SafeUseSkill(skill.idx, dhuum_id);
-    }
+        return skillbar->pi.Cast(player->energy, dhuum_id);
 
     return RoutineState::ACTIVE;
 }
 
 RoutineState Pumping::RoutineWisdom() const
 {
-    const auto &skill = skillbar->wisdom;
-
-    if (!skill.SkillFound())
-        return RoutineState::ACTIVE;
-
-    const auto wisdom_avail = skill.CanBeCasted(player->energy);
-    if (wisdom_avail)
-        return SafeUseSkill(skill.idx);
-
-    return RoutineState::ACTIVE;
+    return skillbar->wisdom.Cast(player->energy);
 }
 
 RoutineState Pumping::RoutineGDW() const
@@ -397,12 +372,10 @@ RoutineState Pumping::RoutineGDW() const
     if (last_idx >= GW::PartyMgr::GetPartySize())
         last_idx = 0;
 
-    const auto &skill = skillbar->gdw;
-
-    if (!skill.SkillFound() || !player->CanCast())
+    if (!player->CanCast())
         return RoutineState::ACTIVE;
 
-    std::vector<PlayerMapping> party_members;
+    auto party_members = std::vector<PlayerMapping>{};
     const auto success = GetPartyMembers(party_members);
 
     if (!success)
@@ -447,12 +420,12 @@ RoutineState Pumping::RoutineGDW() const
     }
 
     last_idx++;
-    return SafeUseSkill(skill.idx, id);
+    return skillbar->gdw.Cast(player->energy);
 }
 
 RoutineState Pumping::RoutineKeepPlayerAlive() const
 {
-    std::vector<PlayerMapping> party_members;
+    auto party_members = std::vector<PlayerMapping>{};
     const auto success = GetPartyMembers(party_members);
 
     for (const auto &[id, idx] : party_members)
@@ -472,11 +445,8 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
                 return RoutineState::FINISHED;
 
-        const auto fuse_avail = skillbar->fuse.CanBeCasted(player->energy);
-        if (fuse_avail && living->hp < 0.60F)
-        {
-            return SafeUseSkill(skillbar->fuse.idx, living->agent_id);
-        }
+        if (living->hp < 0.60F)
+            return skillbar->fuse.Cast(player->energy, living->agent_id);
     }
 
     return RoutineState::FINISHED;

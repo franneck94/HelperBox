@@ -39,6 +39,17 @@ public:
         return SkillFound() && (current_energy > energy_cost && recharge == 0);
     }
 
+    RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0) const
+    {
+        if (!CanBeCasted(current_energy))
+            return RoutineState::FINISHED;
+
+        if (target_id)
+            return SafeUseSkill(idx, target_id);
+
+        return SafeUseSkill(idx);
+    }
+
     bool SkillFound() const
     {
         return idx != static_cast<uint32_t>(-1);

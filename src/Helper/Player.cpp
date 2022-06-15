@@ -10,7 +10,9 @@
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <Actions.h>
 #include <Helper.h>
+#include <Skillbars.h>
 
 #include "Player.h"
 
@@ -105,6 +107,21 @@ bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
                 return true;
             }
         }
+    }
+
+    return false;
+}
+
+
+bool Player::CastEffectIfNotAvailable(const SkillData &skill_data)
+{
+    const auto has_bond = HasEffect(static_cast<GW::Constants::SkillID>(skill_data.id));
+    const auto bond_avail = skill_data.CanBeCasted(energy);
+
+    if (!has_bond && bond_avail)
+    {
+        (void)SafeUseSkill(skill_data.idx, id);
+        return true;
     }
 
     return false;
