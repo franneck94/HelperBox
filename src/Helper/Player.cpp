@@ -120,7 +120,7 @@ bool Player::CastEffectIfNotAvailable(const SkillData &skill_data)
 
     if (!has_bond && bond_avail)
     {
-        (void)SafeUseSkill(skill_data.idx, id);
+        GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_data.idx, id); });
         return true;
     }
 
@@ -136,4 +136,19 @@ void Player::ChangeTarget(const uint32_t target_id)
         GW::Agents::ChangeTarget(target_id);
         target = GW::Agents::GetTarget();
     });
+}
+
+
+bool Player::SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet)
+{
+    const auto value_id = packet->Value_id;
+    const auto caster_id = packet->agent_id;
+
+    if (caster_id != id)
+        return false;
+
+    if (value_id == GW::Packet::StoC::GenericValueID::skill_stopped)
+        return true;
+
+    return false;
 }

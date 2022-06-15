@@ -8,6 +8,8 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Skill.h>
 
+#include <Skillbars.h>
+
 class Player
 {
 public:
@@ -24,6 +26,9 @@ public:
     bool CastEffectIfNotAvailable(const SkillData &skill_data);
 
     void ChangeTarget(const uint32_t target_id);
+
+    bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet);
+
 
 public:
     uint32_t id = UINT32_MAX;

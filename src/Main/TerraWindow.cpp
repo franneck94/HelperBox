@@ -130,7 +130,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!ActivationConditions())
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(190.0F, 235.0F), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("TerraWindow", nullptr, GetWinFlags()))
     {

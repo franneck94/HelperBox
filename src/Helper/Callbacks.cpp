@@ -11,20 +11,6 @@
 
 #include "Callbacks.h"
 
-bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet, const Player *player)
-{
-    const auto value_id = packet->Value_id;
-    const auto caster_id = packet->agent_id;
-
-    if (caster_id != player->id)
-        return false;
-
-    if (value_id == GW::Packet::StoC::GenericValueID::skill_stopped)
-        return true;
-
-    return false;
-}
-
 bool ExplorableLoadCallback(GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet)
 {
     UNREFERENCED_PARAMETER(status);

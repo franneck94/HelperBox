@@ -7,6 +7,7 @@
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/SkillbarMgr.h>
 #include <GWCA/Managers/StoCMgr.h>
 #include <GWCA/Packets/Opcodes.h>
@@ -14,6 +15,7 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Callbacks.h>
+#include <Types.h>
 
 struct SkillData
 {
@@ -39,15 +41,17 @@ public:
         return SkillFound() && (current_energy > energy_cost && recharge == 0);
     }
 
-    RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0) const
+    RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0)
     {
         if (!CanBeCasted(current_energy))
             return RoutineState::FINISHED;
 
-        if (target_id)
-            return SafeUseSkill(idx, target_id);
+        if (target_id != 0)
+            GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(idx, target_id); });
+        else
+            GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(idx); });
 
-        return SafeUseSkill(idx);
+        return RoutineState::FINISHED;
     }
 
     bool SkillFound() const

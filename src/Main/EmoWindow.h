@@ -56,7 +56,7 @@ public:
             &GenericValue_Entry,
             [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
                 UNREFERENCED_PARAMETER(status);
-                if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
+                if (action_state == ActionState::ACTIVE && player->SkillStoppedCallback(packet))
                     interrupted = true;
             });
     }
@@ -77,7 +77,7 @@ public:
             &GenericValue_Entry,
             [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
                 UNREFERENCED_PARAMETER(status);
-                if (action_state == ActionState::ACTIVE && SkillStoppedCallback(packet, player))
+                if (action_state == ActionState::ACTIVE && player->SkillStoppedCallback(packet))
                     interrupted = true;
             });
     }

@@ -25,6 +25,7 @@
 #include <Helper.h>
 #include <MathUtils.h>
 #include <Player.h>
+#include <SafeFuncs.h>
 #include <Skillbars.h>
 #include <Types.h>
 #include <UwHelper.h>
