@@ -51,7 +51,7 @@ EmoWindow::EmoWindow()
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
         &MapLoaded_Entry,
         [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-            load_cb_triggered = MapLoadCallback(status, packet);
+            load_cb_triggered = ExplorableLoadCallback(status, packet);
         });
 };
 
@@ -151,6 +151,12 @@ void EmoWindow::Update(float delta)
         {
             send_move = false;
             ++move_idx;
+
+            if (moves[move_idx - 1U].keep_going)
+            {
+                moves[move_idx].Execute();
+                send_move = true;
+            }
         }
     }
 
@@ -224,15 +230,11 @@ RoutineState Pumping::RoutineSelfBonds() const
 
     if (player->energy_perc > 0.5)
     {
-        const auto has_balth = player->HasBuff(GW::Constants::SkillID::Balthazars_Spirit);
-        const auto balth_avail = skillbar->balth.CanBeCasted(player->energy);
-        if (!has_balth && balth_avail)
-            return SafeUseSkill(skillbar->balth.idx, player->id);
+        if (CastBondIfNotAvailable(skillbar->balth, player->id, player))
+            return RoutineState::FINISHED;
 
-        const auto has_prot = player->HasBuff(GW::Constants::SkillID::Protective_Bond);
-        const auto bond_avail = skillbar->prot.CanBeCasted(player->energy);
-        if (!has_prot && bond_avail)
-            return SafeUseSkill(skillbar->prot.idx, player->id);
+        if (CastBondIfNotAvailable(skillbar->prot, player->id, player))
+            return RoutineState::FINISHED;
     }
 
     const auto found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
@@ -336,13 +338,11 @@ RoutineState Pumping::RoutineTurtle() const
     if (dist > GW::Constants::Range::Spellcast)
         return RoutineState::ACTIVE;
 
-    const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, turtle_agent->agent_id);
-    if (!has_prot)
-        return SafeUseSkill(skillbar->prot.idx, turtle_agent->agent_id);
+    if (CastBondIfNotAvailable(skillbar->prot, turtle_agent->agent_id, player))
+        return RoutineState::FINISHED;
 
-    const auto has_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, turtle_agent->agent_id);
-    if (!has_life)
-        return SafeUseSkill(skillbar->life.idx, turtle_agent->agent_id);
+    if (CastBondIfNotAvailable(skillbar->life, turtle_agent->agent_id, player))
+        return RoutineState::FINISHED;
 
     const auto turtle_living = turtle_agent->GetAsAgentLiving();
     if (turtle_living && turtle_living->hp < 0.95F)
@@ -468,13 +468,9 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
         if (!living)
             continue;
 
-        const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, living->agent_id);
-        const auto prot_avail = skillbar->fuse.CanBeCasted(player->energy);
-        if (!has_prot && prot_avail && living->hp < 0.90F &&
-            living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
-        {
-            return SafeUseSkill(skillbar->prot.idx, living->agent_id);
-        }
+        if (living->hp < 0.90F && living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+            if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
+                return RoutineState::FINISHED;
 
         const auto fuse_avail = skillbar->fuse.CanBeCasted(player->energy);
         if (fuse_avail && living->hp < 0.60F)
@@ -524,26 +520,23 @@ RoutineState Pumping::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
-        return RoutineState::FINISHED;
-
-    const auto wisdom_state = RoutineWisdom();
-    if (wisdom_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
-    if (!dhuum_hp || dhuum_hp > 0.99F)
+    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp < 0.25F || dhuum_hp > 0.99F)
         return RoutineState::FINISHED;
 
     const auto pi_state = RoutinePI(dhuum_id);
     if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    const auto gdw_state = RoutineGDW();
-    if (gdw_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
     const auto keep_player_alive_state = RoutineKeepPlayerAlive();
     if (keep_player_alive_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    const auto wisdom_state = RoutineWisdom();
+    if (wisdom_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    const auto gdw_state = RoutineGDW();
+    if (gdw_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     return RoutineState::FINISHED;
@@ -655,26 +648,14 @@ RoutineState TankBonding::Routine()
         return RoutineState::FINISHED;
     }
 
-    const auto has_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
-    if (!has_balth && skillbar->balth.CanBeCasted(player->energy))
-    {
-        (void)SafeUseSkill(skillbar->balth.idx, target_id);
+    if (CastBondIfNotAvailable(skillbar->balth, target_id, player))
         return RoutineState::ACTIVE;
-    }
 
-    const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
-    if (!has_prot && skillbar->prot.CanBeCasted(player->energy))
-    {
-        (void)SafeUseSkill(skillbar->prot.idx, target_id);
+    if (CastBondIfNotAvailable(skillbar->prot, target_id, player))
         return RoutineState::ACTIVE;
-    }
 
-    const auto has_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, target_id);
-    if (!has_life && skillbar->life.CanBeCasted(player->energy))
-    {
-        (void)SafeUseSkill(skillbar->life.idx, target_id);
+    if (CastBondIfNotAvailable(skillbar->life, target_id, player))
         return RoutineState::ACTIVE;
-    }
 
     target_id = 0;
     return RoutineState::FINISHED;
@@ -741,19 +722,11 @@ RoutineState PlayerBonding::Routine()
         return RoutineState::FINISHED;
     }
 
-    const auto has_balth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, target_id);
-    if (!has_balth && skillbar->balth.CanBeCasted(player->energy))
-    {
-        (void)SafeUseSkill(skillbar->balth.idx, target_id);
+    if (CastBondIfNotAvailable(skillbar->balth, target_id, player))
         return RoutineState::ACTIVE;
-    }
 
-    const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, target_id);
-    if (!has_prot && skillbar->prot.CanBeCasted(player->energy))
-    {
-        (void)SafeUseSkill(skillbar->prot.idx, target_id);
+    if (CastBondIfNotAvailable(skillbar->prot, target_id, player))
         return RoutineState::ACTIVE;
-    }
 
     target_id = 0;
     return RoutineState::FINISHED;

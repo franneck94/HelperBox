@@ -377,15 +377,13 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
     }
 }
 
-bool ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
-        return false;
+        return;
 
     for (uint32_t offset = 0; offset < 5; offset++)
         EquipItemExecute(bag_idx, start_slot_idx + offset);
-
-    return true;
 }
 
 void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)

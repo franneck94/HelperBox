@@ -25,7 +25,7 @@ bool SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet, const Player *
     return false;
 }
 
-bool MapLoadCallback(GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet)
+bool ExplorableLoadCallback(GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet)
 {
     UNREFERENCED_PARAMETER(status);
     UNREFERENCED_PARAMETER(packet);

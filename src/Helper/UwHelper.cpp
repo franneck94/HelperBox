@@ -110,7 +110,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
     return false;
 }
 
-uint32_t GetClosestReaperID(Player &player)
+uint32_t GetClosestReaperID(const Player &player)
 {
     auto agents_array = GW::Agents::GetAgentArray();
     std::vector<GW::AgentLiving *> reapers;
@@ -125,6 +125,15 @@ uint32_t GetClosestReaperID(Player &player)
         return 0;
 
     return reapers[0]->agent_id;
+}
+
+void TargetClosestReaper(Player &player)
+{
+    const auto reaper_id = GetClosestReaperID(player);
+    if (!reaper_id)
+        return;
+
+    player.ChangeTarget(reaper_id);
 }
 
 bool TankIsFullteamLT()

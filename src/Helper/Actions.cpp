@@ -65,6 +65,18 @@ RoutineState SafeUseSkill(const uint32_t skill_idx, const uint32_t target, const
     return RoutineState::FINISHED;
 }
 
+bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_id, const Player *const player)
+{
+    const auto has_bond = AgentHasBuff(static_cast<GW::Constants::SkillID>(skill_data.id), target_id);
+    const auto bond_avail = skill_data.CanBeCasted(player->energy);
+    if (!has_bond && bond_avail)
+    {
+        (void)SafeUseSkill(skill_data.idx, target_id);
+        return true;
+    }
+    return false;
+}
+
 void Move::Execute()
 {
     if (!CanMove())

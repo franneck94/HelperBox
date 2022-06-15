@@ -53,7 +53,7 @@ public:
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
             &MapLoaded_Entry,
             [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-                reset = MapLoadCallback(status, packet);
+                reset = ExplorableLoadCallback(status, packet);
             });
     }
 

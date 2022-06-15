@@ -69,15 +69,24 @@ RoutineState SafeWalk(const GW::GamePos target_position, const bool reset = fals
 
 RoutineState SafeUseSkill(const uint32_t skill_idx, const uint32_t target = 0, const uint32_t call_target = 0);
 
+bool CastBondIfNotAvailable(const SkillData &skill_data,
+                            const uint32_t target_id,
+                            const Player *const player);
+
 class Move
 {
 public:
     static constexpr size_t NAME_LEN = 140U;
 
-    Move(const float _x, const float _y, const char *_name, std::function<void()> _callback)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback){};
+    Move(const float _x,
+         const float _y,
+         const char *_name,
+         std::function<void()> _callback,
+         const bool _keep_going = false)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback), keep_going(_keep_going){};
 
-    Move(const float _x, const float _y, const char *_name) : x(_x), y(_y), pos({x, y, 0}), name(_name){};
+    Move(const float _x, const float _y, const char *_name, const bool _keep_going = false)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), keep_going(_keep_going){};
 
     const char *Name() const
     {
@@ -93,5 +102,6 @@ private:
 public:
     GW::GamePos pos;
     const char *name;
+    bool keep_going = false;
     std::optional<std::function<void()>> callback = std::nullopt;
 };

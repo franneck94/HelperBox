@@ -45,7 +45,7 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 
 bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
-bool ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
 template <uint32_t N>
 void FilterAgents(const Player &player,
