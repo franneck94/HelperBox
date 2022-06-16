@@ -326,21 +326,30 @@ bool IsEquippable(const GW::Item *item)
     return true;
 }
 
-bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
+GW::Item *GetBagItem(const uint32_t bag_idx, const uint32_t slot_idx)
 {
     GW::Item *item = nullptr;
 
     if (bag_idx < 1 || bag_idx > 5 || slot_idx < 1 || slot_idx > 25)
-        return false;
+        return nullptr;
 
     const auto b = GW::Items::GetBag(bag_idx);
     if (!b)
-        return false;
+        return nullptr;
 
     auto items = b->items;
     if (!items.valid() || slot_idx > items.size())
-        return false;
+        return nullptr;
     item = items.at(slot_idx - 1);
+
+    return item;
+}
+
+bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
+{
+    const auto item = GetBagItem(bag_idx, slot_idx);
+    if (!item)
+        return false;
 
     if (!IsEquippable(item))
         return false;
@@ -381,6 +390,46 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
         return;
+
+    for (uint32_t offset = 0; offset < 5; offset++)
+        EquipItemExecute(bag_idx, start_slot_idx + offset);
+}
+
+void ChangeFullLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+{
+    if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
+        return;
+
+    const auto first_item = GetBagItem(bag_idx, start_slot_idx);
+    if (!first_item)
+        return;
+
+    if (first_item->mod_struct_size >= 10)
+    {
+        const auto armor_value = first_item->mod_struct[9].arg1();
+
+        if (armor_value >= 60)
+            return;
+    }
+
+    for (uint32_t offset = 0; offset < 5; offset++)
+        EquipItemExecute(bag_idx, start_slot_idx + offset);
+}
+
+void ChangeFullHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+{
+    if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
+        return;
+
+    const auto first_item = GetBagItem(bag_idx, start_slot_idx);
+
+    if (first_item->mod_struct_size >= 10)
+    {
+        const auto armor_value = first_item->mod_struct[9].arg1();
+
+        if (armor_value >= 60)
+            return;
+    }
 
     for (uint32_t offset = 0; offset < 5; offset++)
         EquipItemExecute(bag_idx, start_slot_idx + offset);

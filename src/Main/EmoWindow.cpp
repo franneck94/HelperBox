@@ -377,10 +377,7 @@ RoutineState Pumping::RoutineGDW() const
     if (!player->CanCast())
         return RoutineState::ACTIVE;
 
-    auto party_members = std::vector<PlayerMapping>{};
-    const auto success = GetPartyMembers(party_members);
-
-    if (!success)
+    if (!party_data_valid)
     {
         last_idx++;
         return RoutineState::ACTIVE;
@@ -425,12 +422,34 @@ RoutineState Pumping::RoutineGDW() const
     return skillbar->gdw.Cast(player->energy, living->agent_id);
 }
 
+RoutineState Pumping::RoutineTurtleGDW() const
+{
+    static auto last_idx = uint32_t{0};
+
+    if (!player->CanCast())
+        return RoutineState::ACTIVE;
+
+    const auto agent = GW::Agents::GetAgentByID(turtle_id);
+    if (!agent)
+        return RoutineState::ACTIVE;
+
+    const auto living = agent->GetAsAgentLiving();
+    if (!living || living->GetIsMoving())
+        return RoutineState::ACTIVE;
+
+    const auto dist = GW::GetDistance(player->pos, agent->pos);
+    if (dist > GW::Constants::Range::Spellcast)
+        return RoutineState::ACTIVE;
+
+    if (living->GetIsWeaponSpelled())
+        return RoutineState::ACTIVE;
+
+    return skillbar->gdw.Cast(player->energy, living->agent_id);
+}
+
 RoutineState Pumping::RoutineKeepPlayerAlive() const
 {
-    auto party_members = std::vector<PlayerMapping>{};
-    const auto success = GetPartyMembers(party_members);
-
-    for (const auto &[id, idx] : party_members)
+    for (const auto &[id, _] : party_members)
     {
         if (!id || id == player->id)
             continue;
@@ -441,6 +460,10 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
 
         const auto living = agent->GetAsAgentLiving();
         if (!living)
+            continue;
+
+        const auto dist = GW::GetDistance(player->pos, agent->pos);
+        if (dist > GW::Constants::Range::Spellcast)
             continue;
 
         if (living->hp < 0.90F && living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
@@ -511,6 +534,10 @@ RoutineState Pumping::Routine()
     if (gdw_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
+    const auto turtle_gdw_state = RoutineTurtleGDW();
+    if (turtle_gdw_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
     return RoutineState::FINISHED;
 }
 
@@ -518,6 +545,10 @@ void Pumping::Update()
 {
     static auto paused = false;
     static auto paused_by_reaper = false;
+    static auto not_moving_counter = uint32_t{0U};
+
+    if (GW::PartyMgr::GetIsPartyDefeated())
+        action_state = ActionState::INACTIVE;
 
     if (IsUw())
     {
@@ -525,42 +556,42 @@ void Pumping::Update()
         lt_agent = GW::Agents::GetAgentByID(lt_id);
     }
 
+    party_members.clear();
+    party_data_valid = GetPartyMembers(party_members);
+
     if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
     {
         action_state = ActionState::ON_HOLD;
         paused = true;
+        return;
     }
-    else if (player->target && action_state == ActionState::ACTIVE)
+
+    if (paused && !player->living->GetIsMoving())
+    {
+        ++not_moving_counter;
+    }
+
+    if (not_moving_counter >= 30U)
+    {
+        paused = false;
+        not_moving_counter = 0U;
+        if (action_state == ActionState::ON_HOLD)
+            action_state = ActionState::ACTIVE;
+    }
+
+    if (player->target && action_state == ActionState::ACTIVE)
     {
         const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
         if (TargetIsReaper(*player) && (dist < GW::Constants::Range::Earshot / 2.0F))
         {
             action_state = ActionState::ON_HOLD;
-            paused = true;
-            paused_by_reaper = true;
+            return;
         }
     }
 
     if (action_state == ActionState::ACTIVE)
-        (void)(Routine());
-
-    if (paused && !player->living->GetIsMoving())
-    {
-        paused = false;
-        if (action_state == ActionState::ON_HOLD)
-            action_state = ActionState::ACTIVE;
-    }
-    else if (paused && paused_by_reaper && !TargetIsReaper(*player))
-    {
-        paused = false;
-        paused_by_reaper = false;
-        if (action_state == ActionState::ON_HOLD)
-            action_state = ActionState::ACTIVE;
-    }
-
-    if (GW::PartyMgr::GetIsPartyDefeated())
-        action_state = ActionState::INACTIVE;
+        (void)Routine();
 }
 
 RoutineState TankBonding::Routine()
@@ -635,6 +666,9 @@ RoutineState TankBonding::Routine()
 
 void TankBonding::Update()
 {
+    if (GW::PartyMgr::GetIsPartyDefeated())
+        action_state = ActionState::INACTIVE;
+
     if (action_state == ActionState::ACTIVE)
     {
         StateOnHold(*emo_casting_action_state);
@@ -645,9 +679,6 @@ void TankBonding::Update()
             action_state = ActionState::INACTIVE;
             StateOnActive(*emo_casting_action_state);
         }
-
-        if (GW::PartyMgr::GetIsPartyDefeated())
-            action_state = ActionState::INACTIVE;
     }
 }
 
@@ -706,6 +737,9 @@ RoutineState PlayerBonding::Routine()
 
 void PlayerBonding::Update()
 {
+    if (GW::PartyMgr::GetIsPartyDefeated())
+        action_state = ActionState::INACTIVE;
+
     if (action_state == ActionState::ACTIVE)
     {
         StateOnHold(*emo_casting_action_state);
@@ -716,9 +750,6 @@ void PlayerBonding::Update()
             action_state = ActionState::INACTIVE;
             StateOnActive(*emo_casting_action_state);
         }
-
-        if (GW::PartyMgr::GetIsPartyDefeated())
-            action_state = ActionState::INACTIVE;
     }
 }
 
@@ -774,6 +805,9 @@ RoutineState FuseRange::Routine()
 
 void FuseRange::Update()
 {
+    if (GW::PartyMgr::GetIsPartyDefeated())
+        action_state = ActionState::INACTIVE;
+
     if (action_state == ActionState::ACTIVE)
     {
         StateOnHold(*emo_casting_action_state);
@@ -784,8 +818,5 @@ void FuseRange::Update()
             action_state = ActionState::INACTIVE;
             StateOnActive(*emo_casting_action_state);
         }
-
-        if (GW::PartyMgr::GetIsPartyDefeated())
-            action_state = ActionState::INACTIVE;
     }
 }

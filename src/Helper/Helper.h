@@ -47,6 +47,10 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
 void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
+void ChangeFullLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+
+void ChangeFullHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+
 template <uint32_t N>
 void FilterAgents(const Player &player,
                   const GW::AgentArray &agents,

@@ -32,6 +32,7 @@ private:
     RoutineState RoutineTurtle() const;
     RoutineState RoutineWisdom() const;
     RoutineState RoutineGDW() const;
+    RoutineState RoutineTurtleGDW() const;
     RoutineState RoutinePI(const uint32_t dhuum_id) const;
     RoutineState RoutineKeepPlayerAlive() const;
 
@@ -45,6 +46,9 @@ private:
     uint32_t turtle_id = 0;
 
     GW::Agent *lt_agent = nullptr;
+
+    std::vector<PlayerMapping> party_members{};
+    bool party_data_valid = false;
 };
 
 class TankBonding : public EmoActionABC
@@ -189,11 +193,11 @@ private:
         Move{-583.28F, +9275.68F, "Lab Stairs1"},
         Move{-2730.79F, 10159.21F, "Lab Stairs2"},
         Move{-5751.45F, 12746.52F, "Lab Reaper", [&]() { TargetClosestReaper(player); }},
-        Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { ChangeFullArmor(bag_idx, start_slot_idx); }},
+        Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { ChangeFullLowArmor(bag_idx, start_slot_idx); }},
         Move{-6241.24F, 7945.73F, "Basement"},
         Move{-8763.36F, 5551.18F, "Basement Stairs"},
         Move{-7829.98F, 4324.09F, "Fuse Pull 2"},
-        Move{-8764.08F, 2156.60F, "Vale Entry", [&]() { ChangeFullArmor(bag_idx, start_slot_idx); }},
+        Move{-8764.08F, 2156.60F, "Vale Entry", [&]() { ChangeFullHighArmor(bag_idx, start_slot_idx); }},
         Move{-12264.12F, 1821.18F, "Vale House"},
         Move{-13872.34F, 2332.34F, "Spirits 1"},
         Move{-13760.19F, 358.15F, "Spirits 2"},
