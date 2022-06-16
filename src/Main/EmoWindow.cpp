@@ -466,7 +466,7 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
         if (dist > GW::Constants::Range::Spellcast)
             continue;
 
-        if (living->hp < 0.90F && living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+        if (living->hp < 0.50F && living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
                 return RoutineState::FINISHED;
 
@@ -515,7 +515,14 @@ RoutineState Pumping::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp < 0.25F || dhuum_hp > 0.99F)
+    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp > 0.99F)
+        return RoutineState::FINISHED;
+
+    const auto wisdom_state = RoutineWisdom();
+    if (wisdom_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    if (dhuum_hp < 0.25F)
         return RoutineState::FINISHED;
 
     const auto pi_state = RoutinePI(dhuum_id);
@@ -524,10 +531,6 @@ RoutineState Pumping::Routine()
 
     const auto keep_player_alive_state = RoutineKeepPlayerAlive();
     if (keep_player_alive_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
-
-    const auto wisdom_state = RoutineWisdom();
-    if (wisdom_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
     const auto gdw_state = RoutineGDW();
@@ -545,7 +548,6 @@ void Pumping::Update()
 {
     static auto paused = false;
     static auto paused_by_reaper = false;
-    static auto not_moving_counter = uint32_t{0U};
 
     if (GW::PartyMgr::GetIsPartyDefeated())
         action_state = ActionState::INACTIVE;
@@ -563,18 +565,11 @@ void Pumping::Update()
     {
         action_state = ActionState::ON_HOLD;
         paused = true;
-        return;
     }
 
     if (paused && !player->living->GetIsMoving())
     {
-        ++not_moving_counter;
-    }
-
-    if (not_moving_counter >= 30U)
-    {
         paused = false;
-        not_moving_counter = 0U;
         if (action_state == ActionState::ON_HOLD)
             action_state = ActionState::ACTIVE;
     }
