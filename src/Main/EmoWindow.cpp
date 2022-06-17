@@ -311,6 +311,22 @@ RoutineState Pumping::RoutineLT() const
     return RoutineState::ACTIVE;
 }
 
+RoutineState Pumping::RoutineDb() const
+{
+    const auto id = GetDhuumBitchId();
+
+    if (!id)
+        return RoutineState::FINISHED;
+
+    if (CastBondIfNotAvailable(skillbar->balth, id, player))
+        return RoutineState::ACTIVE;
+
+    if (CastBondIfNotAvailable(skillbar->prot, id, player))
+        return RoutineState::ACTIVE;
+
+    return RoutineState::FINISHED;
+}
+
 RoutineState Pumping::RoutineTurtle() const
 {
     if (!found_turtle || !turtle_id)
@@ -511,6 +527,10 @@ RoutineState Pumping::Routine()
     if (turtle_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
+    const auto db_state = RoutineDb();
+    if (db_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
     auto dhuum_id = uint32_t{0};
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
@@ -544,10 +564,30 @@ RoutineState Pumping::Routine()
     return RoutineState::FINISHED;
 }
 
+bool Pumping::PauseRoutine()
+{
+    if (player->target)
+    {
+        const auto dist = GW::GetDistance(player->pos, player->target->pos);
+
+        if (TargetIsReaper(*player) && (dist < 300.0F))
+            return true;
+    }
+
+    if (player->living->GetIsMoving())
+        return true;
+
+    return false;
+}
+
+bool Pumping::ResumeRoutine()
+{
+    return !PauseRoutine();
+}
+
 void Pumping::Update()
 {
     static auto paused = false;
-    static auto paused_by_reaper = false;
 
     if (GW::PartyMgr::GetIsPartyDefeated())
         action_state = ActionState::INACTIVE;
@@ -561,28 +601,16 @@ void Pumping::Update()
     party_members.clear();
     party_data_valid = GetPartyMembers(party_members);
 
-    if (player->living->GetIsMoving() && action_state == ActionState::ACTIVE)
+    if (action_state == ActionState::ACTIVE && PauseRoutine())
     {
-        action_state = ActionState::ON_HOLD;
         paused = true;
+        action_state = ActionState::ON_HOLD;
     }
 
-    if (paused && !player->living->GetIsMoving())
+    if (action_state == ActionState::ON_HOLD && ResumeRoutine())
     {
         paused = false;
-        if (action_state == ActionState::ON_HOLD)
-            action_state = ActionState::ACTIVE;
-    }
-
-    if (player->target && action_state == ActionState::ACTIVE)
-    {
-        const auto dist = GW::GetDistance(player->pos, player->target->pos);
-
-        if (TargetIsReaper(*player) && (dist < GW::Constants::Range::Earshot / 2.0F))
-        {
-            action_state = ActionState::ON_HOLD;
-            return;
-        }
+        action_state = ActionState::ACTIVE;
     }
 
     if (action_state == ActionState::ACTIVE)

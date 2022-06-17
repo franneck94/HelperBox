@@ -26,10 +26,14 @@ public:
     void Update() override;
 
 private:
+    bool PauseRoutine();
+    bool ResumeRoutine();
+
     RoutineState RoutineSelfBonds() const;
     RoutineState RoutineCanthaGuards() const;
     RoutineState RoutineLT() const;
     RoutineState RoutineTurtle() const;
+    RoutineState RoutineDb() const;
     RoutineState RoutineWisdom() const;
     RoutineState RoutineGDW() const;
     RoutineState RoutineTurtleGDW() const;

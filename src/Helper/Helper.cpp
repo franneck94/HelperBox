@@ -482,6 +482,31 @@ uint32_t GetTankId()
     return tank.id;
 }
 
+uint32_t GetDhuumBitchId()
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success || party_members.size() < 2)
+        return 0;
+
+    for (const auto member : party_members)
+    {
+        const auto agent = GW::Agents::GetAgentByID(member.id);
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->primary == static_cast<uint8_t>(GW::Constants::Profession::Ritualist))
+            return living->agent_id;
+    }
+
+    return 0;
+}
+
 bool IsAliveAlly(const GW::Agent *target)
 {
     if (!target)

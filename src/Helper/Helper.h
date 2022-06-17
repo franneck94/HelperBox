@@ -107,6 +107,8 @@ bool CanMove();
 
 uint32_t GetTankId();
 
+uint32_t GetDhuumBitchId();
+
 bool IsAliveAlly(const GW::Agent *target);
 
 uint32_t GetPartyIdxByID(const uint32_t id);
