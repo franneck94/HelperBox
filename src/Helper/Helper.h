@@ -112,3 +112,15 @@ uint32_t GetDhuumBitchId();
 bool IsAliveAlly(const GW::Agent *target);
 
 uint32_t GetPartyIdxByID(const uint32_t id);
+
+std::pair<GW::Agent *, float> GetClosestEnemy(const Player *player);
+
+uint32_t GetClosesTypeID(const Player &player, const uint32_t id, const GW::Constants::Allegiance type);
+
+uint32_t GetClosestEnemyTypeID(const Player &player, const uint32_t id);
+
+uint32_t GetClosestAllyTypeID(const Player &player, const uint32_t id);
+
+void TargetClosestEnemyById(Player &player, const uint32_t id);
+
+void TargetClosestAllyById(Player &player, const uint32_t id);

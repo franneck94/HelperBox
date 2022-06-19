@@ -557,3 +557,74 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_agents,
             splitted_agents.push_back(agent);
     }
 }
+
+std::pair<GW::Agent *, float> GetClosestEnemy(const Player *player)
+{
+    const auto agents = GW::Agents::GetAgentArray();
+    if (!agents.valid())
+        return std::make_pair(nullptr, 0.0F);
+
+    GW::Agent *closest = nullptr;
+    auto closest_dist = FLT_MAX;
+
+    for (const auto agent : agents)
+    {
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+            continue;
+
+        const auto dist = GW::GetDistance(player->pos, living->pos);
+        if (dist < closest_dist)
+            closest = agent;
+    }
+
+    return std::make_pair(closest, closest_dist);
+}
+
+uint32_t GetClosesTypeID(const Player &player, const uint32_t id, const GW::Constants::Allegiance type)
+{
+    auto agents_array = GW::Agents::GetAgentArray();
+    std::vector<GW::AgentLiving *> agents_vec;
+    FilterAgents(player, agents_array, agents_vec, std::array<uint32_t, 1>{id}, type, GW::Constants::Range::Compass);
+
+    if (agents_vec.size() == 0)
+        return 0;
+
+    return agents_vec[0]->agent_id;
+}
+
+uint32_t GetClosestEnemyTypeID(const Player &player, const uint32_t id)
+{
+    return GetClosesTypeID(player, id, GW::Constants::Allegiance::Enemy);
+}
+
+uint32_t GetClosestAllyTypeID(const Player &player, const uint32_t id)
+{
+    return GetClosesTypeID(player, id, GW::Constants::Allegiance::Ally_NonAttackable);
+}
+
+void TargetClosestEnemyById(Player &player, const uint32_t id)
+{
+    const auto target = GetClosestEnemyTypeID(player, id);
+
+    if (!target)
+        return;
+
+    player.ChangeTarget(target);
+}
+
+void TargetClosestAllyById(Player &player, const uint32_t id)
+{
+    const auto target = GetClosestAllyTypeID(player, id);
+
+    if (!target)
+        return;
+
+    player.ChangeTarget(target);
+}

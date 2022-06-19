@@ -161,6 +161,27 @@ void EmoWindow::Update(float delta)
         }
     }
 
+    if (IsUw())
+    {
+        const auto [closest_enemy, dist_enemy] = GetClosestEnemy(&player);
+        if (closest_enemy)
+        {
+            const auto far_away = dist_enemy > GW::Constants::Range::Spellcast;
+            const auto finished_spirits1 = (IsAtSpirits1(&player) && far_away);
+            const auto finished_spirits2 = (IsAtSpirits2(&player) && far_away);
+            if (finished_spirits1 || finished_spirits2)
+            {
+                if ((move_idx < moves.size() - 1U))
+                {
+                    ++move_idx;
+                    moves[move_idx].Execute();
+                    send_move = true;
+                }
+            }
+        }
+    }
+
+
     // START Automated Actions at UW Entry
     if (IsUw())
     {

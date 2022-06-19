@@ -10,6 +10,10 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
+bool IsAtSpirits1(const Player *const player);
+
+bool IsAtSpirits2(const Player *const player);
+
 bool IsInVale(const Player *const player);
 
 bool IsAtFusePulls(const Player *const player);
@@ -17,10 +21,6 @@ bool IsAtFusePulls(const Player *const player);
 bool IsInDhuumRoom(const Player *const player);
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp);
-
-uint32_t GetClosestReaperID(const Player &player);
-
-void TargetClosestReaper(Player &player);
 
 bool TankIsFullteamLT();
 

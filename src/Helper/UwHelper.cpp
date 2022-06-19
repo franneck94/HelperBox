@@ -21,18 +21,34 @@ bool IsUw()
     return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld);
 }
 
+bool IsAtSpirits1(const Player *const player)
+{
+    const auto pos = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane}; // Spirits 1
+    const auto dist = GW::GetDistance(player->pos, pos);
+
+    if (dist < GW::Constants::Range::Spellcast)
+        return true;
+
+    return false;
+}
+
+bool IsAtSpirits2(const Player *const player)
+{
+    const auto pos = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane}; // Spirits 2
+    const auto dist = GW::GetDistance(player->pos, pos);
+
+    if (dist < GW::Constants::Range::Spellcast)
+        return true;
+
+    return false;
+}
+
 bool IsInVale(const Player *const player)
 {
     if (!IsUw())
         return false;
 
-    const auto pos1 = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane}; // Spirits 1
-    const auto pos2 = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane};  // Spirits 2
-
-    const auto dist1 = GW::GetDistance(player->pos, pos1);
-    const auto dist2 = GW::GetDistance(player->pos, pos2);
-
-    if (dist1 < GW::Constants::Range::Spellcast || dist2 < GW::Constants::Range::Spellcast)
+    if (IsAtSpirits1(player) || IsAtSpirits2(player))
         return true;
 
     return false;
@@ -108,32 +124,6 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
     }
 
     return false;
-}
-
-uint32_t GetClosestReaperID(const Player &player)
-{
-    auto agents_array = GW::Agents::GetAgentArray();
-    std::vector<GW::AgentLiving *> reapers;
-    FilterAgents(player,
-                 agents_array,
-                 reapers,
-                 std::array<uint32_t, 1>{GW::Constants::ModelID::UW::Reapers},
-                 GW::Constants::Allegiance::Npc_Minipet,
-                 GW::Constants::Range::Compass);
-
-    if (reapers.size() == 0)
-        return 0;
-
-    return reapers[0]->agent_id;
-}
-
-void TargetClosestReaper(Player &player)
-{
-    const auto reaper_id = GetClosestReaperID(player);
-    if (!reaper_id)
-        return;
-
-    player.ChangeTarget(reaper_id);
 }
 
 bool TankIsFullteamLT()
