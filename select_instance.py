@@ -10,6 +10,13 @@ def check_for_boolean_value(val):
     return False
 
 
+def get_command(pids: list, selected_pid_idx: int, exe_path: str):
+    selected_pid = pids[selected_pid_idx].replace(" ", "")
+    print(selected_pid)
+    full_exe_path = os.path.join(exe_path, "HelperBox.exe")
+    return f"{full_exe_path} /pid {selected_pid}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -27,9 +34,18 @@ def main() -> int:
         required=False,
         default=False,
     )
+    parser.add_argument(
+        "--all",
+        help="Whether to launch for all GW instances",
+        type=check_for_boolean_value,
+        choices=[True, False],
+        required=False,
+        default=False,
+    )
     args = parser.parse_args()
     print_only = args.print
     exe_path = args.path
+    launch_all = args.all
 
     proc = subprocess.Popen(
         "tasklist", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
@@ -49,26 +65,31 @@ def main() -> int:
         print("No GW instance found")
         return 1
 
-    print("Select PID: ")
-    for idx, pid in enumerate(pids):
-        print(f"{idx}: {pid}")
+    if not launch_all:
+        print("Select PID: ")
+        for idx, pid in enumerate(pids):
+            print(f"{idx}: {pid}")
 
-    if print_only:
-        return 0
+        if print_only:
+            return 0
 
-    selected_pid_idx = int(input("PID: "))
-    selected_pid = pids[selected_pid_idx].replace(" ", "")
-    print(selected_pid)
+        selected_pid_idx = int(input("PID: "))
+        command = get_command(pids, selected_pid_idx, exe_path)
+        print(f"Command to run:\n{command}")
 
-    full_exe_path = os.path.join(exe_path, "HelperBox.exe")
-    command = f"{full_exe_path} /pid {selected_pid}"
+        proc = subprocess.Popen(
+            command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
+        )
+        stdout, _ = proc.communicate()
+    else:
+        for selected_pid_idx in range(len(pids)):
+            command = get_command(pids, selected_pid_idx, exe_path)
+            print(f"Command to run:\n{command}")
 
-    print(f"Command to run:\n{command}")
-
-    proc = subprocess.Popen(
-        command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
-    )
-    stdout, _ = proc.communicate()
+            proc = subprocess.Popen(
+                command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
+            )
+            stdout, _ = proc.communicate()
     return 0
 
 
