@@ -34,6 +34,7 @@ public:
     ActionABC(Player *p, const char *const t) : player(p), text(t)
     {
     }
+    virtual ~ActionABC(){};
 
     void Draw(const ImVec2 button_size = DEFAULT_BUTTON_SIZE);
     virtual RoutineState Routine() = 0;
@@ -51,6 +52,7 @@ public:
     EmoActionABC(Player *p, const char *const t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
     {
     }
+    virtual ~EmoActionABC(){};
 
     EmoSkillbar *skillbar = nullptr;
 };
@@ -61,8 +63,17 @@ public:
     MesmerActionABC(Player *p, const char *const t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
     {
     }
+    virtual ~MesmerActionABC(){};
 
     MesmerSkillbar *skillbar = nullptr;
+};
+
+
+enum class MoveState
+{
+    NONE,
+    DONT_WAIT_FOR_AGGRO_FREE,
+    WAIT_FOR_AGGRO_FREE,
 };
 
 class Move
@@ -74,11 +85,11 @@ public:
          const float _y,
          const char *_name,
          std::function<void()> _callback,
-         const bool _keep_going = false)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback), keep_going(_keep_going){};
+         const MoveState _moving_state = MoveState::NONE)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback), moving_state(_moving_state){};
 
-    Move(const float _x, const float _y, const char *_name, const bool _keep_going = false)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), keep_going(_keep_going){};
+    Move(const float _x, const float _y, const char *_name, const MoveState _moving_state = MoveState::NONE)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state){};
 
     const char *Name() const
     {
@@ -94,6 +105,6 @@ private:
 public:
     GW::GamePos pos;
     const char *name;
-    bool keep_going = false;
+    MoveState moving_state = MoveState::NONE;
     std::optional<std::function<void()>> callback = std::nullopt;
 };

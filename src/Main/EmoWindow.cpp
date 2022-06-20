@@ -123,12 +123,109 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 }
 
+void EmoWindow::UpdateUw()
+{
+    UpdateUwEntry();
+    UpdateUwMoves();
+    UpdateUwVale();
+    WarnDistanceLT();
+}
+
+void EmoWindow::UpdateUwEntry()
+{
+    static auto triggered_tank_bonds_at_start = false;
+    static auto triggered_move_start = false;
+
+    if (load_cb_triggered)
+    {
+        tank_bonding.action_state = ActionState::ACTIVE;
+        load_cb_triggered = false;
+        triggered_tank_bonds_at_start = true;
+    }
+    if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
+    {
+        moves[0].Execute();
+        triggered_tank_bonds_at_start = false;
+        triggered_move_start = true;
+        send_move = true;
+    }
+    if (triggered_move_start && move_idx == 1 && TankIsSoloLT())
+    {
+        pumping.action_state = ActionState::ACTIVE;
+    }
+}
+
+void EmoWindow::UpdateUwMoves()
+{
+    if (!send_move)
+        return;
+
+    if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.1F))
+        return;
+
+    send_move = false;
+    ++move_idx;
+
+    if (moves[move_idx - 1U].moving_state == MoveState::DONT_WAIT_FOR_AGGRO_FREE)
+    {
+        moves[move_idx].Execute();
+        send_move = true;
+        return;
+    }
+
+    if (moves[move_idx - 1U].moving_state == MoveState::WAIT_FOR_AGGRO_FREE)
+    {
+        const auto agents_array = GW::Agents::GetAgentArray();
+
+        auto agents_at_emo = std::vector<GW::AgentLiving *>{};
+        FilterAgentsAtPositionWithDistance(player.pos,
+                                           agents_array,
+                                           agents_at_emo,
+                                           std::array<uint32_t, 0>{},
+                                           GW::Constants::Allegiance::Enemy,
+                                           GW::Constants::Range::Spellcast);
+        auto agents_at_target_pos = std::vector<GW::AgentLiving *>{};
+        FilterAgentsAtPositionWithDistance(moves[move_idx].pos,
+                                           agents_array,
+                                           agents_at_emo,
+                                           std::array<uint32_t, 0>{},
+                                           GW::Constants::Allegiance::Enemy,
+                                           GW::Constants::Range::Spellcast);
+
+        if (agents_at_emo.size() == 0 && agents_at_target_pos.size() == 0)
+        {
+            moves[move_idx].Execute();
+            send_move = true;
+        }
+    }
+}
+
+void EmoWindow::UpdateUwVale()
+{
+    if (!IsInVale(&player))
+        return;
+
+    const auto [closest_enemy, dist_enemy] = GetClosestEnemy(&player);
+    if (!closest_enemy)
+        return;
+
+    const auto far_away = dist_enemy > GW::Constants::Range::Spellcast;
+    const auto finished_spirits1 = (IsAtSpirits1(&player) && far_away);
+    const auto finished_spirits2 = (IsAtSpirits2(&player) && far_away);
+    if (!finished_spirits1 && !finished_spirits2)
+        return;
+
+    if ((move_idx >= moves.size() - 1U))
+        return;
+
+    ++move_idx;
+    moves[move_idx].Execute();
+    send_move = true;
+}
+
 void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
-
-    static auto triggered_tank_bonds_at_start = false;
-    static auto triggered_move_start = false;
 
     if (!player.ValidateData())
         return;
@@ -146,66 +243,8 @@ void EmoWindow::Update(float delta)
 
     emo_casting_action_state = &pumping.action_state;
 
-    if (IsUw() && send_move)
-    {
-        if ((move_idx < moves.size() - 1U) && GamePosCompare(player.pos, moves[move_idx].pos, 0.1F))
-        {
-            send_move = false;
-            ++move_idx;
-
-            if (moves[move_idx - 1U].keep_going)
-            {
-                moves[move_idx].Execute();
-                send_move = true;
-            }
-        }
-    }
-
     if (IsUw())
-    {
-        const auto [closest_enemy, dist_enemy] = GetClosestEnemy(&player);
-        if (closest_enemy)
-        {
-            const auto far_away = dist_enemy > GW::Constants::Range::Spellcast;
-            const auto finished_spirits1 = (IsAtSpirits1(&player) && far_away);
-            const auto finished_spirits2 = (IsAtSpirits2(&player) && far_away);
-            if (finished_spirits1 || finished_spirits2)
-            {
-                if ((move_idx < moves.size() - 1U))
-                {
-                    ++move_idx;
-                    moves[move_idx].Execute();
-                    send_move = true;
-                }
-            }
-        }
-    }
-
-
-    // START Automated Actions at UW Entry
-    if (IsUw())
-    {
-        if (load_cb_triggered)
-        {
-            tank_bonding.action_state = ActionState::ACTIVE;
-            load_cb_triggered = false;
-            triggered_tank_bonds_at_start = true;
-        }
-        if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
-        {
-            moves[0].Execute();
-            triggered_tank_bonds_at_start = false;
-            triggered_move_start = true;
-            send_move = true;
-        }
-        if (triggered_move_start && move_idx == 1 && TankIsSoloLT())
-        {
-            pumping.action_state = ActionState::ACTIVE;
-        }
-
-        WarnDistanceLT();
-    }
-    // END Automated Actions at UW Entry
+        UpdateUw();
 
     tank_bonding.Update();
     player_bonding.Update();
@@ -298,7 +337,7 @@ RoutineState Pumping::RoutineCanthaGuards() const
         if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player))
             return RoutineState::FINISHED;
 
-        if (cantha->hp < 0.70F)
+        if (cantha->hp < 0.70F && player->hp_perc > 0.5F)
             return skillbar->fuse.Cast(player->energy, cantha->agent_id);
 
         if (!cantha->GetIsWeaponSpelled())
@@ -323,7 +362,7 @@ RoutineState Pumping::RoutineLT() const
     if (dist < FuseRange::FUSE_PULL_RANGE - 5.0F || dist > FuseRange::FUSE_PULL_RANGE + 5.0F)
         return RoutineState::ACTIVE;
 
-    if (target_living->hp < 0.80F)
+    if (target_living->hp < 0.80F && player->hp_perc > 0.5F)
         return skillbar->fuse.Cast(player->energy, target_living->agent_id);
 
     if (target_living->hp < 0.99F)
@@ -372,7 +411,7 @@ RoutineState Pumping::RoutineTurtle() const
     if (CastBondIfNotAvailable(skillbar->life, turtle_agent->agent_id, player))
         return RoutineState::FINISHED;
 
-    if (turtle_living->hp < 0.95F)
+    if (turtle_living->hp < 0.95F && player->hp_perc > 0.5F)
         return skillbar->fuse.Cast(player->energy, turtle_agent->agent_id);
 
     return RoutineState::ACTIVE;
@@ -507,7 +546,7 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
                 return RoutineState::FINISHED;
 
-        if (living->hp < 0.50F)
+        if (living->hp < 0.40F && player->hp_perc > 0.5F)
             return skillbar->fuse.Cast(player->energy, living->agent_id);
     }
 
@@ -819,19 +858,12 @@ RoutineState FuseRange::Routine()
 
     if (routine_state == RoutineState::NONE)
     {
-        requested_pos = GW::GamePos{};
-
-        const auto m_x = me_pos.x;
-        const auto m_y = me_pos.y;
-        const auto t_x = target_pos.x;
-        const auto t_y = target_pos.y;
-
         const auto dist = GW::GetDistance(me_pos, target_pos);
         const auto d_t = FUSE_PULL_RANGE;
         const auto t = d_t / dist;
 
-        const auto p_x = ((1.0F - t) * t_x + t * m_x);
-        const auto p_y = ((1.0F - t) * t_y + t * m_y);
+        const auto p_x = ((1.0F - t) * target_pos.x + t * me_pos.x);
+        const auto p_y = ((1.0F - t) * target_pos.y + t * me_pos.y);
 
         requested_pos = GW::GamePos{p_x, p_y, 0};
         routine_state = SafeWalk(requested_pos, true);

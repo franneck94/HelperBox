@@ -183,56 +183,46 @@ public:
     void Update(float delta) override;
 
 private:
+    void UpdateUw();
+    void UpdateUwEntry();
+    void UpdateUwVale();
+    void UpdateUwMoves();
+
     bool ActivationConditions() const;
     void WarnDistanceLT() const;
+
 
     Player player;
     EmoSkillbar skillbar;
 
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t start_slot_idx = static_cast<uint32_t>(-1);
+
     uint32_t move_idx = 0;
-    std::array<Move, 23> moves = {
+    std::array<Move, 24> moves = {
         Move{1248.00F, 6965.51F, "Spawn"},
-        Move{-583.28F, 9275.68F, "Lab Stairs1"},
+        Move{-583.28F, 9275.68F, "Lab Stairs1", MoveState::WAIT_FOR_AGGRO_FREE},
         Move{-2730.79F, 10159.21F, "Lab Stairs2"},
-        Move{-5751.45F,
-             12746.52F,
-             "Lab Reaper",
-             [&]() { TargetClosestAllyById(player, GW::Constants::ModelID::UW::Reapers); }},
+        Move{-5751.45F, 12746.52F, "Lab Reaper", [&]() { TargetClosestReaper(player); }},
         Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { ChangeFullLowArmor(bag_idx, start_slot_idx); }},
-        Move{-6241.24F, 7945.73F, "Basement"},
-        Move{-8763.36F, 5551.18F, "Basement Stairs"},
+        Move{-6241.24F, 7945.73F, "Basement", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-8763.36F, 5551.18F, "Basement Stairs", MoveState::WAIT_FOR_AGGRO_FREE},
         Move{-7829.98F, 4324.09F, "Fuse Pull 2"},
         Move{-8764.08F, 2156.60F, "Vale Entry", [&]() { ChangeFullHighArmor(bag_idx, start_slot_idx); }},
-        Move{-12264.12F, 1821.18F, "Vale House"},
-        Move{-13872.34F, 2332.34F, "Spirits 1"},
-        Move{-13760.19F, 358.15F, "Spirits 2"},
-        Move{-12145.44F, 1101.74F, "Spirits 3", true},
-        Move{-8764.08F, 2156.60F, "Vale Entry", true},
-        Move{-7980.55F, 4308.90F, "Basement Stairs", true},
-        Move{-6241.24F, 7945.73F, "Basement", true},
-        Move{-5751.45F,
-             12746.52F,
-             "Lab Reaper",
-             [&]() { TargetClosestAllyById(player, GW::Constants::ModelID::UW::Reapers); }},
-        Move{-6035.29F,
-             11285.14F,
-             "Keeper 1",
-             [&]() { TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls); }},
-        Move{-6511.41F,
-             12447.65F,
-             "Keeper 2",
-             [&]() { TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls); }},
-        Move{-3881.71F,
-             11280.04F,
-             "Keeper 3",
-             [&]() { TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls); }},
-        Move{-1502.45F,
-             9737.64F,
-             "Keeper 4/5",
-             [&]() { TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls); }},
-        Move{-266.03F, 9304.26F, "Lab Stairs1", true},
+        Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-13760.19F, 358.15F, "Spirits 2", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-12145.44F, 1101.74F, "Vale Center", MoveState::DONT_WAIT_FOR_AGGRO_FREE},
+        Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::DONT_WAIT_FOR_AGGRO_FREE},
+        Move{-7980.55F, 4308.90F, "Basement Stairs", MoveState::DONT_WAIT_FOR_AGGRO_FREE},
+        Move{-6241.24F, 7945.73F, "Basement", MoveState::DONT_WAIT_FOR_AGGRO_FREE},
+        Move{-5751.45F, 12746.52F, "Lab Reaper", [&]() { TargetClosestReaper(player); }},
+        Move{-6035.29F, 11285.14F, "Keeper 1", [&]() { TargetClosestKeeper(player); }},
+        Move{-6511.41F, 12447.65F, "Keeper 2", [&]() { TargetClosestKeeper(player); }},
+        Move{-3881.71F, 11280.04F, "Keeper 3", [&]() { TargetClosestKeeper(player); }},
+        Move{-1502.45F, 9737.64F, "Keeper 4/5", [&]() { TargetClosestKeeper(player); }},
+        Move{-266.03F, 9304.26F, "Lab Stairs1", MoveState::DONT_WAIT_FOR_AGGRO_FREE},
         Move{1207.05F, 7732.16F, "Keeper 6"}};
 
     GW::HookEntry MapLoaded_Entry;

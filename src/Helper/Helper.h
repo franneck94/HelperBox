@@ -97,6 +97,74 @@ void FilterAgents(const Player &player,
     }
 }
 
+template <uint32_t N>
+void FilterAgentsAtPositionWithDistance(const GW::GamePos &pos,
+                                        const GW::AgentArray &agents,
+                                        std::vector<GW::AgentLiving *> &filtered_agents,
+                                        const std::array<uint32_t, N> &ids,
+                                        const GW::Constants::Allegiance allegiance,
+                                        const float max_distance = 0.0F)
+{
+    for (const auto &agent : agents)
+    {
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+
+        if (!living)
+            continue;
+
+        if (living->allegiance != static_cast<uint8_t>(allegiance))
+            continue;
+
+        if (ids.size() == 0)
+        {
+            if (living->GetIsDead())
+                continue;
+
+            if (living->player_number == GW::Constants::ModelID::UW::SkeletonOfDhuum1 ||
+                living->player_number == GW::Constants::ModelID::UW::SkeletonOfDhuum2)
+                continue;
+
+            if (max_distance == 0.0F)
+            {
+                filtered_agents.push_back(living);
+            }
+            else
+            {
+                const auto dist = GW::GetDistance(pos, agent->pos);
+
+                if (dist < max_distance)
+                    filtered_agents.push_back(living);
+            }
+        }
+        else
+        {
+            for (const auto id : ids)
+            {
+                if (living->GetIsDead())
+                    continue;
+
+                if (living->player_number == id)
+                {
+                    if (max_distance == 0.0F)
+                    {
+                        filtered_agents.push_back(living);
+                    }
+                    else
+                    {
+                        const auto dist = GW::GetDistance(pos, agent->pos);
+
+                        if (dist < max_distance)
+                            filtered_agents.push_back(living);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_agents,
                          std::vector<GW::AgentLiving *> &splitted_agents,
                          const uint32_t id);

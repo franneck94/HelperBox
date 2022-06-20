@@ -181,3 +181,13 @@ bool TargetIsReaper(Player &player)
 
     return true;
 }
+
+void TargetClosestReaper(Player &player)
+{
+    TargetClosestAllyById(player, GW::Constants::ModelID::UW::Reapers);
+}
+
+void TargetClosestKeeper(Player &player)
+{
+    TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls);
+}

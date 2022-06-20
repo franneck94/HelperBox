@@ -27,3 +27,7 @@ bool TankIsFullteamLT();
 bool TankIsSoloLT();
 
 bool TargetIsReaper(Player &player);
+
+void TargetClosestReaper(Player &player);
+
+void TargetClosestKeeper(Player &player);
