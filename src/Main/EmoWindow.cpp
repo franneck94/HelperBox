@@ -19,6 +19,7 @@
 
 #include <GuiUtils.h>
 #include <HelperBox.h>
+#include <Timer.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
@@ -110,12 +111,14 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
             {
                 if (move_idx > 0)
                     --move_idx;
+                send_move = false;
             }
             ImGui::SameLine();
             if (ImGui::Button("Next", SKIP_BUTTON_SIZE))
             {
                 if (move_idx < moves.size() - 1)
                     ++move_idx;
+                send_move = false;
             }
         }
     }
@@ -127,7 +130,6 @@ void EmoWindow::UpdateUw()
 {
     UpdateUwEntry();
     UpdateUwMoves();
-    UpdateUwVale();
     WarnDistanceLT();
 }
 
@@ -163,17 +165,11 @@ void EmoWindow::UpdateUwMoves()
     if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.1F))
         return;
 
-    send_move = false;
-    ++move_idx;
-
-    if (moves[move_idx - 1U].moving_state == MoveState::DONT_WAIT_FOR_AGGRO_FREE)
+    if (moves[move_idx].moving_state == MoveState::DONT_WAIT_FOR_AGGRO_FREE)
     {
-        moves[move_idx].Execute();
-        send_move = true;
-        return;
+        moves[move_idx + 1].Execute();
     }
-
-    if (moves[move_idx - 1U].moving_state == MoveState::WAIT_FOR_AGGRO_FREE)
+    else if (moves[move_idx].moving_state == MoveState::WAIT_FOR_AGGRO_FREE)
     {
         const auto agents_array = GW::Agents::GetAgentArray();
 
@@ -185,7 +181,7 @@ void EmoWindow::UpdateUwMoves()
                                            GW::Constants::Allegiance::Enemy,
                                            GW::Constants::Range::Spellcast);
         auto agents_at_target_pos = std::vector<GW::AgentLiving *>{};
-        FilterAgentsAtPositionWithDistance(moves[move_idx].pos,
+        FilterAgentsAtPositionWithDistance(moves[move_idx + 1].pos,
                                            agents_array,
                                            agents_at_emo,
                                            std::array<uint32_t, 0>{},
@@ -194,33 +190,25 @@ void EmoWindow::UpdateUwMoves()
 
         if (agents_at_emo.size() == 0 && agents_at_target_pos.size() == 0)
         {
-            moves[move_idx].Execute();
-            send_move = true;
+            moves[move_idx + 1].Execute();
+        }
+        else
+        {
+            static auto timer_start = clock();
+            const auto timer_diff_ms = TIMER_DIFF(timer_start);
+            if (timer_diff_ms >= 1000)
+            {
+                GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"Waiting for enemies...");
+                timer_start = clock();
+            }
         }
     }
-}
-
-void EmoWindow::UpdateUwVale()
-{
-    if (!IsInVale(&player))
-        return;
-
-    const auto [closest_enemy, dist_enemy] = GetClosestEnemy(&player);
-    if (!closest_enemy)
-        return;
-
-    const auto far_away = dist_enemy > GW::Constants::Range::Spellcast;
-    const auto finished_spirits1 = (IsAtSpirits1(&player) && far_away);
-    const auto finished_spirits2 = (IsAtSpirits2(&player) && far_away);
-    if (!finished_spirits1 && !finished_spirits2)
-        return;
-
-    if ((move_idx >= moves.size() - 1U))
-        return;
+    else
+    {
+        send_move = false;
+    }
 
     ++move_idx;
-    moves[move_idx].Execute();
-    send_move = true;
 }
 
 void EmoWindow::Update(float delta)
@@ -359,7 +347,7 @@ RoutineState Pumping::RoutineLT() const
 
     const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-    if (dist < FuseRange::FUSE_PULL_RANGE - 5.0F || dist > FuseRange::FUSE_PULL_RANGE + 5.0F)
+    if (dist < 1225.0F || dist > 1240.0F)
         return RoutineState::ACTIVE;
 
     if (target_living->hp < 0.80F && player->hp_perc > 0.5F)
@@ -376,15 +364,15 @@ RoutineState Pumping::RoutineDb() const
     const auto id = GetDhuumBitchId();
 
     if (!id)
-        return RoutineState::FINISHED;
+        return RoutineState::ACTIVE;
 
     if (CastBondIfNotAvailable(skillbar->balth, id, player))
-        return RoutineState::ACTIVE;
+        return RoutineState::FINISHED;
 
     if (CastBondIfNotAvailable(skillbar->prot, id, player))
-        return RoutineState::ACTIVE;
+        return RoutineState::FINISHED;
 
-    return RoutineState::FINISHED;
+    return RoutineState::ACTIVE;
 }
 
 RoutineState Pumping::RoutineTurtle() const
@@ -542,11 +530,14 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
         if (dist > GW::Constants::Range::Spellcast)
             continue;
 
-        if (living->hp < 0.50F && living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+        if (living->hp > 0.50F)
+            continue;
+
+        if (living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
                 return RoutineState::FINISHED;
 
-        if (living->hp < 0.40F && player->hp_perc > 0.5F)
+        if (player->hp_perc > 0.5F)
             return skillbar->fuse.Cast(player->energy, living->agent_id);
     }
 
@@ -555,6 +546,8 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
 
 RoutineState Pumping::Routine()
 {
+    static auto was_in_dhuum_fight = false;
+
     if (!player->CanCast())
         return RoutineState::FINISHED;
 
@@ -593,10 +586,14 @@ RoutineState Pumping::Routine()
 
     auto dhuum_id = uint32_t{0};
     auto dhuum_hp = float{1.0F};
+
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
+    if (was_in_dhuum_fight && !is_in_dhuum_fight)
+        *emo_casting_action_state = ActionState::INACTIVE;
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp > 0.99F)
         return RoutineState::FINISHED;
+    was_in_dhuum_fight = true;
 
     const auto wisdom_state = RoutineWisdom();
     if (wisdom_state == RoutineState::FINISHED)

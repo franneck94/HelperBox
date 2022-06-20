@@ -448,7 +448,7 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
 
 bool CanMove()
 {
-    return !IsLoading() && !GW::Map::GetIsObserving() && GW::MemoryMgr::GetGWWindowHandle() == GetActiveWindow();
+    return !IsLoading() && !GW::Map::GetIsObserving();
 }
 
 uint32_t GetTankId()

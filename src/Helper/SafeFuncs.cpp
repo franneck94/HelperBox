@@ -61,6 +61,7 @@ bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_i
 {
     const auto has_bond = AgentHasBuff(static_cast<GW::Constants::SkillID>(skill_data.id), target_id);
     const auto bond_avail = skill_data.CanBeCasted(player->energy);
+
     if (!has_bond && bond_avail)
     {
         GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_data.idx, target_id); });

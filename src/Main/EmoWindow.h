@@ -185,7 +185,6 @@ public:
 private:
     void UpdateUw();
     void UpdateUwEntry();
-    void UpdateUwVale();
     void UpdateUwMoves();
 
     bool ActivationConditions() const;
@@ -205,11 +204,11 @@ private:
         Move{-2730.79F, 10159.21F, "Lab Stairs2"},
         Move{-5751.45F, 12746.52F, "Lab Reaper", [&]() { TargetClosestReaper(player); }},
         Move{-6263.33F, 9899.79F, "Fuse Pull 1", [&]() { ChangeFullLowArmor(bag_idx, start_slot_idx); }},
-        Move{-6241.24F, 7945.73F, "Basement", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-6241.24F, 7945.73F, "Basement"},
         Move{-8763.36F, 5551.18F, "Basement Stairs", MoveState::WAIT_FOR_AGGRO_FREE},
         Move{-7829.98F, 4324.09F, "Fuse Pull 2"},
         Move{-8764.08F, 2156.60F, "Vale Entry", [&]() { ChangeFullHighArmor(bag_idx, start_slot_idx); }},
-        Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_FOR_AGGRO_FREE},
+        Move{-12264.12F, 1821.18F, "Vale House"},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_FOR_AGGRO_FREE},
         Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::WAIT_FOR_AGGRO_FREE},
         Move{-13760.19F, 358.15F, "Spirits 2", MoveState::WAIT_FOR_AGGRO_FREE},
