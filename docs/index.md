@@ -31,6 +31,8 @@ The following helper windows are displayed in the UW
     - Mesmer/Elementalist
 - Emo Window
     - Elementalist/Monk
+- Dhuum (and Vale) Bitch:
+  - X/Ranger
 - Mainteam Window
     - Mesmer/X
     - Ritualist/X
@@ -42,3 +44,4 @@ For a detailed description:
 - For EMO Helper see [here](./Emo.md)
 - For Mainteam Helper see [here](./Mainteam.md)
 - For Terra Helper see [here](./Terra.md)
+- For Dhuum Bitch Helper see [here](./Db.md)

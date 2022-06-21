@@ -15,6 +15,7 @@
 #include <Base/MainWindow.h>
 #include <CancelActionWindow.h>
 #include <ChatCommands.h>
+#include <DbWindow.h>
 #include <EmoWindow.h>
 #include <MainteamWindow.h>
 #include <SettingsWindow.h>
@@ -30,6 +31,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&EmoWindow::Instance());
+    optional_modules.push_back(&DbWindow::Instance());
     optional_modules.push_back(&MainteamWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
     optional_modules.push_back(&AutoFollowWindow::Instance());
