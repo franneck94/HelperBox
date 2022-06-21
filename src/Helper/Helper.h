@@ -211,3 +211,5 @@ void TargetClosestNpcById(Player &player, const uint32_t id);
 DWORD QuestAcceptDialog(DWORD quest);
 
 DWORD QuestRewardDialog(DWORD quest);
+
+void AttackAgent(const GW::Agent *agent);

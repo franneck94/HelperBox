@@ -198,13 +198,14 @@ private:
     uint32_t start_slot_idx = static_cast<uint32_t>(-1);
 
     uint32_t move_idx = 0;
-    std::array<Move, 34> moves = {
+    std::array<Move, 38> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
         Move{-583.28F, 9275.68F, "Lab Stairs1", MoveState::WAIT, 1500.0F},
-        Move{-2730.79F, 10159.21F, "Lab Stairs2", MoveState::WAIT, 2500.0F},
+        Move{-1726.89F, 10689.08F, "Lab Stairs2", MoveState::WAIT, 1500.0F},
         Move{-6263.33F, 9899.79F, "Fuse Pull1", MoveState::DONT_WAIT, [&]() { ToLowArmor(bag_idx, start_slot_idx); }},
+        Move{-5399.54F, 9022.45F, "Basement Stairs 1", MoveState::WAIT, 2000.0F},
         Move{-6241.24F, 7945.73F, "Basement", MoveState::WAIT, 2000.0F},
-        Move{-8763.36F, 5551.18F, "Basement Stairs", MoveState::WAIT, 2000.0F},
+        Move{-8763.36F, 5551.18F, "Basement Stairs 2", MoveState::WAIT, 2000.0F},
         Move{-7829.98F, 4324.09F, "Fuse Pull2", MoveState::WAIT, 2000.0F},
         Move{-8764.08F, 2156.60F, "Bridge", MoveState::NONE, [&]() { ToHighArmor(bag_idx, start_slot_idx); }},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT, 1800.0F},
@@ -228,7 +229,10 @@ private:
         Move{3247.06F, 9099.98F, "To Wastes 3", MoveState::DONT_WAIT},
         Move{3853.85F, 7802.04F, "To Wastes 4", MoveState::DONT_WAIT},
         Move{5498.42F, 8995.82F, "To Wastes 5", MoveState::DONT_WAIT},
-        Move{8389.26F, 12009.86F, "To Wastes 6", MoveState::NONE},
+        Move{8389.26F, 12009.86F, "To Wastes 6", MoveState::DONT_WAIT},
+        Move{6633.37F, 15385.31F, "Wastes 1", MoveState::NONE},
+        Move{4337.96F, 16187.32F, "Wastes 2", MoveState::NONE},
+        Move{2448.44F, 17789.23F, "Wastes 3", MoveState::NONE},
         Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::DONT_WAIT},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::DONT_WAIT, [&]() { ToLowArmor(bag_idx, start_slot_idx); }},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::DONT_WAIT},

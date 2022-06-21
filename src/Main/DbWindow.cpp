@@ -84,12 +84,12 @@ void DbWindow::UpdateUw()
 
 void DbWindow::UpdateUwEntry()
 {
-    if (load_cb_triggered)
-    {
-        moves[0].Execute();
-        load_cb_triggered = false;
-        send_move = true;
-    }
+    // if (load_cb_triggered)
+    // {
+    //     moves[0].Execute();
+    //     load_cb_triggered = false;
+    //     send_move = true;
+    // }
 }
 
 void DbWindow::UpdateUwMoves()
@@ -207,7 +207,7 @@ RoutineState Damage::RoutineDhuum() const
 {
     const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_eoe = player->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
-    const auto found_qz = player->HasEffect(GW::Constants::SkillID::Quickening_Zephyr);
+    const auto found_qz = player->HasEffect(GW::Constants::SkillID::Quickening_Zephyr); // every 36s cast
 
     if (!found_honor)
     {
@@ -241,11 +241,6 @@ RoutineState Damage::RoutineDhuum() const
     return RoutineState::ACTIVE;
 }
 
-void AttackAgent(const GW::Agent *agent)
-{
-    GW::CtoS::SendPacket(0x8, GAME_CMSG_ATTACK_AGENT, agent->agent_id);
-}
-
 RoutineState Damage::Routine()
 {
     static auto was_in_dhuum_fight = false;
@@ -256,14 +251,12 @@ RoutineState Damage::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-#ifndef _DEBUG
-    if (IsInVale(player))
-#endif
-    {
-        // if (!player->living->GetIsAttacking() && player->CanCast() && player->target && player->target->agent_id &&
-        //     player->target->GetIsLivingType())
-        //     AttackAgent(player->target);
+    // if (!player->living->GetIsAttacking() && player->CanCast() && player->target && player->target->agent_id &&
+    //     player->target->GetIsLivingType())
+    //     AttackAgent(player->target);
 
+    if (IsInVale(player))
+    {
         const auto vale_rota = RoutineValeSpirits();
         if (vale_rota == RoutineState::FINISHED)
             return RoutineState::FINISHED;
@@ -286,9 +279,9 @@ RoutineState Damage::Routine()
     if (dhuum_hp < 0.25F)
         return RoutineState::FINISHED;
 
-    player->ChangeTarget(dhuum_id);
-    if (!player->living->GetIsAttacking() && player->target->agent_id)
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_ATTACK_AGENT);
+    // player->ChangeTarget(dhuum_id);
+    // if (!player->living->GetIsAttacking() && player->target->agent_id)
+    //     GW::CtoS::SendPacket(0x4, GAME_CMSG_ATTACK_AGENT);
 
     const auto pi_state = RoutinePI(dhuum_id);
     if (pi_state == RoutineState::FINISHED)

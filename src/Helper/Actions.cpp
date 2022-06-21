@@ -64,6 +64,18 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos, 
                                        filter_at_agent,
                                        GW::Constants::Allegiance::Enemy,
                                        wait_aggro_range);
+
+    auto agents_at_intermediate_pos1 = std::vector<GW::AgentLiving *>{};
+    const auto intermediate_pos1 =
+        GW::GamePos{(player.pos.x + next_pos.x) / 2.0F, (player.pos.y + next_pos.y) / 2.0F, player.pos.zplane};
+    FilterAgentsAtPositionWithDistance(intermediate_pos1,
+                                       agents_array,
+                                       agents_at_intermediate_pos1,
+                                       ids,
+                                       filter_at_target,
+                                       GW::Constants::Allegiance::Enemy,
+                                       GW::Constants::Range::Spellcast);
+
     auto agents_at_target_pos = std::vector<GW::AgentLiving *>{};
     FilterAgentsAtPositionWithDistance(next_pos,
                                        agents_array,
@@ -73,7 +85,7 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos, 
                                        GW::Constants::Allegiance::Enemy,
                                        wait_aggro_range);
 
-    if (agents_at_player.size() == 0 && agents_at_target_pos.size() == 0)
+    if (agents_at_player.size() == 0 && agents_at_intermediate_pos1.size() == 0 && agents_at_target_pos.size() == 0)
         return true;
 
     return false;

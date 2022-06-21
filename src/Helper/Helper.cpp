@@ -666,3 +666,8 @@ DWORD QuestRewardDialog(DWORD quest)
 {
     return (quest << 8) | 0x800007;
 }
+
+void AttackAgent(const GW::Agent *agent)
+{
+    GW::CtoS::SendPacket(0xC, GAME_CMSG_ATTACK_AGENT, agent->agent_id, 0);
+};

@@ -491,6 +491,10 @@ RoutineState Pumping::Routine()
     if (!player->CanCast())
         return RoutineState::FINISHED;
 
+    if (!player->living->GetIsAttacking() && player->CanCast() && player->target && player->target->agent_id &&
+        player->target->GetIsLivingType())
+        AttackAgent(player->target);
+
     const auto self_bonds_state = RoutineSelfBonds();
     if (self_bonds_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
