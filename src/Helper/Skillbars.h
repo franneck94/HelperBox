@@ -41,7 +41,7 @@ public:
         return SkillFound() && (current_energy > energy_cost && recharge == 0);
     }
 
-    RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0)
+    RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0) const
     {
         if (!CanBeCasted(current_energy))
             return RoutineState::ACTIVE;
@@ -236,5 +236,71 @@ public:
             worry.Update(skillbar_skills);
         if (pi.SkillFound())
             pi.Update(skillbar_skills);
+    }
+};
+
+class DbSkillbar : public SkillbarABC
+{
+public:
+    SkillData sos = SkillData{GW::Constants::SkillID::Signet_of_Spirits, static_cast<uint32_t>(-1)};
+    SkillData honor = SkillData{GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor, static_cast<uint32_t>(-1)};
+    SkillData eoe = SkillData{GW::Constants::SkillID::Edge_of_Extinction, static_cast<uint32_t>(-1)};
+    SkillData qz = SkillData{GW::Constants::SkillID::Quickening_Zephyr, static_cast<uint32_t>(-1)};
+    SkillData winnow = SkillData{GW::Constants::SkillID::Winnowing, static_cast<uint32_t>(-1)};
+    SkillData pi = SkillData{GW::Constants::SkillID::Pain_Inverter, static_cast<uint32_t>(-1)};
+    SkillData sq = SkillData{GW::Constants::SkillID::Serpents_Quickness, static_cast<uint32_t>(-1)};
+
+public:
+    virtual void LoadInternal(const GW::SkillbarSkill *skillbar_skills) override
+    {
+        if (!skillbar_skills)
+            return;
+
+        sos.idx = static_cast<uint32_t>(-1);
+        honor.idx = static_cast<uint32_t>(-1);
+        eoe.idx = static_cast<uint32_t>(-1);
+        qz.idx = static_cast<uint32_t>(-1);
+        winnow.idx = static_cast<uint32_t>(-1);
+        pi.idx = static_cast<uint32_t>(-1);
+        sq.idx = static_cast<uint32_t>(-1);
+
+        for (uint32_t idx = 0; idx < 8; ++idx)
+        {
+            if (skillbar_skills[idx].skill_id == sos.id)
+                sos.idx = idx;
+            else if (skillbar_skills[idx].skill_id == honor.id)
+                honor.idx = idx;
+            else if (skillbar_skills[idx].skill_id == eoe.id)
+                eoe.idx = idx;
+            else if (skillbar_skills[idx].skill_id == qz.id)
+                qz.idx = idx;
+            else if (skillbar_skills[idx].skill_id == winnow.id)
+                winnow.idx = idx;
+            else if (skillbar_skills[idx].skill_id == pi.id)
+                pi.idx = idx;
+            else if (skillbar_skills[idx].skill_id == sq.id)
+                sq.idx = idx;
+        }
+    }
+
+    virtual void UpdateInternal(const GW::SkillbarSkill *skillbar_skills) override
+    {
+        if (!skillbar_skills)
+            return;
+
+        if (sos.SkillFound())
+            sos.Update(skillbar_skills);
+        if (honor.SkillFound())
+            honor.Update(skillbar_skills);
+        if (eoe.SkillFound())
+            eoe.Update(skillbar_skills);
+        if (qz.SkillFound())
+            qz.Update(skillbar_skills);
+        if (winnow.SkillFound())
+            winnow.Update(skillbar_skills);
+        if (pi.SkillFound())
+            pi.Update(skillbar_skills);
+        if (sq.SkillFound())
+            sq.Update(skillbar_skills);
     }
 };

@@ -37,10 +37,6 @@ namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
 static auto send_move = false;
-
-const auto SKIP_BUTTON_X = DEFAULT_BUTTON_SIZE.x / 2.25F;
-const auto SKIP_BUTTON_Y = DEFAULT_BUTTON_SIZE.y / 2.0F;
-const auto SKIP_BUTTON_SIZE = ImVec2(SKIP_BUTTON_X, SKIP_BUTTON_Y);
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -102,24 +98,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (IsUw() || IsUwEntryOutpost())
         {
-            if (ImGui::Button(moves[move_idx].Name(), DEFAULT_BUTTON_SIZE))
-            {
-                moves[move_idx].Execute();
-                send_move = true;
-            }
-            if (ImGui::Button("Prev.", SKIP_BUTTON_SIZE))
-            {
-                if (move_idx > 0)
-                    --move_idx;
-                send_move = false;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Next", SKIP_BUTTON_SIZE))
-            {
-                if (move_idx < moves.size() - 1)
-                    ++move_idx;
-                send_move = false;
-            }
+            DrawMovingButtons(moves, send_move, move_idx);
         }
     }
 
@@ -162,53 +141,14 @@ void EmoWindow::UpdateUwMoves()
     if (!send_move)
         return;
 
-    if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.1F))
+    if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F))
         return;
 
-    if (moves[move_idx].moving_state == MoveState::DONT_WAIT_FOR_AGGRO_FREE)
-    {
-        moves[move_idx + 1].Execute();
-    }
-    else if (moves[move_idx].moving_state == MoveState::WAIT_FOR_AGGRO_FREE)
-    {
-        const auto agents_array = GW::Agents::GetAgentArray();
+    const auto ret =
+        Move::UpdateMove(player, send_move, moves[move_idx], moves[move_idx + 1U], moves[move_idx].wait_aggro_range);
 
-        auto agents_at_emo = std::vector<GW::AgentLiving *>{};
-        FilterAgentsAtPositionWithDistance(player.pos,
-                                           agents_array,
-                                           agents_at_emo,
-                                           std::array<uint32_t, 0>{},
-                                           GW::Constants::Allegiance::Enemy,
-                                           GW::Constants::Range::Spellcast);
-        auto agents_at_target_pos = std::vector<GW::AgentLiving *>{};
-        FilterAgentsAtPositionWithDistance(moves[move_idx + 1].pos,
-                                           agents_array,
-                                           agents_at_emo,
-                                           std::array<uint32_t, 0>{},
-                                           GW::Constants::Allegiance::Enemy,
-                                           GW::Constants::Range::Spellcast);
-
-        if (agents_at_emo.size() == 0 && agents_at_target_pos.size() == 0)
-        {
-            moves[move_idx + 1].Execute();
-        }
-        else
-        {
-            static auto timer_start = clock();
-            const auto timer_diff_ms = TIMER_DIFF(timer_start);
-            if (timer_diff_ms >= 1000)
-            {
-                GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"Waiting for enemies...");
-                timer_start = clock();
-            }
-        }
-    }
-    else
-    {
-        send_move = false;
-    }
-
-    ++move_idx;
+    if (ret)
+        ++move_idx;
 }
 
 void EmoWindow::Update(float delta)

@@ -47,9 +47,9 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
 void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
-void ChangeFullLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+void ToLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
-void ChangeFullHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+void ToHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
 template <uint32_t N>
 void FilterAgents(const Player &player,
@@ -97,11 +97,12 @@ void FilterAgents(const Player &player,
     }
 }
 
-template <uint32_t N>
+template <uint32_t N, uint32_t M>
 void FilterAgentsAtPositionWithDistance(const GW::GamePos &pos,
                                         const GW::AgentArray &agents,
                                         std::vector<GW::AgentLiving *> &filtered_agents,
                                         const std::array<uint32_t, N> &ids,
+                                        const std::array<uint32_t, M> &filter_ids,
                                         const GW::Constants::Allegiance allegiance,
                                         const float max_distance = 0.0F)
 {
@@ -123,8 +124,16 @@ void FilterAgentsAtPositionWithDistance(const GW::GamePos &pos,
             if (living->GetIsDead())
                 continue;
 
-            if (living->player_number == GW::Constants::ModelID::UW::SkeletonOfDhuum1 ||
-                living->player_number == GW::Constants::ModelID::UW::SkeletonOfDhuum2)
+            auto skip = false;
+            for (const auto filter_id : filter_ids)
+            {
+                if (living->player_number == filter_id)
+                {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip)
                 continue;
 
             if (max_distance == 0.0F)
@@ -175,6 +184,8 @@ bool CanMove();
 
 uint32_t GetTankId();
 
+uint32_t GetEmoId();
+
 uint32_t GetDhuumBitchId();
 
 bool IsAliveAlly(const GW::Agent *target);
@@ -189,6 +200,14 @@ uint32_t GetClosestEnemyTypeID(const Player &player, const uint32_t id);
 
 uint32_t GetClosestAllyTypeID(const Player &player, const uint32_t id);
 
+uint32_t GetClosestNpcTypeID(const Player &player, const uint32_t id);
+
 void TargetClosestEnemyById(Player &player, const uint32_t id);
 
 void TargetClosestAllyById(Player &player, const uint32_t id);
+
+void TargetClosestNpcById(Player &player, const uint32_t id);
+
+DWORD QuestAcceptDialog(DWORD quest);
+
+DWORD QuestRewardDialog(DWORD quest);

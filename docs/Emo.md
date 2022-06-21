@@ -2,8 +2,6 @@
 
 The window will only be rendered if you are on an E/MO.
 
-Note: Currently it is expected to swap to low armor by yourself.
-
 - Player Bonding:
     - Expected to have some players in the target
     - Balth and Bond will be cast, if not yet present
@@ -13,7 +11,7 @@ Note: Currently it is expected to swap to low armor by yourself.
     - Balth, Life, and Bond will be cast if not present
 
 - Fuse Range:
-    - Walk to the target at a distance of 1220
+    - Walk to the target at a distance of 1230
 
 - Standard Skill Routine - **Pumping**:
     - On-hold while walking or talking to reaper (yellow colored)
@@ -23,8 +21,9 @@ Note: Currently it is expected to swap to low armor by yourself.
         - Whenever SB or Burning is not up, cast it
         - If HP or Energy is low, cast sb or burning
     - LT
-      - If LT is in a distance ~1220 and you and the LT are not moving
+      - If LT is in a distance $[1230, 1250]$ and you and the LT are not moving
         - Maintain SB on the LT
+        - If LT drops in HP => Fuse
     - Turtle
         - If the turtle is nearby spawned, cast bond and life on it
         - If turtle hp <70% fuse

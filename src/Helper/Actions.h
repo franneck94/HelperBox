@@ -11,6 +11,7 @@
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/GameContainers/GamePos.h>
 
+#include <GuiConstants.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <MathUtils.h>
@@ -20,18 +21,10 @@
 
 #include <imgui.h>
 
-static const auto ACTIVE_COLOR = ImVec4{0.0F, 200.0F, 0.0F, 80.0F};
-static const auto INACTIVE_COLOR = ImVec4{41.0F, 74.0F, 122.0F, 80.0F};
-static const auto ON_HOLD_COLOR = ImVec4{255.0F, 226.0F, 0.0F, 80.0F};
-
-static auto COLOR_MAPPING = std::map<uint32_t, ImVec4>{{static_cast<uint32_t>(ActionState::INACTIVE), INACTIVE_COLOR},
-                                                       {static_cast<uint32_t>(ActionState::ACTIVE), ACTIVE_COLOR},
-                                                       {static_cast<uint32_t>(ActionState::ON_HOLD), ON_HOLD_COLOR}};
-
 class ActionABC
 {
 public:
-    ActionABC(Player *p, const char *const t) : player(p), text(t)
+    ActionABC(Player *p, std::string_view t) : player(p), text(t)
     {
     }
     virtual ~ActionABC(){};
@@ -41,7 +34,7 @@ public:
     virtual void Update() = 0;
 
     Player *player = nullptr;
-    const char *const text = nullptr;
+    std::string_view text = nullptr;
 
     ActionState action_state = ActionState::INACTIVE;
 };
@@ -49,7 +42,7 @@ public:
 class EmoActionABC : public ActionABC
 {
 public:
-    EmoActionABC(Player *p, const char *const t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
+    EmoActionABC(Player *p, std::string_view t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
     {
     }
     virtual ~EmoActionABC(){};
@@ -60,7 +53,7 @@ public:
 class MesmerActionABC : public ActionABC
 {
 public:
-    MesmerActionABC(Player *p, const char *const t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
+    MesmerActionABC(Player *p, std::string_view t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
     {
     }
     virtual ~MesmerActionABC(){};
@@ -68,35 +61,82 @@ public:
     MesmerSkillbar *skillbar = nullptr;
 };
 
+class DbActionABC : public ActionABC
+{
+public:
+    DbActionABC(Player *p, std::string_view t, DbSkillbar *s) : ActionABC(p, t), skillbar(s)
+    {
+    }
+    virtual ~DbActionABC(){};
+
+    DbSkillbar *skillbar = nullptr;
+};
 
 enum class MoveState
 {
     NONE,
-    DONT_WAIT_FOR_AGGRO_FREE,
-    WAIT_FOR_AGGRO_FREE,
+    DONT_WAIT,
+    WAIT,
+    CAST_SKILL,
 };
 
 class Move
 {
 public:
-    static constexpr size_t NAME_LEN = 140U;
-
+    // Move and then wait
     Move(const float _x,
          const float _y,
-         const char *_name,
-         std::function<void()> _callback,
-         const MoveState _moving_state = MoveState::NONE)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), callback(_callback), moving_state(_moving_state){};
+         std::string_view _name,
+         const MoveState _moving_state,
+         const float _wait_aggro_range = GW::Constants::Range::Spellcast)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state), wait_aggro_range(_wait_aggro_range){};
 
-    Move(const float _x, const float _y, const char *_name, const MoveState _moving_state = MoveState::NONE)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state){};
+    // Move, trigger cb, and then wait
+    Move(const float _x,
+         const float _y,
+         std::string_view _name,
+         const MoveState _moving_state,
+         std::function<void()> _trigger_cb,
+         const float _wait_aggro_range = GW::Constants::Range::Spellcast)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), moving_state(_moving_state),
+          wait_aggro_range(_wait_aggro_range){};
+
+    // Move, and cast skill at goal
+    Move(const float _x,
+         const float _y,
+         std::string_view _name,
+         const MoveState _moving_state,
+         const SkillData *_skill_cb)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state), skill_cb(_skill_cb){};
+
+    // Move, trigger cb, and cast skill at goal
+    Move(const float _x,
+         const float _y,
+         std::string_view _name,
+         const MoveState _moving_state,
+         std::function<void()> _trigger_cb,
+         const SkillData *_skill_cb)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), moving_state(_moving_state),
+          skill_cb(_skill_cb){};
 
     const char *Name() const
     {
-        return name;
+        return name.data();
     }
 
-    void Execute();
+    void Execute() const;
+
+    static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos, const float wait_aggro_range);
+    static bool UpdateMove(const Player &player,
+                           bool &send_move,
+                           const Move &move,
+                           const Move &next_move,
+                           const float wait_aggro_range);
+    static bool UpdateMoveCastSkill(const Player &player, bool &send_move, const Move &move, const Move &next_move);
+    static bool UpdateMoveWait(const Player &player,
+                               bool &send_move,
+                               const Move &next_move,
+                               const float wait_aggro_range);
 
 private:
     float x = 0.0;
@@ -104,7 +144,10 @@ private:
 
 public:
     GW::GamePos pos;
-    const char *name;
+    std::string_view name;
+
     MoveState moving_state = MoveState::NONE;
-    std::optional<std::function<void()>> callback = std::nullopt;
+    const SkillData *skill_cb = nullptr;
+    std::optional<std::function<void()>> trigger_cb = std::nullopt;
+    float wait_aggro_range = GW::Constants::Range::Spellcast;
 };

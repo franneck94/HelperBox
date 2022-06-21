@@ -8,6 +8,7 @@
 #include <fmt/format.h>
 
 #include <Logger.h>
+#include <Timer.h>
 
 #include "Actions.h"
 
@@ -20,7 +21,7 @@ void ActionABC::Draw(const ImVec2 button_size)
     DrawButton(action_state, color, text, button_size);
 }
 
-void Move::Execute()
+void Move::Execute() const
 {
     if (!CanMove())
         return;
@@ -32,12 +33,133 @@ void Move::Execute()
     if (x != 0.0F && y != 0.0F)
     {
         GW::Agents::Move(x, y);
-        Log::Info("Moving to (%.0f, %.0f)", x, y);
+        Log::Info("%s - Moving to (%.0f, %.0f)", name.data(), x, y);
     }
 
-    if (callback.has_value())
+    if (trigger_cb.has_value())
     {
         Log::Info("Calling the callback");
-        callback.value()();
+        trigger_cb.value()();
+    }
+}
+
+bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos, const float wait_aggro_range)
+{
+    const auto agents_array = GW::Agents::GetAgentArray();
+
+    const auto ids = std::array<uint32_t, 0>{};
+    const auto filter_at_agent = std::array<uint32_t, 2>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                         GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+    const auto filter_at_target = std::array<uint32_t, 5>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                          GW::Constants::ModelID::UW::SkeletonOfDhuum2,
+                                                          GW::Constants::ModelID::UW::TorturedSpirit1,
+                                                          GW::Constants::ModelID::UW::TorturedSpirit,
+                                                          2372U};
+
+    auto agents_at_player = std::vector<GW::AgentLiving *>{};
+    FilterAgentsAtPositionWithDistance(player.pos,
+                                       agents_array,
+                                       agents_at_player,
+                                       ids,
+                                       filter_at_agent,
+                                       GW::Constants::Allegiance::Enemy,
+                                       wait_aggro_range);
+    auto agents_at_target_pos = std::vector<GW::AgentLiving *>{};
+    FilterAgentsAtPositionWithDistance(next_pos,
+                                       agents_array,
+                                       agents_at_target_pos,
+                                       ids,
+                                       filter_at_target,
+                                       GW::Constants::Allegiance::Enemy,
+                                       wait_aggro_range);
+
+    if (agents_at_player.size() == 0 && agents_at_target_pos.size() == 0)
+        return true;
+
+    return false;
+}
+
+bool Move::UpdateMoveCastSkill(const Player &player, bool &send_move, const Move &move, const Move &next_move)
+{
+    static auto started_cast = false;
+    static auto timer = clock();
+
+    if (!started_cast && move.skill_cb)
+    {
+        timer = clock();
+        started_cast = true;
+        move.skill_cb->Cast(player.energy);
+        return false;
+    }
+
+    const auto timer_diff = TIMER_DIFF(timer);
+    const auto is_casting = player.living->GetIsCasting();
+    const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(move.skill_cb->id);
+    const auto timer_exceeded = timer_diff < (skill_data.activation * 1000.0F);
+    const auto wait = (timer_exceeded || is_casting);
+
+    if (started_cast && wait)
+        return false;
+
+    if (started_cast)
+    {
+        started_cast = false;
+        timer = clock();
+        send_move = true;
+        next_move.Execute();
+    }
+
+    return true;
+}
+
+bool Move::UpdateMoveWait(const Player &player, bool &send_move, const Move &next_move, const float wait_aggro_range)
+{
+    const auto aggro_free = Move::CheckForAggroFree(player, next_move.pos, wait_aggro_range);
+    if (aggro_free)
+    {
+        send_move = true;
+        next_move.Execute();
+        return true;
+    }
+
+    static auto timer_start = clock();
+    const auto timer_diff_ms = TIMER_DIFF(timer_start);
+    if (timer_diff_ms >= 5000)
+    {
+        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"Waiting...");
+        timer_start = clock();
+    }
+
+    return false;
+}
+
+bool Move::UpdateMove(const Player &player,
+                      bool &send_move,
+                      const Move &move,
+                      const Move &next_move,
+                      const float wait_aggro_range)
+{
+    switch (move.moving_state)
+    {
+    case MoveState::CAST_SKILL:
+    {
+        return Move::UpdateMoveCastSkill(player, send_move, move, next_move);
+    }
+    case MoveState::DONT_WAIT:
+    {
+        send_move = true;
+        next_move.Execute();
+        return true;
+    }
+    case MoveState::WAIT:
+    {
+        return Move::UpdateMoveWait(player, send_move, next_move, wait_aggro_range);
+    }
+    case MoveState::NONE:
+    default:
+    {
+        send_move = false;
+        return true;
+    }
     }
 }

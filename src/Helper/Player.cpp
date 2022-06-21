@@ -44,7 +44,7 @@ void Player::Update()
     me = me_agent;
     living = me_living;
 
-    dead = me_living->GetIsDead();
+    dead = living->GetIsDead();
 
     target = GW::Agents::GetTarget();
 
@@ -58,8 +58,8 @@ void Player::Update()
     max_hp = std::get<1>(hp_tpl);
     hp_perc = std::get<2>(hp_tpl);
 
-    primary = static_cast<GW::Constants::Profession>(me_living->primary);
-    secondary = static_cast<GW::Constants::Profession>(me_living->secondary);
+    primary = static_cast<GW::Constants::Profession>(living->primary);
+    secondary = static_cast<GW::Constants::Profession>(living->secondary);
 }
 
 bool Player::CanCast() const

@@ -31,3 +31,7 @@ bool TargetIsReaper(Player &player);
 void TargetClosestReaper(Player &player);
 
 void TargetClosestKeeper(Player &player);
+
+void TakeRestore();
+
+void TakeEscort();

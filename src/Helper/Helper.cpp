@@ -395,7 +395,7 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
         EquipItemExecute(bag_idx, start_slot_idx + offset);
 }
 
-void ChangeFullLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+void ToLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
         return;
@@ -416,7 +416,7 @@ void ChangeFullLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
         EquipItemExecute(bag_idx, start_slot_idx + offset);
 }
 
-void ChangeFullHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+void ToHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
         return;
@@ -478,6 +478,19 @@ uint32_t GetTankId()
     }
     }
 
+    const auto tank = party_members[tank_idx];
+    return tank.id;
+}
+
+uint32_t GetEmoId()
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success || party_members.size() < 2)
+        return 0;
+
+    const auto tank_idx = party_members.size() - 1U;
     const auto tank = party_members[tank_idx];
     return tank.id;
 }
@@ -609,6 +622,11 @@ uint32_t GetClosestAllyTypeID(const Player &player, const uint32_t id)
     return GetClosesTypeID(player, id, GW::Constants::Allegiance::Ally_NonAttackable);
 }
 
+uint32_t GetClosestNpcTypeID(const Player &player, const uint32_t id)
+{
+    return GetClosesTypeID(player, id, GW::Constants::Allegiance::Npc_Minipet);
+}
+
 void TargetClosestEnemyById(Player &player, const uint32_t id)
 {
     const auto target = GetClosestEnemyTypeID(player, id);
@@ -627,4 +645,24 @@ void TargetClosestAllyById(Player &player, const uint32_t id)
         return;
 
     player.ChangeTarget(target);
+}
+
+void TargetClosestNpcById(Player &player, const uint32_t id)
+{
+    const auto target = GetClosestNpcTypeID(player, id);
+
+    if (!target)
+        return;
+
+    player.ChangeTarget(target);
+}
+
+DWORD QuestAcceptDialog(DWORD quest)
+{
+    return (quest << 8) | 0x800001;
+}
+
+DWORD QuestRewardDialog(DWORD quest)
+{
+    return (quest << 8) | 0x800007;
 }

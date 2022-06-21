@@ -184,10 +184,22 @@ bool TargetIsReaper(Player &player)
 
 void TargetClosestReaper(Player &player)
 {
-    TargetClosestAllyById(player, GW::Constants::ModelID::UW::Reapers);
+    TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
 }
 
 void TargetClosestKeeper(Player &player)
 {
     TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls);
+}
+
+void TakeRestore()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Restore);
+    GW::Agents::SendDialog(dialog);
+}
+
+void TakeEscort()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Escort);
+    GW::Agents::SendDialog(dialog);
 }
