@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -84,22 +85,16 @@ class Move
 {
 public:
     // Move and then wait
-    Move(const float _x,
-         const float _y,
-         std::string_view _name,
-         const MoveState _moving_state,
-         const float _wait_aggro_range = GW::Constants::Range::Spellcast)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state), wait_aggro_range(_wait_aggro_range){};
+    Move(const float _x, const float _y, std::string_view _name, const MoveState _moving_state)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state){};
 
     // Move, trigger cb, and then wait
     Move(const float _x,
          const float _y,
          std::string_view _name,
          const MoveState _moving_state,
-         std::function<void()> _trigger_cb,
-         const float _wait_aggro_range = GW::Constants::Range::Spellcast)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), moving_state(_moving_state),
-          wait_aggro_range(_wait_aggro_range){};
+         std::function<void()> _trigger_cb)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), moving_state(_moving_state){};
 
     // Move, and cast skill at goal
     Move(const float _x,
@@ -126,17 +121,11 @@ public:
 
     void Execute() const;
 
-    static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos, const float wait_aggro_range);
-    static bool UpdateMove(const Player &player,
-                           bool &send_move,
-                           const Move &move,
-                           const Move &next_move,
-                           const float wait_aggro_range);
-    static bool UpdateMoveCastSkill(const Player &player, bool &send_move, const Move &move, const Move &next_move);
-    static bool UpdateMoveWait(const Player &player,
-                               bool &send_move,
-                               const Move &next_move,
-                               const float wait_aggro_range);
+public:
+    static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
+    static bool UpdateMove(const Player &player, bool &move_state_active, const Move &move, const Move &next_move);
+    static bool UpdateMoveCastSkill(const Player &player, bool &move_state_active, const Move &move);
+    static bool UpdateMoveWait(const Player &player, bool &move_state_active, const Move &next_move);
 
 private:
     float x = 0.0;
@@ -149,5 +138,27 @@ public:
     MoveState moving_state = MoveState::NONE;
     const SkillData *skill_cb = nullptr;
     std::optional<std::function<void()>> trigger_cb = std::nullopt;
-    float wait_aggro_range = GW::Constants::Range::Spellcast;
 };
+
+template <uint32_t N>
+uint32_t GetClostestMove(const Player &player, const std::array<Move, N> &moves)
+{
+    auto closest_move = moves[0];
+    auto closest_dist = FLT_MAX;
+    auto closest_idx = 0U;
+    auto idx = 0U;
+    for (const auto move : moves)
+    {
+        const auto dist_to_move = GW::GetDistance(player.pos, move.pos);
+        if (dist_to_move < closest_dist)
+        {
+            closest_dist = dist_to_move;
+            closest_move = move;
+            closest_idx = idx;
+        }
+
+        ++idx;
+    }
+
+    return closest_idx;
+}

@@ -14,11 +14,12 @@
 
 bool IsUw()
 {
+    if (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld)
+        return true;
+
 #ifdef _DEBUG
-    return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld ||
-            GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless);
+    return (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless);
 #endif
-    return (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld);
 }
 
 bool IsAtSpirits1(const Player *const player)
@@ -45,6 +46,11 @@ bool IsAtSpirits2(const Player *const player)
 
 bool IsInVale(const Player *const player)
 {
+#ifdef _DEBUG
+    if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
+        return true;
+#endif
+
     if (!IsUw())
         return false;
 
@@ -187,9 +193,29 @@ void TargetClosestReaper(Player &player)
     TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
 }
 
+void TalkClosestReaper(Player &player)
+{
+    const auto id = TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
+
+    if (!id)
+        return;
+
+    const auto agent = GW::Agents::GetAgentByID(id);
+    if (!agent)
+        return;
+
+    GW::Agents::GoNPC(agent, 0);
+}
+
 void TargetClosestKeeper(Player &player)
 {
     TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls);
+}
+
+void AcceptChamber()
+{
+    const auto dialog = QuestRewardDialog(GW::Constants::QuestID::UW::Chamber);
+    GW::Agents::SendDialog(dialog);
 }
 
 void TakeRestore()

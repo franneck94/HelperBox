@@ -70,6 +70,14 @@ bool Player::CanCast() const
     return true;
 }
 
+bool Player::CanAttack() const
+{
+    if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() || living->GetIsMoving())
+        return false;
+
+    return true;
+}
+
 bool Player::HasBuff(const GW::Constants::SkillID buff_skill_id) const
 {
     const auto &me_buffs = GW::Effects::GetPlayerBuffArray();

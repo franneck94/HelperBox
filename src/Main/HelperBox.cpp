@@ -27,6 +27,9 @@
 #include <Base/HelperBoxTheme.h>
 #include <Base/MainWindow.h>
 
+#include <imgui.h>
+#include <implot.h>
+
 namespace
 {
 auto dllmodule = HMODULE{0};
@@ -371,6 +374,8 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
         if (!imgui_initialized)
         {
             ImGui::CreateContext();
+            ImPlot::CreateContext();
+
             ImGui_ImplDX9_Init(device);
             ImGui_ImplWin32_Init(GW::MemoryMgr().GetGWWindowHandle());
 

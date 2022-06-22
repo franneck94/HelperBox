@@ -1,3 +1,6 @@
+#include <set>
+#include <vector>
+
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/CtoSMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
@@ -30,6 +33,13 @@ void Move::Execute() const
     if (!me)
         return;
 
+    const auto dist = GW::GetDistance(me->pos, pos);
+    if (dist > 5000.0F)
+    {
+        Log::Info("Too far away!");
+        return;
+    }
+
     if (x != 0.0F && y != 0.0F)
     {
         GW::Agents::Move(x, y);
@@ -43,55 +53,47 @@ void Move::Execute() const
     }
 }
 
-bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos, const float wait_aggro_range)
+bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
 {
-    const auto agents_array = GW::Agents::GetAgentArray();
+    const auto filter_ids =
+        std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+    const auto filter_at_target = std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                     GW::Constants::ModelID::UW::SkeletonOfDhuum2,
+                                                     GW::Constants::ModelID::UW::TorturedSpirit1,
+                                                     GW::Constants::ModelID::UW::TorturedSpirit,
+                                                     2372U};
+    auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
-    const auto ids = std::array<uint32_t, 0>{};
-    const auto filter_at_agent = std::array<uint32_t, 2>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
-                                                         GW::Constants::ModelID::UW::SkeletonOfDhuum2};
-    const auto filter_at_target = std::array<uint32_t, 5>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
-                                                          GW::Constants::ModelID::UW::SkeletonOfDhuum2,
-                                                          GW::Constants::ModelID::UW::TorturedSpirit1,
-                                                          GW::Constants::ModelID::UW::TorturedSpirit,
-                                                          2372U};
+    if (player.pos.x == next_pos.x && player.pos.y == next_pos.y)
+    {
+        GetEnemiesInAggro(player, filtered_livings);
+        const auto result_ids = FilterAgentIDS(filtered_livings, filter_ids);
 
-    auto agents_at_player = std::vector<GW::AgentLiving *>{};
-    FilterAgentsAtPositionWithDistance(player.pos,
-                                       agents_array,
-                                       agents_at_player,
-                                       ids,
-                                       filter_at_agent,
-                                       GW::Constants::Allegiance::Enemy,
-                                       wait_aggro_range);
+        if (result_ids.size() == 0)
+            return true;
+        return false;
+    }
 
-    auto agents_at_intermediate_pos1 = std::vector<GW::AgentLiving *>{};
-    const auto intermediate_pos1 =
-        GW::GamePos{(player.pos.x + next_pos.x) / 2.0F, (player.pos.y + next_pos.y) / 2.0F, player.pos.zplane};
-    FilterAgentsAtPositionWithDistance(intermediate_pos1,
-                                       agents_array,
-                                       agents_at_intermediate_pos1,
-                                       ids,
-                                       filter_at_target,
-                                       GW::Constants::Allegiance::Enemy,
-                                       GW::Constants::Range::Spellcast);
+    const auto offset = GW::Constants::Range::Spellcast;
+    const auto rect = GameRectangle(player.pos, next_pos, offset);
 
-    auto agents_at_target_pos = std::vector<GW::AgentLiving *>{};
-    FilterAgentsAtPositionWithDistance(next_pos,
-                                       agents_array,
-                                       agents_at_target_pos,
-                                       ids,
-                                       filter_at_target,
-                                       GW::Constants::Allegiance::Enemy,
-                                       wait_aggro_range);
+    GetEnemiesInGameRectangle(rect, filtered_livings);
 
-    if (agents_at_player.size() == 0 && agents_at_intermediate_pos1.size() == 0 && agents_at_target_pos.size() == 0)
+    auto result_ids = std::set<uint32_t>{};
+
+    const auto stairs_dist = GW::GetDistance(player.pos, GW::GamePos{-2126.06F, 10601.70F, 0});
+    const auto vale_house_dist = GW::GetDistance(player.pos, GW::GamePos{-12264.12F, 1821.18F, 0});
+    if (vale_house_dist > 1000.0F && stairs_dist > 1000.0F)
+        result_ids = FilterAgentIDS(filtered_livings, filter_ids);
+    else
+        result_ids = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
+
+    if (result_ids.size() == 0)
         return true;
-
     return false;
 }
 
-bool Move::UpdateMoveCastSkill(const Player &player, bool &send_move, const Move &move, const Move &next_move)
+bool Move::UpdateMoveCastSkill(const Player &player, bool &move_state_active, const Move &move)
 {
     static auto started_cast = false;
     static auto timer = clock();
@@ -117,21 +119,31 @@ bool Move::UpdateMoveCastSkill(const Player &player, bool &send_move, const Move
     {
         started_cast = false;
         timer = clock();
-        send_move = true;
-        next_move.Execute();
+        move_state_active = true;
     }
 
     return true;
 }
 
-bool Move::UpdateMoveWait(const Player &player, bool &send_move, const Move &next_move, const float wait_aggro_range)
+bool Move::UpdateMoveWait(const Player &player, bool &move_state_active, const Move &next_move)
 {
-    const auto aggro_free = Move::CheckForAggroFree(player, next_move.pos, wait_aggro_range);
+    static auto canceled_move = false;
+
+    move_state_active = true;
+
+    const auto aggro_free = Move::CheckForAggroFree(player, next_move.pos);
     if (aggro_free)
     {
-        send_move = true;
-        next_move.Execute();
+        canceled_move = false;
         return true;
+    }
+
+    if (!canceled_move && player.living->GetIsMoving())
+    {
+        canceled_move = true;
+        Log::Info("Canceled Movement based on aggro");
+        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        return false;
     }
 
     static auto timer_start = clock();
@@ -145,32 +157,27 @@ bool Move::UpdateMoveWait(const Player &player, bool &send_move, const Move &nex
     return false;
 }
 
-bool Move::UpdateMove(const Player &player,
-                      bool &send_move,
-                      const Move &move,
-                      const Move &next_move,
-                      const float wait_aggro_range)
+bool Move::UpdateMove(const Player &player, bool &move_state_active, const Move &move, const Move &next_move)
 {
     switch (move.moving_state)
     {
     case MoveState::CAST_SKILL:
     {
-        return Move::UpdateMoveCastSkill(player, send_move, move, next_move);
+        return Move::UpdateMoveCastSkill(player, move_state_active, move);
     }
     case MoveState::DONT_WAIT:
     {
-        send_move = true;
-        next_move.Execute();
+        move_state_active = true;
         return true;
     }
     case MoveState::WAIT:
     {
-        return Move::UpdateMoveWait(player, send_move, next_move, wait_aggro_range);
+        return Move::UpdateMoveWait(player, move_state_active, next_move);
     }
     case MoveState::NONE:
     default:
     {
-        send_move = false;
+        move_state_active = false;
         return true;
     }
     }

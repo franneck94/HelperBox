@@ -19,6 +19,7 @@
 
 #include <GuiUtils.h>
 #include <HelperBox.h>
+#include <Logger.h>
 #include <Timer.h>
 
 #include <Actions.h>
@@ -36,7 +37,7 @@
 namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
-static auto send_move = false;
+static auto move_state_active = false;
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -98,7 +99,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (IsUw() || IsUwEntryOutpost())
         {
-            DrawMovingButtons(moves, send_move, move_idx);
+            DrawMovingButtons(moves, move_state_active, move_idx);
         }
     }
 
@@ -128,7 +129,7 @@ void EmoWindow::UpdateUwEntry()
         moves[0].Execute();
         triggered_tank_bonds_at_start = false;
         triggered_move_start = true;
-        send_move = true;
+        move_state_active = true;
     }
     if (triggered_move_start && move_idx == 1 && TankIsSoloLT())
     {
@@ -138,14 +139,13 @@ void EmoWindow::UpdateUwEntry()
 
 void EmoWindow::UpdateUwMoves()
 {
-    if (!send_move)
+    if (!move_state_active)
         return;
 
     if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F))
         return;
 
-    const auto ret =
-        Move::UpdateMove(player, send_move, moves[move_idx], moves[move_idx + 1U], moves[move_idx].wait_aggro_range);
+    const auto ret = Move::UpdateMove(player, move_state_active, moves[move_idx], moves[move_idx + 1U]);
 
     if (ret)
         ++move_idx;
@@ -154,6 +154,7 @@ void EmoWindow::UpdateUwMoves()
 void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
+    static auto last_pos = player.pos;
 
     if (!player.ValidateData())
         return;
@@ -172,7 +173,18 @@ void EmoWindow::Update(float delta)
     emo_casting_action_state = &pumping.action_state;
 
     if (IsUw())
+    {
         UpdateUw();
+
+        const auto curr_pos = player.pos;
+        const auto dist = GW::GetDistance(last_pos, curr_pos);
+        if (dist > 5'000.0F)
+        {
+            Log::Info("Ported!");
+            move_idx = GetClostestMove(player, moves);
+        }
+        last_pos = curr_pos;
+    }
 
     tank_bonding.Update();
     player_bonding.Update();
@@ -299,17 +311,15 @@ RoutineState Pumping::RoutineLT() const
     return RoutineState::ACTIVE;
 }
 
-RoutineState Pumping::RoutineDb() const
+RoutineState Pumping::RoutineDbAtDhuum() const
 {
-    const auto id = GetDhuumBitchId();
-
-    if (!id)
+    if (!db_agent)
         return RoutineState::ACTIVE;
 
-    if (CastBondIfNotAvailable(skillbar->balth, id, player))
+    if (CastBondIfNotAvailable(skillbar->balth, db_agent->agent_id, player))
         return RoutineState::FINISHED;
 
-    if (CastBondIfNotAvailable(skillbar->prot, id, player))
+    if (CastBondIfNotAvailable(skillbar->prot, db_agent->agent_id, player))
         return RoutineState::FINISHED;
 
     return RoutineState::ACTIVE;
@@ -451,6 +461,31 @@ RoutineState Pumping::RoutineTurtleGDW() const
     return skillbar->gdw.Cast(player->energy, living->agent_id);
 }
 
+RoutineState Pumping::RoutineDbBeforeDhuum() const
+{
+    if (!db_agent)
+        return RoutineState::ACTIVE;
+
+    const auto living = db_agent->GetAsAgentLiving();
+    if (!living)
+        return RoutineState::ACTIVE;
+
+    const auto dist = GW::GetDistance(player->pos, db_agent->pos);
+    if (dist > GW::Constants::Range::Spellcast)
+        return RoutineState::ACTIVE;
+
+    if (living->hp > 0.75F)
+        return RoutineState::ACTIVE;
+
+    if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
+        return RoutineState::FINISHED;
+
+    if (player->hp_perc > 0.5F)
+        return skillbar->fuse.Cast(player->energy, living->agent_id);
+
+    return RoutineState::ACTIVE;
+}
+
 RoutineState Pumping::RoutineKeepPlayerAlive() const
 {
     for (const auto &[id, _] : party_members)
@@ -524,7 +559,7 @@ RoutineState Pumping::Routine()
     if (turtle_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    const auto db_state = RoutineDb();
+    const auto db_state = RoutineDbAtDhuum();
     if (db_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
@@ -596,7 +631,12 @@ void Pumping::Update()
     if (IsUw())
     {
         const auto lt_id = GetTankId();
-        lt_agent = GW::Agents::GetAgentByID(lt_id);
+        if (lt_id)
+            lt_agent = GW::Agents::GetAgentByID(lt_id);
+
+        const auto db_id = GetDhuumBitchId();
+        if (db_id)
+            db_agent = GW::Agents::GetAgentByID(db_id);
     }
 
     party_members.clear();
@@ -799,14 +839,7 @@ RoutineState FuseRange::Routine()
 
     if (routine_state == RoutineState::NONE)
     {
-        const auto dist = GW::GetDistance(me_pos, target_pos);
-        const auto d_t = FUSE_PULL_RANGE;
-        const auto t = d_t / dist;
-
-        const auto p_x = ((1.0F - t) * target_pos.x + t * me_pos.x);
-        const auto p_y = ((1.0F - t) * target_pos.y + t * me_pos.y);
-
-        requested_pos = GW::GamePos{p_x, p_y, 0};
+        requested_pos = MovePointAlongVector(me_pos, target_pos, FUSE_PULL_RANGE);
         routine_state = SafeWalk(requested_pos, true);
 
         return RoutineState::ACTIVE;

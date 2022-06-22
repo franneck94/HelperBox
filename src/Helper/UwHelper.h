@@ -30,7 +30,11 @@ bool TargetIsReaper(Player &player);
 
 void TargetClosestReaper(Player &player);
 
+void TalkClosestReaper(Player &player);
+
 void TargetClosestKeeper(Player &player);
+
+void AcceptChamber();
 
 void TakeRestore();
 

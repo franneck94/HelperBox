@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include <cmath>
 #include <cstdint>
 #include <vector>
 
@@ -19,6 +20,7 @@
 
 #include <GuiUtils.h>
 #include <HelperBox.h>
+#include <Logger.h>
 #include <Timer.h>
 
 #include <Actions.h>
@@ -33,10 +35,14 @@
 
 #include "DbWindow.h"
 
+#include <fmt/format.h>
+#include <imgui.h>
+#include <implot.h>
+
 namespace
 {
-static ActionState *emo_casting_action_state = nullptr;
-static auto send_move = false;
+static ActionState *damage_action_state = nullptr;
+static auto move_state_active = false;
 }; // namespace
 
 DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
@@ -49,7 +55,82 @@ DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
         [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
             load_cb_triggered = ExplorableLoadCallback(status, packet);
         });
+
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
+        &GenericValue_Entry,
+        [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
+            UNREFERENCED_PARAMETER(status);
+            if (move_state_active && player.SkillStoppedCallback(packet))
+                interrupted = true;
+        });
 };
+
+void DbWindow::DrawMap()
+{
+    ImGui::SetNextWindowSize(ImVec2{400.0F, 400.0F}, ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("PlottingWindow", nullptr, ImGuiWindowFlags_None))
+    {
+        if (ImPlot::BeginPlot("Plotting", ImVec2{400.0F, 400.0F}, ImPlotFlags_None | ImPlotFlags_NoLegend))
+        {
+            auto next_pos = GW::GamePos{};
+
+            if (move_idx < moves.size() - 1U && moves[move_idx].moving_state == MoveState::WAIT)
+                next_pos = moves[move_idx + 1U].pos;
+            else
+                next_pos = moves[move_idx].pos;
+
+            const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
+
+            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+
+            const float xs_player[1] = {player.pos.x};
+            const float ys_player[1] = {player.pos.y};
+            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 5.0F, ImVec4(0.0F, 0.0F, 1.0F, 1.0F), 1.0F);
+            ImPlot::PlotScatter("player", xs_player, ys_player, 1);
+
+            const float xs_target[1] = {next_pos.x};
+            const float ys_target[1] = {next_pos.y};
+            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 5.0F, ImVec4(0.5F, 0.5F, 0.0F, 1.0F), 1.0F);
+            ImPlot::PlotScatter("target", xs_target, ys_target, 1);
+
+            plot_rectangle_line(rect.v1, rect.v2, "line1");
+            plot_rectangle_line(rect.v1, rect.v3, "line2");
+            plot_rectangle_line(rect.v4, rect.v2, "line3");
+            plot_rectangle_line(rect.v4, rect.v3, "line4");
+
+            for (int i = 0; i < 360; i++)
+            {
+                const auto label = fmt::format("circle###{}", i);
+                const auto pos = GW::GamePos{player.pos.x + 1024.0F * std::sin((float)i),
+                                             player.pos.y + 1024.0F * std::cos((float)i),
+                                             0};
+                plot_point(pos, label, ImVec4{0.0, 0.0, 1.0, 1.0}, 2.0F);
+            }
+
+            std::vector<GW::AgentLiving *> living_agents{};
+            GetEnemiesInCompass(living_agents);
+            auto idx1 = 0U;
+            for (const auto living : living_agents)
+            {
+                const auto label = fmt::format("enemyAll##{}", idx1);
+                plot_point(living->pos, label, ImVec4{0.0, 1.0, 0.0, 1.0});
+                ++idx1;
+            }
+
+            auto filtered_livings = std::vector<GW::AgentLiving *>{};
+            GetEnemiesInGameRectangle(rect, filtered_livings);
+            auto idx2 = 0U;
+            for (const auto living : filtered_livings)
+            {
+                const auto label = fmt::format("enemyInside###{}", idx2);
+                plot_point(living->pos, label, ImVec4{1.0, 0.0, 0.0, 1.0});
+                ++idx2;
+            }
+        }
+        ImPlot::EndPlot();
+    }
+    ImGui::End();
+}
 
 void DbWindow::Draw(IDirect3DDevice9 *pDevice)
 {
@@ -69,9 +150,11 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (IsUw() || IsUwEntryOutpost())
         {
-            DrawMovingButtons(moves, send_move, move_idx);
+            DrawMovingButtons(moves, move_state_active, move_idx);
         }
     }
+
+    DrawMap();
 
     ImGui::End();
 }
@@ -84,32 +167,50 @@ void DbWindow::UpdateUw()
 
 void DbWindow::UpdateUwEntry()
 {
-    // if (load_cb_triggered)
-    // {
-    //     moves[0].Execute();
-    //     load_cb_triggered = false;
-    //     send_move = true;
-    // }
+    if (load_cb_triggered)
+    {
+        moves[0].Execute();
+        load_cb_triggered = false;
+        move_state_active = true;
+    }
 }
 
 void DbWindow::UpdateUwMoves()
 {
-    if (!send_move)
+    if (interrupted)
+    {
+        interrupted = false;
+        move_state_active = false;
+        Log::Info("Interrupted Action!");
+    }
+
+    if (!move_state_active)
         return;
 
-    if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F))
+    if (move_idx >= moves.size() - 1U)
         return;
 
-    const auto ret =
-        Move::UpdateMove(player, send_move, moves[move_idx], moves[move_idx + 1U], moves[move_idx].wait_aggro_range);
+    const auto ret = Move::UpdateMove(player, move_state_active, moves[move_idx], moves[move_idx + 1U]);
+
+    if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && player.living->GetIsMoving())
+        return;
+    else if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && !player.living->GetIsMoving() && ret)
+    {
+        moves[move_idx].Execute();
+        return;
+    }
 
     if (ret)
+    {
         ++move_idx;
+        moves[move_idx].Execute();
+    }
 }
 
 void DbWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
+    static auto last_pos = player.pos;
 
     if (!player.ValidateData())
         return;
@@ -125,10 +226,21 @@ void DbWindow::Update(float delta)
         return;
     skillbar.Update();
 
-    emo_casting_action_state = &damage.action_state;
+    damage_action_state = &damage.action_state;
 
     if (IsUw())
+    {
         UpdateUw();
+
+        const auto curr_pos = player.pos;
+        const auto dist = GW::GetDistance(last_pos, curr_pos);
+        if (dist > 5'000.0F)
+        {
+            Log::Info("Ported!");
+            move_idx = GetClostestMove(player, moves);
+        }
+        last_pos = curr_pos;
+    }
 
     damage.Update();
 }
@@ -205,9 +317,23 @@ RoutineState Damage::RoutinePI(const uint32_t dhuum_id) const
 
 RoutineState Damage::RoutineDhuum() const
 {
+    static auto qz_timer = clock();
+
     const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_eoe = player->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
-    const auto found_qz = player->HasEffect(GW::Constants::SkillID::Quickening_Zephyr); // every 36s cast
+    const auto found_qz = player->HasEffect(GW::Constants::SkillID::Quickening_Zephyr);
+
+    const auto qz_diff = TIMER_DIFF(qz_timer);
+    if (qz_diff > 36'000 || !found_qz)
+    {
+        const auto sq_state = skillbar->sq.Cast(player->energy);
+        if (sq_state == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+
+        const auto qz_state = skillbar->qz.Cast(player->energy);
+        if (qz_state == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+    }
 
     if (!found_honor)
     {
@@ -220,17 +346,6 @@ RoutineState Damage::RoutineDhuum() const
     {
         const auto eoe_state = skillbar->eoe.Cast(player->energy);
         if (eoe_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
-    }
-
-    if (!found_qz)
-    {
-        const auto sq_state = skillbar->sq.Cast(player->energy);
-        if (sq_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
-
-        const auto qz_state = skillbar->qz.Cast(player->energy);
-        if (qz_state == RoutineState::FINISHED)
             return RoutineState::FINISHED;
     }
 
@@ -251,12 +366,16 @@ RoutineState Damage::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    // if (!player->living->GetIsAttacking() && player->CanCast() && player->target && player->target->agent_id &&
-    //     player->target->GetIsLivingType())
-    //     AttackAgent(player->target);
-
     if (IsInVale(player))
     {
+        if (!player->living->GetIsAttacking() && player->CanAttack())
+        {
+            if (!player->target || !player->target->agent_id || !player->target->GetIsLivingType())
+                TargetNearest(TargetType::Living_Enemy, 1280.0F);
+            if (player->target && player->target->agent_id)
+                AttackAgent(player->target);
+        }
+
         const auto vale_rota = RoutineValeSpirits();
         if (vale_rota == RoutineState::FINISHED)
             return RoutineState::FINISHED;
@@ -279,9 +398,9 @@ RoutineState Damage::Routine()
     if (dhuum_hp < 0.25F)
         return RoutineState::FINISHED;
 
-    // player->ChangeTarget(dhuum_id);
-    // if (!player->living->GetIsAttacking() && player->target->agent_id)
-    //     GW::CtoS::SendPacket(0x4, GAME_CMSG_ATTACK_AGENT);
+    player->ChangeTarget(dhuum_id);
+    if (!player->living->GetIsAttacking() && player->target && player->target->agent_id)
+        AttackAgent(player->target);
 
     const auto pi_state = RoutinePI(dhuum_id);
     if (pi_state == RoutineState::FINISHED)
@@ -321,17 +440,6 @@ void Damage::Update()
 
     if (GW::PartyMgr::GetIsPartyDefeated())
         action_state = ActionState::INACTIVE;
-
-    if (IsUw())
-    {
-        const auto lt_id = GetTankId();
-        if (lt_id)
-            lt_agent = GW::Agents::GetAgentByID(lt_id);
-
-        const auto emo_id = GetTankId();
-        if (emo_id)
-            emo_agent = GW::Agents::GetAgentByID(emo_id);
-    }
 
     if (action_state == ActionState::ACTIVE && PauseRoutine())
     {

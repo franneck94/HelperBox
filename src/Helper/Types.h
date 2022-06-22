@@ -21,7 +21,9 @@ enum class TargetType
     Player,
     Npc,
     Item,
-    Living
+    Living_Ally,
+    Living_Enemy,
+    Living_Npc,
 };
 
 enum class RoutineState

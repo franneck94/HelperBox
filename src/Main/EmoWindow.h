@@ -32,8 +32,9 @@ private:
     RoutineState RoutineSelfBonds() const;
     RoutineState RoutineCanthaGuards() const;
     RoutineState RoutineLT() const;
+    RoutineState RoutineDbBeforeDhuum() const;
     RoutineState RoutineTurtle() const;
-    RoutineState RoutineDb() const;
+    RoutineState RoutineDbAtDhuum() const;
     RoutineState RoutineWisdom() const;
     RoutineState RoutineGDW() const;
     RoutineState RoutineTurtleGDW() const;
@@ -50,6 +51,7 @@ private:
     uint32_t turtle_id = 0;
 
     GW::Agent *lt_agent = nullptr;
+    GW::Agent *db_agent = nullptr;
 
     std::vector<PlayerMapping> party_members{};
     bool party_data_valid = false;
@@ -200,19 +202,19 @@ private:
     uint32_t move_idx = 0;
     std::array<Move, 38> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
-        Move{-583.28F, 9275.68F, "Lab Stairs1", MoveState::WAIT, 1500.0F},
-        Move{-1726.89F, 10689.08F, "Lab Stairs2", MoveState::WAIT, 1500.0F},
+        Move{-583.28F, 9275.68F, "Lab Stairs1", MoveState::WAIT},
+        Move{-1726.89F, 10689.08F, "Lab Stairs2", MoveState::WAIT},
         Move{-6263.33F, 9899.79F, "Fuse Pull1", MoveState::DONT_WAIT, [&]() { ToLowArmor(bag_idx, start_slot_idx); }},
-        Move{-5399.54F, 9022.45F, "Basement Stairs 1", MoveState::WAIT, 2000.0F},
-        Move{-6241.24F, 7945.73F, "Basement", MoveState::WAIT, 2000.0F},
-        Move{-8763.36F, 5551.18F, "Basement Stairs 2", MoveState::WAIT, 2000.0F},
-        Move{-7829.98F, 4324.09F, "Fuse Pull2", MoveState::WAIT, 2000.0F},
+        Move{-5399.54F, 9022.45F, "Basement Stairs 1", MoveState::WAIT},
+        Move{-6241.24F, 7945.73F, "Basement", MoveState::WAIT},
+        Move{-8763.36F, 5551.18F, "Basement Stairs 2", MoveState::WAIT},
+        Move{-7829.98F, 4324.09F, "Fuse Pull2", MoveState::WAIT},
         Move{-8764.08F, 2156.60F, "Bridge", MoveState::NONE, [&]() { ToHighArmor(bag_idx, start_slot_idx); }},
-        Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT, 1800.0F},
-        Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT, 3500.0F},
+        Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT},
+        Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::DONT_WAIT},
-        Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::WAIT, 1600.0F},
-        Move{-13760.19F, 358.15F, "Spirits 2", MoveState::WAIT, 1300.0F},
+        Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::WAIT},
+        Move{-13760.19F, 358.15F, "Spirits 2", MoveState::WAIT},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::DONT_WAIT},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::DONT_WAIT},
         Move{-7980.55F, 4308.90F, "Basement Stairs", MoveState::DONT_WAIT},

@@ -19,6 +19,7 @@ public:
     void Update();
 
     bool CanCast() const;
+    bool CanAttack() const;
 
     bool HasBuff(const GW::Constants::SkillID buff_skill_id) const;
     bool HasEffect(const GW::Constants::SkillID effect_skill_id) const;

@@ -149,11 +149,24 @@ bool TargetNearest(const TargetType type, const float max_distance)
                 continue;
             break;
         }
-        case TargetType::Living:
+        case TargetType::Living_Ally:
+        case TargetType::Living_Enemy:
+        case TargetType::Living_Npc:
         {
             const auto living_agent = agent->GetAsAgentLiving();
             if (!living_agent || !living_agent->GetIsAlive())
                 continue;
+
+            if (type == TargetType::Living_Ally &&
+                living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
+                continue;
+            if (type == TargetType::Living_Enemy &&
+                living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+                continue;
+            if (type == TargetType::Living_Npc &&
+                living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+                continue;
+
             break;
         }
         default:
@@ -435,11 +448,11 @@ void ToHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
         EquipItemExecute(bag_idx, start_slot_idx + offset);
 }
 
-void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_agents)
+void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_livings)
 {
     const auto player_pos = player.pos;
 
-    std::sort(filtered_agents.begin(), filtered_agents.end(), [&player_pos](const auto a1, const auto a2) {
+    std::sort(filtered_livings.begin(), filtered_livings.end(), [&player_pos](const auto a1, const auto a2) {
         const auto sqrd1 = GW::GetSquareDistance(player_pos, a1->pos);
         const auto sqrd2 = GW::GetSquareDistance(player_pos, a2->pos);
         return sqrd1 < sqrd2;
@@ -487,23 +500,10 @@ uint32_t GetEmoId()
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
 
-    if (!success || party_members.size() < 2)
+    if (!success)
         return 0;
 
-    const auto tank_idx = party_members.size() - 1U;
-    const auto tank = party_members[tank_idx];
-    return tank.id;
-}
-
-uint32_t GetDhuumBitchId()
-{
-    std::vector<PlayerMapping> party_members;
-    const auto success = GetPartyMembers(party_members);
-
-    if (!success || party_members.size() < 2)
-        return 0;
-
-    for (const auto member : party_members)
+    for (const auto &member : party_members)
     {
         const auto agent = GW::Agents::GetAgentByID(member.id);
         if (!agent)
@@ -513,8 +513,34 @@ uint32_t GetDhuumBitchId()
         if (!living)
             continue;
 
-        if (living->primary == static_cast<uint8_t>(GW::Constants::Profession::Ritualist))
-            return living->agent_id;
+        if (living->primary == static_cast<uint8_t>(GW::Constants::Profession::Elementalist) &&
+            living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Monk))
+            return agent->agent_id;
+    }
+
+    return 0;
+}
+
+uint32_t GetDhuumBitchId()
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success)
+        return 0;
+
+    for (const auto &member : party_members)
+    {
+        const auto agent = GW::Agents::GetAgentByID(member.id);
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+            return agent->agent_id;
     }
 
     return 0;
@@ -560,11 +586,11 @@ uint32_t GetPartyIdxByID(const uint32_t id)
     return idx;
 }
 
-void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_agents,
+void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_livings,
                          std::vector<GW::AgentLiving *> &splitted_agents,
                          const uint32_t id)
 {
-    for (auto agent : filtered_agents)
+    for (auto agent : filtered_livings)
     {
         if (agent->player_number == id)
             splitted_agents.push_back(agent);
@@ -627,34 +653,37 @@ uint32_t GetClosestNpcTypeID(const Player &player, const uint32_t id)
     return GetClosesTypeID(player, id, GW::Constants::Allegiance::Npc_Minipet);
 }
 
-void TargetClosestEnemyById(Player &player, const uint32_t id)
+uint32_t TargetClosestEnemyById(Player &player, const uint32_t id)
 {
-    const auto target = GetClosestEnemyTypeID(player, id);
+    const auto target_id = GetClosestEnemyTypeID(player, id);
+    if (!target_id)
+        return 0;
 
-    if (!target)
-        return;
+    player.ChangeTarget(target_id);
 
-    player.ChangeTarget(target);
+    return target_id;
 }
 
-void TargetClosestAllyById(Player &player, const uint32_t id)
+uint32_t TargetClosestAllyById(Player &player, const uint32_t id)
 {
-    const auto target = GetClosestAllyTypeID(player, id);
+    const auto target_id = GetClosestAllyTypeID(player, id);
+    if (!target_id)
+        return 0;
 
-    if (!target)
-        return;
+    player.ChangeTarget(target_id);
 
-    player.ChangeTarget(target);
+    return target_id;
 }
 
-void TargetClosestNpcById(Player &player, const uint32_t id)
+uint32_t TargetClosestNpcById(Player &player, const uint32_t id)
 {
-    const auto target = GetClosestNpcTypeID(player, id);
+    const auto target_id = GetClosestNpcTypeID(player, id);
+    if (!target_id)
+        return 0;
 
-    if (!target)
-        return;
+    player.ChangeTarget(target_id);
 
-    player.ChangeTarget(target);
+    return target_id;
 }
 
 DWORD QuestAcceptDialog(DWORD quest)
@@ -670,4 +699,93 @@ DWORD QuestRewardDialog(DWORD quest)
 void AttackAgent(const GW::Agent *agent)
 {
     GW::CtoS::SendPacket(0xC, GAME_CMSG_ATTACK_AGENT, agent->agent_id, 0);
-};
+}
+
+void GetEnemiesInCompass(std::vector<GW::AgentLiving *> &living_agents)
+{
+    living_agents.clear();
+
+    const auto agents_array = GW::Agents::GetAgentArray();
+    if (!agents_array.valid())
+        return;
+
+    for (const auto agent : agents_array)
+    {
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+            continue;
+
+        if (living->GetIsDead())
+            continue;
+
+        living_agents.push_back(living);
+    }
+}
+
+void GetEnemiesInGameRectangle(const GameRectangle &rectangle, std::vector<GW::AgentLiving *> &filtered_livings)
+{
+    filtered_livings.clear();
+
+    std::vector<GW::AgentLiving *> living_agents{};
+    GetEnemiesInCompass(living_agents);
+
+    for (const auto living : living_agents)
+    {
+        if (rectangle.PointInGameRectangle(living->pos))
+            filtered_livings.push_back(living);
+    }
+}
+
+void GetEnemiesInAggro(const Player &player, std::vector<GW::AgentLiving *> &filtered_livings)
+{
+    filtered_livings.clear();
+    std::vector<GW::AgentLiving *> living_agents{};
+
+    const auto agents_array = GW::Agents::GetAgentArray();
+    if (!agents_array.valid())
+        return;
+
+    for (const auto agent : agents_array)
+    {
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+            continue;
+
+        if (living->GetIsDead())
+            continue;
+
+        const auto dist = GW::GetDistance(player.pos, living->pos);
+        if (dist <= GW::Constants::Range::Earshot)
+            living_agents.push_back(living);
+    }
+}
+
+std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
+                                  const std::set<uint32_t> &filter_ids)
+{
+    auto set_ids = std::set<uint32_t>{};
+    auto result_ids = std::set<uint32_t>{};
+    for (const auto living : filtered_livings)
+    {
+        set_ids.insert(static_cast<uint32_t>(living->player_number));
+    }
+    std::set_difference(set_ids.begin(),
+                        set_ids.end(),
+                        filter_ids.begin(),
+                        filter_ids.end(),
+                        std::inserter(result_ids, result_ids.end()));
+
+    return result_ids;
+}

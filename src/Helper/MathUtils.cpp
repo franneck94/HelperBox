@@ -13,3 +13,54 @@ bool GamePosCompare(const GW::GamePos &p1, const GW::GamePos &p2, const float ep
 {
     return (FloatCompare(p1.x, p2.x, epsilon) && FloatCompare(p1.y, p2.y, epsilon));
 }
+
+GW::GamePos MovePointAlongVector(const GW::GamePos &pos1, const GW::GamePos &pos2, const float move_amount)
+{
+    const auto dist = GW::GetNorm(GW::Vec2f{pos1.x - pos2.x, pos1.y - pos2.y});
+    const auto d_t = dist + move_amount;
+    const auto t = d_t / dist;
+
+    const auto p_x = ((1.0F - t) * pos2.x + t * pos1.x);
+    const auto p_y = ((1.0F - t) * pos2.y + t * pos1.y);
+
+    return GW::GamePos{p_x, p_y, 0};
+}
+
+GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const float offset)
+{
+    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.90F);
+    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 0.90F);
+
+    const auto delta_x = adj_p1.x - adj_p2.x;
+    const auto delta_y = adj_p1.y - adj_p2.y;
+    const auto dist = GW::GetDistance(adj_p1, adj_p2);
+
+    const auto half_offset = offset * 0.80F;
+
+    v1 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * half_offset, adj_p1.y + (delta_x / dist) * half_offset, 0};
+    v2 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * (-half_offset), adj_p1.y + (delta_x / dist) * (-half_offset), 0};
+    v3 = GW::GamePos{adj_p2.x - (delta_y / dist) * half_offset, adj_p2.y + (delta_x / dist) * half_offset, 0};
+    v4 = GW::GamePos{adj_p2.x + ((-delta_y) / dist) * (-half_offset), adj_p2.y + (delta_x / dist) * (-half_offset), 0};
+}
+
+float GameRectangle::Sign(const GW::GamePos &p1, const GW::GamePos &p2, const GW::GamePos &p3)
+{
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool GameRectangle::PointInGameRectangle(const GW::GamePos &pt) const
+{
+    return PointInTriangle(pt, v1, v2, v3) || PointInTriangle(pt, v4, v2, v3);
+}
+
+bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
+                                    const GW::GamePos &v1,
+                                    const GW::GamePos &v2,
+                                    const GW::GamePos &v3)
+{
+    const auto b1 = Sign(pt, v1, v2) < 0.0f;
+    const auto b2 = Sign(pt, v2, v3) < 0.0f;
+    const auto b3 = Sign(pt, v3, v1) < 0.0f;
+
+    return ((b1 == b2) && (b2 == b3));
+}
