@@ -323,8 +323,8 @@ RoutineState Damage::RoutineDhuum() const
     const auto found_eoe = player->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
     const auto found_qz = player->HasEffect(GW::Constants::SkillID::Quickening_Zephyr);
 
-    const auto qz_diff = TIMER_DIFF(qz_timer);
-    if (qz_diff > 36'000 || !found_qz)
+    const auto qz_diff_ms = TIMER_DIFF(qz_timer);
+    if (qz_diff_ms > 36'000 || !found_qz)
     {
         const auto sq_state = skillbar->sq.Cast(player->energy);
         if (sq_state == RoutineState::FINISHED)
@@ -371,7 +371,7 @@ RoutineState Damage::Routine()
         if (!player->living->GetIsAttacking() && player->CanAttack())
         {
             if (!player->target || !player->target->agent_id || !player->target->GetIsLivingType())
-                TargetNearest(TargetType::Living_Enemy, 1280.0F);
+                TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
             if (player->target && player->target->agent_id)
                 AttackAgent(player->target);
         }

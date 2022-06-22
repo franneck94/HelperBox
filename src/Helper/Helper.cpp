@@ -160,11 +160,11 @@ bool TargetNearest(const TargetType type, const float max_distance)
             if (type == TargetType::Living_Ally &&
                 living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
                 continue;
-            if (type == TargetType::Living_Enemy &&
-                living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+            else if (type == TargetType::Living_Enemy &&
+                     living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
                 continue;
-            if (type == TargetType::Living_Npc &&
-                living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+            else if (type == TargetType::Living_Npc &&
+                     living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
                 continue;
 
             break;
