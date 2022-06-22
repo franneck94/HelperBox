@@ -149,7 +149,8 @@ void EmoWindow::UpdateUwMoves()
 
     if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && player.living->GetIsMoving())
         return;
-    else if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && !player.living->GetIsMoving() && ret)
+    else if (moves[move_idx].moving_state != MoveState::NONE &&
+             !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && !player.living->GetIsMoving() && ret)
     {
         moves[move_idx].Execute();
         return;
