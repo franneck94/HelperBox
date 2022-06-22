@@ -67,6 +67,9 @@ DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
 
 void DbWindow::DrawMap()
 {
+    if (!IsUw() || IsLoading())
+        return;
+
     ImGui::SetNextWindowSize(ImVec2{400.0F, 400.0F}, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("PlottingWindow", nullptr, ImGuiWindowFlags_None))
     {
@@ -112,6 +115,8 @@ void DbWindow::DrawMap()
             auto idx1 = 0U;
             for (const auto living : living_agents)
             {
+                if (!living)
+                    continue;
                 const auto label = fmt::format("enemyAll##{}", idx1);
                 plot_point(living->pos, label, ImVec4{0.0, 1.0, 0.0, 1.0});
                 ++idx1;
@@ -122,6 +127,8 @@ void DbWindow::DrawMap()
             auto idx2 = 0U;
             for (const auto living : filtered_livings)
             {
+                if (!living)
+                    continue;
                 const auto label = fmt::format("enemyInside###{}", idx2);
                 plot_point(living->pos, label, ImVec4{1.0, 0.0, 0.0, 1.0});
                 ++idx2;
@@ -154,7 +161,8 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
         }
     }
 
-    DrawMap();
+    // if (player.ValidateData())
+    //     DrawMap();
 
     ImGui::End();
 }
@@ -203,7 +211,8 @@ void DbWindow::UpdateUwMoves()
     if (ret)
     {
         ++move_idx;
-        moves[move_idx].Execute();
+        if (moves[move_idx].moving_state != MoveState::NONE)
+            moves[move_idx].Execute();
     }
 }
 
@@ -247,6 +256,9 @@ void DbWindow::Update(float delta)
 
 bool DbWindow::ActivationConditions() const
 {
+    if (!GW::Map::GetIsMapLoaded())
+        return false;
+
     if (!GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
@@ -258,6 +270,19 @@ bool DbWindow::ActivationConditions() const
 
 Damage::Damage(Player *p, DbSkillbar *s) : DbActionABC(p, "Damage", s)
 {
+}
+
+RoutineState Damage::RoutineAtChamberSkele() const
+{
+    const auto sos_state = skillbar->sos.Cast(player->energy);
+    if (sos_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    const auto pi_state = skillbar->pi.Cast(player->energy);
+    if (pi_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    return RoutineState::ACTIVE;
 }
 
 RoutineState Damage::RoutineValeSpirits() const
@@ -315,25 +340,35 @@ RoutineState Damage::RoutinePI(const uint32_t dhuum_id) const
     return RoutineState::ACTIVE;
 }
 
-RoutineState Damage::RoutineDhuum() const
+RoutineState Damage::RoutineDhuumRecharge() const
 {
     static auto qz_timer = clock();
 
-    const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
-    const auto found_eoe = player->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
     const auto found_qz = player->HasEffect(GW::Constants::SkillID::Quickening_Zephyr);
 
     const auto qz_diff_ms = TIMER_DIFF(qz_timer);
     if (qz_diff_ms > 36'000 || !found_qz)
     {
-        const auto sq_state = skillbar->sq.Cast(player->energy);
-        if (sq_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
+        if (!found_qz)
+        {
+            const auto sq_state = skillbar->sq.Cast(player->energy);
+            if (sq_state == RoutineState::FINISHED)
+                return RoutineState::FINISHED;
+        }
 
         const auto qz_state = skillbar->qz.Cast(player->energy);
         if (qz_state == RoutineState::FINISHED)
+        {
+            qz_timer = clock();
             return RoutineState::FINISHED;
+        }
     }
+}
+
+RoutineState Damage::RoutineDhuumDamage() const
+{
+    const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
+    const auto found_winnow = player->HasEffect(GW::Constants::SkillID::Winnowing);
 
     if (!found_honor)
     {
@@ -342,10 +377,10 @@ RoutineState Damage::RoutineDhuum() const
             return RoutineState::FINISHED;
     }
 
-    if (!found_eoe)
+    if (!found_winnow)
     {
-        const auto eoe_state = skillbar->eoe.Cast(player->energy);
-        if (eoe_state == RoutineState::FINISHED)
+        const auto winnow_state = skillbar->winnow.Cast(player->energy);
+        if (winnow_state == RoutineState::FINISHED)
             return RoutineState::FINISHED;
     }
 
@@ -365,6 +400,13 @@ RoutineState Damage::Routine()
 
     if (!IsUw())
         return RoutineState::FINISHED;
+
+    if (IsAtChamberSkele(player))
+    {
+        const auto vale_rota = RoutineAtChamberSkele();
+        if (vale_rota == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+    }
 
     if (IsInVale(player))
     {
@@ -391,9 +433,13 @@ RoutineState Damage::Routine()
 
     if (was_in_dhuum_fight && !is_in_dhuum_fight)
         action_state = ActionState::INACTIVE;
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp > 0.99F)
+    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp > 0.995F)
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;
+
+    const auto reachrge_state = RoutineDhuumRecharge();
+    if (reachrge_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
 
     if (dhuum_hp < 0.25F)
         return RoutineState::FINISHED;
@@ -406,7 +452,7 @@ RoutineState Damage::Routine()
     if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
-    const auto dhuum_rota = RoutineDhuum();
+    const auto dhuum_rota = RoutineDhuumDamage();
     if (dhuum_rota == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 

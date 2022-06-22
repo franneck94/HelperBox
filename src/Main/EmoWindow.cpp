@@ -142,13 +142,29 @@ void EmoWindow::UpdateUwMoves()
     if (!move_state_active)
         return;
 
-    if ((move_idx >= moves.size() - 1U) || !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F))
+    if (move_idx >= moves.size() - 1U)
         return;
 
     const auto ret = Move::UpdateMove(player, move_state_active, moves[move_idx], moves[move_idx + 1U]);
 
+    if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && player.living->GetIsMoving())
+        return;
+    else if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && !player.living->GetIsMoving() && ret)
+    {
+        moves[move_idx].Execute();
+        return;
+    }
+
     if (ret)
+    {
+        move_state_active = false;
         ++move_idx;
+        if (moves[move_idx].moving_state == MoveState::DONT_WAIT || moves[move_idx].moving_state == MoveState::WAIT)
+        {
+            move_state_active = true;
+            moves[move_idx].Execute();
+        }
+    }
 }
 
 void EmoWindow::Update(float delta)
@@ -537,6 +553,13 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
+    if (IsAtChamberSkele(player))
+    {
+        const auto vale_rota = RoutineDbBeforeDhuum();
+        if (vale_rota == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+    }
+
     if (IsAtFusePulls(player))
     {
         const auto lt_state = RoutineLT();
@@ -546,6 +569,10 @@ RoutineState Pumping::Routine()
 
     if (IsInVale(player))
     {
+        const auto db_state = RoutineDbBeforeDhuum();
+        if (db_state == RoutineState::FINISHED)
+            return RoutineState::FINISHED;
+
         const auto cantha_state = RoutineCanthaGuards();
         if (cantha_state == RoutineState::FINISHED)
             return RoutineState::FINISHED;

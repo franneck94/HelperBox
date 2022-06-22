@@ -19,12 +19,14 @@ bool IsUw()
 
 #ifdef _DEBUG
     return (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless);
+#else
+    return false;
 #endif
 }
 
 bool IsAtSpirits1(const Player *const player)
 {
-    const auto pos = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane}; // Spirits 1
+    const auto pos = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane};
     const auto dist = GW::GetDistance(player->pos, pos);
 
     if (dist < GW::Constants::Range::Spellcast)
@@ -35,7 +37,29 @@ bool IsAtSpirits1(const Player *const player)
 
 bool IsAtSpirits2(const Player *const player)
 {
-    const auto pos = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane}; // Spirits 2
+    const auto pos = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane};
+    const auto dist = GW::GetDistance(player->pos, pos);
+
+    if (dist < GW::Constants::Range::Spellcast)
+        return true;
+
+    return false;
+}
+
+bool IsAtChamberSkele(const Player *const player)
+{
+    const auto pos = GW::GamePos{-2126.06F, 10601.70F, player->pos.zplane};
+    const auto dist = GW::GetDistance(player->pos, pos);
+
+    if (dist < GW::Constants::Range::Spellcast)
+        return true;
+
+    return false;
+}
+
+bool IsAtValeHouse(const Player *const player)
+{
+    const auto pos = GW::GamePos{-12264.12F, 1821.18F, 0};
     const auto dist = GW::GetDistance(player->pos, pos);
 
     if (dist < GW::Constants::Range::Spellcast)
@@ -54,7 +78,7 @@ bool IsInVale(const Player *const player)
     if (!IsUw())
         return false;
 
-    if (IsAtSpirits1(player) || IsAtSpirits2(player))
+    if (IsAtValeHouse(player) || IsAtSpirits1(player) || IsAtSpirits2(player))
         return true;
 
     return false;

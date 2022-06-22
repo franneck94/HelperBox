@@ -14,6 +14,8 @@ bool IsAtSpirits1(const Player *const player);
 
 bool IsAtSpirits2(const Player *const player);
 
+bool IsAtChamberSkele(const Player *const player);
+
 bool IsInVale(const Player *const player);
 
 bool IsAtFusePulls(const Player *const player);

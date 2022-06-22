@@ -29,9 +29,11 @@ private:
     bool PauseRoutine();
     bool ResumeRoutine();
 
+    RoutineState RoutineAtChamberSkele() const;
     RoutineState RoutineValeSpirits() const;
     RoutineState RoutinePI(const uint32_t dhuum_id) const;
-    RoutineState RoutineDhuum() const;
+    RoutineState RoutineDhuumRecharge() const;
+    RoutineState RoutineDhuumDamage() const;
 };
 
 class DbWindow : public HelperBoxWindow
@@ -90,7 +92,7 @@ private:
         Move{1319.41F, 7299.941F, "Move Qz", MoveState::DONT_WAIT},
         Move{1319.41F, 7299.94F, "Qz", MoveState::CAST_SKILL, &skillbar.qz},
         Move{985.70F, 7325.54F, "Move Stairs", MoveState::WAIT},
-        Move{-583.28F, 9275.68F, "Lab Stairs1", MoveState::WAIT},
+        Move{-634.07F, 9071.42F, "Lab Stairs1", MoveState::WAIT},
         Move{-2126.06F, 10601.70F, "Lab Stairs2", MoveState::WAIT},
         Move{-4012.72F, 11130.53F, "Lab Stairs3", MoveState::WAIT},
         Move{-4012.72F, 11130.53F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},

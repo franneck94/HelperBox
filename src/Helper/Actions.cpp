@@ -177,7 +177,7 @@ bool Move::UpdateMove(const Player &player, bool &move_state_active, const Move 
     case MoveState::NONE:
     default:
     {
-        move_state_active = false;
+        move_state_active = true;
         return true;
     }
     }

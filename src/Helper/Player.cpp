@@ -18,6 +18,9 @@
 
 bool Player::ValidateData() const
 {
+    if (!GW::Map::GetIsMapLoaded())
+        return false;
+
     if (!GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
