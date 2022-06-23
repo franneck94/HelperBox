@@ -11,6 +11,7 @@
 #include <Actions.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
+#include <Move.h>
 #include <Player.h>
 #include <Types.h>
 #include <UwHelper.h>
@@ -99,7 +100,7 @@ private:
         Move{-2828.35F, 10020.46F, "Lab Stairs4", MoveState::WAIT},
         Move{-4012.72F, 11130.53F, "Lab Stairs5", MoveState::WAIT},
         Move{-4012.72F, 11130.53F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},
-        Move{-4470.48F, 11581.47F, "Lab Stairs4", MoveState::WAIT},
+        Move{-4470.48F, 11581.47F, "Lab Stairs6", MoveState::WAIT},
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::NONE, [&]() { TargetClosestReaper(player); }},
         Move{-5751.45F, 12746.52F, "Talk", MoveState::NONE, [&]() { TalkClosestReaper(player); }},
         Move{-5751.45F, 12746.52F, "Accept", MoveState::NONE, [&]() { AcceptChamber(); }},

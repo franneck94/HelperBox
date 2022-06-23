@@ -34,6 +34,7 @@ void DrawMovingButtons(const std::array<T, N> &moves, bool &move_ongoing, uint32
         else
         {
             move_ongoing = false;
+            GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
         }
     }
     if (was_already_ongoing)

@@ -11,6 +11,8 @@
 #include <Actions.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
+#include <Helper.h>
+#include <Move.h>
 #include <Player.h>
 #include <Types.h>
 #include <UwHelper.h>
@@ -200,7 +202,7 @@ private:
     uint32_t start_slot_idx = static_cast<uint32_t>(-1);
 
     uint32_t move_idx = 0;
-    std::array<Move, 46> moves = {
+    std::array<Move, 47> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
         Move{985.70F, 7325.54F, "Move Stairs", MoveState::WAIT},
         Move{-634.07F, 9071.42F, "Lab Stairs1", MoveState::WAIT},
@@ -208,13 +210,14 @@ private:
         Move{-2726.856F, 10239.48F, "Lab Stairs3", MoveState::WAIT},
         Move{-2828.35F, 10020.46F, "Lab Stairs4", MoveState::WAIT},
         Move{-4012.72F, 11130.53F, "Lab Stairs5", MoveState::WAIT},
-        Move{-5246.27F, 11386.62F, "Lab Stairs6", MoveState::NONE},
+        Move{-5246.27F, 11386.62F, "Lab Stairs6", MoveState::WAIT},
+        Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::LT_DISTANCE},
         Move{-6263.33F, 9899.79F, "Fuse Pull1", MoveState::WAIT, [&]() { ToLowArmor(bag_idx, start_slot_idx); }},
         Move{-5183.64F, 8876.31F, "Basement 1", MoveState::WAIT},
-        Move{-6241.24F, 7945.73F, "Basement 2", MoveState::NONE},
+        Move{-6241.24F, 7945.73F, "Basement 2", MoveState::LT_DISTANCE},
         Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT},
-        Move{-7829.98F, 4324.09F, "Fuse Pull2", MoveState::NONE},
-        Move{-7289.94F, 3283.81F, "Vale Door", MoveState::NONE},
+        Move{-7829.98F, 4324.09F, "Fuse Pull2", MoveState::LT_DISTANCE},
+        Move{-7289.94F, 3283.81F, "Vale Door", MoveState::LT_DISTANCE},
         Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::WAIT, [&]() { ToHighArmor(bag_idx, start_slot_idx); }},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT},
         Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT},
