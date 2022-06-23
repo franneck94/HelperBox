@@ -82,12 +82,12 @@ void plot_enemies(const std::vector<GW::AgentLiving *> &living_agents, std::stri
 template <typename T, uint32_t N>
 void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t move_idx, std::string_view label)
 {
-    ImGui::SetNextWindowSize(ImVec2{400.0F, 400.0F}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2{450.0F, 450.0F}, ImGuiCond_FirstUseEver);
     const auto label_window = fmt::format("{}Window", label.data());
     if (ImGui::Begin(label_window.data(), nullptr, ImGuiWindowFlags_None))
     {
         const auto label_plot = fmt::format("{}Plot", label.data());
-        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, ImPlotFlags_None | ImPlotFlags_NoLegend))
+        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, ImPlotFlags_CanvasOnly))
         {
             auto next_pos = GW::GamePos{};
 
@@ -99,6 +99,8 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
             const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
 
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+            ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel);
+            ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel);
 
             const auto x_ = player.pos.x;
             const auto y_ = player.pos.y;

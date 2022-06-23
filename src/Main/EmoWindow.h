@@ -43,8 +43,6 @@ private:
     bool RoutinePI(const uint32_t dhuum_id) const;
     bool RoutineKeepPlayerAlive() const;
 
-    static auto constexpr cantha_ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
-
     uint32_t *bag_idx = nullptr;
     uint32_t *start_slot_idx = nullptr;
 
@@ -213,7 +211,7 @@ private:
 
     uint32_t move_idx = 0;
     std::array<Move, 47> moves = {
-        Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
+        Move{1248.00F, 6965.51F, "Spawn", MoveState::WAIT},
         Move{985.70F, 7325.54F, "Chamber 1", MoveState::WAIT},
         Move{-634.07F, 9071.42F, "Chamber 2", MoveState::WAIT},
         Move{-1522.58F, 10634.12F, "Lab 1", MoveState::DONT_WAIT},

@@ -40,6 +40,7 @@ static ActionState *emo_casting_action_state = nullptr;
 static auto move_ongoing = false;
 
 constexpr static auto DHUUM_JUDGEMENT_SKILL_ID = uint32_t{3085U};
+constexpr static auto CANTHA_IDS = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -136,7 +137,7 @@ void EmoWindow::UpdateUwEntry()
         triggered_move_start = true;
         move_ongoing = true;
     }
-    if (triggered_move_start && move_idx == 1 && TankIsSoloLT())
+    if (triggered_move_start && move_idx == 1)
     {
         pumping.action_state = ActionState::ACTIVE;
     }
@@ -260,7 +261,7 @@ bool Pumping::RoutineCanthaGuards() const
     FilterAgents(*player,
                  agents_array,
                  filtered_canthas,
-                 cantha_ids,
+                 CANTHA_IDS,
                  GW::Constants::Allegiance::Npc_Minipet,
                  GW::Constants::Range::Spellcast);
 

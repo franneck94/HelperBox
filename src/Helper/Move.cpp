@@ -134,14 +134,6 @@ bool Move::UpdateMoveWait(const Player &player, const Move &next_move)
         return false;
     }
 
-    static auto timer_start = clock();
-    const auto timer_diff_ms = TIMER_DIFF(timer_start);
-    if (timer_diff_ms >= 5000)
-    {
-        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"Waiting...");
-        timer_start = clock();
-    }
-
     return false;
 }
 
