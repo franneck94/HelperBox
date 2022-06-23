@@ -99,7 +99,8 @@ bool Move::UpdateMoveCastSkill(const Player &player, const Move &move)
         move.skill_cb->Cast(player.energy);
         return false;
     }
-    else if (timer_diff < 200)
+
+    if (timer_diff < 200)
         return false;
 
     const auto is_casting = player.living->GetIsCasting();
@@ -154,8 +155,9 @@ bool Move::UpdateMoveLTDistance(const Player &player)
     if (!lt_agent)
         return false;
 
+    const auto dist_threshold = GW::Constants::Range::Spirit;
     const auto dist = GW::GetDistance(player.pos, lt_agent->pos);
-    if (dist < 2000.0F)
+    if (dist < dist_threshold)
         return false;
 
     return true;

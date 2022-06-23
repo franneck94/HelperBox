@@ -139,9 +139,7 @@ bool Player::CastEffectIfNotAvailable(const SkillData &skill_data)
 
 bool Player::SpamEffect(const SkillData &skill_data)
 {
-    const auto bond_avail = skill_data.CanBeCasted(energy);
-
-    if (bond_avail)
+    if (skill_data.CanBeCasted(energy))
     {
         GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_data.idx, id); });
         return true;
