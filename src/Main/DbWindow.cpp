@@ -202,7 +202,10 @@ bool DbWindow::ActivationConditions() const
     if (!GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
-    if (player.secondary == GW::Constants::Profession::Ranger)
+    if (!IsDhuumBitch(player))
+        return false;
+
+    if (IsUwEntryOutpost() || IsUw())
         return true;
 
     return false;

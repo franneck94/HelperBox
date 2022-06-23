@@ -40,25 +40,25 @@ static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Blad
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
-void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents,
+void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> filtered_livings,
                                         const ImVec4 color,
                                         std::string_view label)
 {
     auto idx = uint32_t{0};
 
-    for (const auto foe : splitted_agents)
+    for (const auto living : filtered_livings)
     {
-        if (!foe)
+        if (!living)
             continue;
 
         ImGui::TableNextRow();
 
-        if (foe->hp == 0.0F || foe->GetIsDead())
+        if (living->hp == 0.0F || living->GetIsDead())
             continue;
 
-        if ((foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) ||
-             foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::FourHorseman)) &&
-            foe->GetIsHexed())
+        if ((living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::BladedAatxe) ||
+             living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::FourHorseman)) &&
+            living->GetIsHexed())
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.0F, 0.2F, 1.0F));
         }
@@ -66,9 +66,9 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color);
         }
-        const auto distance = GW::GetDistance(player.pos, foe->pos);
+        const auto distance = GW::GetDistance(player.pos, living->pos);
         ImGui::TableNextColumn();
-        ImGui::Text("%3.0f%%", foe->hp * 100.0F);
+        ImGui::Text("%3.0f%%", living->hp * 100.0F);
         ImGui::TableNextColumn();
         ImGui::Text("%4.0f", distance);
         ImGui::PopStyleColor();
@@ -76,7 +76,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         ImGui::TableNextColumn();
         if (ImGui::Button(_label.data()))
-            player.ChangeTarget(foe->agent_id);
+            player.ChangeTarget(living->agent_id);
 
         ++idx;
 
@@ -115,11 +115,11 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            DrawSplittedAgents(horseman_agents, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
-            DrawSplittedAgents(aatxe_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Aatxe");
-            DrawSplittedAgents(nightmare_agents, ImVec4(0.6F, 0.4F, 1.0F, 1.0F), "Nightmare");
-            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
-            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
+            DrawSplittedAgents(horseman_livings, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
+            DrawSplittedAgents(aatxe_livings, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Aatxe");
+            DrawSplittedAgents(nightmare_livings, ImVec4(0.6F, 0.4F, 1.0F, 1.0F), "Nightmare");
+            DrawSplittedAgents(dryder_livings, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
+            DrawSplittedAgents(skele_livings, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
         }
         ImGui::EndTable();
     }
@@ -130,12 +130,12 @@ void MainteamWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    filtered_foes.clear();
-    aatxe_agents.clear();
-    nightmare_agents.clear();
-    dryder_agents.clear();
-    skele_agents.clear();
-    horseman_agents.clear();
+    filtered_livings.clear();
+    aatxe_livings.clear();
+    nightmare_livings.clear();
+    dryder_livings.clear();
+    skele_livings.clear();
+    horseman_livings.clear();
 
     if (!player.ValidateData())
         return;
@@ -147,31 +147,33 @@ void MainteamWindow::Update(float delta)
     const auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
                  agents_array,
-                 filtered_foes,
+                 filtered_livings,
                  IDS,
                  GW::Constants::Allegiance::Enemy,
                  GW::Constants::Range::Spellcast + 200.0F);
-    SplitFilteredAgents(filtered_foes, aatxe_agents, GW::Constants::ModelID::UW::BladedAatxe);
-    SplitFilteredAgents(filtered_foes, nightmare_agents, GW::Constants::ModelID::UW::DyingNightmare);
-    SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
-    SplitFilteredAgents(filtered_foes, horseman_agents, GW::Constants::ModelID::UW::FourHorseman);
-    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
-    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
-    SortByDistance(player, aatxe_agents);
-    SortByDistance(player, nightmare_agents);
-    SortByDistance(player, horseman_agents);
-    SortByDistance(player, dryder_agents);
-    SortByDistance(player, skele_agents);
+    SplitFilteredAgents(filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
+    SplitFilteredAgents(filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
+    SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
+    SplitFilteredAgents(filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
+    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    SortByDistance(player, aatxe_livings);
+    SortByDistance(player, nightmare_livings);
+    SortByDistance(player, horseman_livings);
+    SortByDistance(player, dryder_livings);
+    SortByDistance(player, skele_livings);
 }
 
 bool MainteamWindow::ActivationConditions()
 {
-    if (player.primary != GW::Constants::Profession::Mesmer && player.primary != GW::Constants::Profession::Ritualist &&
-        player.primary != GW::Constants::Profession::Dervish &&
-        player.primary != GW::Constants::Profession::Elementalist)
+
+    if (!GW::Map::GetIsMapLoaded())
         return false;
 
     if (!GW::PartyMgr::GetIsPartyLoaded())
+        return false;
+
+    if (!IsDhuumBitch(player) && !IsSpiker(player) && !IsLT(player) && !IsEmo(player))
         return false;
 
     if (IsUwEntryOutpost() || IsUw())

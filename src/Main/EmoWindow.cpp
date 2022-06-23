@@ -185,11 +185,13 @@ void EmoWindow::Update(float delta)
 
 bool EmoWindow::ActivationConditions() const
 {
+    if (!GW::Map::GetIsMapLoaded())
+        return false;
+
     if (!GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
-    if (player.primary == GW::Constants::Profession::Elementalist &&
-        player.secondary == GW::Constants::Profession::Monk)
+    if (IsEmo(player))
         return true;
 
     return false;

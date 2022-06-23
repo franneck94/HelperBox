@@ -11,6 +11,18 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
+bool IsEmo(const Player &player);
+
+bool IsDhuumBitch(const Player &player);
+
+bool IsSpiker(const Player &player);
+
+bool IsLT(const Player &player);
+
+bool IsRangerTerra(const Player &player);
+
+bool IsMesmerTerra(const Player &player);
+
 bool IsAtValeHouse(const Player *const player);
 
 bool IsAtSpirits1(const Player *const player);

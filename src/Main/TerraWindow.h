@@ -71,10 +71,10 @@ private:
     std::map<uint32_t, clock_t> last_casted_times_ms;
 
     std::vector<GW::AgentLiving *> filtered_foes;
-    std::vector<GW::AgentLiving *> behemoth_agents;
-    std::vector<GW::AgentLiving *> dryder_agents;
-    std::vector<GW::AgentLiving *> skele_agents;
-    std::vector<GW::AgentLiving *> horseman_agents;
+    std::vector<GW::AgentLiving *> behemoth_livings;
+    std::vector<GW::AgentLiving *> dryder_livings;
+    std::vector<GW::AgentLiving *> skele_livings;
+    std::vector<GW::AgentLiving *> horseman_livings;
 
     AutoTargetAction auto_target;
 };

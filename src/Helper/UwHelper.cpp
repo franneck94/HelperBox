@@ -24,6 +24,44 @@ bool IsUw()
 #endif
 }
 
+bool IsEmo(const Player &player)
+{
+    return (player.primary == GW::Constants::Profession::Elementalist &&
+            player.secondary == GW::Constants::Profession::Monk);
+}
+
+bool IsDhuumBitch(const Player &player)
+{
+    return ((player.primary == GW::Constants::Profession::Ritualist ||
+             player.primary == GW::Constants::Profession::Dervish) &&
+            player.secondary == GW::Constants::Profession::Ranger);
+}
+
+bool IsSpiker(const Player &player)
+{
+    return (player.primary == GW::Constants::Profession::Mesmer &&
+            player.secondary == GW::Constants::Profession::Ranger);
+}
+
+bool IsLT(const Player &player)
+{
+    return (player.primary == GW::Constants::Profession::Mesmer &&
+            (player.secondary == GW::Constants::Profession::Elementalist ||
+             player.secondary == GW::Constants::Profession::Assassin));
+}
+
+bool IsRangerTerra(const Player &player)
+{
+    return (player.primary == GW::Constants::Profession::Ranger &&
+            player.secondary == GW::Constants::Profession::Assassin);
+}
+
+bool IsMesmerTerra(const Player &player)
+{
+    return (player.primary == GW::Constants::Profession::Mesmer &&
+            player.secondary == GW::Constants::Profession::Elementalist);
+}
+
 bool IsAtSpirits1(const Player *const player)
 {
     const auto pos = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane};

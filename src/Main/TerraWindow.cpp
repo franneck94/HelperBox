@@ -64,39 +64,39 @@ RoutineState AutoTargetAction::Routine()
     return RoutineState::NONE;
 }
 
-void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents,
+void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> filtered_livings,
                                      const ImVec4 color,
                                      std::string_view label)
 {
     auto idx = uint32_t{0};
 
-    for (const auto foe : splitted_agents)
+    for (const auto living : filtered_livings)
     {
-        if (!foe)
+        if (!living)
             continue;
 
         ImGui::TableNextRow();
 
-        if (foe->hp == 0.0F || foe->GetIsDead())
+        if (living->hp == 0.0F || living->GetIsDead())
             continue;
 
-        if (foe->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
-            foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
+        if (living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
+            living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
-            last_casted_times_ms[foe->agent_id] = clock();
+            last_casted_times_ms[living->agent_id] = clock();
         }
         else
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color);
         }
-        const auto distance = GW::GetDistance(player.pos, foe->pos);
+        const auto distance = GW::GetDistance(player.pos, living->pos);
         ImGui::TableNextColumn();
-        ImGui::Text("%3.0f%%", foe->hp * 100.0F);
+        ImGui::Text("%3.0f%%", living->hp * 100.0F);
         ImGui::TableNextColumn();
         ImGui::Text("%4.0f", distance);
         ImGui::TableNextColumn();
-        const auto timer_diff_ms = TIMER_DIFF(last_casted_times_ms[foe->agent_id]);
+        const auto timer_diff_ms = TIMER_DIFF(last_casted_times_ms[living->agent_id]);
         const auto timer_diff_s = timer_diff_ms / 1000;
         if (timer_diff_s > 40)
         {
@@ -111,7 +111,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_age
         ImGui::TableNextColumn();
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         if (ImGui::Button(_label.data()))
-            player.ChangeTarget(foe->agent_id);
+            player.ChangeTarget(living->agent_id);
 
         ++idx;
 
@@ -154,10 +154,10 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
             ImGui::TableNextColumn();
             ImGui::Text("Target");
 
-            DrawSplittedAgents(horseman_agents, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
-            DrawSplittedAgents(behemoth_agents, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Behemoth");
-            DrawSplittedAgents(dryder_agents, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
-            DrawSplittedAgents(skele_agents, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
+            DrawSplittedAgents(horseman_livings, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
+            DrawSplittedAgents(behemoth_livings, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Behemoth");
+            DrawSplittedAgents(dryder_livings, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
+            DrawSplittedAgents(skele_livings, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
         }
         ImGui::EndTable();
     }
@@ -169,10 +169,10 @@ void TerraWindow::Update(float delta)
     UNREFERENCED_PARAMETER(delta);
 
     filtered_foes.clear();
-    behemoth_agents.clear();
-    dryder_agents.clear();
-    skele_agents.clear();
-    horseman_agents.clear();
+    behemoth_livings.clear();
+    dryder_livings.clear();
+    skele_livings.clear();
+    horseman_livings.clear();
 
     if (IsLoading())
         last_casted_times_ms.clear();
@@ -189,41 +189,40 @@ void TerraWindow::Update(float delta)
     auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player, agents_array, filtered_foes, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
     FilterAgents(player, agents_array, filtered_foes, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
-    SplitFilteredAgents(filtered_foes, behemoth_agents, GW::Constants::ModelID::UW::ObsidianBehemoth);
-    SplitFilteredAgents(filtered_foes, dryder_agents, GW::Constants::ModelID::UW::TerrorwebDryder);
-    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
-    SplitFilteredAgents(filtered_foes, skele_agents, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
-    SplitFilteredAgents(filtered_foes, horseman_agents, GW::Constants::ModelID::UW::FourHorseman);
-    SortByDistance(player, behemoth_agents);
-    SortByDistance(player, dryder_agents);
-    SortByDistance(player, skele_agents);
-    SortByDistance(player, horseman_agents);
+    SplitFilteredAgents(filtered_foes, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
+    SplitFilteredAgents(filtered_foes, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
+    SplitFilteredAgents(filtered_foes, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    SplitFilteredAgents(filtered_foes, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    SplitFilteredAgents(filtered_foes, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
+    SortByDistance(player, behemoth_livings);
+    SortByDistance(player, dryder_livings);
+    SortByDistance(player, skele_livings);
+    SortByDistance(player, horseman_livings);
 
     if (!auto_target_active)
         return;
 
-    for (const auto &foe : behemoth_agents)
+    for (const auto &living : behemoth_livings)
     {
-        if (!foe)
+        if (!living)
             continue;
 
-        const auto dist = GW::GetDistance(player.pos, foe->pos);
+        const auto dist = GW::GetDistance(player.pos, living->pos);
 
-        if (dist < GW::Constants::Range::Earshot && foe->GetIsCasting() && foe->skill == HEALING_SPRING_U16)
-            player.ChangeTarget(foe->agent_id);
+        if (dist < GW::Constants::Range::Earshot && living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
+            player.ChangeTarget(living->agent_id);
     }
 }
 
 bool TerraWindow::ActivationConditions()
 {
-    const auto is_ranger_terra =
-        player.primary == GW::Constants::Profession::Ranger || player.secondary == GW::Constants::Profession::Assassin;
-    const auto is_mesmer_terra = player.primary == GW::Constants::Profession::Mesmer ||
-                                 player.secondary == GW::Constants::Profession::Elementalist;
-    if (!is_ranger_terra && !is_mesmer_terra)
+    if (!GW::Map::GetIsMapLoaded())
         return false;
 
     if (!GW::PartyMgr::GetIsPartyLoaded())
+        return false;
+
+    if (!IsRangerTerra(player) && !IsMesmerTerra(player))
         return false;
 
     if (IsUwEntryOutpost() || IsUw())

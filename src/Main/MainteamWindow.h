@@ -16,7 +16,7 @@
 class MainteamWindow : public HelperBoxWindow
 {
 public:
-    MainteamWindow() : player({}), filtered_foes({}), aatxe_agents({}), dryder_agents({}), skele_agents({}){};
+    MainteamWindow() : player({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
     ~MainteamWindow(){};
 
     static MainteamWindow &Instance()
@@ -56,10 +56,10 @@ private:
     void Spiking();
 
     Player player;
-    std::vector<GW::AgentLiving *> filtered_foes;
-    std::vector<GW::AgentLiving *> aatxe_agents;
-    std::vector<GW::AgentLiving *> dryder_agents;
-    std::vector<GW::AgentLiving *> nightmare_agents;
-    std::vector<GW::AgentLiving *> skele_agents;
-    std::vector<GW::AgentLiving *> horseman_agents;
+    std::vector<GW::AgentLiving *> filtered_livings;
+    std::vector<GW::AgentLiving *> aatxe_livings;
+    std::vector<GW::AgentLiving *> dryder_livings;
+    std::vector<GW::AgentLiving *> nightmare_livings;
+    std::vector<GW::AgentLiving *> skele_livings;
+    std::vector<GW::AgentLiving *> horseman_livings;
 };
