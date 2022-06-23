@@ -64,11 +64,23 @@ public:
     {
         HelperBoxWindow::LoadSettings(ini);
         show_menubutton = true;
+        show_debug_map = ini->GetBoolValue(Name(), VAR_NAME(show_debug_map), show_debug_map);
     }
 
     void SaveSettings(CSimpleIni *ini) override
     {
         HelperBoxWindow::SaveSettings(ini);
+        ini->SetBoolValue(Name(), VAR_NAME(show_debug_map), show_debug_map);
+    }
+
+    void DrawSettingInternal() override
+    {
+        const auto width = ImGui::GetWindowWidth();
+        ImGui::Text("Show Debug Map:");
+        ImGui::SameLine(width * 0.5F);
+        ImGui::PushItemWidth(width * 0.5F);
+        ImGui::Checkbox("debugMapActive", &show_debug_map);
+        ImGui::PopItemWidth();
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
@@ -80,6 +92,9 @@ private:
     void UpdateUwMoves();
 
     bool ActivationConditions() const;
+
+    // Settings
+    bool show_debug_map = true;
 
     Player player;
     DbSkillbar skillbar;

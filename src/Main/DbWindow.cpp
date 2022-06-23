@@ -86,7 +86,7 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     }
     ImGui::End();
 
-    if (IsUw())
+    if (IsUw() && show_debug_map)
         DrawMap(player, moves, move_idx, "DbMap");
 }
 

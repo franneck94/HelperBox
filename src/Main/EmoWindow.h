@@ -149,6 +149,7 @@ public:
     {
         HelperBoxWindow::LoadSettings(ini);
         show_menubutton = true;
+        show_debug_map = ini->GetBoolValue(Name(), VAR_NAME(show_debug_map), show_debug_map);
         bag_idx = ini->GetLongValue(Name(), VAR_NAME(bag_idx), bag_idx);
         start_slot_idx = ini->GetLongValue(Name(), VAR_NAME(start_slot_idx), start_slot_idx);
     }
@@ -156,6 +157,7 @@ public:
     void SaveSettings(CSimpleIni *ini) override
     {
         HelperBoxWindow::SaveSettings(ini);
+        ini->SetBoolValue(Name(), VAR_NAME(show_debug_map), show_debug_map);
         ini->SetLongValue(Name(), VAR_NAME(bag_idx), bag_idx);
         ini->SetLongValue(Name(), VAR_NAME(start_slot_idx), start_slot_idx);
     }
@@ -181,6 +183,12 @@ public:
         ImGui::InputInt("###inputStartSlot", &_start_slot_idx, 1, 1);
         ImGui::PopItemWidth();
         start_slot_idx = _start_slot_idx;
+
+        ImGui::Text("Show Debug Map:");
+        ImGui::SameLine(width * 0.5F);
+        ImGui::PushItemWidth(width * 0.5F);
+        ImGui::Checkbox("debugMapActive", &show_debug_map);
+        ImGui::PopItemWidth();
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
@@ -198,6 +206,8 @@ private:
     Player player;
     EmoSkillbar skillbar;
 
+    // Settings
+    bool show_debug_map = true;
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t start_slot_idx = static_cast<uint32_t>(-1);
 
