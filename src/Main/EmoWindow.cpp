@@ -106,6 +106,9 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     }
 
     ImGui::End();
+
+    if (IsUw())
+        DrawMap(player, moves, move_idx, "DbMap");
 }
 
 void EmoWindow::UpdateUw()

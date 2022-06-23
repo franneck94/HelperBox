@@ -30,12 +30,12 @@ private:
     bool PauseRoutine();
     bool ResumeRoutine();
 
-    RoutineState CastPiOnTarget() const;
-    RoutineState RoutineAtChamberSkele() const;
-    RoutineState RoutineValeSpirits() const;
-    RoutineState RoutinePI(const uint32_t dhuum_id) const;
-    RoutineState RoutineDhuumRecharge() const;
-    RoutineState RoutineDhuumDamage() const;
+    bool CastPiOnTarget() const;
+    bool RoutineAtChamberSkele() const;
+    bool RoutineValeSpirits() const;
+    bool RoutinePI(const uint32_t dhuum_id) const;
+    bool RoutineDhuumRecharge() const;
+    bool RoutineDhuumDamage() const;
 };
 
 class DbWindow : public HelperBoxWindow
@@ -71,7 +71,6 @@ public:
         HelperBoxWindow::SaveSettings(ini);
     }
 
-    void DrawMap();
     void Draw(IDirect3DDevice9 *pDevice) override;
     void Update(float delta) override;
 

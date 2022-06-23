@@ -65,52 +65,6 @@ DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
         });
 };
 
-void DbWindow::DrawMap()
-{
-    ImGui::SetNextWindowSize(ImVec2{400.0F, 400.0F}, ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("PlottingWindow", nullptr, ImGuiWindowFlags_None))
-    {
-        if (ImPlot::BeginPlot("Plotting", ImVec2{400.0F, 400.0F}, ImPlotFlags_None | ImPlotFlags_NoLegend))
-        {
-            auto next_pos = GW::GamePos{};
-
-            if (move_idx < moves.size() - 1U && moves[move_idx].move_state == MoveState::WAIT)
-                next_pos = moves[move_idx + 1U].pos;
-            else
-                next_pos = moves[move_idx].pos;
-
-            const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
-
-            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-
-            const auto x_ = player.pos.x;
-            const auto y_ = player.pos.y;
-            plot_point(GW::GamePos{x_ + 4000.0F, y_, 0}, "border1", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-            plot_point(GW::GamePos{x_, y_ + 4000.0F, 0}, "border2", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-            plot_point(GW::GamePos{x_ - 4000.0F, y_, 0}, "border3", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-            plot_point(GW::GamePos{x_, y_ - 4000.0F, 0}, "border4", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-
-            plot_point(player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
-            plot_point(next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
-
-            plot_rectangle_line(rect.v1, rect.v2, "line1");
-            plot_rectangle_line(rect.v1, rect.v3, "line2");
-            plot_rectangle_line(rect.v4, rect.v2, "line3");
-            plot_rectangle_line(rect.v4, rect.v3, "line4");
-
-            plot_circle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
-
-            const auto living_agents = GetEnemiesInCompass();
-            plot_enemies(living_agents, "enemiesAll", ImVec4{0.0, 1.0, 0.0, 1.0});
-
-            const auto filtered_livings = GetEnemiesInGameRectangle(rect);
-            plot_enemies(filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
-        }
-        ImPlot::EndPlot();
-    }
-    ImGui::End();
-}
-
 void DbWindow::Draw(IDirect3DDevice9 *pDevice)
 {
     UNREFERENCED_PARAMETER(pDevice);
@@ -133,7 +87,7 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 
     if (IsUw())
-        DrawMap();
+        DrawMap(player, moves, move_idx, "DbMap");
 }
 
 void DbWindow::UpdateUw()
@@ -216,43 +170,40 @@ Damage::Damage(Player *p, DbSkillbar *s) : DbActionABC(p, "Damage", s)
 {
 }
 
-RoutineState Damage::CastPiOnTarget() const
+bool Damage::CastPiOnTarget() const
 {
     if (!player->target)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto target_living = player->target->GetAsAgentLiving();
     if (!target_living || target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dist = GW::GetDistance(player->pos, target_living->pos);
     if (dist > GW::Constants::Range::Spellcast)
-        return RoutineState::ACTIVE;
+        return false;
 
-    const auto pi_state = skillbar->pi.Cast(player->energy, target_living->agent_id);
-    if (pi_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
+    if (RoutineState::FINISHED == skillbar->pi.Cast(player->energy, target_living->agent_id))
+        return true;
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Damage::RoutineAtChamberSkele() const
+bool Damage::RoutineAtChamberSkele() const
 {
-    const auto sos_state = skillbar->sos.Cast(player->energy);
-    if (sos_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
+        return true;
 
     if (!player->target)
-        return RoutineState::ACTIVE;
+        return false;
 
-    const auto pi_state = CastPiOnTarget();
-    if (pi_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
+    if (CastPiOnTarget())
+        return true;
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Damage::RoutineValeSpirits() const
+bool Damage::RoutineValeSpirits() const
 {
     const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_eoe = player->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
@@ -260,54 +211,50 @@ RoutineState Damage::RoutineValeSpirits() const
 
     if (!found_honor)
     {
-        const auto honor_state = skillbar->honor.Cast(player->energy);
-        if (honor_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
+        if (RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
+            return true;
     }
 
-    const auto sos_state = skillbar->sos.Cast(player->energy);
-    if (sos_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
+        return true;
 
     if (!found_eoe)
     {
-        const auto eoe_state = skillbar->eoe.Cast(player->energy);
-        if (eoe_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
+        if (RoutineState::FINISHED == skillbar->eoe.Cast(player->energy))
+            return true;
     }
 
     if (!found_winnow)
     {
-        const auto winnow_state = skillbar->winnow.Cast(player->energy);
-        if (winnow_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
+        if (RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))
+            return true;
     }
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Damage::RoutinePI(const uint32_t dhuum_id) const
+bool Damage::RoutinePI(const uint32_t dhuum_id) const
 {
     const auto &skill = skillbar->pi;
 
     if (!skill.SkillFound())
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
     if (!dhuum_agent)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
     if (!dhuum_living)
-        return RoutineState::ACTIVE;
+        return false;
 
     if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
-        return skill.Cast(player->energy, dhuum_id);
+        return (RoutineState::FINISHED == skill.Cast(player->energy, dhuum_id));
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Damage::RoutineDhuumRecharge() const
+bool Damage::RoutineDhuumRecharge() const
 {
     static auto qz_timer = clock();
 
@@ -318,46 +265,41 @@ RoutineState Damage::RoutineDhuumRecharge() const
     {
         if (!found_qz)
         {
-            const auto sq_state = skillbar->sq.Cast(player->energy);
-            if (sq_state == RoutineState::FINISHED)
-                return RoutineState::FINISHED;
+            if (RoutineState::FINISHED == skillbar->sq.Cast(player->energy))
+                return true;
         }
 
-        const auto qz_state = skillbar->qz.Cast(player->energy);
-        if (qz_state == RoutineState::FINISHED)
+        if (RoutineState::FINISHED == skillbar->qz.Cast(player->energy))
         {
             qz_timer = clock();
-            return RoutineState::FINISHED;
+            return true;
         }
     }
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Damage::RoutineDhuumDamage() const
+bool Damage::RoutineDhuumDamage() const
 {
     const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_winnow = player->HasEffect(GW::Constants::SkillID::Winnowing);
 
     if (!found_honor)
     {
-        const auto honor_state = skillbar->honor.Cast(player->energy);
-        if (honor_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
+        if (RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
+            return true;
     }
 
     if (!found_winnow)
     {
-        const auto winnow_state = skillbar->winnow.Cast(player->energy);
-        if (winnow_state == RoutineState::FINISHED)
-            return RoutineState::FINISHED;
+        if (RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))
+            return true;
     }
 
-    const auto sos_state = skillbar->sos.Cast(player->energy);
-    if (sos_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
+        return true;
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
 RoutineState Damage::Routine()
@@ -372,8 +314,7 @@ RoutineState Damage::Routine()
 
     if (IsAtChamberSkele(player))
     {
-        const auto chamber_rota = RoutineAtChamberSkele();
-        if (chamber_rota == RoutineState::FINISHED)
+        if (RoutineAtChamberSkele())
             return RoutineState::FINISHED;
     }
 
@@ -396,13 +337,11 @@ RoutineState Damage::Routine()
                     AttackAgent(player->target);
             }
 
-            const auto pi_state = CastPiOnTarget();
-            if (pi_state == RoutineState::FINISHED)
+            if (CastPiOnTarget())
                 return RoutineState::FINISHED;
         }
 
-        const auto vale_rota = RoutineValeSpirits();
-        if (vale_rota == RoutineState::FINISHED)
+        if (RoutineValeSpirits())
             return RoutineState::FINISHED;
     }
 
@@ -420,8 +359,7 @@ RoutineState Damage::Routine()
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;
 
-    const auto reachrge_state = RoutineDhuumRecharge();
-    if (reachrge_state == RoutineState::FINISHED)
+    if (RoutineDhuumRecharge())
         return RoutineState::FINISHED;
 
     if (dhuum_hp < 0.25F)
@@ -431,12 +369,10 @@ RoutineState Damage::Routine()
     if (!player->living->GetIsAttacking() && player->target && player->target->agent_id)
         AttackAgent(player->target);
 
-    const auto pi_state = RoutinePI(dhuum_id);
-    if (pi_state == RoutineState::FINISHED)
+    if (RoutinePI(dhuum_id))
         return RoutineState::FINISHED;
 
-    const auto dhuum_rota = RoutineDhuumDamage();
-    if (dhuum_rota == RoutineState::FINISHED)
+    if (RoutineDhuumDamage())
         return RoutineState::FINISHED;
 
     return RoutineState::FINISHED;
