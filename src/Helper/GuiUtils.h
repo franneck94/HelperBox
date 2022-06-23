@@ -87,7 +87,7 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
     if (ImGui::Begin(label_window.data(), nullptr, ImGuiWindowFlags_None))
     {
         const auto label_plot = fmt::format("{}Plot", label.data());
-        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, ImPlotFlags_CanvasOnly))
+        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, (ImPlotFlags_NoTitle | ImPlotFlags_NoLegend)))
         {
             auto next_pos = GW::GamePos{};
 
@@ -99,15 +99,13 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
             const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
 
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-            ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel);
-            ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel);
 
             const auto x_ = player.pos.x;
             const auto y_ = player.pos.y;
-            plot_point(GW::GamePos{x_ + 4000.0F, y_, 0}, "border1", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-            plot_point(GW::GamePos{x_, y_ + 4000.0F, 0}, "border2", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-            plot_point(GW::GamePos{x_ - 4000.0F, y_, 0}, "border3", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
-            plot_point(GW::GamePos{x_, y_ - 4000.0F, 0}, "border4", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
+            plot_point(GW::GamePos{x_ + 4000.0F, y_, 0}, "border1", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
+            plot_point(GW::GamePos{x_, y_ + 4000.0F, 0}, "border2", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
+            plot_point(GW::GamePos{x_ - 4000.0F, y_, 0}, "border3", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
+            plot_point(GW::GamePos{x_, y_ - 4000.0F, 0}, "border4", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
 
             plot_point(player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
             plot_point(next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);

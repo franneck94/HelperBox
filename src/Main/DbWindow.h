@@ -101,7 +101,7 @@ private:
 
     uint32_t move_idx = 0;
     std::array<Move, 39> moves = {
-        Move{1248.00F, 6965.51F, "Spawn", MoveState::WAIT},
+        Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
         Move{613.38F, 7097.03F, "SQ", MoveState::DONT_WAIT, [&]() { skillbar.sq.Cast(player.energy); }},
         Move{157.41F, 7781.66F, "Move EoE 1", MoveState::DONT_WAIT},
         Move{157.41F, 7781.66F, "EoE 1", MoveState::CAST_SKILL, &skillbar.eoe},
