@@ -114,22 +114,18 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!ActivationConditions())
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
+    if ((!IsUw() && !IsUwEntryOutpost()))
+        return;
 
+    ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("DbWindow", nullptr, GetWinFlags()))
     {
         damage.Draw();
-
-        if (IsUw() || IsUwEntryOutpost())
-        {
-            DrawMovingButtons(moves, move_ongoing, move_idx);
-        }
+        DrawMovingButtons(moves, move_ongoing, move_idx);
     }
-
-    if ((!IsUw() && !IsUwEntryOutpost()))
-        DrawMap();
-
     ImGui::End();
+
+    DrawMap();
 }
 
 void DbWindow::UpdateUw()

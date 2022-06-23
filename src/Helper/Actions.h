@@ -124,12 +124,12 @@ public:
 public:
     static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
     static bool UpdateMove(const Player &player, bool &move_ongoing, const Move &move, const Move &next_move);
-    static bool UpdateMoveCastSkill(const Player &player, bool &move_ongoing, const Move &move);
-    static bool UpdateMoveWait(const Player &player, bool &move_ongoing, const Move &next_move);
+    static bool UpdateMoveCastSkill(const Player &player, const Move &move);
+    static bool UpdateMoveWait(const Player &player, const Move &next_move);
 
 private:
-    float x = 0.0;
-    float y = 0.0;
+    float x = 0.0F;
+    float y = 0.0F;
 
 public:
     GW::GamePos pos;

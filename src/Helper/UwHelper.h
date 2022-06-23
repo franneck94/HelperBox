@@ -11,6 +11,8 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
+bool IsAtValeHouse(const Player *const player);
+
 bool IsAtSpirits1(const Player *const player);
 
 bool IsAtSpirits2(const Player *const player);

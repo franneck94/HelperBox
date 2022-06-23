@@ -8,10 +8,12 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/StoC.h>
 
-#include <fmt/format.h>
+#include <UwHelper.h>
 
 #include <Logger.h>
 #include <Timer.h>
+
+#include <fmt/format.h>
 
 #include "Actions.h"
 
@@ -57,11 +59,7 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
 {
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
-    const auto filter_at_target = std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
-                                                     GW::Constants::ModelID::UW::SkeletonOfDhuum2,
-                                                     GW::Constants::ModelID::UW::TorturedSpirit1,
-                                                     GW::Constants::ModelID::UW::TorturedSpirit,
-                                                     2372U};
+
     if (player.pos.x == next_pos.x && player.pos.y == next_pos.y)
     {
         const auto livings = GetEnemiesInAggro(player);
@@ -72,33 +70,33 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
         return false;
     }
 
-    const auto offset = GW::Constants::Range::Spellcast;
-    const auto rect = GameRectangle(player.pos, next_pos, offset);
-
+    const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
     const auto filtered_livings = GetEnemiesInGameRectangle(rect);
 
-    auto result_ids = std::set<uint32_t>{};
+    const auto is_at_chamber_skele = IsAtChamberSkele(&player);
+    const auto is_at_vale_house = IsAtValeHouse(&player);
 
-    const auto stairs_dist = GW::GetDistance(player.pos, GW::GamePos{-2126.06F, 10601.70F, 0});
-    const auto vale_house_dist = GW::GetDistance(player.pos, GW::GamePos{-12264.12F, 1821.18F, 0});
-    if (vale_house_dist > 1000.0F && stairs_dist > 1000.0F)
-        result_ids = FilterAgentIDS(filtered_livings, filter_ids);
-    else
+    auto result_ids = std::set<uint32_t>{};
+    if (is_at_chamber_skele || is_at_vale_house)
         result_ids = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
+    else
+        result_ids = FilterAgentIDS(filtered_livings, filter_ids);
 
     if (result_ids.size() == 0)
         return true;
     return false;
 }
 
-bool Move::UpdateMoveCastSkill(const Player &player, bool &move_ongoing, const Move &move)
+bool Move::UpdateMoveCastSkill(const Player &player, const Move &move)
 {
     static auto started_cast = false;
     static auto timer = clock();
 
+    if (player.living->GetIsMoving())
+        timer = clock();
+
     if (!started_cast && move.skill_cb)
     {
-        timer = clock();
         started_cast = true;
         move.skill_cb->Cast(player.energy);
         return false;
@@ -107,7 +105,7 @@ bool Move::UpdateMoveCastSkill(const Player &player, bool &move_ongoing, const M
     const auto timer_diff = TIMER_DIFF(timer);
     const auto is_casting = player.living->GetIsCasting();
     const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(move.skill_cb->id);
-    const auto timer_exceeded = timer_diff < (skill_data.activation * 1000.0F);
+    const auto timer_exceeded = timer_diff < (skill_data.activation * 0.80F * 1000.0F);
     const auto wait = (timer_exceeded || is_casting);
 
     if (started_cast && wait)
@@ -117,17 +115,14 @@ bool Move::UpdateMoveCastSkill(const Player &player, bool &move_ongoing, const M
     {
         started_cast = false;
         timer = clock();
-        move_ongoing = true;
     }
 
     return true;
 }
 
-bool Move::UpdateMoveWait(const Player &player, bool &move_ongoing, const Move &next_move)
+bool Move::UpdateMoveWait(const Player &player, const Move &next_move)
 {
     static auto canceled_move = false;
-
-    move_ongoing = true;
 
     const auto aggro_free = Move::CheckForAggroFree(player, next_move.pos);
     if (aggro_free)
@@ -157,25 +152,22 @@ bool Move::UpdateMoveWait(const Player &player, bool &move_ongoing, const Move &
 
 bool Move::UpdateMove(const Player &player, bool &move_ongoing, const Move &move, const Move &next_move)
 {
+    move_ongoing = true;
+
     switch (move.move_state)
     {
     case MoveState::CAST_SKILL:
     {
-        return Move::UpdateMoveCastSkill(player, move_ongoing, move);
-    }
-    case MoveState::DONT_WAIT:
-    {
-        move_ongoing = true;
-        return true;
+        return Move::UpdateMoveCastSkill(player, move);
     }
     case MoveState::WAIT:
     {
-        return Move::UpdateMoveWait(player, move_ongoing, next_move);
+        return Move::UpdateMoveWait(player, next_move);
     }
+    case MoveState::DONT_WAIT:
     case MoveState::NONE:
     default:
     {
-        move_ongoing = true;
         return true;
     }
     }
