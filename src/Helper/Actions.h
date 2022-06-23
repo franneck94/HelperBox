@@ -20,6 +20,8 @@
 #include <Skillbars.h>
 #include <Types.h>
 
+#include <Timer.h>
+
 #include <imgui.h>
 
 class ActionABC
@@ -161,4 +163,49 @@ uint32_t GetClostestMove(const Player &player, const std::array<Move, N> &moves)
     }
 
     return closest_idx;
+}
+
+template <uint32_t N>
+void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint32_t &move_idx, bool &move_ongoing)
+{
+    if (!move_ongoing)
+        return;
+
+    if (move_idx >= moves.size() - 1U)
+        return;
+
+    const auto finished = Move::UpdateMove(player, move_ongoing, moves[move_idx], moves[move_idx + 1U]);
+
+    const auto is_moving = player.living->GetIsMoving();
+    const auto reached_pos = GamePosCompare(player.pos, moves[move_idx].pos, 0.001F);
+
+    if (!reached_pos && is_moving)
+        return;
+
+    const auto state = moves[move_idx].move_state;
+    const auto is_proceeding_action = (state != MoveState::NONE);
+
+    if (is_proceeding_action && !reached_pos && !is_moving && finished)
+    {
+        static auto last_trigger_time_ms = clock();
+
+        const auto last_trigger_time_diff_ms = TIMER_DIFF(last_trigger_time_ms);
+        if (last_trigger_time_diff_ms >= 500)
+        {
+            last_trigger_time_ms = clock();
+            moves[move_idx].Execute();
+        }
+        return;
+    }
+
+    if (finished)
+    {
+        move_ongoing = false;
+        ++move_idx;
+        if (is_proceeding_action)
+        {
+            move_ongoing = true;
+            moves[move_idx].Execute();
+        }
+    }
 }

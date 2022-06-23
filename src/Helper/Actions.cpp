@@ -74,10 +74,10 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
     const auto filtered_livings = GetEnemiesInGameRectangle(rect);
 
     const auto is_at_chamber_skele = IsAtChamberSkele(&player);
-    const auto is_at_vale_house = IsAtValeHouse(&player);
+    const auto is_in_vale = IsSomewhereInVale(&player);
 
     auto result_ids = std::set<uint32_t>{};
-    if (is_at_chamber_skele || is_at_vale_house)
+    if (is_at_chamber_skele || is_in_vale)
         result_ids = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
     else
         result_ids = FilterAgentIDS(filtered_livings, filter_ids);
@@ -95,27 +95,41 @@ bool Move::UpdateMoveCastSkill(const Player &player, const Move &move)
     if (player.living->GetIsMoving())
         timer = clock();
 
-    if (!started_cast && move.skill_cb)
+    const auto reached_pos = GamePosCompare(player.pos, move.pos, 0.001F);
+    if (reached_pos && started_cast && !player.living->GetIsMoving() && !player.living->GetIsCasting())
+        started_cast = false;
+
+    const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(move.skill_cb->id);
+    const auto cast_time_s = (skill_data.activation * 1.0F) * 1000.0F;
+    const auto timer_diff = TIMER_DIFF(timer);
+
+    if (reached_pos && !started_cast && move.skill_cb && timer_diff > 200)
     {
         started_cast = true;
-        move.skill_cb->Cast(player.energy);
+        if (move.skill_cb->recharge > 0)
+        {
+            started_cast = false;
+            return true;
+        }
+
+        const auto ret = move.skill_cb->Cast(player.energy);
+        if (ret != RoutineState::FINISHED)
+            Log::Info("Casting %u unsuccessful", skill_data.skill_id);
+        else
+            Log::Info("Casting %u successful", skill_data.skill_id);
         return false;
     }
+    else if (timer_diff < 200)
+        return false;
 
-    const auto timer_diff = TIMER_DIFF(timer);
     const auto is_casting = player.living->GetIsCasting();
-    const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(move.skill_cb->id);
-    const auto timer_exceeded = timer_diff < (skill_data.activation * 0.80F * 1000.0F);
+    const auto timer_exceeded = timer_diff > cast_time_s;
     const auto wait = (timer_exceeded || is_casting);
 
     if (started_cast && wait)
         return false;
 
-    if (started_cast)
-    {
-        started_cast = false;
-        timer = clock();
-    }
+    started_cast = false;
 
     return true;
 }

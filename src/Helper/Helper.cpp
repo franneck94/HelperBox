@@ -158,16 +158,16 @@ bool TargetNearest(const TargetType type, const float max_distance)
                 continue;
 
             if (type == TargetType::Living_Ally &&
-                living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
-                continue;
+                living_agent->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
+                break;
             else if (type == TargetType::Living_Enemy &&
-                     living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
-                continue;
+                     living_agent->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+                break;
             else if (type == TargetType::Living_Npc &&
-                     living_agent->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
-                continue;
+                     living_agent->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+                break;
 
-            break;
+            continue;
         }
         default:
         {
@@ -175,7 +175,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
         }
         }
 
-        const auto newDistance = GW::GetSquareDistance(me->pos, agent->pos);
+        const auto newDistance = GW::GetDistance(me->pos, agent->pos);
         if (newDistance < distance)
         {
             closest = agent->agent_id;

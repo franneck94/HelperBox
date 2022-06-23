@@ -57,7 +57,7 @@ void plot_point(const GW::GamePos &p, std::string_view label, const ImVec4 &colo
 {
     const float xs[1] = {p.x};
     const float ys[1] = {p.y};
-    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, width, color, 1.0F);
+    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, width, color, 1.0F, color);
     ImPlot::PlotScatter(label.data(), xs, ys, 1);
 }
 
@@ -66,8 +66,8 @@ void plot_circle(const Player &player, std::string_view label, const ImVec4 &col
     for (int i = 0; i < 360; i++)
     {
         const auto label_ = fmt::format("{}###{}", label.data(), i);
-        const auto x_p = player.pos.x + 1024.0F * std::sin((float)i);
-        const auto y_p = player.pos.y + 1024.0F * std::cos((float)i);
+        const auto x_p = player.pos.x + 1050.0F * std::sin((float)i);
+        const auto y_p = player.pos.y + 1050.0F * std::cos((float)i);
         const auto pos = GW::GamePos{x_p, y_p, 0};
         plot_point(pos, label_, color, 1.0F);
     }

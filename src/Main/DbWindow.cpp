@@ -83,8 +83,15 @@ void DbWindow::DrawMap()
 
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
 
-            plot_point(player.pos, "player", ImVec4{0.0F, 0.0F, 1.0F, 1.0F}, 1.0F);
-            plot_point(next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 1.0F);
+            const auto x_ = player.pos.x;
+            const auto y_ = player.pos.y;
+            plot_point(GW::GamePos{x_ + 4000.0F, y_, 0}, "border1", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
+            plot_point(GW::GamePos{x_, y_ + 4000.0F, 0}, "border2", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
+            plot_point(GW::GamePos{x_ - 4000.0F, y_, 0}, "border3", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
+            plot_point(GW::GamePos{x_, y_ - 4000.0F, 0}, "border4", ImVec4{0.0F, 0.0F, 0.0F, 0.0F}, 1.0F);
+
+            plot_point(player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
+            plot_point(next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
 
             plot_rectangle_line(rect.v1, rect.v2, "line1");
             plot_rectangle_line(rect.v1, rect.v3, "line2");
@@ -97,7 +104,7 @@ void DbWindow::DrawMap()
             plot_enemies(living_agents, "enemiesAll", ImVec4{0.0, 1.0, 0.0, 1.0});
 
             const auto filtered_livings = GetEnemiesInGameRectangle(rect);
-            plot_enemies(living_agents, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
+            plot_enemies(filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();
     }
@@ -125,7 +132,8 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     }
     ImGui::End();
 
-    DrawMap();
+    if (IsUw())
+        DrawMap();
 }
 
 void DbWindow::UpdateUw()
@@ -146,13 +154,6 @@ void DbWindow::UpdateUwEntry()
 
 void DbWindow::UpdateUwMoves()
 {
-    if (interrupted)
-    {
-        interrupted = false;
-        move_ongoing = false;
-        Log::Info("Interrupted Action!");
-    }
-
     UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
 }
 
@@ -241,6 +242,10 @@ RoutineState Damage::RoutineValeSpirits() const
             return RoutineState::FINISHED;
     }
 
+    const auto sos_state = skillbar->sos.Cast(player->energy);
+    if (sos_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
     if (!found_eoe)
     {
         const auto eoe_state = skillbar->eoe.Cast(player->energy);
@@ -254,10 +259,6 @@ RoutineState Damage::RoutineValeSpirits() const
         if (winnow_state == RoutineState::FINISHED)
             return RoutineState::FINISHED;
     }
-
-    const auto sos_state = skillbar->sos.Cast(player->energy);
-    if (sos_state == RoutineState::FINISHED)
-        return RoutineState::FINISHED;
 
     return RoutineState::ACTIVE;
 }
@@ -348,8 +349,8 @@ RoutineState Damage::Routine()
 
     if (IsAtChamberSkele(player))
     {
-        const auto vale_rota = RoutineAtChamberSkele();
-        if (vale_rota == RoutineState::FINISHED)
+        const auto chamber_rota = RoutineAtChamberSkele();
+        if (chamber_rota == RoutineState::FINISHED)
             return RoutineState::FINISHED;
     }
 
