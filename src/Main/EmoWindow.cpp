@@ -566,8 +566,6 @@ RoutineState Pumping::Routine()
 
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (was_in_dhuum_fight && !is_in_dhuum_fight)
-        *emo_casting_action_state = ActionState::INACTIVE;
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;

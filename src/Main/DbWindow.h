@@ -100,13 +100,15 @@ private:
     DbSkillbar skillbar;
 
     uint32_t move_idx = 0;
-    std::array<Move, 53> moves = {
+    std::array<Move, 56> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::STOP},
         Move{613.38F, 7097.03F, "SQ", MoveState::WAIT, [&]() { skillbar.sq.Cast(player.energy); }},
         Move{157.41F, 7781.66F, "Move EoE 1", MoveState::WAIT},
         Move{157.41F, 7781.66F, "EoE 1", MoveState::CAST_SKILL, &skillbar.eoe},
+        Move{157.41F, 7781.66F, "Move EoE 1", MoveState::WAIT},
         Move{1319.41F, 7299.941F, "Move Qz", MoveState::WAIT},
         Move{1319.41F, 7299.94F, "Qz", MoveState::CAST_SKILL, &skillbar.qz},
+        Move{1319.41F, 7299.941F, "Move Qz", MoveState::WAIT},
         Move{985.70F, 7325.54F, "Chamber 1", MoveState::WAIT},
         Move{-634.07F, 9071.42F, "Chamber 2", MoveState::WAIT},
         Move{-1522.58F, 10634.12F, "Lab 1", MoveState::DONT_WAIT},
@@ -147,8 +149,9 @@ private:
         Move{9120.00F, -18432.003F, "Planes Winnow", MoveState::CAST_SKILL, &skillbar.winnow},
         Move{9120.00F, -18432.003F, "Planes 1", MoveState::DONT_WAIT},
         Move{11368.55F, -17974.64F, "Planes Reaper", MoveState::STOP},
+        Move{8685.21F, 6344.59F, "Planes Reaper", MoveState::STOP, [&]() { TargetClosestReaper(player); }},
         Move{-5751.45F, 12746.52F, "Planes Talk", MoveState::STOP, [&]() { TalkClosestReaper(player); }},
-        Move{-5751.45F, 12746.52F, "Planes Take", MoveState::STOP, [&]() { TakePits(); }},
+        Move{-5751.45F, 12746.52F, "Planes Take", MoveState::STOP, [&]() { TakePlanes(); }},
         Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::DONT_WAIT},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::DONT_WAIT},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::DONT_WAIT},

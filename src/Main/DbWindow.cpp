@@ -41,7 +41,6 @@
 
 namespace
 {
-static ActionState *damage_action_state = nullptr;
 static auto move_ongoing = false;
 }; // namespace
 
@@ -134,8 +133,6 @@ void DbWindow::Update(float delta)
     if (!skillbar.ValidateData())
         return;
     skillbar.Update();
-
-    damage_action_state = &damage.action_state;
 
     if (IsUw())
     {
@@ -268,11 +265,8 @@ bool Damage::RoutineDhuumRecharge() const
     const auto qz_diff_ms = TIMER_DIFF(qz_timer);
     if (qz_diff_ms > 36'000 || !found_qz)
     {
-        if (!found_qz)
-        {
-            if (RoutineState::FINISHED == skillbar->sq.Cast(player->energy))
-                return true;
-        }
+        if (!found_qz && RoutineState::FINISHED == skillbar->sq.Cast(player->energy))
+            return true;
 
         if (RoutineState::FINISHED == skillbar->qz.Cast(player->energy))
         {
@@ -289,17 +283,11 @@ bool Damage::RoutineDhuumDamage() const
     const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_winnow = player->HasEffect(GW::Constants::SkillID::Winnowing);
 
-    if (!found_honor)
-    {
-        if (RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
-            return true;
-    }
+    if (!found_honor && player->energy > 20U && RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
+        return true;
 
-    if (!found_winnow)
-    {
-        if (RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))
-            return true;
-    }
+    if (!found_winnow && RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))
+        return true;
 
     if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
         return true;
@@ -311,10 +299,7 @@ RoutineState Damage::Routine()
 {
     static auto was_in_dhuum_fight = false;
 
-    if (!player->CanCast())
-        return RoutineState::FINISHED;
-
-    if (!IsUw())
+    if (!player->CanCast() && !IsUw())
         return RoutineState::FINISHED;
 
     if (IsAtChamberSkele(player))
@@ -352,8 +337,6 @@ RoutineState Damage::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (was_in_dhuum_fight && !is_in_dhuum_fight)
-        action_state = ActionState::INACTIVE;
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;
