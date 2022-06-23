@@ -37,7 +37,7 @@
 namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
-static auto move_state_active = false;
+static auto move_ongoing = false;
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -99,7 +99,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (IsUw() || IsUwEntryOutpost())
         {
-            DrawMovingButtons(moves, move_state_active, move_idx);
+            DrawMovingButtons(moves, move_ongoing, move_idx);
         }
     }
 
@@ -129,7 +129,7 @@ void EmoWindow::UpdateUwEntry()
         moves[0].Execute();
         triggered_tank_bonds_at_start = false;
         triggered_move_start = true;
-        move_state_active = true;
+        move_ongoing = true;
     }
     if (triggered_move_start && move_idx == 1 && TankIsSoloLT())
     {
@@ -139,33 +139,7 @@ void EmoWindow::UpdateUwEntry()
 
 void EmoWindow::UpdateUwMoves()
 {
-    if (!move_state_active)
-        return;
-
-    if (move_idx >= moves.size() - 1U)
-        return;
-
-    const auto ret = Move::UpdateMove(player, move_state_active, moves[move_idx], moves[move_idx + 1U]);
-
-    if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && player.living->GetIsMoving())
-        return;
-    else if (moves[move_idx].moving_state != MoveState::NONE &&
-             !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && !player.living->GetIsMoving() && ret)
-    {
-        moves[move_idx].Execute();
-        return;
-    }
-
-    if (ret)
-    {
-        move_state_active = false;
-        ++move_idx;
-        if (moves[move_idx].moving_state == MoveState::DONT_WAIT || moves[move_idx].moving_state == MoveState::WAIT)
-        {
-            move_state_active = true;
-            moves[move_idx].Execute();
-        }
-    }
+    UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
 }
 
 void EmoWindow::Update(float delta)

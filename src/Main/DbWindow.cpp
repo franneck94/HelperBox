@@ -42,7 +42,7 @@
 namespace
 {
 static ActionState *damage_action_state = nullptr;
-static auto move_state_active = false;
+static auto move_ongoing = false;
 }; // namespace
 
 DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
@@ -60,16 +60,13 @@ DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
         &GenericValue_Entry,
         [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
             UNREFERENCED_PARAMETER(status);
-            if (move_state_active && player.SkillStoppedCallback(packet))
+            if (move_ongoing && player.SkillStoppedCallback(packet))
                 interrupted = true;
         });
 };
 
 void DbWindow::DrawMap()
 {
-    if (!IsUw() || IsLoading())
-        return;
-
     ImGui::SetNextWindowSize(ImVec2{400.0F, 400.0F}, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("PlottingWindow", nullptr, ImGuiWindowFlags_None))
     {
@@ -77,7 +74,7 @@ void DbWindow::DrawMap()
         {
             auto next_pos = GW::GamePos{};
 
-            if (move_idx < moves.size() - 1U && moves[move_idx].moving_state == MoveState::WAIT)
+            if (move_idx < moves.size() - 1U && moves[move_idx].move_state == MoveState::WAIT)
                 next_pos = moves[move_idx + 1U].pos;
             else
                 next_pos = moves[move_idx].pos;
@@ -86,53 +83,23 @@ void DbWindow::DrawMap()
 
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
 
-            const float xs_player[1] = {player.pos.x};
-            const float ys_player[1] = {player.pos.y};
-            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 5.0F, ImVec4(0.0F, 0.0F, 1.0F, 1.0F), 1.0F);
-            ImPlot::PlotScatter("player", xs_player, ys_player, 1);
-
-            const float xs_target[1] = {next_pos.x};
-            const float ys_target[1] = {next_pos.y};
-            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 5.0F, ImVec4(0.5F, 0.5F, 0.0F, 1.0F), 1.0F);
-            ImPlot::PlotScatter("target", xs_target, ys_target, 1);
+            plot_point(player.pos, "player", ImVec4{0.0F, 0.0F, 1.0F, 1.0F}, 1.0F);
+            plot_point(next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 1.0F);
 
             plot_rectangle_line(rect.v1, rect.v2, "line1");
             plot_rectangle_line(rect.v1, rect.v3, "line2");
             plot_rectangle_line(rect.v4, rect.v2, "line3");
             plot_rectangle_line(rect.v4, rect.v3, "line4");
 
-            for (int i = 0; i < 360; i++)
-            {
-                const auto label = fmt::format("circle###{}", i);
-                const auto pos = GW::GamePos{player.pos.x + 1024.0F * std::sin((float)i),
-                                             player.pos.y + 1024.0F * std::cos((float)i),
-                                             0};
-                plot_point(pos, label, ImVec4{0.0, 0.0, 1.0, 1.0}, 2.0F);
-            }
+            plot_circle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
 
             std::vector<GW::AgentLiving *> living_agents{};
             GetEnemiesInCompass(living_agents);
-            auto idx1 = 0U;
-            for (const auto living : living_agents)
-            {
-                if (!living)
-                    continue;
-                const auto label = fmt::format("enemyAll##{}", idx1);
-                plot_point(living->pos, label, ImVec4{0.0, 1.0, 0.0, 1.0});
-                ++idx1;
-            }
+            plot_enemies(living_agents, "enemiesAll", ImVec4{0.0, 1.0, 0.0, 1.0});
 
             auto filtered_livings = std::vector<GW::AgentLiving *>{};
             GetEnemiesInGameRectangle(rect, filtered_livings);
-            auto idx2 = 0U;
-            for (const auto living : filtered_livings)
-            {
-                if (!living)
-                    continue;
-                const auto label = fmt::format("enemyInside###{}", idx2);
-                plot_point(living->pos, label, ImVec4{1.0, 0.0, 0.0, 1.0});
-                ++idx2;
-            }
+            plot_enemies(living_agents, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();
     }
@@ -157,12 +124,12 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
 
         if (IsUw() || IsUwEntryOutpost())
         {
-            DrawMovingButtons(moves, move_state_active, move_idx);
+            DrawMovingButtons(moves, move_ongoing, move_idx);
         }
     }
 
-    // if (player.ValidateData())
-    //     DrawMap();
+    if ((!IsUw() && !IsUwEntryOutpost()))
+        DrawMap();
 
     ImGui::End();
 }
@@ -179,7 +146,7 @@ void DbWindow::UpdateUwEntry()
     {
         moves[0].Execute();
         load_cb_triggered = false;
-        move_state_active = true;
+        move_ongoing = true;
     }
 }
 
@@ -188,37 +155,11 @@ void DbWindow::UpdateUwMoves()
     if (interrupted)
     {
         interrupted = false;
-        move_state_active = false;
+        move_ongoing = false;
         Log::Info("Interrupted Action!");
     }
 
-    if (!move_state_active)
-        return;
-
-    if (move_idx >= moves.size() - 1U)
-        return;
-
-    const auto ret = Move::UpdateMove(player, move_state_active, moves[move_idx], moves[move_idx + 1U]);
-
-    if (!GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && player.living->GetIsMoving())
-        return;
-    else if (moves[move_idx].moving_state != MoveState::NONE &&
-             !GamePosCompare(player.pos, moves[move_idx].pos, 0.001F) && !player.living->GetIsMoving() && ret)
-    {
-        moves[move_idx].Execute();
-        return;
-    }
-
-    if (ret)
-    {
-        move_state_active = false;
-        ++move_idx;
-        if (moves[move_idx].moving_state == MoveState::DONT_WAIT || moves[move_idx].moving_state == MoveState::WAIT)
-        {
-            move_state_active = true;
-            moves[move_idx].Execute();
-        }
-    }
+    UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
 }
 
 void DbWindow::Update(float delta)
@@ -368,6 +309,8 @@ RoutineState Damage::RoutineDhuumRecharge() const
             return RoutineState::FINISHED;
         }
     }
+
+    return RoutineState::ACTIVE;
 }
 
 RoutineState Damage::RoutineDhuumDamage() const

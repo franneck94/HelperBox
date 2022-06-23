@@ -5,6 +5,7 @@
 
 #include "GuiUtils.h"
 
+#include <fmt/format.h>
 #include <imgui.h>
 #include <implot.h>
 
@@ -56,6 +57,31 @@ void plot_point(const GW::GamePos &p, std::string_view label, const ImVec4 &colo
 {
     const float xs[1] = {p.x};
     const float ys[1] = {p.y};
-    ImPlot::SetNextMarkerStyle(ImPlotMarker_Diamond, width, color, 1.0F);
+    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, width, color, 1.0F);
     ImPlot::PlotScatter(label.data(), xs, ys, 1);
+}
+
+void plot_circle(const Player &player, std::string_view label, const ImVec4 &color)
+{
+    for (int i = 0; i < 360; i++)
+    {
+        const auto label_ = fmt::format("{}###{}", label.data(), i);
+        const auto x_p = player.pos.x + 1024.0F * std::sin((float)i);
+        const auto y_p = player.pos.y + 1024.0F * std::cos((float)i);
+        const auto pos = GW::GamePos{x_p, y_p, 0};
+        plot_point(pos, label_, color, 1.0F);
+    }
+}
+
+void plot_enemies(const std::vector<GW::AgentLiving *> &living_agents, std::string_view label, const ImVec4 &color)
+{
+    auto idx = 0U;
+    for (const auto living : living_agents)
+    {
+        if (!living)
+            continue;
+        const auto label_ = fmt::format("{}##{}", label.data(), idx);
+        plot_point(living->pos, label_, color);
+        ++idx;
+    }
 }

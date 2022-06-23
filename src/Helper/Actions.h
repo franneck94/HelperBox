@@ -85,33 +85,33 @@ class Move
 {
 public:
     // Move and then wait
-    Move(const float _x, const float _y, std::string_view _name, const MoveState _moving_state)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state){};
+    Move(const float _x, const float _y, std::string_view _name, const MoveState _move_state)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), move_state(_move_state){};
 
     // Move, trigger cb, and then wait
     Move(const float _x,
          const float _y,
          std::string_view _name,
-         const MoveState _moving_state,
+         const MoveState _move_state,
          std::function<void()> _trigger_cb)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), moving_state(_moving_state){};
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), move_state(_move_state){};
 
     // Move, and cast skill at goal
     Move(const float _x,
          const float _y,
          std::string_view _name,
-         const MoveState _moving_state,
+         const MoveState _move_state,
          const SkillData *_skill_cb)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), moving_state(_moving_state), skill_cb(_skill_cb){};
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), move_state(_move_state), skill_cb(_skill_cb){};
 
     // Move, trigger cb, and cast skill at goal
     Move(const float _x,
          const float _y,
          std::string_view _name,
-         const MoveState _moving_state,
+         const MoveState _move_state,
          std::function<void()> _trigger_cb,
          const SkillData *_skill_cb)
-        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), moving_state(_moving_state),
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), move_state(_move_state),
           skill_cb(_skill_cb){};
 
     const char *Name() const
@@ -123,9 +123,9 @@ public:
 
 public:
     static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
-    static bool UpdateMove(const Player &player, bool &move_state_active, const Move &move, const Move &next_move);
-    static bool UpdateMoveCastSkill(const Player &player, bool &move_state_active, const Move &move);
-    static bool UpdateMoveWait(const Player &player, bool &move_state_active, const Move &next_move);
+    static bool UpdateMove(const Player &player, bool &move_ongoing, const Move &move, const Move &next_move);
+    static bool UpdateMoveCastSkill(const Player &player, bool &move_ongoing, const Move &move);
+    static bool UpdateMoveWait(const Player &player, bool &move_ongoing, const Move &next_move);
 
 private:
     float x = 0.0;
@@ -135,7 +135,7 @@ public:
     GW::GamePos pos;
     std::string_view name;
 
-    MoveState moving_state = MoveState::NONE;
+    MoveState move_state = MoveState::NONE;
     const SkillData *skill_cb = nullptr;
     std::optional<std::function<void()>> trigger_cb = std::nullopt;
 };

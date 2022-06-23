@@ -93,7 +93,7 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
     return false;
 }
 
-bool Move::UpdateMoveCastSkill(const Player &player, bool &move_state_active, const Move &move)
+bool Move::UpdateMoveCastSkill(const Player &player, bool &move_ongoing, const Move &move)
 {
     static auto started_cast = false;
     static auto timer = clock();
@@ -119,17 +119,17 @@ bool Move::UpdateMoveCastSkill(const Player &player, bool &move_state_active, co
     {
         started_cast = false;
         timer = clock();
-        move_state_active = true;
+        move_ongoing = true;
     }
 
     return true;
 }
 
-bool Move::UpdateMoveWait(const Player &player, bool &move_state_active, const Move &next_move)
+bool Move::UpdateMoveWait(const Player &player, bool &move_ongoing, const Move &next_move)
 {
     static auto canceled_move = false;
 
-    move_state_active = true;
+    move_ongoing = true;
 
     const auto aggro_free = Move::CheckForAggroFree(player, next_move.pos);
     if (aggro_free)
@@ -157,27 +157,27 @@ bool Move::UpdateMoveWait(const Player &player, bool &move_state_active, const M
     return false;
 }
 
-bool Move::UpdateMove(const Player &player, bool &move_state_active, const Move &move, const Move &next_move)
+bool Move::UpdateMove(const Player &player, bool &move_ongoing, const Move &move, const Move &next_move)
 {
-    switch (move.moving_state)
+    switch (move.move_state)
     {
     case MoveState::CAST_SKILL:
     {
-        return Move::UpdateMoveCastSkill(player, move_state_active, move);
+        return Move::UpdateMoveCastSkill(player, move_ongoing, move);
     }
     case MoveState::DONT_WAIT:
     {
-        move_state_active = true;
+        move_ongoing = true;
         return true;
     }
     case MoveState::WAIT:
     {
-        return Move::UpdateMoveWait(player, move_state_active, next_move);
+        return Move::UpdateMoveWait(player, move_ongoing, next_move);
     }
     case MoveState::NONE:
     default:
     {
-        move_state_active = true;
+        move_ongoing = true;
         return true;
     }
     }
