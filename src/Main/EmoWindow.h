@@ -31,17 +31,17 @@ private:
     bool PauseRoutine();
     bool ResumeRoutine();
 
-    RoutineState RoutineSelfBonds() const;
-    RoutineState RoutineCanthaGuards() const;
-    RoutineState RoutineLT() const;
-    RoutineState RoutineDbBeforeDhuum() const;
-    RoutineState RoutineTurtle() const;
-    RoutineState RoutineDbAtDhuum() const;
-    RoutineState RoutineWisdom() const;
-    RoutineState RoutineGDW() const;
-    RoutineState RoutineTurtleGDW() const;
-    RoutineState RoutinePI(const uint32_t dhuum_id) const;
-    RoutineState RoutineKeepPlayerAlive() const;
+    bool RoutineSelfBonds() const;
+    bool RoutineCanthaGuards() const;
+    bool RoutineLT() const;
+    bool RoutineDbBeforeDhuum() const;
+    bool RoutineTurtle() const;
+    bool RoutineDbAtDhuum() const;
+    bool RoutineWisdom() const;
+    bool RoutineGDW() const;
+    bool RoutineTurtleGDW() const;
+    bool RoutinePI(const uint32_t dhuum_id) const;
+    bool RoutineKeepPlayerAlive() const;
 
     static auto constexpr cantha_ids = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
 

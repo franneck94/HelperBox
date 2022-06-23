@@ -38,6 +38,8 @@ namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
 static auto move_ongoing = false;
+
+constexpr static auto DHUUM_JUDGEMENT_SKILL_ID = uint32_t{3085U};
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -216,39 +218,39 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start
         });
 }
 
-RoutineState Pumping::RoutineSelfBonds() const
+bool Pumping::RoutineSelfBonds() const
 {
     const auto found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
     const auto found_sb = player->HasEffect(GW::Constants::SkillID::Spirit_Bond);
     const auto found_burning = player->HasEffect(GW::Constants::SkillID::Burning_Speed);
 
     if (player->CastEffectIfNotAvailable(skillbar->ether))
-        return RoutineState::FINISHED;
+        return true;
 
     if (player->energy > 30U)
     {
         if (CastBondIfNotAvailable(skillbar->balth, player->id, player))
-            return RoutineState::FINISHED;
+            return true;
 
         if (CastBondIfNotAvailable(skillbar->prot, player->id, player))
-            return RoutineState::FINISHED;
+            return true;
     }
 
     if (found_ether && (player->hp_perc < 0.90F || !found_sb) && player->SpamEffect(skillbar->sb))
-        return RoutineState::FINISHED;
+        return true;
 
     if (found_ether && (player->energy_perc < 0.90F || !found_burning) && player->SpamEffect(skillbar->burning))
-        return RoutineState::FINISHED;
+        return true;
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutineCanthaGuards() const
+bool Pumping::RoutineCanthaGuards() const
 {
     static auto last_gdw_idx = 0;
 
     if (!player->CanCast())
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto agents_array = GW::Agents::GetAgentArray();
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
@@ -260,7 +262,7 @@ RoutineState Pumping::RoutineCanthaGuards() const
                  GW::Constants::Range::Spellcast);
 
     if (filtered_canthas.size() == 0)
-        return RoutineState::ACTIVE;
+        return false;
 
     for (const auto &cantha : filtered_canthas)
     {
@@ -268,218 +270,195 @@ RoutineState Pumping::RoutineCanthaGuards() const
             continue;
 
         if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player))
-            return RoutineState::FINISHED;
+            return true;
 
         if (cantha->hp < 0.70F && player->hp_perc > 0.5F)
-            return skillbar->fuse.Cast(player->energy, cantha->agent_id);
+            return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, cantha->agent_id));
 
         if (!cantha->GetIsWeaponSpelled())
-            return skillbar->gdw.Cast(player->energy, cantha->agent_id);
+            return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, cantha->agent_id));
     }
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutineLT() const
+bool Pumping::RoutineLT() const
 {
     if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto target_living = player->target->GetAsAgentLiving();
     if (!target_living || target_living->GetIsMoving() || player->living->GetIsMoving() ||
         target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dist = GW::GetDistance(player->pos, player->target->pos);
 
-    if (dist < 1225.0F || dist > 1240.0F)
-        return RoutineState::ACTIVE;
+    if (dist < 1225.0F || dist > GW::Constants::Range::Spellcast)
+        return false;
 
     if (target_living->hp < 0.80F && player->hp_perc > 0.5F)
-        return skillbar->fuse.Cast(player->energy, target_living->agent_id);
+        return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, target_living->agent_id));
 
     if (target_living->hp < 0.99F)
-        return skillbar->sb.Cast(player->energy, target_living->agent_id);
+        return (RoutineState::FINISHED == skillbar->sb.Cast(player->energy, target_living->agent_id));
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutineDbAtDhuum() const
+bool Pumping::RoutineDbAtDhuum() const
 {
     if (!db_agent)
-        return RoutineState::ACTIVE;
+        return false;
+
+    const auto dist = GW::GetDistance(player->pos, db_agent->pos);
+    if (dist > GW::Constants::Range::Spellcast)
+        return false;
 
     if (CastBondIfNotAvailable(skillbar->balth, db_agent->agent_id, player))
-        return RoutineState::FINISHED;
+        return true;
 
     if (CastBondIfNotAvailable(skillbar->prot, db_agent->agent_id, player))
-        return RoutineState::FINISHED;
+        return true;
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutineTurtle() const
+bool Pumping::RoutineTurtle() const
 {
     if (!found_turtle || !turtle_id)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto turtle_agent = GW::Agents::GetAgentByID(turtle_id);
     if (!turtle_agent)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto turtle_living = turtle_agent->GetAsAgentLiving();
     if (!turtle_living)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dist = GW::GetDistance(player->pos, turtle_agent->pos);
-
     if (dist > GW::Constants::Range::Spellcast)
-        return RoutineState::ACTIVE;
+        return false;
 
     if (CastBondIfNotAvailable(skillbar->prot, turtle_agent->agent_id, player))
-        return RoutineState::FINISHED;
+        return true;
 
     if (CastBondIfNotAvailable(skillbar->life, turtle_agent->agent_id, player))
-        return RoutineState::FINISHED;
+        return true;
 
     if (turtle_living->hp < 0.95F && player->hp_perc > 0.5F)
-        return skillbar->fuse.Cast(player->energy, turtle_agent->agent_id);
+        return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutinePI(const uint32_t dhuum_id) const
+bool Pumping::RoutinePI(const uint32_t dhuum_id) const
 {
     const auto &skill = skillbar->pi;
-
     if (!skill.SkillFound())
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
     if (!dhuum_agent)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
     if (!dhuum_living)
-        return RoutineState::ACTIVE;
+        return false;
 
-    if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
-        return skillbar->pi.Cast(player->energy, dhuum_id);
+    if (dhuum_living->GetIsCasting() && dhuum_living->skill == DHUUM_JUDGEMENT_SKILL_ID)
+        return (RoutineState::FINISHED == skillbar->pi.Cast(player->energy, dhuum_id));
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutineWisdom() const
+bool Pumping::RoutineWisdom() const
 {
-    return skillbar->wisdom.Cast(player->energy);
+    return (RoutineState::FINISHED == skillbar->wisdom.Cast(player->energy));
 }
 
-RoutineState Pumping::RoutineGDW() const
+bool Pumping::RoutineGDW() const
 {
     static auto last_idx = uint32_t{0};
 
     if (last_idx >= GW::PartyMgr::GetPartySize())
         last_idx = 0;
-
-    if (!player->CanCast())
-        return RoutineState::ACTIVE;
-
-    if (!party_data_valid)
-    {
-        last_idx++;
-        return RoutineState::ACTIVE;
-    }
-
     const auto id = party_members[last_idx].id;
+    last_idx++;
 
-    if (id == player->id)
-    {
-        last_idx++;
-        return RoutineState::ACTIVE;
-    }
+    if (!player->CanCast() || !id || !party_data_valid || id == player->id)
+        return false;
 
     const auto agent = GW::Agents::GetAgentByID(id);
     if (!agent)
-    {
-        last_idx++;
-        return RoutineState::ACTIVE;
-    }
+        return false;
 
     const auto living = agent->GetAsAgentLiving();
     if (!living || living->GetIsMoving())
-    {
-        last_idx++;
-        return RoutineState::ACTIVE;
-    }
+        return false;
 
     const auto dist = GW::GetDistance(player->pos, agent->pos);
     if (dist > GW::Constants::Range::Spellcast)
-    {
-        last_idx++;
-        return RoutineState::ACTIVE;
-    }
+        return false;
 
     if (living->GetIsWeaponSpelled())
-    {
-        last_idx++;
-        return RoutineState::ACTIVE;
-    }
+        return false;
 
-    last_idx++;
-    return skillbar->gdw.Cast(player->energy, living->agent_id);
+    return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, living->agent_id));
 }
 
-RoutineState Pumping::RoutineTurtleGDW() const
+bool Pumping::RoutineTurtleGDW() const
 {
     static auto last_idx = uint32_t{0};
 
     if (!player->CanCast())
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto agent = GW::Agents::GetAgentByID(turtle_id);
     if (!agent)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto living = agent->GetAsAgentLiving();
     if (!living || living->GetIsMoving())
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dist = GW::GetDistance(player->pos, agent->pos);
     if (dist > GW::Constants::Range::Spellcast)
-        return RoutineState::ACTIVE;
+        return false;
 
     if (living->GetIsWeaponSpelled())
-        return RoutineState::ACTIVE;
+        return false;
 
-    return skillbar->gdw.Cast(player->energy, living->agent_id);
+    return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, living->agent_id));
 }
 
-RoutineState Pumping::RoutineDbBeforeDhuum() const
+bool Pumping::RoutineDbBeforeDhuum() const
 {
     if (!db_agent)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto living = db_agent->GetAsAgentLiving();
     if (!living)
-        return RoutineState::ACTIVE;
+        return false;
 
     const auto dist = GW::GetDistance(player->pos, db_agent->pos);
     if (dist > GW::Constants::Range::Spellcast)
-        return RoutineState::ACTIVE;
+        return false;
 
     if (living->hp > 0.75F)
-        return RoutineState::ACTIVE;
+        return false;
 
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
-        return RoutineState::FINISHED;
+        return true;
 
     if (player->hp_perc > 0.5F)
-        return skillbar->fuse.Cast(player->energy, living->agent_id);
+        return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, living->agent_id));
 
-    return RoutineState::ACTIVE;
+    return false;
 }
 
-RoutineState Pumping::RoutineKeepPlayerAlive() const
+bool Pumping::RoutineKeepPlayerAlive() const
 {
     for (const auto &[id, _] : party_members)
     {
@@ -503,13 +482,13 @@ RoutineState Pumping::RoutineKeepPlayerAlive() const
 
         if (living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
-                return RoutineState::FINISHED;
+                return true;
 
         if (player->hp_perc > 0.5F)
-            return skillbar->fuse.Cast(player->energy, living->agent_id);
+            return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, living->agent_id));
     }
 
-    return RoutineState::ACTIVE;
+    return true;
 }
 
 RoutineState Pumping::Routine()
@@ -523,8 +502,7 @@ RoutineState Pumping::Routine()
         player->target->GetIsLivingType())
         AttackAgent(player->target);
 
-    const auto self_bonds_state = RoutineSelfBonds();
-    if (self_bonds_state == RoutineState::FINISHED)
+    if (RoutineSelfBonds())
         return RoutineState::FINISHED;
 
     if (!IsUw())
@@ -532,26 +510,22 @@ RoutineState Pumping::Routine()
 
     if (IsAtChamberSkele(player))
     {
-        const auto vale_rota = RoutineDbBeforeDhuum();
-        if (vale_rota == RoutineState::FINISHED)
+        if (RoutineDbBeforeDhuum())
             return RoutineState::FINISHED;
     }
 
     if (IsAtFusePulls(player))
     {
-        const auto lt_state = RoutineLT();
-        if (lt_state == RoutineState::FINISHED)
+        if (RoutineLT())
             return RoutineState::FINISHED;
     }
 
     if (IsInVale(player))
     {
-        const auto db_state = RoutineDbBeforeDhuum();
-        if (db_state == RoutineState::FINISHED)
+        if (RoutineDbBeforeDhuum())
             return RoutineState::FINISHED;
 
-        const auto cantha_state = RoutineCanthaGuards();
-        if (cantha_state == RoutineState::FINISHED)
+        if (RoutineCanthaGuards())
             return RoutineState::FINISHED;
     }
 
@@ -559,12 +533,10 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
-    const auto turtle_state = RoutineTurtle();
-    if (turtle_state == RoutineState::FINISHED)
+    if (RoutineTurtle())
         return RoutineState::FINISHED;
 
-    const auto db_state = RoutineDbAtDhuum();
-    if (db_state == RoutineState::FINISHED)
+    if (RoutineDbAtDhuum())
         return RoutineState::FINISHED;
 
     auto dhuum_id = uint32_t{0};
@@ -578,27 +550,22 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;
 
-    const auto wisdom_state = RoutineWisdom();
-    if (wisdom_state == RoutineState::FINISHED)
+    if (RoutineWisdom())
         return RoutineState::FINISHED;
 
     if (dhuum_hp < 0.25F)
         return RoutineState::FINISHED;
 
-    const auto pi_state = RoutinePI(dhuum_id);
-    if (pi_state == RoutineState::FINISHED)
+    if (RoutinePI(dhuum_id))
         return RoutineState::FINISHED;
 
-    const auto keep_player_alive_state = RoutineKeepPlayerAlive();
-    if (keep_player_alive_state == RoutineState::FINISHED)
+    if (RoutineKeepPlayerAlive())
         return RoutineState::FINISHED;
 
-    const auto gdw_state = RoutineGDW();
-    if (gdw_state == RoutineState::FINISHED)
+    if (RoutineGDW())
         return RoutineState::FINISHED;
 
-    const auto turtle_gdw_state = RoutineTurtleGDW();
-    if (turtle_gdw_state == RoutineState::FINISHED)
+    if (RoutineTurtleGDW())
         return RoutineState::FINISHED;
 
     return RoutineState::FINISHED;
