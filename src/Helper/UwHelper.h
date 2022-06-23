@@ -60,3 +60,7 @@ void TakeRestore();
 void TakeEscort();
 
 void TakeUWG();
+
+void TakePits();
+
+void TakePlanes();

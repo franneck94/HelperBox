@@ -147,7 +147,7 @@ bool Move::UpdateMoveLTDistance(const Player &player)
     if (!lt_agent)
         return false;
 
-    const auto dist_threshold = GW::Constants::Range::Spirit;
+    const auto dist_threshold = 3600.0F;
     const auto dist = GW::GetDistance(player.pos, lt_agent->pos);
     if (dist < dist_threshold)
         return false;
@@ -174,7 +174,7 @@ bool Move::UpdateMove(const Player &player, bool &move_ongoing, const Move &move
         return Move::UpdateMoveLTDistance(player);
     }
     case MoveState::DONT_WAIT:
-    case MoveState::NONE:
+    case MoveState::STOP:
     default:
     {
         return true;

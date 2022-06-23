@@ -145,3 +145,5 @@ std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);
+
+void TargetAndAttackEnemyInAggro(const Player &player);

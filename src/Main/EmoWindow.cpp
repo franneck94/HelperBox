@@ -108,8 +108,10 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 
     ImGui::End();
 
+#ifdef _DEBUG
     if (IsUw() && show_debug_map)
         DrawMap(player, moves, move_idx, "DbMap");
+#endif
 }
 
 void EmoWindow::UpdateUw()
@@ -121,6 +123,7 @@ void EmoWindow::UpdateUw()
 
 void EmoWindow::UpdateUwEntry()
 {
+    static auto timer = clock();
     static auto triggered_tank_bonds_at_start = false;
     static auto triggered_move_start = false;
 
@@ -129,17 +132,27 @@ void EmoWindow::UpdateUwEntry()
         tank_bonding.action_state = ActionState::ACTIVE;
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
+        timer = clock();
+        return;
     }
+
     if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
     {
         moves[0].Execute();
         triggered_tank_bonds_at_start = false;
         triggered_move_start = true;
         move_ongoing = true;
+        return;
     }
+
+    const auto timer_diff = TIMER_DIFF(timer);
+    if (timer_diff < 500)
+        return;
+
     if (triggered_move_start && move_idx == 1)
     {
         pumping.action_state = ActionState::ACTIVE;
+        timer = 0;
     }
 }
 
@@ -492,19 +505,21 @@ bool Pumping::RoutineKeepPlayerAlive() const
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, living->agent_id));
     }
 
-    return true;
+    return false;
 }
 
 RoutineState Pumping::Routine()
 {
+    static auto timer_last_cast_ms = clock();
     static auto was_in_dhuum_fight = false;
 
     if (!player->CanCast())
         return RoutineState::FINISHED;
 
-    if (!player->living->GetIsAttacking() && player->CanCast() && player->target && player->target->agent_id &&
-        player->target->GetIsLivingType())
-        AttackAgent(player->target);
+    const auto last_cast_diff_ms = TIMER_DIFF(timer_last_cast_ms);
+    if (last_cast_diff_ms < 100)
+        return RoutineState::FINISHED;
+    timer_last_cast_ms = clock();
 
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
@@ -521,6 +536,9 @@ RoutineState Pumping::Routine()
     if (IsAtFusePulls(player))
     {
         if (RoutineLT())
+            return RoutineState::FINISHED;
+
+        if (RoutineDbBeforeDhuum())
             return RoutineState::FINISHED;
     }
 
@@ -550,14 +568,14 @@ RoutineState Pumping::Routine()
 
     if (was_in_dhuum_fight && !is_in_dhuum_fight)
         *emo_casting_action_state = ActionState::INACTIVE;
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp > 0.99F)
+    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;
 
     if (RoutineWisdom())
         return RoutineState::FINISHED;
 
-    if (dhuum_hp < 0.25F)
+    if (dhuum_hp < 0.20F)
         return RoutineState::FINISHED;
 
     if (RoutinePI(dhuum_id))

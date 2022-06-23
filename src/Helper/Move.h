@@ -18,7 +18,7 @@
 
 enum class MoveState
 {
-    NONE,
+    STOP,
     DONT_WAIT,
     WAIT,
     LT_DISTANCE,
@@ -80,7 +80,7 @@ public:
     GW::GamePos pos;
     std::string_view name;
 
-    MoveState move_state = MoveState::NONE;
+    MoveState move_state = MoveState::STOP;
     const SkillData *skill_cb = nullptr;
     std::optional<std::function<void()>> trigger_cb = std::nullopt;
 };
@@ -126,14 +126,14 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         return;
 
     const auto state = moves[move_idx].move_state;
-    const auto is_proceeding_action = (state != MoveState::NONE);
+    const auto is_proceeding_action = (state != MoveState::STOP);
 
     if (is_proceeding_action && !reached_pos && !is_moving && finished)
     {
         static auto last_trigger_time_ms = clock();
 
         const auto last_trigger_time_diff_ms = TIMER_DIFF(last_trigger_time_ms);
-        if (last_trigger_time_diff_ms >= 500)
+        if (last_trigger_time_diff_ms == 0 || last_trigger_time_diff_ms >= 500)
         {
             last_trigger_time_ms = clock();
             moves[move_idx].Execute();
@@ -141,7 +141,7 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         return;
     }
 
-    if (finished)
+    if (reached_pos && finished)
     {
         move_ongoing = false;
         ++move_idx;

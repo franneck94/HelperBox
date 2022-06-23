@@ -792,3 +792,15 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
 
     return result_ids;
 }
+
+void TargetAndAttackEnemyInAggro(const Player &player)
+{
+    if (!player.target || !player.target->agent_id || !player.target->GetIsLivingType())
+        TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
+    if (player.target && player.target->agent_id)
+    {
+        const auto dist = GW::GetDistance(player.pos, player.target->pos);
+        if (dist < GW::Constants::Range::Earshot)
+            AttackAgent(player.target);
+    }
+}

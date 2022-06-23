@@ -100,7 +100,7 @@ bool IsAtValeHouse(const Player *const player)
     const auto pos = GW::GamePos{-12264.12F, 1821.18F, 0};
     const auto dist = GW::GetDistance(player->pos, pos);
 
-    if (dist < GW::Constants::Range::Spellcast)
+    if (dist < GW::Constants::Range::Spirit)
         return true;
 
     return false;
@@ -127,7 +127,7 @@ bool IsInVale(const Player *const player)
     if (!IsUw())
         return false;
 
-    if (IsAtValeHouse(player) || IsAtSpirits1(player) || IsAtSpirits2(player))
+    if (IsAtSpirits1(player) || IsAtSpirits2(player))
         return true;
 
     return false;
@@ -306,5 +306,17 @@ void TakeEscort()
 void TakeUWG()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::UWG);
+    GW::Agents::SendDialog(dialog);
+}
+
+void TakePits()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Pits);
+    GW::Agents::SendDialog(dialog);
+}
+
+void TakePlanes()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Planes);
     GW::Agents::SendDialog(dialog);
 }

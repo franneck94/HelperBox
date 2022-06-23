@@ -75,6 +75,9 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!ActivationConditions())
         return;
 
+    if (IsLoading())
+        return;
+
     if ((!IsUw() && !IsUwEntryOutpost()))
         return;
 
@@ -86,8 +89,10 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     }
     ImGui::End();
 
+#ifdef _DEBUG
     if (IsUw() && show_debug_map)
         DrawMap(player, moves, move_idx, "DbMap");
+#endif
 }
 
 void DbWindow::UpdateUw()
@@ -316,6 +321,9 @@ RoutineState Damage::Routine()
     {
         if (RoutineAtChamberSkele())
             return RoutineState::FINISHED;
+
+        if (!player->living->GetIsAttacking() && player->CanAttack())
+            TargetAndAttackEnemyInAggro(*player);
     }
 
     if (IsInVale(player))
@@ -326,23 +334,14 @@ RoutineState Damage::Routine()
         if (at_vale_house && !enemies_at_vale_house)
             return RoutineState::FINISHED;
 
-        if (!player->living->GetIsAttacking() && player->CanAttack())
-        {
-            if (!player->target || !player->target->agent_id || !player->target->GetIsLivingType())
-                TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
-            if (player->target && player->target->agent_id)
-            {
-                const auto dist = GW::GetDistance(player->pos, player->target->pos);
-                if (dist < GW::Constants::Range::Earshot)
-                    AttackAgent(player->target);
-            }
-
-            if (CastPiOnTarget())
-                return RoutineState::FINISHED;
-        }
+        if (CastPiOnTarget())
+            return RoutineState::FINISHED;
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
+
+        if (!player->living->GetIsAttacking() && player->CanAttack())
+            TargetAndAttackEnemyInAggro(*player);
     }
 
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
@@ -355,19 +354,23 @@ RoutineState Damage::Routine()
 
     if (was_in_dhuum_fight && !is_in_dhuum_fight)
         action_state = ActionState::INACTIVE;
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp > 0.995F)
+    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
     was_in_dhuum_fight = true;
+
+    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
+    if (!dhuum_agent)
+        return RoutineState::FINISHED;
+    const auto dhuum_dist = GW::GetDistance(player->pos, dhuum_agent->pos);
 
     if (RoutineDhuumRecharge())
         return RoutineState::FINISHED;
 
-    if (dhuum_hp < 0.25F)
+    if (dhuum_hp < 0.20F)
         return RoutineState::FINISHED;
 
-    player->ChangeTarget(dhuum_id);
-    if (!player->living->GetIsAttacking() && player->target && player->target->agent_id)
-        AttackAgent(player->target);
+    if (dhuum_dist > GW::Constants::Range::Spellcast)
+        return RoutineState::FINISHED;
 
     if (RoutinePI(dhuum_id))
         return RoutineState::FINISHED;
