@@ -35,7 +35,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     optional_modules.push_back(&MainteamWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
     optional_modules.push_back(&AutoFollowWindow::Instance());
-    optional_modules.push_back(&CancelActionWindow::Instance());
+    // optional_modules.push_back(&CancelActionWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 
     for (HelperBoxModule *module : optional_modules)
