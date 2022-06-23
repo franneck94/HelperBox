@@ -701,13 +701,13 @@ void AttackAgent(const GW::Agent *agent)
     GW::CtoS::SendPacket(0xC, GAME_CMSG_ATTACK_AGENT, agent->agent_id, 0);
 }
 
-void GetEnemiesInCompass(std::vector<GW::AgentLiving *> &living_agents)
+std::vector<GW::AgentLiving *> GetEnemiesInCompass()
 {
-    living_agents.clear();
+    auto living_agents = std::vector<GW::AgentLiving *>{};
 
     const auto agents_array = GW::Agents::GetAgentArray();
     if (!agents_array.valid())
-        return;
+        return living_agents;
 
     for (const auto agent : agents_array)
     {
@@ -726,30 +726,31 @@ void GetEnemiesInCompass(std::vector<GW::AgentLiving *> &living_agents)
 
         living_agents.push_back(living);
     }
+
+    return living_agents;
 }
 
-void GetEnemiesInGameRectangle(const GameRectangle &rectangle, std::vector<GW::AgentLiving *> &filtered_livings)
+std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle)
 {
-    filtered_livings.clear();
-
-    std::vector<GW::AgentLiving *> living_agents{};
-    GetEnemiesInCompass(living_agents);
+    const auto living_agents = GetEnemiesInCompass();
+    auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
     for (const auto living : living_agents)
     {
         if (rectangle.PointInGameRectangle(living->pos))
             filtered_livings.push_back(living);
     }
+
+    return filtered_livings;
 }
 
-void GetEnemiesInAggro(const Player &player, std::vector<GW::AgentLiving *> &filtered_livings)
+std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player)
 {
-    filtered_livings.clear();
-    std::vector<GW::AgentLiving *> living_agents{};
+    auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
     const auto agents_array = GW::Agents::GetAgentArray();
     if (!agents_array.valid())
-        return;
+        return filtered_livings;
 
     for (const auto agent : agents_array)
     {
@@ -768,8 +769,10 @@ void GetEnemiesInAggro(const Player &player, std::vector<GW::AgentLiving *> &fil
 
         const auto dist = GW::GetDistance(player.pos, living->pos);
         if (dist <= GW::Constants::Range::Earshot)
-            living_agents.push_back(living);
+            filtered_livings.push_back(living);
     }
+
+    return filtered_livings;
 }
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,

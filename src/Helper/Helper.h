@@ -137,11 +137,11 @@ DWORD QuestRewardDialog(DWORD quest);
 
 void AttackAgent(const GW::Agent *agent);
 
-void GetEnemiesInCompass(std::vector<GW::AgentLiving *> &living_agents);
+std::vector<GW::AgentLiving *> GetEnemiesInCompass();
 
-void GetEnemiesInGameRectangle(const GameRectangle &rectangle, std::vector<GW::AgentLiving *> &filtered_livings);
+std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle);
 
-void GetEnemiesInAggro(const Player &player, std::vector<GW::AgentLiving *> &filtered_livings);
+std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);

@@ -93,12 +93,10 @@ void DbWindow::DrawMap()
 
             plot_circle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
 
-            std::vector<GW::AgentLiving *> living_agents{};
-            GetEnemiesInCompass(living_agents);
+            const auto living_agents = GetEnemiesInCompass();
             plot_enemies(living_agents, "enemiesAll", ImVec4{0.0, 1.0, 0.0, 1.0});
 
-            auto filtered_livings = std::vector<GW::AgentLiving *>{};
-            GetEnemiesInGameRectangle(rect, filtered_livings);
+            const auto filtered_livings = GetEnemiesInGameRectangle(rect);
             plot_enemies(living_agents, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();

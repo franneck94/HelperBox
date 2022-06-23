@@ -62,12 +62,10 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
                                                      GW::Constants::ModelID::UW::TorturedSpirit1,
                                                      GW::Constants::ModelID::UW::TorturedSpirit,
                                                      2372U};
-    auto filtered_livings = std::vector<GW::AgentLiving *>{};
-
     if (player.pos.x == next_pos.x && player.pos.y == next_pos.y)
     {
-        GetEnemiesInAggro(player, filtered_livings);
-        const auto result_ids = FilterAgentIDS(filtered_livings, filter_ids);
+        const auto livings = GetEnemiesInAggro(player);
+        const auto result_ids = FilterAgentIDS(livings, filter_ids);
 
         if (result_ids.size() == 0)
             return true;
@@ -77,7 +75,7 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
     const auto offset = GW::Constants::Range::Spellcast;
     const auto rect = GameRectangle(player.pos, next_pos, offset);
 
-    GetEnemiesInGameRectangle(rect, filtered_livings);
+    const auto filtered_livings = GetEnemiesInGameRectangle(rect);
 
     auto result_ids = std::set<uint32_t>{};
 
