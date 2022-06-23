@@ -40,13 +40,13 @@ static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Blad
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
-void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> filtered_livings,
+void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
                                         const ImVec4 color,
                                         std::string_view label)
 {
     auto idx = uint32_t{0};
 
-    for (const auto living : filtered_livings)
+    for (const auto living : livings)
     {
         if (!living)
             continue;

@@ -28,7 +28,7 @@ public:
 class TerraWindow : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player({}), filtered_foes({}), auto_target(&player), last_casted_times_ms({}){};
+    TerraWindow() : player({}), filtered_livings({}), auto_target(&player), last_casted_times_ms({}){};
     ~TerraWindow(){};
 
     static TerraWindow &Instance()
@@ -63,14 +63,14 @@ public:
 
 private:
     bool ActivationConditions();
-    void DrawSplittedAgents(std::vector<GW::AgentLiving *> splitted_agents, const ImVec4 color, std::string_view label);
+    void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
     void Spiking();
 
     Player player;
     std::map<uint32_t, clock_t> last_casted_times_ms;
 
-    std::vector<GW::AgentLiving *> filtered_foes;
+    std::vector<GW::AgentLiving *> filtered_livings;
     std::vector<GW::AgentLiving *> behemoth_livings;
     std::vector<GW::AgentLiving *> dryder_livings;
     std::vector<GW::AgentLiving *> skele_livings;

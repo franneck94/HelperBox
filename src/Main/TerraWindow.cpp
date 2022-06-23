@@ -64,13 +64,11 @@ RoutineState AutoTargetAction::Routine()
     return RoutineState::NONE;
 }
 
-void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> filtered_livings,
-                                     const ImVec4 color,
-                                     std::string_view label)
+void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label)
 {
     auto idx = uint32_t{0};
 
-    for (const auto living : filtered_livings)
+    for (const auto living : livings)
     {
         if (!living)
             continue;
@@ -168,7 +166,7 @@ void TerraWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    filtered_foes.clear();
+    filtered_livings.clear();
     behemoth_livings.clear();
     dryder_livings.clear();
     skele_livings.clear();
@@ -187,13 +185,13 @@ void TerraWindow::Update(float delta)
     auto_target.Update();
 
     auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_foes, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
-    FilterAgents(player, agents_array, filtered_foes, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
-    SplitFilteredAgents(filtered_foes, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
-    SplitFilteredAgents(filtered_foes, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
-    SplitFilteredAgents(filtered_foes, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
-    SplitFilteredAgents(filtered_foes, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
-    SplitFilteredAgents(filtered_foes, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
+    FilterAgents(player, agents_array, filtered_livings, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
+    FilterAgents(player, agents_array, filtered_livings, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
+    SplitFilteredAgents(filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
+    SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
+    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    SplitFilteredAgents(filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
     SortByDistance(player, behemoth_livings);
     SortByDistance(player, dryder_livings);
     SortByDistance(player, skele_livings);

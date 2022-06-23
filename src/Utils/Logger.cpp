@@ -47,7 +47,7 @@ bool Log::InitializeLog()
     AllocConsole();
     freopen_s(&stdout_file, "CONOUT$", "w", stdout);
     freopen_s(&stderr_file, "CONOUT$", "w", stderr);
-    SetConsoleTitle("GWTB++ Debug Console");
+    SetConsoleTitle("HelperBox Debug Console");
 
     GW::RegisterLogHandler(GWCALogHandler, nullptr);
     return true;
