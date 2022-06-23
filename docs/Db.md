@@ -3,11 +3,10 @@
 The window will only be rendered if you are on an X/Ranger.
 
 - Skill Routines:
-    - In Vale Skill Rotation:
-        - ...
-    - Dhuum Fight Skill Rotation:
-        - ...
-        - If PI is in the skillbar, cast whenever Dhuum cast judgment
+    - At Chamber Skele
+    - At Vale House
+    - At Vale Spirits Groups
+    - At Dhuum Fight
 
 - Move-To Feature:
     - Pre-defined set of positions, like goto Lab Reaper, etc.

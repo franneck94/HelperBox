@@ -20,10 +20,6 @@ Auto-Follow Button:
 - If is active (button is green) the targeted player is followed
 - Will be inactive when there is no target or the button state was set to inactive
 
-Cancel Action Button:
-
-- If clicked, send interrupt signal (useful for weapon change etc.)
-
 The following helper windows are displayed in the UW
 
 - Terra Window
