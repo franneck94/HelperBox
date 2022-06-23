@@ -29,6 +29,7 @@ private:
     bool PauseRoutine();
     bool ResumeRoutine();
 
+    RoutineState CastPiOnTarget() const;
     RoutineState RoutineAtChamberSkele() const;
     RoutineState RoutineValeSpirits() const;
     RoutineState RoutinePI(const uint32_t dhuum_id) const;
@@ -84,7 +85,7 @@ private:
     DbSkillbar skillbar;
 
     uint32_t move_idx = 0;
-    std::array<Move, 38> moves = {
+    std::array<Move, 39> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
         Move{613.38F, 7097.03F, "SQ", MoveState::DONT_WAIT, [&]() { skillbar.sq.Cast(player.energy); }},
         Move{157.41F, 7781.66F, "Move EoE", MoveState::DONT_WAIT},
@@ -93,9 +94,10 @@ private:
         Move{1319.41F, 7299.94F, "Qz", MoveState::CAST_SKILL, &skillbar.qz},
         Move{985.70F, 7325.54F, "Move Stairs", MoveState::WAIT},
         Move{-634.07F, 9071.42F, "Lab Stairs1", MoveState::WAIT},
-        Move{-1522.58F, 10634.12F, "Lab Stairs2", MoveState::WAIT},
+        Move{-1522.58F, 10634.12F, "Lab Stairs2", MoveState::DONT_WAIT},
         Move{-2726.856F, 10239.48F, "Lab Stairs3", MoveState::WAIT},
-        Move{-4012.72F, 11130.53F, "Lab Stairs4", MoveState::WAIT},
+        Move{-2828.35F, 10020.46F, "Lab Stairs4", MoveState::WAIT},
+        Move{-4012.72F, 11130.53F, "Lab Stairs5", MoveState::WAIT},
         Move{-4012.72F, 11130.53F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},
         Move{-4470.48F, 11581.47F, "Lab Stairs4", MoveState::WAIT},
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::NONE, [&]() { TargetClosestReaper(player); }},
@@ -103,13 +105,13 @@ private:
         Move{-5751.45F, 12746.52F, "Accept", MoveState::NONE, [&]() { AcceptChamber(); }},
         Move{-5751.45F, 12746.52F, "Restore", MoveState::NONE, [&]() { TakeRestore(); }},
         Move{-5751.45F, 12746.52F, "Escort", MoveState::DONT_WAIT, [&]() { TakeEscort(); }},
-        Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::DONT_WAIT, &skillbar.eoe},
+        Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::WAIT, &skillbar.eoe},
         Move{-6622.24F, 10387.12F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},
         Move{-5183.64F, 8876.31F, "Basement 1", MoveState::WAIT},
         Move{-6241.24F, 7945.73F, "Basement 2", MoveState::NONE},
         Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT},
         Move{-8402.00F, 4687.26F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},
-        Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT},
+        Move{-8798.22F, 5643.86F, "Basement 3", MoveState::NONE},
         Move{-7289.94F, 3283.81F, "Vale Door", MoveState::NONE},
         Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::WAIT},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT},

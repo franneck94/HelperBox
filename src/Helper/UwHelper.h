@@ -58,3 +58,5 @@ void AcceptChamber();
 void TakeRestore();
 
 void TakeEscort();
+
+void TakeUWG();

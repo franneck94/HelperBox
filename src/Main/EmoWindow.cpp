@@ -843,7 +843,19 @@ RoutineState FuseRange::Routine()
 
     if (routine_state == RoutineState::NONE)
     {
-        requested_pos = MovePointAlongVector(me_pos, target_pos, FUSE_PULL_RANGE);
+        const auto m_x = me_pos.x;
+        const auto m_y = me_pos.y;
+        const auto t_x = target_pos.x;
+        const auto t_y = target_pos.y;
+
+        const auto dist = GW::GetDistance(me_pos, target_pos);
+        const auto d_t = FUSE_PULL_RANGE;
+        const auto t = d_t / dist;
+
+        const auto p_x = ((1.0F - t) * t_x + t * m_x);
+        const auto p_y = ((1.0F - t) * t_y + t * m_y);
+
+        requested_pos = GW::GamePos{p_x, p_y, 0};
         routine_state = SafeWalk(requested_pos, true);
 
         return RoutineState::ACTIVE;

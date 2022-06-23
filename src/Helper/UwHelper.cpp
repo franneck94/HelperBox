@@ -302,3 +302,9 @@ void TakeEscort()
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Escort);
     GW::Agents::SendDialog(dialog);
 }
+
+void TakeUWG()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::UWG);
+    GW::Agents::SendDialog(dialog);
+}

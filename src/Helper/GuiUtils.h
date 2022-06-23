@@ -21,11 +21,24 @@ void DrawButton(ActionState &action_state,
 template <typename T, uint32_t N>
 void DrawMovingButtons(const std::array<T, N> &moves, bool &move_ongoing, uint32_t &move_idx)
 {
+    bool was_already_ongoing = move_ongoing;
+    if (was_already_ongoing)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
     if (ImGui::Button(moves[move_idx].Name(), DEFAULT_BUTTON_SIZE))
     {
-        moves[move_idx].Execute();
-        move_ongoing = true;
+        if (!move_ongoing)
+        {
+            moves[move_idx].Execute();
+            move_ongoing = true;
+        }
+        else
+        {
+            move_ongoing = false;
+        }
     }
+    if (was_already_ongoing)
+        ImGui::PopStyleColor();
+
     if (ImGui::Button("Prev.", SKIP_BUTTON_SIZE))
     {
         if (move_idx > 0)

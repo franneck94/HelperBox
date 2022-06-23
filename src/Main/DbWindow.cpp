@@ -216,6 +216,26 @@ Damage::Damage(Player *p, DbSkillbar *s) : DbActionABC(p, "Damage", s)
 {
 }
 
+RoutineState Damage::CastPiOnTarget() const
+{
+    if (!player->target)
+        return RoutineState::ACTIVE;
+
+    const auto target_living = player->target->GetAsAgentLiving();
+    if (!target_living || target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        return RoutineState::ACTIVE;
+
+    const auto dist = GW::GetDistance(player->pos, target_living->pos);
+    if (dist > GW::Constants::Range::Spellcast)
+        return RoutineState::ACTIVE;
+
+    const auto pi_state = skillbar->pi.Cast(player->energy, target_living->agent_id);
+    if (pi_state == RoutineState::FINISHED)
+        return RoutineState::FINISHED;
+
+    return RoutineState::ACTIVE;
+}
+
 RoutineState Damage::RoutineAtChamberSkele() const
 {
     const auto sos_state = skillbar->sos.Cast(player->energy);
@@ -225,11 +245,7 @@ RoutineState Damage::RoutineAtChamberSkele() const
     if (!player->target)
         return RoutineState::ACTIVE;
 
-    const auto target_living = player->target->GetAsAgentLiving();
-    if (!target_living || target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
-        return RoutineState::ACTIVE;
-
-    const auto pi_state = skillbar->pi.Cast(player->energy);
+    const auto pi_state = CastPiOnTarget();
     if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
@@ -286,7 +302,7 @@ RoutineState Damage::RoutinePI(const uint32_t dhuum_id) const
         return RoutineState::ACTIVE;
 
     if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
-        return skillbar->pi.Cast(player->energy, dhuum_id);
+        return skill.Cast(player->energy, dhuum_id);
 
     return RoutineState::ACTIVE;
 }
@@ -374,7 +390,15 @@ RoutineState Damage::Routine()
             if (!player->target || !player->target->agent_id || !player->target->GetIsLivingType())
                 TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
             if (player->target && player->target->agent_id)
-                AttackAgent(player->target);
+            {
+                const auto dist = GW::GetDistance(player->pos, player->target->pos);
+                if (dist < GW::Constants::Range::Earshot)
+                    AttackAgent(player->target);
+            }
+
+            const auto pi_state = CastPiOnTarget();
+            if (pi_state == RoutineState::FINISHED)
+                return RoutineState::FINISHED;
         }
 
         const auto vale_rota = RoutineValeSpirits();
