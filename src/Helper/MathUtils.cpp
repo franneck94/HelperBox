@@ -35,7 +35,7 @@ GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const
     const auto delta_y = adj_p1.y - adj_p2.y;
     const auto dist = GW::GetDistance(adj_p1, adj_p2);
 
-    const auto half_offset = offset * 0.80F;
+    const auto half_offset = offset * 0.85F;
 
     v1 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * half_offset, adj_p1.y + (delta_x / dist) * half_offset, 0};
     v2 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * (-half_offset), adj_p1.y + (delta_x / dist) * (-half_offset), 0};

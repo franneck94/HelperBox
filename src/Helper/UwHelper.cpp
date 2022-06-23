@@ -89,7 +89,7 @@ bool IsAtChamberSkele(const Player *const player)
     const auto pos = GW::GamePos{-2726.856F, 10239.48F, player->pos.zplane};
     const auto dist = GW::GetDistance(player->pos, pos);
 
-    if (dist < GW::Constants::Range::Spellcast)
+    if (dist < 1500.0F)
         return true;
 
     return false;

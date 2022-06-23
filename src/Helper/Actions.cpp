@@ -49,10 +49,7 @@ void Move::Execute() const
     }
 
     if (trigger_cb.has_value())
-    {
-        Log::Info("Calling the callback");
         trigger_cb.value()();
-    }
 }
 
 bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)

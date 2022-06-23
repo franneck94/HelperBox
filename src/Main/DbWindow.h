@@ -84,7 +84,7 @@ private:
     DbSkillbar skillbar;
 
     uint32_t move_idx = 0;
-    std::array<Move, 37> moves = {
+    std::array<Move, 38> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NONE},
         Move{613.38F, 7097.03F, "SQ", MoveState::DONT_WAIT, [&]() { skillbar.sq.Cast(player.energy); }},
         Move{157.41F, 7781.66F, "Move EoE", MoveState::DONT_WAIT},
@@ -109,13 +109,14 @@ private:
         Move{-6241.24F, 7945.73F, "Basement 2", MoveState::NONE},
         Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT},
         Move{-8402.00F, 4687.26F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},
-        Move{-7289.94F, 3283.81F, "Vale Door", MoveState::WAIT},
-        Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::NONE},
+        Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT},
+        Move{-7289.94F, 3283.81F, "Vale Door", MoveState::NONE},
+        Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::WAIT},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT},
         Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT},
         Move{-12264.12F, 1821.18F, "EoE", MoveState::CAST_SKILL, &skillbar.eoe},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::DONT_WAIT},
-        Move{-13760.19F, 358.15F, "Spirits 1", MoveState::NONE},
+        Move{-13760.19F, 358.15F, "Spirits 1", MoveState::WAIT},
         Move{-13757.90F, 2941.66F, "Spirits 2", MoveState::WAIT},
         Move{-13312.71F, 5165.071F, "Vale Reaper", MoveState::NONE, [&]() { TargetClosestReaper(player); }},
         Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::DONT_WAIT},

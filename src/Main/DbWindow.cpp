@@ -222,6 +222,13 @@ RoutineState Damage::RoutineAtChamberSkele() const
     if (sos_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
 
+    if (!player->target)
+        return RoutineState::ACTIVE;
+
+    const auto target_living = player->target->GetAsAgentLiving();
+    if (!target_living || target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        return RoutineState::ACTIVE;
+
     const auto pi_state = skillbar->pi.Cast(player->energy);
     if (pi_state == RoutineState::FINISHED)
         return RoutineState::FINISHED;
@@ -356,6 +363,12 @@ RoutineState Damage::Routine()
 
     if (IsInVale(player))
     {
+        const auto at_vale_house = IsAtValeHouse(player);
+        const auto livings = GetEnemiesInAggro(*player);
+        const auto enemies_at_vale_house = livings.size() != 0;
+        if (at_vale_house && !enemies_at_vale_house)
+            return RoutineState::FINISHED;
+
         if (!player->living->GetIsAttacking() && player->CanAttack())
         {
             if (!player->target || !player->target->agent_id || !player->target->GetIsLivingType())
