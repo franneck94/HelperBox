@@ -141,7 +141,7 @@ private:
         Move{-12264.12F, 1821.18F, "EoE 5", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_AND_CONTINUE},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_AND_CONTINUE},
-        Move{-13760.19F, 358.15F, "Spirits 1", MoveState::WAIT_AND_CONTINUE},
+        Move{-13760.19F, 358.15F, "Spirits 1", MoveState::WAIT_AND_STOP},
         Move{-13312.71F, 5165.071F, "Vale Reaper", MoveState::WAIT_AND_STOP, target_reaper_fn},
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{12566.49F, 7812.503F, "Pits Winnow", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.winnow},
@@ -160,7 +160,7 @@ private:
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-13127.69F, 17284.64F, "To Dhuum 4", MoveState::NO_WAIT_AND_STOP},
-        Move{-16105.50F, 17284.84F, "To Dhuum 5", MoveState::NO_WAIT_AND_STOP},
+        Move{-16410.75F, 17294.47F, "To Dhuum 5", MoveState::NO_WAIT_AND_STOP},
     };
 
     GW::HookEntry MapLoaded_Entry;

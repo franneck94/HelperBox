@@ -288,10 +288,16 @@ bool Damage::RoutineDhuumDamage() const
 
 RoutineState Damage::Routine()
 {
+    static auto timer_last_cast_ms = clock();
     static auto was_in_dhuum_fight = false;
 
     if (!player->CanCast() && !IsUw())
         return RoutineState::FINISHED;
+
+    const auto last_cast_diff_ms = TIMER_DIFF(timer_last_cast_ms);
+    if (last_cast_diff_ms < 100)
+        return RoutineState::FINISHED;
+    timer_last_cast_ms = clock();
 
     if (IsAtChamberSkele(*player))
     {
@@ -365,6 +371,9 @@ RoutineState Damage::Routine()
 
     if (RoutineDhuumDamage())
         return RoutineState::FINISHED;
+
+    if (!player->living->GetIsAttacking() && player->CanAttack())
+        TargetAndAttackEnemyInAggro(*player);
 
     return RoutineState::FINISHED;
 }

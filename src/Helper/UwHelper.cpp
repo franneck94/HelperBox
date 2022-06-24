@@ -57,7 +57,7 @@ bool IsMesmerTerra(const Player &player)
 
 bool IsAtChamberSkele(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 1500.0F);
+    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2000.0F);
 }
 
 bool IsRightAtChamberSkele(const Player &player)
@@ -98,7 +98,7 @@ bool IsAtValeHouse(const Player &player)
 
 bool IsRightAtValeHouse(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-12264.12F, 1821.18F, 0}, 100.0F);
+    return IsNearToGamePos(player, GW::GamePos{-12264.12F, 1821.18F, 0}, 0.001F);
 }
 
 bool IsAtSpirits1(const Player &player)

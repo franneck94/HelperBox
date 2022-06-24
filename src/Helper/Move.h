@@ -150,8 +150,9 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
 
     if (reached_pos && can_be_finished)
     {
+        const auto last_trigger_timer_threshold = 500;
         const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
-        if (last_trigger_timer_diff < 200)
+        if (last_trigger_timer_diff < last_trigger_timer_threshold)
             return;
         trigger_timer_ms = clock();
 

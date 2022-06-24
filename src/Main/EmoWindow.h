@@ -255,7 +255,7 @@ private:
         Move{3247.06F, 9099.98F, "To Wastes 3", MoveState::NO_WAIT_AND_CONTINUE},
         Move{3853.85F, 7802.04F, "To Wastes 4", MoveState::NO_WAIT_AND_CONTINUE},
         Move{5498.42F, 8995.82F, "To Wastes 5", MoveState::NO_WAIT_AND_CONTINUE},
-        Move{8389.26F, 12009.86F, "To Wastes 6", MoveState::WAIT_AND_STOP},
+        Move{8389.26F, 12009.86F, "To Wastes 6", MoveState::NO_WAIT_AND_STOP},
         Move{6633.37F, 15385.31F, "Wastes 1", MoveState::WAIT_AND_STOP},
         Move{6054.83F, 18997.46F, "Wastes 2", MoveState::NO_WAIT_AND_STOP},
         Move{4968.64F, 16555.77F, "Wastes 3", MoveState::WAIT_AND_CONTINUE},
