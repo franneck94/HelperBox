@@ -233,7 +233,7 @@ private:
         Move{-7289.94F, 3283.81F, "Vale Door", MoveState::WAIT_AND_CONTINUE},
         Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::DISTANCE_AND_CONTINUE, swap_to_high_armor_fn},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT_AND_CONTINUE},
-        Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_AND_CONTINUE},
+        Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_AND_STOP},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_AND_CONTINUE},
         Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::WAIT_AND_STOP},
         Move{-13760.19F, 358.15F, "Spirits 2", MoveState::WAIT_AND_CONTINUE},

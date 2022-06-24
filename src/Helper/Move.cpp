@@ -64,8 +64,12 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
 
     const auto move_pos_is_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 500.0F;
 
+    const auto is_at_basement_stair = GW::GetDistance(next_pos, GW::GamePos{-6263.33F, 9899.79F, 0}) < 1280.0F;
+    const auto is_to_basement1 = GW::GetDistance(next_pos, GW::GamePos{-5183.64F, 8876.31F, 0}) < 1280.0F;
+
     auto result_ids_rect = std::set<uint32_t>{};
-    if (is_in_chamber_where_to_move || is_in_vale_where_to_move) // ignore skeles here
+    if (is_in_chamber_where_to_move || is_in_vale_where_to_move || is_to_basement1 ||
+        is_at_basement_stair) // ignore skeles here
         result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
     else if (move_pos_is_at_spirits1) // ignore spirits here
         result_ids_rect =
@@ -84,7 +88,7 @@ bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
     if (player.living->GetIsMoving())
         timer = clock();
 
-    const auto reached_pos = GamePosCompare(player.pos, move.pos, 0.001F);
+    const auto reached_pos = GamePosCompare(player.pos, move.pos, 0.1F);
     if (reached_pos && started_cast && !player.living->GetIsMoving() && !player.living->GetIsCasting())
         started_cast = false;
 
@@ -161,12 +165,7 @@ bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
     if (dist < dist_threshold)
         return false;
 
-    const auto filter_ids =
-        std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
-
-    const auto livings = GetEnemiesInAggro(player);
-    const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
-    return result_ids_Aggro.size() == 0;
+    return true;
 }
 
 bool Move::UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move)

@@ -42,6 +42,7 @@
 namespace
 {
 static auto move_ongoing = false;
+static ActionState *damage_action_state = nullptr;
 }; // namespace
 
 DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
@@ -107,6 +108,8 @@ void DbWindow::UpdateUwEntry()
         moves[0].Execute();
         load_cb_triggered = false;
         move_ongoing = true;
+
+        *damage_action_state = ActionState::ACTIVE;
     }
 }
 
@@ -140,6 +143,7 @@ void DbWindow::Update(float delta)
     }
 
     damage.Update();
+    damage_action_state = &damage.action_state;
 }
 
 bool DbWindow::ActivationConditions() const
@@ -299,7 +303,7 @@ RoutineState Damage::Routine()
         return RoutineState::FINISHED;
     timer_last_cast_ms = clock();
 
-    if (IsAtChamberSkele(*player))
+    if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player))
     {
         const auto enemies = GetEnemiesInAggro(*player);
         if (enemies.size() == 0)

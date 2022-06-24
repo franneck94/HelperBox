@@ -524,7 +524,7 @@ bool Pumping::RoutineKeepPlayerAlive() const
             continue;
 
         const auto dist = GW::GetDistance(player->pos, agent->pos);
-        if (dist > GW::Constants::Range::Spellcast)
+        if (dist > GW::Constants::Range::Earshot)
             continue;
 
         if (living->hp > 0.50F)
@@ -560,7 +560,7 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (IsAtChamberSkele(*player))
+    if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player))
     {
         if (RoutineDbBeforeDhuum())
             return RoutineState::FINISHED;

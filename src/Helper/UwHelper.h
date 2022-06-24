@@ -29,6 +29,8 @@ bool IsMesmerTerra(const Player &player);
 
 bool IsAtChamberSkele(const Player &player);
 
+bool IsAtBasementSkele(const Player &player);
+
 bool IsRightAtChamberSkele(const Player &player);
 
 bool IsAtFusePulls(const Player &player);
