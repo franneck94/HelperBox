@@ -274,7 +274,7 @@ bool Damage::RoutineDhuumDamage() const
     const auto found_honor = player->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_winnow = player->HasEffect(GW::Constants::SkillID::Winnowing);
 
-    if (!found_honor && player->energy > 20U && RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
+    if (!found_honor && player->energy > 33U && RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
         return true;
 
     if (!found_winnow && RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))

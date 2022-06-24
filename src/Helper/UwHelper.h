@@ -76,24 +76,27 @@ void TakePlanes();
 template <uint32_t N>
 void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_t &move_idx)
 {
-    static auto called_first = true;
     static auto last_pos = player.pos;
 
     if (move_idx >= moves.size() - 1)
         return;
 
-    const auto at_spawn =
-        GW::GetDistance(player.pos, GW::GamePos{1248.00F, 6965.51F, 0}) < GW::Constants::Range::Earshot;
-
     const auto curr_pos = player.pos;
     const auto dist = GW::GetDistance(last_pos, curr_pos);
+    const auto port_detected = dist > GW::Constants::Range::Compass;
+
     const auto next_move = moves[move_idx + 1].pos;
     const auto next_move_dist = GW::GetDistance(next_move, curr_pos);
-    if (dist > 5'000.0F && (called_first && !at_spawn) && next_move_dist > 5'000.0F)
+    const auto next_move_oob = next_move_dist > GW::Constants::Range::Compass;
+
+    if (port_detected && next_move_oob)
     {
         Log::Info("Ported!");
         move_idx = GetClostestMove(player, moves);
-        called_first = false;
+    }
+    else if (port_detected && !next_move_oob)
+    {
+        ++move_idx;
     }
     last_pos = curr_pos;
 }

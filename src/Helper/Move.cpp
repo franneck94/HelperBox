@@ -92,7 +92,7 @@ bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
     const auto cast_time_s = (skill_data.activation * 1.0F) * 1000.0F;
     const auto timer_diff = TIMER_DIFF(timer);
 
-    if (reached_pos && !started_cast && move.skill_cb && timer_diff > 200)
+    if (reached_pos && !started_cast && timer_diff > 300)
     {
         started_cast = true;
         if (move.skill_cb->recharge > 0)
@@ -105,7 +105,7 @@ bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
         return false;
     }
 
-    if (timer_diff < 200)
+    if (timer_diff < 300)
         return false;
 
     const auto is_casting = player.living->GetIsCasting();
@@ -161,7 +161,12 @@ bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
     if (dist < dist_threshold)
         return false;
 
-    return UpdateMoveState_Wait(player, move);
+    const auto filter_ids =
+        std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+
+    const auto livings = GetEnemiesInAggro(player);
+    const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
+    return result_ids_Aggro.size() == 0;
 }
 
 bool Move::UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move)

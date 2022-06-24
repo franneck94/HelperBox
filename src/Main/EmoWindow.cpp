@@ -206,6 +206,7 @@ void EmoWindow::Update(float delta)
         {
             static auto printed = false;
             static auto last_name = curr_name;
+            static auto found_keeper = false;
             if (last_name != curr_name)
                 printed = false;
 
@@ -219,7 +220,10 @@ void EmoWindow::Update(float delta)
             SplitFilteredAgents(filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
 
             const auto curr_pos = KEEPER_MAP[curr_name];
-            if (!printed && !CheckKeeper(keeper_livings, curr_pos))
+            if (!found_keeper)
+                found_keeper = CheckKeeper(keeper_livings, curr_pos);
+            const auto still_found_keeper = CheckKeeper(keeper_livings, curr_pos);
+            if (!printed && found_keeper && !still_found_keeper)
             {
                 printed = true;
                 Log::Info("Keeper died!");
