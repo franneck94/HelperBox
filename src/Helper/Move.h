@@ -114,6 +114,8 @@ uint32_t GetClostestMove(const Player &player, const std::array<Move, N> &moves)
 template <uint32_t N>
 void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint32_t &move_idx, bool &move_ongoing)
 {
+    static auto trigger_timer_ms = clock();
+
     if (!move_ongoing)
         return;
 
@@ -141,12 +143,18 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
             last_trigger_time_ms = clock();
             moves[move_idx].Execute();
             Log::Info("Retrigger current move: %s", moves[move_idx].name.data());
+            trigger_timer_ms = clock();
         }
         return;
     }
 
     if (reached_pos && can_be_finished)
     {
+        const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
+        if (last_trigger_timer_diff < 100)
+            return;
+        trigger_timer_ms = clock();
+
         move_ongoing = false;
         ++move_idx;
         if (is_proceeding_action)

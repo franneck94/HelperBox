@@ -33,7 +33,7 @@ GW::GamePos MovePointAlongVector(const GW::GamePos &pos1, const GW::GamePos &pos
 
 GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const float offset)
 {
-    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.4F); // Behind player
+    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.25F); // Behind player
     const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.2F); // In front of Target
 
     const auto delta_x = adj_p1.x - adj_p2.x;
@@ -72,10 +72,10 @@ bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
 
 GW::GamePos rotate_point(const Player &player, GW::GamePos pos)
 {
-    GW::GamePos v(static_cast<float>(pos.x), static_cast<float>(pos.y), 0);
+    GW::GamePos v(pos.x, pos.y, 0);
 
-    v.x = v.x - player.pos.x;
-    v.y = player.pos.y - v.y;
+    v.x = pos.x - player.pos.x;
+    v.y = player.pos.y - pos.y;
 
     const auto angle = (GW::CameraMgr::GetCamera()->GetCurrentYaw() + static_cast<float>(M_PI_2));
     const auto x1 = v.x * std::cos(angle) - v.y * std::sin(angle);
