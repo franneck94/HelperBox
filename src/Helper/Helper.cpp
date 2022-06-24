@@ -408,7 +408,7 @@ void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
         EquipItemExecute(bag_idx, start_slot_idx + offset);
 }
 
-void ToLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+void LowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
         return;
@@ -429,7 +429,7 @@ void ToLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
         EquipItemExecute(bag_idx, start_slot_idx + offset);
 }
 
-void ToHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+void HighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
         return;
@@ -628,9 +628,8 @@ std::pair<GW::Agent *, float> GetClosestEnemy(const Player *player)
 
 uint32_t GetClosesTypeID(const Player &player, const uint32_t id, const GW::Constants::Allegiance type)
 {
-    auto agents_array = GW::Agents::GetAgentArray();
     std::vector<GW::AgentLiving *> agents_vec;
-    FilterAgents(player, agents_array, agents_vec, std::array<uint32_t, 1>{id}, type, GW::Constants::Range::Compass);
+    FilterAgents(player, agents_vec, std::array<uint32_t, 1>{id}, type, GW::Constants::Range::Compass);
 
     if (agents_vec.size() == 0)
         return 0;
@@ -803,4 +802,14 @@ void TargetAndAttackEnemyInAggro(const Player &player)
         if (dist < GW::Constants::Range::Earshot)
             AttackAgent(player.target);
     }
+}
+
+bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r)
+{
+    const auto dist = GW::GetDistance(player.pos, pos);
+
+    if (dist < r)
+        return true;
+
+    return false;
 }

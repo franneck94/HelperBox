@@ -47,19 +47,22 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
 void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
-void ToLowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+void LowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
-void ToHighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
+void HighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
 template <uint32_t N>
 void FilterAgents(const Player &player,
-                  const GW::AgentArray &agents,
                   std::vector<GW::AgentLiving *> &filtered_livings,
                   const std::array<uint32_t, N> &ids,
                   const GW::Constants::Allegiance allegiance,
                   const float max_distance = 0.0F)
 {
-    for (const auto &agent : agents)
+    const auto agents_array = GW::Agents::GetAgentArray();
+    if (!agents_array.valid())
+        return;
+
+    for (const auto &agent : agents_array)
     {
         if (!agent)
             continue;
@@ -147,3 +150,5 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
                                   const std::set<uint32_t> &filter_ids);
 
 void TargetAndAttackEnemyInAggro(const Player &player);
+
+bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r);

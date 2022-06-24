@@ -1,6 +1,11 @@
 #include <cmath>
 
 #include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Camera.h>
+#include <GWCA/Managers/AgentMgr.h>
+#include <GWCA/Managers/CameraMgr.h>
+
+#include <Player.h>
 
 #include "MathUtils.h"
 
@@ -28,14 +33,14 @@ GW::GamePos MovePointAlongVector(const GW::GamePos &pos1, const GW::GamePos &pos
 
 GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const float offset)
 {
-    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.91F);
-    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 0.91F);
+    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.4F); // Behind player
+    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.2F); // In front of Target
 
     const auto delta_x = adj_p1.x - adj_p2.x;
     const auto delta_y = adj_p1.y - adj_p2.y;
     const auto dist = GW::GetDistance(adj_p1, adj_p2);
 
-    const auto half_offset = offset * 0.90F;
+    const auto half_offset = offset * 0.92F; // To the side
 
     v1 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * half_offset, adj_p1.y + (delta_x / dist) * half_offset, 0};
     v2 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * (-half_offset), adj_p1.y + (delta_x / dist) * (-half_offset), 0};
@@ -63,4 +68,19 @@ bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
     const auto b3 = Sign(pt, v3, v1) < 0.0f;
 
     return ((b1 == b2) && (b2 == b3));
+}
+
+GW::GamePos rotate_point(const Player &player, GW::GamePos pos)
+{
+    GW::GamePos v(static_cast<float>(pos.x), static_cast<float>(pos.y), 0);
+
+    v.x = v.x - player.pos.x;
+    v.y = player.pos.y - v.y;
+
+    const auto angle = (GW::CameraMgr::GetCamera()->GetCurrentYaw() + static_cast<float>(M_PI_2));
+    const auto x1 = v.x * std::cos(angle) - v.y * std::sin(angle);
+    const auto y1 = v.x * std::sin(angle) + v.y * std::cos(angle);
+    v = GW::GamePos(x1, y1, 0);
+
+    return v;
 }

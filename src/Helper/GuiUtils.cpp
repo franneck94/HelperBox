@@ -45,18 +45,23 @@ void plot_shaded_rect(const float x1,
     ImPlot::PlotShaded(label.data(), xs.data(), ys1.data(), ys2.data(), num_points);
 }
 
-void plot_rectangle_line(const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label)
+void plot_rectangle_line(const Player &player, const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label)
 {
-    const float xs[2] = {p1.x, p2.x};
-    const float ys[2] = {p1.y, p2.y};
+    const auto p1_ = rotate_point(player, p1);
+    const auto p2_ = rotate_point(player, p2);
+
+    const float xs[2] = {p1_.x * -1.0F, p2_.x * -1.0F};
+    const float ys[2] = {p1_.y, p2_.y};
     ImPlot::SetNextLineStyle(ImVec4{1.0F, 0.7F, 0.1F, 1.0F}, 2.0F);
     ImPlot::PlotLine(label.data(), xs, ys, 2);
 }
 
-void plot_point(const GW::GamePos &p, std::string_view label, const ImVec4 &color, const float width)
+void plot_point(const Player &player, GW::GamePos p, std::string_view label, const ImVec4 &color, const float width)
 {
-    const float xs[1] = {p.x};
-    const float ys[1] = {p.y};
+    const auto p_ = rotate_point(player, p);
+
+    const float xs[1] = {p_.x * -1.0F};
+    const float ys[1] = {p_.y};
     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, width, color, 1.0F, color);
     ImPlot::PlotScatter(label.data(), xs, ys, 1);
 }
@@ -69,11 +74,14 @@ void plot_circle(const Player &player, std::string_view label, const ImVec4 &col
         const auto x_p = player.pos.x + 1050.0F * std::sin((float)i);
         const auto y_p = player.pos.y + 1050.0F * std::cos((float)i);
         const auto pos = GW::GamePos{x_p, y_p, 0};
-        plot_point(pos, label_, color, 1.0F);
+        plot_point(player, pos, label_, color, 1.0F);
     }
 }
 
-void plot_enemies(const std::vector<GW::AgentLiving *> &living_agents, std::string_view label, const ImVec4 &color)
+void plot_enemies(const Player &player,
+                  const std::vector<GW::AgentLiving *> &living_agents,
+                  std::string_view label,
+                  const ImVec4 &color)
 {
     auto idx = 0U;
     for (const auto living : living_agents)
@@ -81,7 +89,7 @@ void plot_enemies(const std::vector<GW::AgentLiving *> &living_agents, std::stri
         if (!living)
             continue;
         const auto label_ = fmt::format("{}##{}", label.data(), idx);
-        plot_point(living->pos, label_, color);
+        plot_point(player, living->pos, label_, color);
         ++idx;
     }
 }

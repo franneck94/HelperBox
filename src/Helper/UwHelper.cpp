@@ -14,14 +14,7 @@
 
 bool IsUw()
 {
-    if (GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld)
-        return true;
-
-#ifdef _DEBUG
-    return (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless);
-#else
-    return false;
-#endif
+    return GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld;
 }
 
 bool IsEmo(const Player &player)
@@ -62,68 +55,64 @@ bool IsMesmerTerra(const Player &player)
             player.secondary == GW::Constants::Profession::Elementalist);
 }
 
-bool IsAtSpirits1(const Player *const player)
+bool IsAtChamberSkele(const Player &player)
 {
-    const auto pos = GW::GamePos{-13872.34F, 2332.34F, player->pos.zplane};
-    const auto dist = GW::GetDistance(player->pos, pos);
+    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 1500.0F);
+}
 
-    if (dist < GW::Constants::Range::Spellcast)
+bool IsRightAtChamberSkele(const Player &player)
+{
+    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 300.0F);
+}
+
+bool IsAtFusePull1(const Player &player)
+{
+    return IsNearToGamePos(player, GW::GamePos{-6263.33F, 9899.79F, 0}, 1500.0F);
+}
+
+bool IsAtFusePull2(const Player &player)
+{
+    return IsNearToGamePos(player, GW::GamePos{-7829.98F, 4324.09F, 0}, 1500.0F);
+}
+
+bool IsAtFusePulls(const Player &player)
+{
+    if (!IsUw())
+        return false;
+
+    if (IsAtFusePull1(player) || IsAtFusePull2(player))
         return true;
 
     return false;
 }
 
-bool IsAtSpirits2(const Player *const player)
+bool IsAtValeStart(const Player &player)
 {
-    const auto pos = GW::GamePos{-13760.19F, 358.15F, player->pos.zplane};
-    const auto dist = GW::GetDistance(player->pos, pos);
-
-    if (dist < GW::Constants::Range::Spellcast)
-        return true;
-
-    return false;
+    return IsNearToGamePos(player, GW::GamePos{-9764.08F, 2056.60F, 0}, 1500.0F);
 }
 
-bool IsAtChamberSkele(const Player *const player)
+bool IsAtValeHouse(const Player &player)
 {
-    const auto pos = GW::GamePos{-2726.856F, 10239.48F, player->pos.zplane};
-    const auto dist = GW::GetDistance(player->pos, pos);
-
-    if (dist < 1500.0F)
-        return true;
-
-    return false;
+    return IsNearToGamePos(player, GW::GamePos{-12264.12F, 1821.18F, 0}, 1500.0F);
 }
 
-bool IsAtValeHouse(const Player *const player)
+bool IsRightAtValeHouse(const Player &player)
 {
-    const auto pos = GW::GamePos{-12264.12F, 1821.18F, 0};
-    const auto dist = GW::GetDistance(player->pos, pos);
-
-    if (dist < GW::Constants::Range::Spirit)
-        return true;
-
-    return false;
+    return IsNearToGamePos(player, GW::GamePos{-12264.12F, 1821.18F, 0}, 100.0F);
 }
 
-bool IsSomewhereInVale(const Player *const player)
+bool IsAtSpirits1(const Player &player)
 {
-    const auto pos = GW::GamePos{-12264.12F, 1821.18F, 0};
-    const auto dist = GW::GetDistance(player->pos, pos);
-
-    if (dist < GW::Constants::Range::Spirit)
-        return true;
-
-    return false;
+    return IsNearToGamePos(player, GW::GamePos{-13872.34F, 2332.34F, 0}, GW::Constants::Range::Spellcast);
 }
 
-bool IsInVale(const Player *const player)
+bool IsAtSpirits2(const Player &player)
 {
-#ifdef _DEBUG
-    if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
-        return true;
-#endif
+    return IsNearToGamePos(player, GW::GamePos{-13760.19F, 358.15F, 0}, GW::Constants::Range::Spellcast);
+}
 
+bool IsAtValeSpirits(const Player &player)
+{
     if (!IsUw())
         return false;
 
@@ -133,35 +122,9 @@ bool IsInVale(const Player *const player)
     return false;
 }
 
-bool IsAtFusePulls(const Player *const player)
+bool IsInDhuumRoom(const Player &player)
 {
-    if (!IsUw())
-        return false;
-
-    const auto pos1 = GW::GamePos{-6263.33F, 9899.79F, player->pos.zplane}; // Fuse 1
-    const auto pos2 = GW::GamePos{-7829.98F, 4324.09F, player->pos.zplane}; // Fuse 2
-
-    const auto dist1 = GW::GetDistance(player->pos, pos1);
-    const auto dist2 = GW::GetDistance(player->pos, pos2);
-
-    if (dist1 < GW::Constants::Range::Spirit || dist2 < GW::Constants::Range::Spirit)
-        return true;
-
-    return false;
-}
-
-bool IsInDhuumRoom(const Player *const player)
-{
-    if (!IsUw())
-        return false;
-
-    const auto dhuum_center_pos = GW::GamePos{-16105.50F, 17284.84F, player->pos.zplane};
-    const auto dhuum_center_dist = GW::GetDistance(player->pos, dhuum_center_pos);
-
-    if (dhuum_center_dist < GW::Constants::Range::Spellcast)
-        return true;
-
-    return false;
+    return IsNearToGamePos(player, GW::GamePos{-16105.50F, 17284.84F, 0}, GW::Constants::Range::Spellcast);
 }
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
@@ -261,12 +224,12 @@ bool TargetIsReaper(Player &player)
     return true;
 }
 
-void TargetClosestReaper(Player &player)
+void TargetReaper(Player &player)
 {
     TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
 }
 
-void TalkClosestReaper(Player &player)
+void TalkReaper(Player &player)
 {
     const auto id = TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
 
@@ -319,4 +282,20 @@ void TakePlanes()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Planes);
     GW::Agents::SendDialog(dialog);
+}
+
+bool CheckKeeper(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos)
+{
+    auto found_keeper = false;
+
+    for (const auto keeper : keeper_livings)
+    {
+        if (GW::GetDistance(keeper->pos, keeper_pos) < GW::Constants::Range::Earshot)
+        {
+            found_keeper = true;
+            break;
+        }
+    }
+
+    return found_keeper;
 }

@@ -2,6 +2,8 @@
 
 #include <GWCA/GameContainers/GamePos.h>
 
+#include <Player.h>
+
 bool FloatCompare(const float a, const float b, const float epsilon = 1e-3F);
 
 bool GamePosCompare(const GW::GamePos &p1, const GW::GamePos &p2, const float epsilon = 1e-3F);
@@ -27,3 +29,16 @@ public:
     GW::GamePos v3;
     GW::GamePos v4;
 };
+
+template <typename T>
+constexpr T PI = T(3.14159265358979323846L);
+
+template <typename T>
+[[nodiscard]] constexpr T deg_to_rad(const T deg)
+{
+    static_assert(std::is_floating_point_v<T>, "Must be floating point type.");
+
+    return deg * (PI<T> / static_cast<T>(180.0));
+}
+
+GW::GamePos rotate_point(const Player &player, GW::GamePos pos);

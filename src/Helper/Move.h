@@ -10,6 +10,7 @@
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/GameContainers/GamePos.h>
 
+#include <Logger.h>
 #include <Timer.h>
 
 #include <Player.h>
@@ -18,11 +19,12 @@
 
 enum class MoveState
 {
-    STOP,
-    DONT_WAIT,
-    WAIT,
-    LT_DISTANCE,
-    CAST_SKILL,
+    NO_WAIT_AND_STOP,
+    NO_WAIT_AND_CONTINUE,
+    WAIT_AND_STOP,
+    WAIT_AND_CONTINUE,
+    DISTANCE_AND_CONTINUE,
+    CAST_SKILL_AND_CONTINUE,
 };
 
 class Move
@@ -67,10 +69,11 @@ public:
 
 public:
     static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
-    static bool UpdateMove(const Player &player, bool &move_ongoing, const Move &move, const Move &next_move);
-    static bool UpdateMoveCastSkill(const Player &player, const Move &move);
-    static bool UpdateMoveWait(const Player &player, const Move &next_move);
-    static bool UpdateMoveLTDistance(const Player &player);
+    static bool UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move);
+    static bool UpdateMoveState_CastSkill(const Player &player, const Move &move);
+    static bool UpdateMoveState_Wait(const Player &player, const Move &move);
+    static bool UpdateMoveState_WaitAndStop(const Player &player, const Move &move);
+    static bool UpdateMoveState_DistanceLT(const Player &player, const Move &move);
 
 private:
     float x = 0.0F;
@@ -80,7 +83,7 @@ public:
     GW::GamePos pos;
     std::string_view name;
 
-    MoveState move_state = MoveState::STOP;
+    MoveState move_state = MoveState::NO_WAIT_AND_STOP;
     const SkillData *skill_cb = nullptr;
     std::optional<std::function<void()>> trigger_cb = std::nullopt;
 };
@@ -117,7 +120,7 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
     if (move_idx >= moves.size() - 1U)
         return;
 
-    const auto finished = Move::UpdateMove(player, move_ongoing, moves[move_idx], moves[move_idx + 1U]);
+    const auto can_be_finished = Move::UpdateMoveState(player, move_ongoing, moves[move_idx]);
 
     const auto is_moving = player.living->GetIsMoving();
     const auto reached_pos = GamePosCompare(player.pos, moves[move_idx].pos, 0.001F);
@@ -126,9 +129,9 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         return;
 
     const auto state = moves[move_idx].move_state;
-    const auto is_proceeding_action = (state != MoveState::STOP);
+    const auto is_proceeding_action = (state != MoveState::NO_WAIT_AND_STOP && state != MoveState::WAIT_AND_STOP);
 
-    if (is_proceeding_action && !reached_pos && !is_moving && finished)
+    if (is_proceeding_action && !reached_pos && !is_moving && can_be_finished)
     {
         static auto last_trigger_time_ms = clock();
 
@@ -137,11 +140,12 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         {
             last_trigger_time_ms = clock();
             moves[move_idx].Execute();
+            Log::Info("Retrigger current move: %s", moves[move_idx].name.data());
         }
         return;
     }
 
-    if (reached_pos && finished)
+    if (reached_pos && can_be_finished)
     {
         move_ongoing = false;
         ++move_idx;
@@ -149,6 +153,7 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         {
             move_ongoing = true;
             moves[move_idx].Execute();
+            Log::Info("Ongoing to next move: %s", moves[move_idx].name.data());
         }
     }
 }

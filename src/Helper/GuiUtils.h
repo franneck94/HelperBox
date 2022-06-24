@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <string_view>
 
+#include <GWCA/GameEntities/Camera.h>
+#include <GWCA/Managers/CameraMgr.h>
+
 #include <Actions.h>
 #include <Player.h>
 #include <Types.h>
@@ -71,57 +74,67 @@ void plot_shaded_rect(const float x1,
                       const float y4,
                       std::string_view label);
 
-void plot_rectangle_line(const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label);
+void plot_rectangle_line(const Player &player, const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label);
 
-void plot_point(const GW::GamePos &p, std::string_view label, const ImVec4 &color, const float width = 5.0F);
+void plot_point(const Player &player,
+                GW::GamePos p,
+                std::string_view label,
+                const ImVec4 &color,
+                const float width = 5.0F);
 
 void plot_circle(const Player &player, std::string_view label, const ImVec4 &color);
 
-void plot_enemies(const std::vector<GW::AgentLiving *> &living_agents, std::string_view label, const ImVec4 &color);
+void plot_enemies(const Player &player,
+                  const std::vector<GW::AgentLiving *> &living_agents,
+                  std::string_view label,
+                  const ImVec4 &color);
 
 template <typename T, uint32_t N>
 void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t move_idx, std::string_view label)
 {
+    const auto theta = GW::CameraMgr::GetCamera()->GetCurrentYaw() - static_cast<float>(M_PI_2);
+
     ImGui::SetNextWindowSize(ImVec2{450.0F, 450.0F}, ImGuiCond_FirstUseEver);
     const auto label_window = fmt::format("{}Window", label.data());
     if (ImGui::Begin(label_window.data(), nullptr, ImGuiWindowFlags_None))
     {
         const auto label_plot = fmt::format("{}Plot", label.data());
-        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, (ImPlotFlags_NoTitle | ImPlotFlags_NoLegend)))
+        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, (ImPlotFlags_CanvasOnly)))
         {
-            auto next_pos = GW::GamePos{};
-
-            if (move_idx < moves.size() - 1U && moves[move_idx].move_state == MoveState::WAIT)
-                next_pos = moves[move_idx + 1U].pos;
-            else
-                next_pos = moves[move_idx].pos;
-
+            const auto next_pos = moves[move_idx].pos;
             const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
 
-            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_Lock, ImPlotAxisFlags_Lock);
+            ImPlot::SetupAxis(ImAxis_X1,
+                              nullptr,
+                              ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+            ImPlot::SetupAxis(ImAxis_Y1,
+                              nullptr,
+                              ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+            ImPlot::SetupAxisLimits(ImAxis_X1,
+                                    -GW::Constants::Range::Compass,
+                                    GW::Constants::Range::Compass,
+                                    ImGuiCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_Y1,
+                                    -GW::Constants::Range::Compass,
+                                    GW::Constants::Range::Compass,
+                                    ImGuiCond_Always);
 
-            const auto x_ = player.pos.x;
-            const auto y_ = player.pos.y;
-            plot_point(GW::GamePos{x_ + 4000.0F, y_, 0}, "border1", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
-            plot_point(GW::GamePos{x_, y_ + 4000.0F, 0}, "border2", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
-            plot_point(GW::GamePos{x_ - 4000.0F, y_, 0}, "border3", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
-            plot_point(GW::GamePos{x_, y_ - 4000.0F, 0}, "border4", ImVec4{0.0F, 0.0F, 0.0F, 1.0F}, 1.0F);
+            plot_point(player, player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
+            plot_point(player, next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
 
-            plot_point(player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
-            plot_point(next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
-
-            plot_rectangle_line(rect.v1, rect.v2, "line1");
-            plot_rectangle_line(rect.v1, rect.v3, "line2");
-            plot_rectangle_line(rect.v4, rect.v2, "line3");
-            plot_rectangle_line(rect.v4, rect.v3, "line4");
+            plot_rectangle_line(player, rect.v1, rect.v2, "line1");
+            plot_rectangle_line(player, rect.v1, rect.v3, "line2");
+            plot_rectangle_line(player, rect.v4, rect.v2, "line3");
+            plot_rectangle_line(player, rect.v4, rect.v3, "line4");
 
             plot_circle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
 
             const auto living_agents = GetEnemiesInCompass();
-            plot_enemies(living_agents, "enemiesAll", ImVec4{0.0, 1.0, 0.0, 1.0});
+            plot_enemies(player, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
 
             const auto filtered_livings = GetEnemiesInGameRectangle(rect);
-            plot_enemies(filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
+            plot_enemies(player, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();
     }

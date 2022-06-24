@@ -144,9 +144,7 @@ void MainteamWindow::Update(float delta)
     if (!ActivationConditions())
         return;
 
-    const auto agents_array = GW::Agents::GetAgentArray();
     FilterAgents(player,
-                 agents_array,
                  filtered_livings,
                  IDS,
                  GW::Constants::Allegiance::Enemy,

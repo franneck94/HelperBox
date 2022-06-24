@@ -184,9 +184,8 @@ void TerraWindow::Update(float delta)
 
     auto_target.Update();
 
-    auto agents_array = GW::Agents::GetAgentArray();
-    FilterAgents(player, agents_array, filtered_livings, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
-    FilterAgents(player, agents_array, filtered_livings, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
+    FilterAgents(player, filtered_livings, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
+    FilterAgents(player, filtered_livings, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
     SplitFilteredAgents(filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
     SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);

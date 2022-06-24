@@ -118,7 +118,6 @@ void DbWindow::UpdateUwMoves()
 void DbWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
-    static auto last_pos = player.pos;
 
     if (!player.ValidateData())
         return;
@@ -136,16 +135,8 @@ void DbWindow::Update(float delta)
 
     if (IsUw())
     {
+        UpdateUwInfo(player, moves, move_idx);
         UpdateUw();
-
-        const auto curr_pos = player.pos;
-        const auto dist = GW::GetDistance(last_pos, curr_pos);
-        if (dist > 5'000.0F)
-        {
-            Log::Info("Ported!");
-            move_idx = GetClostestMove(player, moves);
-        }
-        last_pos = curr_pos;
     }
 
     damage.Update();
@@ -191,7 +182,7 @@ bool Damage::CastPiOnTarget() const
     return false;
 }
 
-bool Damage::RoutineAtChamberSkele() const
+bool Damage::RoutineKillSkele() const
 {
     if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
         return true;
@@ -302,35 +293,52 @@ RoutineState Damage::Routine()
     if (!player->CanCast() && !IsUw())
         return RoutineState::FINISHED;
 
-    if (IsAtChamberSkele(player))
+    if (IsAtChamberSkele(*player))
     {
-        if (RoutineAtChamberSkele())
-            return RoutineState::FINISHED;
+        const auto enemies = GetEnemiesInAggro(*player);
+        if (enemies.size() == 0)
+            return RoutineState::ACTIVE;
 
         if (!player->living->GetIsAttacking() && player->CanAttack())
             TargetAndAttackEnemyInAggro(*player);
+
+        if (RoutineKillSkele())
+            return RoutineState::FINISHED;
     }
 
-    if (IsInVale(player))
+    if (IsAtValeHouse(*player))
     {
-        const auto at_vale_house = IsAtValeHouse(player);
+        const auto is_right_at_vale_house = IsRightAtValeHouse(*player);
         const auto livings = GetEnemiesInAggro(*player);
         const auto enemies_at_vale_house = livings.size() != 0;
-        if (at_vale_house && !enemies_at_vale_house)
-            return RoutineState::FINISHED;
+        if (is_right_at_vale_house && !enemies_at_vale_house)
+            return RoutineState::ACTIVE;
 
-        if (CastPiOnTarget())
+        if (!player->living->GetIsAttacking() && player->CanAttack())
+            TargetAndAttackEnemyInAggro(*player);
+
+        if (RoutineKillSkele())
             return RoutineState::FINISHED;
+    }
+
+    if (IsAtValeSpirits(*player))
+    {
+        const auto enemies = GetEnemiesInAggro(*player);
+        if (enemies.size() == 0)
+            return RoutineState::ACTIVE;
+
+        if (!player->living->GetIsAttacking() && player->CanAttack())
+            TargetAndAttackEnemyInAggro(*player);
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
-
-        if (!player->living->GetIsAttacking() && player->CanAttack())
-            TargetAndAttackEnemyInAggro(*player);
     }
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(player);
+    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
     if (!is_in_dhuum_room)
+        return RoutineState::FINISHED;
+
+    if (was_in_dhuum_fight && RoutineDhuumRecharge())
         return RoutineState::FINISHED;
 
     auto dhuum_id = uint32_t{0};
@@ -345,9 +353,6 @@ RoutineState Damage::Routine()
     if (!dhuum_agent)
         return RoutineState::FINISHED;
     const auto dhuum_dist = GW::GetDistance(player->pos, dhuum_agent->pos);
-
-    if (RoutineDhuumRecharge())
-        return RoutineState::FINISHED;
 
     if (dhuum_hp < 0.20F)
         return RoutineState::FINISHED;

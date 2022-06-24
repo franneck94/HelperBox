@@ -41,10 +41,24 @@ static auto move_ongoing = false;
 
 constexpr static auto DHUUM_JUDGEMENT_SKILL_ID = uint32_t{3085U};
 constexpr static auto CANTHA_IDS = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
+
+const static auto KEEPER1_POS = GW::GamePos{-7322.44F, 7013.74F, 0};
+const static auto KEEPER2_POS = GW::GamePos{-3321.31F, 10544.94F, 0};
+const static auto KEEPER3_POS = GW::GamePos{-506.62F, 13239.04F, 0};
+const static auto KEEPER4_POS = GW::GamePos{563.62F, 7206.59F, 0};
+const static auto KEEPER5_POS = GW::GamePos{1508.51F, 4532.65F, 0};
+
+static auto KEEPER_MAP = std::map<std::string, GW::GamePos>{
+    {"Keeper 1", KEEPER1_POS},
+    {"Keeper 2", KEEPER2_POS},
+    {"Keeper 3", KEEPER3_POS},
+    {"Keeper 4", KEEPER4_POS},
+    {"Keeper 5", KEEPER5_POS},
+};
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar, &bag_idx, &start_slot_idx),
+    : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar, &bag_idx, &slot_idx),
       tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
 {
     if (skillbar.ValidateData())
@@ -164,7 +178,6 @@ void EmoWindow::UpdateUwMoves()
 void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
-    static auto last_pos = player.pos;
 
     if (!player.ValidateData())
         return;
@@ -184,16 +197,34 @@ void EmoWindow::Update(float delta)
 
     if (IsUw())
     {
+        UpdateUwInfo(player, moves, move_idx);
         UpdateUw();
 
-        const auto curr_pos = player.pos;
-        const auto dist = GW::GetDistance(last_pos, curr_pos);
-        if (dist > 5'000.0F)
+        // If we are at keeper, check if the current is dead => goto next pos
+        const auto curr_name = std::string{moves[move_idx].name};
+        if (curr_name.find("Keeper") != std::string::npos)
         {
-            Log::Info("Ported!");
-            move_idx = GetClostestMove(player, moves);
+            static auto printed = false;
+            static auto last_name = curr_name;
+            if (last_name != curr_name)
+                printed = false;
+
+            std::vector<GW::AgentLiving *> filtered_livings;
+            std::vector<GW::AgentLiving *> keeper_livings;
+            FilterAgents(player,
+                         filtered_livings,
+                         std::array<uint32_t, 1>{GW::Constants::ModelID::UW::KeeperOfSouls},
+                         GW::Constants::Allegiance::Enemy,
+                         GW::Constants::Range::Compass);
+            SplitFilteredAgents(filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
+
+            const auto curr_pos = KEEPER_MAP[curr_name];
+            if (!printed && !CheckKeeper(keeper_livings, curr_pos))
+            {
+                printed = true;
+                Log::Info("Keeper died!");
+            }
         }
-        last_pos = curr_pos;
     }
 
     tank_bonding.Update();
@@ -216,8 +247,8 @@ bool EmoWindow::ActivationConditions() const
     return false;
 }
 
-Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_start_slot_idx)
-    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), start_slot_idx(_start_slot_idx)
+Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_slot_idx)
+    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), slot_idx(_slot_idx)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
         &Summon_AgentAdd_Entry,
@@ -269,10 +300,8 @@ bool Pumping::RoutineCanthaGuards() const
     if (!player->CanCast())
         return false;
 
-    const auto agents_array = GW::Agents::GetAgentArray();
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterAgents(*player,
-                 agents_array,
                  filtered_canthas,
                  CANTHA_IDS,
                  GW::Constants::Allegiance::Npc_Minipet,
@@ -527,13 +556,13 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (IsAtChamberSkele(player))
+    if (IsAtChamberSkele(*player))
     {
         if (RoutineDbBeforeDhuum())
             return RoutineState::FINISHED;
     }
 
-    if (IsAtFusePulls(player))
+    if (IsAtFusePulls(*player))
     {
         if (RoutineLT())
             return RoutineState::FINISHED;
@@ -542,7 +571,7 @@ RoutineState Pumping::Routine()
             return RoutineState::FINISHED;
     }
 
-    if (IsInVale(player))
+    if (IsAtValeSpirits(*player))
     {
         if (RoutineDbBeforeDhuum())
             return RoutineState::FINISHED;
@@ -551,7 +580,7 @@ RoutineState Pumping::Routine()
             return RoutineState::FINISHED;
     }
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(player);
+    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
