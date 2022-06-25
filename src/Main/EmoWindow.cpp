@@ -216,9 +216,9 @@ void EmoWindow::Update(float delta)
     if (!player.ValidateData())
         return;
     player.Update();
-    if (first_frame)
+    if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player, moves, move_idx);
+        UpdateUwInfo(player, moves, move_idx, true);
         first_frame = false;
     }
 
@@ -236,7 +236,7 @@ void EmoWindow::Update(float delta)
 
     if (IsUw())
     {
-        UpdateUwInfo(player, moves, move_idx);
+        UpdateUwInfo(player, moves, move_idx, false);
         UpdateUw();
         UpdateUwDetectKeeper();
     }

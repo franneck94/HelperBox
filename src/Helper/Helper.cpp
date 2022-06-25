@@ -401,38 +401,26 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
 
 bool ArmorSwap(const uint32_t bag_idx, const uint32_t start_slot_idx, const bool low_armor)
 {
-    static auto last_used_idx = 0U;
-
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
         return true;
 
-    if (last_used_idx == 0U)
+    const auto first_item = GetBagItem(bag_idx, start_slot_idx);
+    if (!first_item)
+        return true;
+
+    if (first_item->mod_struct_size >= 10)
     {
-        const auto first_item = GetBagItem(bag_idx, start_slot_idx);
-        if (!first_item)
+        const auto armor_value = first_item->mod_struct[9].arg1();
+
+        if (low_armor && armor_value >= 60U)
             return true;
-
-        if (first_item->mod_struct_size >= 10)
-        {
-            const auto armor_value = first_item->mod_struct[9].arg1();
-
-            if (low_armor && armor_value < 60U)
-                return true;
-            else if (!low_armor && armor_value >= 60U)
-                return true;
-        }
+        else if (!low_armor && armor_value < 60U)
+            return true;
     }
 
-    for (uint32_t offset = last_used_idx; offset < 5U; offset++)
-    {
-        const auto success = EquipItemExecute(bag_idx, start_slot_idx + offset);
-        if (success)
-            ++last_used_idx;
-        else
-            return false;
-    }
+    for (uint32_t offset = 0U; offset < 5U; offset++)
+        EquipItemExecute(bag_idx, start_slot_idx + offset);
 
-    last_used_idx = 0U;
     return true;
 }
 

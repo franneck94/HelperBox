@@ -78,7 +78,7 @@ bool TakePits();
 bool TakePlanes();
 
 template <uint32_t N>
-void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_t &move_idx)
+void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_t &move_idx, const bool first_call)
 {
     static auto last_pos = player.pos;
 
@@ -97,7 +97,7 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
     const auto next_move_dist = GW::GetDistance(next_move, curr_pos);
     const auto next_move_oob = next_move_dist > GW::Constants::Range::Compass;
 
-    if ((port_detected && next_move_oob) || curr_move_oob)
+    if ((port_detected && next_move_oob) || (first_call && curr_move_oob))
     {
         Log::Info("Ported!");
         move_idx = GetClostestMove(player, moves);

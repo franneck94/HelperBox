@@ -220,8 +220,8 @@ private:
 
     uint32_t move_idx = 0;
     std::array<Move, 52> moves = {
-        Move{1248.00F, 6965.51F, "Spawn", MoveState::NO_WAIT_AND_STOP, swap_to_high_armor_fn},
-        Move{985.70F, 7325.54F, "Chamber 1", MoveState::WAIT_AND_CONTINUE},
+        Move{1248.00F, 6965.51F, "Spawn", MoveState::NO_WAIT_AND_STOP},
+        Move{985.70F, 7325.54F, "Chamber 1", MoveState::WAIT_AND_CONTINUE, swap_to_high_armor_fn},
         Move{-634.07F, 9071.42F, "Chamber 2", MoveState::WAIT_AND_CONTINUE},
         Move{-1522.58F, 10634.12F, "Lab 1", MoveState::WAIT_AND_CONTINUE},
         Move{-2726.856F, 10239.48F, "Lab 2", MoveState::WAIT_AND_CONTINUE},
