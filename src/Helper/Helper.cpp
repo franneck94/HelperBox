@@ -399,53 +399,51 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
     }
 }
 
-void ChangeFullArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+bool ArmorSwap(const uint32_t bag_idx, const uint32_t start_slot_idx, const bool low_armor)
 {
+    static auto last_used_idx = 0U;
+
     if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
-        return;
+        return true;
 
-    for (uint32_t offset = 0; offset < 5; offset++)
-        EquipItemExecute(bag_idx, start_slot_idx + offset);
-}
-
-void LowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
-{
-    if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
-        return;
-
-    const auto first_item = GetBagItem(bag_idx, start_slot_idx);
-    if (!first_item)
-        return;
-
-    if (first_item->mod_struct_size >= 10)
+    if (last_used_idx == 0U)
     {
-        const auto armor_value = first_item->mod_struct[9].arg1();
+        const auto first_item = GetBagItem(bag_idx, start_slot_idx);
+        if (!first_item)
+            return true;
 
-        if (armor_value >= 60)
-            return;
+        if (first_item->mod_struct_size >= 10)
+        {
+            const auto armor_value = first_item->mod_struct[9].arg1();
+
+            if (low_armor && armor_value < 60U)
+                return true;
+            else if (!low_armor && armor_value >= 60U)
+                return true;
+        }
     }
 
-    for (uint32_t offset = 0; offset < 5; offset++)
-        EquipItemExecute(bag_idx, start_slot_idx + offset);
-}
-
-void HighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
-{
-    if (static_cast<uint32_t>(-1) == bag_idx || static_cast<uint32_t>(-1) == start_slot_idx)
-        return;
-
-    const auto first_item = GetBagItem(bag_idx, start_slot_idx);
-
-    if (first_item->mod_struct_size >= 10)
+    for (uint32_t offset = last_used_idx; offset < 5U; offset++)
     {
-        const auto armor_value = first_item->mod_struct[9].arg1();
-
-        if (armor_value >= 60)
-            return;
+        const auto success = EquipItemExecute(bag_idx, start_slot_idx + offset);
+        if (success)
+            ++last_used_idx;
+        else
+            return false;
     }
 
-    for (uint32_t offset = 0; offset < 5; offset++)
-        EquipItemExecute(bag_idx, start_slot_idx + offset);
+    last_used_idx = 0U;
+    return true;
+}
+
+bool LowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+{
+    return ArmorSwap(bag_idx, start_slot_idx, true);
+}
+
+bool HighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
+{
+    return ArmorSwap(bag_idx, start_slot_idx, false);
 }
 
 void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_livings)
@@ -794,8 +792,10 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
 
 void TargetAndAttackEnemyInAggro(const Player &player)
 {
-    if (!player.target || !player.target->agent_id || !player.target->GetIsLivingType())
+    if (!player.target || !player.target->agent_id || !player.target->GetIsLivingType() ||
+        player.target->GetAsAgentLiving()->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
         TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
+
     if (player.target && player.target->agent_id)
     {
         const auto dist = GW::GetDistance(player.pos, player.target->pos);

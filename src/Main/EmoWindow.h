@@ -141,6 +141,7 @@ public:
     void Initialize() override
     {
         HelperBoxWindow::Initialize();
+        first_frame = true;
     }
 
     void LoadSettings(CSimpleIni *ini) override
@@ -196,12 +197,14 @@ private:
     void UpdateUw();
     void UpdateUwEntry();
     void UpdateUwMoves();
+    void UpdateUwDetectKeeper();
 
     bool ActivationConditions() const;
     void WarnDistanceLT() const;
 
 
     Player player;
+    bool first_frame = false;
     EmoSkillbar skillbar;
 
     // Settings
@@ -209,10 +212,11 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
 
-    std::function<void()> swap_to_high_armor_fn = [&]() { HighArmor(bag_idx, slot_idx); };
-    std::function<void()> swap_to_low_armor_fn = [&]() { LowArmor(bag_idx, slot_idx); };
-    std::function<void()> target_reaper_fn = [&]() { TargetReaper(player); };
-    std::function<void()> talk_reaper_fn = [&]() { TalkReaper(player); };
+    std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
+    std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player); };
+    std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     uint32_t move_idx = 0;
     std::array<Move, 52> moves = {
@@ -226,9 +230,9 @@ private:
         Move{-4470.48F, 11581.47F, "Lab 5", MoveState::WAIT_AND_CONTINUE},
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::WAIT_AND_STOP, target_reaper_fn},
         Move{-6263.33F, 9899.79F, "Fuse 1", MoveState::NO_WAIT_AND_CONTINUE, swap_to_low_armor_fn},
-        Move{-5183.64F, 8876.31F, "Basement 1", MoveState::WAIT_AND_CONTINUE},
-        Move{-6241.24F, 7945.73F, "Basement 2", MoveState::DISTANCE_AND_CONTINUE},
-        Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT_AND_STOP},
+        Move{-5183.64F, 8876.31F, "Basement Stairs 1", MoveState::WAIT_AND_CONTINUE},
+        Move{-6241.24F, 7945.73F, "Basement Mid", MoveState::DISTANCE_AND_CONTINUE},
+        Move{-8798.22F, 5643.86F, "Basement Stairs 2", MoveState::WAIT_AND_STOP},
         Move{-7829.98F, 4324.09F, "Fuse 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-7289.94F, 3283.81F, "Vale Door", MoveState::WAIT_AND_CONTINUE},
         Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::DISTANCE_AND_CONTINUE, swap_to_high_armor_fn},
@@ -240,10 +244,10 @@ private:
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_AND_CONTINUE},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-7980.55F, 4308.90F, "Basement Stairs", MoveState::NO_WAIT_AND_CONTINUE},
-        Move{-6241.24F, 7945.73F, "Basement", MoveState::NO_WAIT_AND_CONTINUE},
+        Move{-6241.24F, 7945.73F, "Basement", MoveState::WAIT_AND_CONTINUE},
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::NO_WAIT_AND_STOP, target_reaper_fn},
-        Move{-5751.45F, 12746.52F, "Talk", MoveState::NO_WAIT_AND_STOP, talk_reaper_fn},
-        Move{-5751.45F, 12746.52F, "UWG", MoveState::NO_WAIT_AND_CONTINUE, [&]() { TakeUWG(); }},
+        Move{-5751.45F, 12746.52F, "Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
+        Move{-5751.45F, 12746.52F, "UWG", MoveState::NO_WAIT_AND_CONTINUE, take_uwg_fn},
         Move{-6035.29F, 11285.14F, "Keeper 1", MoveState::NO_WAIT_AND_STOP},
         Move{-6511.41F, 12447.65F, "Keeper 2", MoveState::NO_WAIT_AND_STOP},
         Move{-3881.71F, 11280.04F, "Keeper 3", MoveState::NO_WAIT_AND_STOP},
@@ -263,7 +267,7 @@ private:
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{11958.36F, 6281.43F, "Pits 2", MoveState::NO_WAIT_AND_STOP},
         Move{12160.99F, -16830.55F, "Planes 1", MoveState::NO_WAIT_AND_STOP},
-        Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE},
+        Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE, swap_to_low_armor_fn},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-13127.69F, 17284.64F, "To Dhuum 4", MoveState::NO_WAIT_AND_STOP},

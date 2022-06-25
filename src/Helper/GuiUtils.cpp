@@ -89,7 +89,11 @@ void plot_enemies(const Player &player,
         if (!living)
             continue;
         const auto label_ = fmt::format("{}##{}", label.data(), idx);
-        plot_point(player, living->pos, label_, color);
+        if (living->login_number == GW::Constants::ModelID::UW::SkeletonOfDhuum1 ||
+            living->login_number == GW::Constants::ModelID::UW::SkeletonOfDhuum2)
+            plot_point(player, living->pos, label_, ImVec4{0.0F, 0.0F, 1.0f, 1.0F});
+        else
+            plot_point(player, living->pos, label_, color);
         ++idx;
     }
 }

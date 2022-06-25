@@ -64,3 +64,5 @@ public:
 
     DbSkillbar *skillbar = nullptr;
 };
+
+bool HasWaitedEnough();

@@ -27,6 +27,8 @@ bool IsRangerTerra(const Player &player);
 
 bool IsMesmerTerra(const Player &player);
 
+bool IsAtSpawn(const Player &player);
+
 bool IsAtChamberSkele(const Player &player);
 
 bool IsAtBasementSkele(const Player &player);
@@ -57,23 +59,23 @@ bool TankIsSoloLT();
 
 bool TargetIsReaper(Player &player);
 
-void TargetReaper(Player &player);
+bool TargetReaper(Player &player);
 
-void TalkReaper(Player &player);
+bool TalkReaper(Player &player);
 
-void TargetClosestKeeper(Player &player);
+bool TargetClosestKeeper(Player &player);
 
-void AcceptChamber();
+bool AcceptChamber();
 
-void TakeRestore();
+bool TakeRestore();
 
-void TakeEscort();
+bool TakeEscort();
 
-void TakeUWG();
+bool TakeUWG();
 
-void TakePits();
+bool TakePits();
 
-void TakePlanes();
+bool TakePlanes();
 
 template <uint32_t N>
 void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_t &move_idx)
@@ -87,11 +89,15 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
     const auto dist = GW::GetDistance(last_pos, curr_pos);
     const auto port_detected = dist > GW::Constants::Range::Compass;
 
+    const auto curr_move = moves[move_idx].pos;
+    const auto curr_move_dist = GW::GetDistance(curr_move, curr_pos);
+    const auto curr_move_oob = curr_move_dist > GW::Constants::Range::Compass;
+
     const auto next_move = moves[move_idx + 1].pos;
     const auto next_move_dist = GW::GetDistance(next_move, curr_pos);
     const auto next_move_oob = next_move_dist > GW::Constants::Range::Compass;
 
-    if (port_detected && next_move_oob)
+    if ((port_detected && next_move_oob) || curr_move_oob)
     {
         Log::Info("Ported!");
         move_idx = GetClostestMove(player, moves);
@@ -103,4 +109,4 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
     last_pos = curr_pos;
 }
 
-bool CheckKeeper(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
+bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);

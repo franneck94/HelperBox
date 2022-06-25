@@ -105,6 +105,7 @@ void DbWindow::UpdateUwEntry()
 {
     if (load_cb_triggered)
     {
+        move_idx = 0;
         moves[0].Execute();
         load_cb_triggered = false;
         move_ongoing = true;
@@ -125,6 +126,11 @@ void DbWindow::Update(float delta)
     if (!player.ValidateData())
         return;
     player.Update();
+    if (first_frame)
+    {
+        UpdateUwInfo(player, moves, move_idx);
+        first_frame = false;
+    }
 
     if (!ActivationConditions())
         return;
@@ -292,36 +298,21 @@ bool Damage::RoutineDhuumDamage() const
 
 RoutineState Damage::Routine()
 {
-    static auto timer_last_cast_ms = clock();
     static auto was_in_dhuum_fight = false;
 
-    if (!player->CanCast() && !IsUw())
+    if (!IsUw())
         return RoutineState::FINISHED;
 
-    const auto last_cast_diff_ms = TIMER_DIFF(timer_last_cast_ms);
-    if (last_cast_diff_ms < 100)
-        return RoutineState::FINISHED;
-    timer_last_cast_ms = clock();
+    if (!player->CanCast())
+        return RoutineState::ACTIVE;
 
-    if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player))
+    if (!HasWaitedEnough())
+        return RoutineState::ACTIVE;
+
+    if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player) || IsRightAtValeHouse(*player))
     {
         const auto enemies = GetEnemiesInAggro(*player);
         if (enemies.size() == 0)
-            return RoutineState::ACTIVE;
-
-        if (!player->living->GetIsAttacking() && player->CanAttack())
-            TargetAndAttackEnemyInAggro(*player);
-
-        if (RoutineKillSkele())
-            return RoutineState::FINISHED;
-    }
-
-    if (IsAtValeHouse(*player))
-    {
-        const auto is_right_at_vale_house = IsRightAtValeHouse(*player);
-        const auto livings = GetEnemiesInAggro(*player);
-        const auto enemies_at_vale_house = livings.size() != 0;
-        if (is_right_at_vale_house && !enemies_at_vale_house)
             return RoutineState::ACTIVE;
 
         if (!player->living->GetIsAttacking() && player->CanAttack())
@@ -354,6 +345,8 @@ RoutineState Damage::Routine()
     auto dhuum_id = uint32_t{0};
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+    if (!is_in_dhuum_fight && was_in_dhuum_fight)
+        was_in_dhuum_fight = false;
 
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
@@ -384,16 +377,14 @@ RoutineState Damage::Routine()
 
 bool Damage::PauseRoutine()
 {
-    if (player->target)
-    {
-        const auto dist = GW::GetDistance(player->pos, player->target->pos);
-
-        if (TargetIsReaper(*player) && (dist < 300.0F))
-            return true;
-    }
-
     if (player->living->GetIsMoving())
         return true;
+
+    if (player->target)
+    {
+        if (TargetIsReaper(*player) && (GW::GetDistance(player->pos, player->target->pos) < 300.0F))
+            return true;
+    }
 
     return false;
 }

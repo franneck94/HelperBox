@@ -3,7 +3,7 @@
 #include <functional>
 #include <map>
 #include <optional>
-#include <string_view>
+#include <string>
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
@@ -25,27 +25,28 @@ enum class MoveState
     WAIT_AND_CONTINUE,
     DISTANCE_AND_CONTINUE,
     CAST_SKILL_AND_CONTINUE,
+    CALLBACK_AND_CONTINUE,
 };
 
 class Move
 {
 public:
     // Move and then wait
-    Move(const float _x, const float _y, std::string_view _name, const MoveState _move_state)
+    Move(const float _x, const float _y, const std::string &_name, const MoveState _move_state)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), move_state(_move_state){};
 
     // Move, trigger cb, and then wait
     Move(const float _x,
          const float _y,
-         std::string_view _name,
+         const std::string &_name,
          const MoveState _move_state,
-         std::function<void()> _trigger_cb)
+         std::function<bool()> _trigger_cb)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), move_state(_move_state){};
 
     // Move, and cast skill at goal
     Move(const float _x,
          const float _y,
-         std::string_view _name,
+         const std::string &_name,
          const MoveState _move_state,
          const SkillData *_skill_cb)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), move_state(_move_state), skill_cb(_skill_cb){};
@@ -53,9 +54,9 @@ public:
     // Move, trigger cb, and cast skill at goal
     Move(const float _x,
          const float _y,
-         std::string_view _name,
+         const std::string &_name,
          const MoveState _move_state,
-         std::function<void()> _trigger_cb,
+         std::function<bool()> _trigger_cb,
          const SkillData *_skill_cb)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), move_state(_move_state),
           skill_cb(_skill_cb){};
@@ -70,6 +71,7 @@ public:
 public:
     static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
     static bool UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move);
+    static bool UpdateMoveState_CallbackAndContinue(const Player &player, const Move &move);
     static bool UpdateMoveState_CastSkill(const Player &player, const Move &move);
     static bool UpdateMoveState_Wait(const Player &player, const Move &move);
     static bool UpdateMoveState_WaitAndStop(const Player &player, const Move &move);
@@ -81,11 +83,11 @@ private:
 
 public:
     GW::GamePos pos;
-    std::string_view name;
+    std::string name;
 
     MoveState move_state = MoveState::NO_WAIT_AND_STOP;
     const SkillData *skill_cb = nullptr;
-    std::optional<std::function<void()>> trigger_cb = std::nullopt;
+    std::optional<std::function<bool()>> trigger_cb = std::nullopt;
 };
 
 template <uint32_t N>
@@ -133,7 +135,7 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
     const auto state = moves[move_idx].move_state;
     const auto is_proceeding_action = (state != MoveState::NO_WAIT_AND_STOP && state != MoveState::WAIT_AND_STOP);
 
-    if (is_proceeding_action && !reached_pos && !is_moving && can_be_finished)
+    if (!reached_pos && !is_moving && can_be_finished)
     {
         static auto last_trigger_time_ms = clock();
 

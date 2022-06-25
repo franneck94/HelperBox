@@ -12,8 +12,10 @@
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
@@ -135,6 +137,37 @@ void EmoWindow::UpdateUw()
     WarnDistanceLT();
 }
 
+void EmoWindow::UpdateUwDetectKeeper()
+{
+    static auto printed = false;
+    static auto last_name = moves[move_idx].name;
+    static auto found_keeper = false;
+
+    if (moves[move_idx].name.find("Keeper 1") == std::string::npos ||
+        moves[move_idx].name.find("Keeper 2") == std::string::npos ||
+        moves[move_idx].name.find("Keeper 3") == std::string::npos)
+        return;
+
+    const auto curr_pos = KEEPER_MAP[moves[move_idx - 1].name];
+    if (last_name != moves[move_idx].name)
+        printed = false;
+
+    std::vector<GW::AgentLiving *> keeper_livings;
+    const auto enemies = GetEnemiesInCompass();
+    SplitFilteredAgents(enemies, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
+
+    if (!found_keeper)
+        found_keeper = FoundKeeperAtPos(keeper_livings, curr_pos);
+    const auto still_found_keeper = FoundKeeperAtPos(keeper_livings, curr_pos);
+    if (!printed && found_keeper && !still_found_keeper)
+    {
+        printed = true;
+        found_keeper = false;
+        Log::Info("Keeper died!");
+        moves[move_idx].Execute();
+    }
+}
+
 void EmoWindow::UpdateUwEntry()
 {
     static auto timer = clock();
@@ -143,6 +176,7 @@ void EmoWindow::UpdateUwEntry()
 
     if (load_cb_triggered)
     {
+        move_idx = 0;
         tank_bonding.action_state = ActionState::ACTIVE;
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
@@ -182,6 +216,11 @@ void EmoWindow::Update(float delta)
     if (!player.ValidateData())
         return;
     player.Update();
+    if (first_frame)
+    {
+        UpdateUwInfo(player, moves, move_idx);
+        first_frame = false;
+    }
 
     if (!ActivationConditions())
         return;
@@ -199,36 +238,7 @@ void EmoWindow::Update(float delta)
     {
         UpdateUwInfo(player, moves, move_idx);
         UpdateUw();
-
-        // If we are at keeper, check if the current is dead => goto next pos
-        const auto curr_name = std::string{moves[move_idx].name};
-        if (curr_name.find("Keeper") != std::string::npos)
-        {
-            static auto printed = false;
-            static auto last_name = curr_name;
-            static auto found_keeper = false;
-            if (last_name != curr_name)
-                printed = false;
-
-            std::vector<GW::AgentLiving *> filtered_livings;
-            std::vector<GW::AgentLiving *> keeper_livings;
-            FilterAgents(player,
-                         filtered_livings,
-                         std::array<uint32_t, 1>{GW::Constants::ModelID::UW::KeeperOfSouls},
-                         GW::Constants::Allegiance::Enemy,
-                         GW::Constants::Range::Compass);
-            SplitFilteredAgents(filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
-
-            const auto curr_pos = KEEPER_MAP[curr_name];
-            if (!found_keeper)
-                found_keeper = CheckKeeper(keeper_livings, curr_pos);
-            const auto still_found_keeper = CheckKeeper(keeper_livings, curr_pos);
-            if (!printed && found_keeper && !still_found_keeper)
-            {
-                printed = true;
-                Log::Info("Keeper died!");
-            }
-        }
+        UpdateUwDetectKeeper();
     }
 
     tank_bonding.Update();
@@ -304,6 +314,8 @@ bool Pumping::RoutineCanthaGuards() const
     if (!player->CanCast())
         return false;
 
+    const auto enemies = GetEnemiesInAggro(*player);
+
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterAgents(*player,
                  filtered_canthas,
@@ -314,19 +326,39 @@ bool Pumping::RoutineCanthaGuards() const
     if (filtered_canthas.size() == 0)
         return false;
 
-    for (const auto &cantha : filtered_canthas)
+    if (enemies.size() > 0)
     {
-        if (!cantha || cantha->GetIsDead() && cantha->hp == 0.0F)
-            continue;
+        for (const auto &cantha : filtered_canthas)
+        {
+            if (!cantha || cantha->GetIsDead() && cantha->hp == 0.0F)
+                continue;
 
-        if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player))
-            return true;
+            if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player))
+                return true;
 
-        if (cantha->hp < 0.70F && player->hp_perc > 0.5F)
-            return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, cantha->agent_id));
+            if (cantha->hp < 0.70F && player->hp_perc > 0.5F)
+                return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, cantha->agent_id));
 
-        if (!cantha->GetIsWeaponSpelled())
-            return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, cantha->agent_id));
+            if (!cantha->GetIsWeaponSpelled())
+                return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, cantha->agent_id));
+        }
+    }
+    else // Done at vale, drop buffs
+    {
+        auto buffs = GW::Effects::GetPlayerBuffArray();
+        if (!buffs.valid())
+            return false;
+        for (const auto &buff : buffs)
+        {
+            const auto agent_id = buff.target_agent_id;
+            const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);
+            const auto is_prot_bond = skill == GW::Constants::SkillID::Protective_Bond;
+            const auto cantha_it = std::find_if(filtered_canthas.begin(),
+                                                filtered_canthas.end(),
+                                                [=](const auto living) { return living->agent_id == agent_id; });
+            if (is_prot_bond && cantha_it != filtered_canthas.end())
+                GW::Effects::DropBuff(buff.buff_id);
+        }
     }
 
     return false;
@@ -488,12 +520,18 @@ bool Pumping::RoutineDbBeforeDhuum() const
     if (!db_agent)
         return false;
 
+    if (player->living->GetIsMoving())
+        return false;
+
     const auto living = db_agent->GetAsAgentLiving();
     if (!living)
         return false;
 
+    if (living->GetIsMoving())
+        return false;
+
     const auto dist = GW::GetDistance(player->pos, db_agent->pos);
-    if (dist > GW::Constants::Range::Spellcast)
+    if (dist > GW::Constants::Range::Earshot)
         return false;
 
     if (living->hp > 0.75F)
@@ -502,7 +540,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
         return true;
 
-    if (player->hp_perc > 0.5F)
+    if (living->hp < 0.5F && player->hp_perc > 0.5F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, living->agent_id));
 
     return false;
@@ -510,6 +548,9 @@ bool Pumping::RoutineDbBeforeDhuum() const
 
 bool Pumping::RoutineKeepPlayerAlive() const
 {
+    if (player->living->GetIsMoving())
+        return false;
+
     for (const auto &[id, _] : party_members)
     {
         if (!id || id == player->id)
@@ -543,16 +584,13 @@ bool Pumping::RoutineKeepPlayerAlive() const
 
 RoutineState Pumping::Routine()
 {
-    static auto timer_last_cast_ms = clock();
-    static auto was_in_dhuum_fight = false;
+    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
 
     if (!player->CanCast())
-        return RoutineState::FINISHED;
+        return RoutineState::ACTIVE;
 
-    const auto last_cast_diff_ms = TIMER_DIFF(timer_last_cast_ms);
-    if (last_cast_diff_ms < 100)
-        return RoutineState::FINISHED;
-    timer_last_cast_ms = clock();
+    if (!HasWaitedEnough())
+        return RoutineState::ACTIVE;
 
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
@@ -560,31 +598,18 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player))
-    {
-        if (RoutineDbBeforeDhuum())
-            return RoutineState::FINISHED;
-    }
+    if (IsAtSpawn(*player) && RoutineKeepPlayerAlive())
+        return RoutineState::FINISHED;
 
-    if (IsAtFusePulls(*player))
-    {
-        if (RoutineLT())
-            return RoutineState::FINISHED;
+    if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
+        return RoutineState::FINISHED;
 
-        if (RoutineDbBeforeDhuum())
-            return RoutineState::FINISHED;
-    }
+    if (IsAtFusePulls(*player) && RoutineLT())
+        return RoutineState::FINISHED;
 
-    if (IsAtValeSpirits(*player))
-    {
-        if (RoutineDbBeforeDhuum())
-            return RoutineState::FINISHED;
+    if (IsAtValeSpirits(*player) && RoutineCanthaGuards())
+        return RoutineState::FINISHED;
 
-        if (RoutineCanthaGuards())
-            return RoutineState::FINISHED;
-    }
-
-    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
@@ -601,7 +626,6 @@ RoutineState Pumping::Routine()
 
     if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
-    was_in_dhuum_fight = true;
 
     if (RoutineWisdom())
         return RoutineState::FINISHED;
@@ -626,16 +650,14 @@ RoutineState Pumping::Routine()
 
 bool Pumping::PauseRoutine()
 {
-    if (player->target)
-    {
-        const auto dist = GW::GetDistance(player->pos, player->target->pos);
-
-        if (TargetIsReaper(*player) && (dist < 300.0F))
-            return true;
-    }
-
     if (player->living->GetIsMoving())
         return true;
+
+    if (player->target)
+    {
+        if (TargetIsReaper(*player) && (GW::GetDistance(player->pos, player->target->pos) < 300.0F))
+            return true;
+    }
 
     return false;
 }

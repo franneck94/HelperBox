@@ -31,7 +31,7 @@ void Move::Execute() const
         Log::Info("%s - Moving to (%.0f, %.0f)", name.data(), x, y);
     }
 
-    if (trigger_cb.has_value())
+    if (this->move_state != MoveState::CALLBACK_AND_CONTINUE && trigger_cb.has_value())
         trigger_cb.value()();
 }
 
@@ -78,6 +78,25 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
         result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
 
     return result_ids_rect.size() == 0;
+}
+
+bool Move::UpdateMoveState_CallbackAndContinue(const Player &player, const Move &move)
+{
+    static auto executed_callback_successful = false;
+
+    const auto reached_pos = GamePosCompare(player.pos, move.pos, 0.1F);
+    if (reached_pos && executed_callback_successful && !player.living->GetIsMoving())
+        executed_callback_successful = false;
+
+    if (reached_pos && !executed_callback_successful)
+    {
+        if (move.trigger_cb.has_value())
+            executed_callback_successful = move.trigger_cb.value()();
+        return false;
+    }
+
+    executed_callback_successful = false;
+    return true;
 }
 
 bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
@@ -150,7 +169,7 @@ bool Move::UpdateMoveState_WaitAndStop(const Player &player, const Move &move)
     return UpdateMoveState_Wait(player, move);
 }
 
-bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
+bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &)
 {
     const auto lt_id = GetTankId();
     if (!lt_id)
@@ -167,6 +186,7 @@ bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
 
     return true;
 }
+
 
 bool Move::UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move)
 {
@@ -189,6 +209,10 @@ bool Move::UpdateMoveState(const Player &player, bool &move_ongoing, const Move 
     case MoveState::WAIT_AND_STOP:
     {
         return Move::UpdateMoveState_WaitAndStop(player, move);
+    }
+    case MoveState::CALLBACK_AND_CONTINUE:
+    {
+        return Move::UpdateMoveState_CallbackAndContinue(player, move);
     }
     case MoveState::NO_WAIT_AND_CONTINUE:
     case MoveState::NO_WAIT_AND_STOP:

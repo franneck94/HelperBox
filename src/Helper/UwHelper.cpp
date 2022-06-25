@@ -55,14 +55,19 @@ bool IsMesmerTerra(const Player &player)
             player.secondary == GW::Constants::Profession::Elementalist);
 }
 
+bool IsAtSpawn(const Player &player)
+{
+    return IsNearToGamePos(player, GW::GamePos{1248.00F, 6965.51F, 0}, 500.0F);
+}
+
 bool IsAtChamberSkele(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2000.0F);
+    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, GW::Constants::Range::Spellcast);
 }
 
 bool IsAtBasementSkele(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-5183.64F, 8876.31F, 0}, 1000.0F);
+    return IsNearToGamePos(player, GW::GamePos{-5183.64F, 8876.31F, 0}, GW::Constants::Range::Spellcast);
 }
 
 bool IsRightAtChamberSkele(const Player &player)
@@ -229,67 +234,79 @@ bool TargetIsReaper(Player &player)
     return true;
 }
 
-void TargetReaper(Player &player)
+bool TargetReaper(Player &player)
 {
     TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
+
+    return true;
 }
 
-void TalkReaper(Player &player)
+bool TalkReaper(Player &player)
 {
     const auto id = TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
 
     if (!id)
-        return;
+        return true;
 
     const auto agent = GW::Agents::GetAgentByID(id);
     if (!agent)
-        return;
+        return true;
 
     GW::Agents::GoNPC(agent, 0);
+
+    return true;
 }
 
-void TargetClosestKeeper(Player &player)
+bool TargetClosestKeeper(Player &player)
 {
     TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls);
+
+    return true;
 }
 
-void AcceptChamber()
+bool AcceptChamber()
 {
     const auto dialog = QuestRewardDialog(GW::Constants::QuestID::UW::Chamber);
     GW::Agents::SendDialog(dialog);
+    return true;
 }
 
-void TakeRestore()
+bool TakeRestore()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Restore);
     GW::Agents::SendDialog(dialog);
+    return true;
 }
 
-void TakeEscort()
+bool TakeEscort()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Escort);
     GW::Agents::SendDialog(dialog);
+    return true;
 }
 
-void TakeUWG()
+bool TakeUWG()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::UWG);
     GW::Agents::SendDialog(dialog);
+    return true;
 }
 
-void TakePits()
+bool TakePits()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Pits);
     GW::Agents::SendDialog(dialog);
+    return true;
 }
 
-void TakePlanes()
+bool TakePlanes()
 {
     const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Planes);
     GW::Agents::SendDialog(dialog);
+    return true;
 }
 
-bool CheckKeeper(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos)
+bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos)
 {
     auto found_keeper = false;
 

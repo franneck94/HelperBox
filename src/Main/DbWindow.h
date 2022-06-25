@@ -58,6 +58,7 @@ public:
     void Initialize() override
     {
         HelperBoxWindow::Initialize();
+        first_frame = true;
     }
 
     void LoadSettings(CSimpleIni *ini) override
@@ -97,18 +98,23 @@ private:
     bool show_debug_map = true;
 
     Player player;
+    bool first_frame = false;
     DbSkillbar skillbar;
 
-    std::function<void()> target_reaper_fn = [&]() { TargetReaper(player); };
-    std::function<void()> talk_reaper_fn = [&]() { TalkReaper(player); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player); };
+    std::function<bool()> cast_sq = [&]() {
+        skillbar.sq.Cast(player.energy);
+        return true;
+    };
 
     uint32_t move_idx = 0;
-    std::array<Move, 57> moves = {
+    std::array<Move, 58> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NO_WAIT_AND_STOP},
-        Move{613.38F, 7097.03F, "SQ", MoveState::WAIT_AND_CONTINUE, [&]() { skillbar.sq.Cast(player.energy); }},
-        Move{157.41F, 7781.66F, "Move EoE 1", MoveState::WAIT_AND_CONTINUE},
-        Move{157.41F, 7781.66F, "EoE 1", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
-        Move{157.41F, 7781.66F, "Move EoE 1", MoveState::WAIT_AND_CONTINUE},
+        Move{613.38F, 7097.03F, "SQ", MoveState::WAIT_AND_CONTINUE, cast_sq},
+        Move{314.57F, 7511.54F, "Move EoE 1", MoveState::WAIT_AND_CONTINUE},
+        Move{314.57F, 7511.54F, "EoE 1", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
+        Move{314.57F, 7511.54F, "Move EoE 1", MoveState::WAIT_AND_CONTINUE},
         Move{1319.41F, 7299.941F, "Move Qz", MoveState::WAIT_AND_CONTINUE},
         Move{1319.41F, 7299.94F, "Qz", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.qz},
         Move{1319.41F, 7299.941F, "Move Qz", MoveState::WAIT_AND_CONTINUE},
@@ -123,17 +129,18 @@ private:
         Move{-4470.48F, 11581.47F, "Lab 5", MoveState::WAIT_AND_CONTINUE},
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::WAIT_AND_STOP, target_reaper_fn},
         Move{-5751.45F, 12746.52F, "Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
-        Move{-5751.45F, 12746.52F, "Accept", MoveState::NO_WAIT_AND_CONTINUE, [&]() { AcceptChamber(); }},
-        Move{-5751.45F, 12746.52F, "Restore", MoveState::NO_WAIT_AND_CONTINUE, [&]() { TakeRestore(); }},
-        Move{-5751.45F, 12746.52F, "Escort", MoveState::WAIT_AND_CONTINUE, [&]() { TakeEscort(); }},
+        Move{-5751.45F, 12746.52F, "Accept", MoveState::NO_WAIT_AND_CONTINUE, [&]() { return AcceptChamber(); }},
+        Move{-5751.45F, 12746.52F, "Restore", MoveState::NO_WAIT_AND_CONTINUE, [&]() { return TakeRestore(); }},
+        Move{-5751.45F, 12746.52F, "Escort", MoveState::WAIT_AND_CONTINUE, [&]() { return TakeEscort(); }},
         Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::WAIT_AND_CONTINUE},
         Move{-6622.24F, 10387.12F, "EoE 3", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::WAIT_AND_CONTINUE},
-        Move{-5183.64F, 8876.31F, "Basement 1", MoveState::WAIT_AND_CONTINUE},
-        Move{-6241.24F, 7945.73F, "Basement 2", MoveState::DISTANCE_AND_CONTINUE},
-        Move{-8798.22F, 5643.86F, "Basement 3", MoveState::WAIT_AND_CONTINUE},
-        Move{-8402.00F, 4687.26F, "EoE 4", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
-        Move{-8402.22F, 4687.86F, "Basement 3", MoveState::WAIT_AND_CONTINUE},
+        Move{-5183.64F, 8876.31F, "Basement Stairs 1", MoveState::WAIT_AND_CONTINUE},
+        Move{-6241.24F, 7945.73F, "Basement Mid", MoveState::DISTANCE_AND_CONTINUE},
+        Move{-8798.22F, 5643.86F, "Basement Stairs 2", MoveState::WAIT_AND_CONTINUE},
+        Move{-8518.53F, 4765.09F, "Basement 3", MoveState::WAIT_AND_CONTINUE},
+        Move{-8518.53F, 4765.09F, "EoE 4", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
+        Move{-8518.53F, 4765.09F, "Basement 3", MoveState::WAIT_AND_CONTINUE},
         Move{-7289.94F, 3283.81F, "Vale Door", MoveState::WAIT_AND_CONTINUE},
         Move{-7846.65F, 2234.26F, "Vale Bridge", MoveState::DISTANCE_AND_CONTINUE},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT_AND_CONTINUE},
@@ -148,14 +155,14 @@ private:
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{8685.21F, 6344.59F, "Pits Reaper", MoveState::NO_WAIT_AND_STOP, target_reaper_fn},
         Move{8685.21F, 6344.59F, "Pits Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
-        Move{8685.21F, 6344.59F, "Pits Take", MoveState::NO_WAIT_AND_STOP, [&]() { TakePits(); }},
+        Move{8685.21F, 6344.59F, "Pits Take", MoveState::NO_WAIT_AND_STOP, [&]() { return TakePits(); }},
         Move{9120.00F, -18432.003F, "Planes 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{9120.00F, -18432.003F, "Planes Winnow", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.winnow},
         Move{9120.00F, -18432.003F, "Planes EoE", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{9120.00F, -18432.003F, "Planes 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{11368.55F, -17974.64F, "Planes Reaper", MoveState::NO_WAIT_AND_STOP, target_reaper_fn},
         Move{11368.55F, -17974.64F, "Planes Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
-        Move{11368.55F, -17974.64F, "Planes Take", MoveState::NO_WAIT_AND_STOP, [&]() { TakePlanes(); }},
+        Move{11368.55F, -17974.64F, "Planes Take", MoveState::NO_WAIT_AND_STOP, [&]() { return TakePlanes(); }},
         Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE},
