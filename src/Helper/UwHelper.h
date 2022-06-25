@@ -86,18 +86,16 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
         return;
 
     const auto curr_pos = player.pos;
-    const auto dist = GW::GetDistance(last_pos, curr_pos);
-    const auto port_detected = dist > GW::Constants::Range::Compass;
+    const auto port_detected = GW::GetDistance(last_pos, curr_pos) > GW::Constants::Range::Compass;
+    const auto is_spawn = GW::GetDistance(GW::GamePos{1248.00F, 6965.51F, 0}, curr_pos) < GW::Constants::Range::Compass;
 
     const auto curr_move = moves[move_idx].pos;
-    const auto curr_move_dist = GW::GetDistance(curr_move, curr_pos);
-    const auto curr_move_oob = curr_move_dist > GW::Constants::Range::Compass;
+    const auto curr_move_oob = GW::GetDistance(curr_move, curr_pos) > GW::Constants::Range::Compass;
 
     const auto next_move = moves[move_idx + 1].pos;
-    const auto next_move_dist = GW::GetDistance(next_move, curr_pos);
-    const auto next_move_oob = next_move_dist > GW::Constants::Range::Compass;
+    const auto next_move_oob = GW::GetDistance(next_move, curr_pos) > GW::Constants::Range::Compass;
 
-    if ((port_detected && next_move_oob) || (first_call && curr_move_oob))
+    if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
     {
         Log::Info("Ported!");
         move_idx = GetClostestMove(player, moves);
