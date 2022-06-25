@@ -133,7 +133,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
 void EmoWindow::UpdateUw()
 {
     UpdateUwEntry();
-    UpdateUwMoves();
+    UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
     WarnDistanceLT();
 }
 
@@ -143,9 +143,8 @@ void EmoWindow::UpdateUwDetectKeeper()
     static auto last_name = moves[move_idx].name;
     static auto found_keeper = false;
 
-    if (moves[move_idx].name.find("Keeper 1") == std::string::npos ||
-        moves[move_idx].name.find("Keeper 2") == std::string::npos ||
-        moves[move_idx].name.find("Keeper 3") == std::string::npos)
+    if ((moves[move_idx].name != std::string{"Keeper 1"}) && (moves[move_idx].name != std::string{"Keeper 2"}) &&
+        (moves[move_idx].name != std::string{"Keeper 3"}))
         return;
 
     const auto curr_pos = KEEPER_MAP[moves[move_idx - 1].name];
@@ -202,11 +201,6 @@ void EmoWindow::UpdateUwEntry()
         pumping.action_state = ActionState::ACTIVE;
         timer = 0;
     }
-}
-
-void EmoWindow::UpdateUwMoves()
-{
-    UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
 }
 
 void EmoWindow::Update(float delta)

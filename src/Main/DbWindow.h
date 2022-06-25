@@ -90,7 +90,6 @@ public:
 private:
     void UpdateUw();
     void UpdateUwEntry();
-    void UpdateUwMoves();
 
     bool ActivationConditions() const;
 

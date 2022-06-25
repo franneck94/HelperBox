@@ -98,7 +98,7 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
 void DbWindow::UpdateUw()
 {
     UpdateUwEntry();
-    UpdateUwMoves();
+    UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
 }
 
 void DbWindow::UpdateUwEntry()
@@ -112,11 +112,6 @@ void DbWindow::UpdateUwEntry()
 
         *damage_action_state = ActionState::ACTIVE;
     }
-}
-
-void DbWindow::UpdateUwMoves()
-{
-    UpdatedUwMoves_Main(player, moves, move_idx, move_ongoing);
 }
 
 void DbWindow::Update(float delta)

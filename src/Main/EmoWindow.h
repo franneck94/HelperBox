@@ -196,7 +196,6 @@ public:
 private:
     void UpdateUw();
     void UpdateUwEntry();
-    void UpdateUwMoves();
     void UpdateUwDetectKeeper();
 
     bool ActivationConditions() const;
