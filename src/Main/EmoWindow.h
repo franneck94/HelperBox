@@ -40,7 +40,6 @@ private:
     bool RoutineWisdom() const;
     bool RoutineGDW() const;
     bool RoutineTurtleGDW() const;
-    bool RoutinePI(const uint32_t dhuum_id) const;
     bool RoutineKeepPlayerAlive() const;
 
     uint32_t *bag_idx = nullptr;
@@ -198,9 +197,7 @@ private:
     void UpdateUwEntry();
     void UpdateUwDetectKeeper();
 
-    bool ActivationConditions() const;
     void WarnDistanceLT() const;
-
 
     Player player;
     bool first_frame = false;
@@ -228,7 +225,7 @@ private:
         Move{-4012.72F, 11130.53F, "Lab 4", MoveState::WAIT_AND_CONTINUE},
         Move{-4470.48F, 11581.47F, "Lab 5", MoveState::WAIT_AND_CONTINUE},
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::WAIT_AND_STOP, target_reaper_fn},
-        Move{-6263.33F, 9899.79F, "Fuse 1", MoveState::NO_WAIT_AND_CONTINUE, swap_to_low_armor_fn},
+        Move{-6263.33F, 9899.79F, "Fuse 1", MoveState::NO_WAIT_AND_STOP, swap_to_low_armor_fn},
         Move{-5183.64F, 8876.31F, "Basement Stairs 1", MoveState::WAIT_AND_CONTINUE},
         Move{-6241.24F, 7945.73F, "Basement Mid", MoveState::DISTANCE_AND_CONTINUE},
         Move{-8798.22F, 5643.86F, "Basement Stairs 2", MoveState::WAIT_AND_STOP},
@@ -238,7 +235,7 @@ private:
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::WAIT_AND_CONTINUE},
         Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_AND_STOP},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_AND_CONTINUE},
-        Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::WAIT_AND_STOP},
+        Move{-13872.34F, 2332.34F, "Spirits 1", MoveState::NO_WAIT_AND_STOP},
         Move{-13760.19F, 358.15F, "Spirits 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_AND_CONTINUE},
         Move{-8764.08F, 2156.60F, "Vale Entry", MoveState::NO_WAIT_AND_CONTINUE},

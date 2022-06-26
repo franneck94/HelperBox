@@ -26,7 +26,7 @@ void CancelActionWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (IsLoading())
+    if (!HelperActivationConditions())
         return;
 
     ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);

@@ -62,7 +62,6 @@ public:
     void Update(float delta) override;
 
 private:
-    bool ActivationConditions();
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
     void Spiking();

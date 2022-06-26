@@ -17,6 +17,7 @@
 #include <MathUtils.h>
 #include <Player.h>
 #include <Types.h>
+#include <UwHelper.h>
 
 #include "AutoFollowWindow.h"
 
@@ -51,7 +52,7 @@ void AutoFollowWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (IsLoading())
+    if (!player.ValidateData(HelperActivationConditions))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);
@@ -71,7 +72,7 @@ void AutoFollowWindow::Update(float delta)
     if (IsLoading())
         return;
 
-    if (!player.ValidateData())
+    if (!player.ValidateData(HelperActivationConditions))
         return;
     player.Update();
 
