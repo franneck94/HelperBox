@@ -501,7 +501,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
         return false;
 
     const auto dist = GW::GetDistance(player->pos, db_agent->pos);
-    if (dist > GW::Constants::Range::Earshot)
+    if (dist > 2000.0F)
         return false;
 
     if (living->hp > 0.75F)
