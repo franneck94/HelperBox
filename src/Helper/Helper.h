@@ -29,6 +29,8 @@ bool IsDoa();
 
 bool IsDoaEntryOutpost();
 
+bool HelperActivationConditions();
+
 bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
 
 const GW::EffectArray *GetEffects(const uint32_t agent_id);

@@ -81,6 +81,20 @@ bool IsDoaEntryOutpost()
     return (GW::Map::GetMapID() == GW::Constants::MapID::Gate_of_Torment_outpost);
 }
 
+bool HelperActivationConditions()
+{
+    if (!GW::Map::GetIsMapLoaded())
+        return false;
+
+    if (!GW::PartyMgr::GetIsPartyLoaded())
+        return false;
+
+    if (!IsMapReady())
+        return false;
+
+    return true;
+}
+
 const GW::EffectArray *GetEffects(const uint32_t agent_id)
 {
     const auto agent_effects = GW::Effects::GetPartyEffectArray();

@@ -15,6 +15,8 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
+bool UwHelperActivationConditions();
+
 bool IsEmo(const Player &player);
 
 bool IsDhuumBitch(const Player &player);
@@ -108,3 +110,5 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
 }
 
 bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
+
+bool DhuumIsCastingJudgement(const uint32_t dhuum_id);

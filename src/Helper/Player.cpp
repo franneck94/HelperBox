@@ -16,15 +16,9 @@
 
 #include "Player.h"
 
-bool Player::ValidateData() const
+bool Player::ValidateData(std::function<bool()> cb_fn) const
 {
-    if (!GW::Map::GetIsMapLoaded())
-        return false;
-
-    if (!GW::PartyMgr::GetIsPartyLoaded())
-        return false;
-
-    if (IsLoading())
+    if (!cb_fn())
         return false;
 
     const auto me_agent = GW::Agents::GetPlayer();

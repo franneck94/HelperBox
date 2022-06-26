@@ -99,18 +99,16 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
     if (ImGui::Begin(label_window.data(), nullptr, ImGuiWindowFlags_None))
     {
         const auto label_plot = fmt::format("{}Plot", label.data());
-        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, (ImPlotFlags_CanvasOnly)))
+        if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, ImPlotFlags_CanvasOnly))
         {
             const auto next_pos = moves[move_idx].pos;
             const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
 
+            const auto flags_axis =
+                ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels;
             ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_Lock, ImPlotAxisFlags_Lock);
-            ImPlot::SetupAxis(ImAxis_X1,
-                              nullptr,
-                              ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
-            ImPlot::SetupAxis(ImAxis_Y1,
-                              nullptr,
-                              ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels);
+            ImPlot::SetupAxis(ImAxis_X1, nullptr, flags_axis);
+            ImPlot::SetupAxis(ImAxis_Y1, nullptr, flags_axis);
             ImPlot::SetupAxisLimits(ImAxis_X1,
                                     -GW::Constants::Range::Compass,
                                     GW::Constants::Range::Compass,

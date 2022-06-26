@@ -4,6 +4,7 @@
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
+#include <GWCA/Managers/PartyMgr.h>
 
 #include <Helper.h>
 #include <MathUtils.h>
@@ -15,6 +16,17 @@
 bool IsUw()
 {
     return GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld;
+}
+
+bool UwHelperActivationConditions()
+{
+    if (!HelperActivationConditions())
+        return false;
+
+    if (!IsUwEntryOutpost() && !IsUw())
+        return false;
+
+    return true;
 }
 
 bool IsEmo(const Player &player)
@@ -320,4 +332,20 @@ bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, cons
     }
 
     return found_keeper;
+}
+
+bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
+{
+    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
+    if (!dhuum_agent)
+        return false;
+
+    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    if (!dhuum_living)
+        return false;
+
+    if (dhuum_living->GetIsCasting() && dhuum_living->skill != static_cast<uint32_t>(3085))
+        return false;
+
+    return true;
 }
