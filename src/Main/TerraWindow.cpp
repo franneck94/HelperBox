@@ -125,7 +125,9 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (!ActivationConditions())
+    if (!UwHelperActivationConditions())
+        return;
+    if (!IsRangerTerra(player) && !IsMesmerTerra(player))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
@@ -175,11 +177,11 @@ void TerraWindow::Update(float delta)
     if (IsLoading())
         last_casted_times_ms.clear();
 
-    if (!player.ValidateData())
+    if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();
 
-    if (!ActivationConditions())
+    if (!IsRangerTerra(player) && !IsMesmerTerra(player))
         return;
 
     auto_target.Update();
@@ -209,21 +211,4 @@ void TerraWindow::Update(float delta)
         if (dist < GW::Constants::Range::Earshot && living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
             player.ChangeTarget(living->agent_id);
     }
-}
-
-bool TerraWindow::ActivationConditions()
-{
-    if (!GW::Map::GetIsMapLoaded())
-        return false;
-
-    if (!GW::PartyMgr::GetIsPartyLoaded())
-        return false;
-
-    if (!IsRangerTerra(player) && !IsMesmerTerra(player))
-        return false;
-
-    if (IsUwEntryOutpost() || IsUw())
-        return true;
-
-    return false;
 }

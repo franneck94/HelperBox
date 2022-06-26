@@ -33,7 +33,6 @@ private:
     bool CastPiOnTarget() const;
     bool RoutineKillSkele() const;
     bool RoutineValeSpirits() const;
-    bool RoutinePI(const uint32_t dhuum_id) const;
     bool RoutineDhuumRecharge() const;
     bool RoutineDhuumDamage() const;
 };
@@ -91,7 +90,6 @@ private:
     void UpdateUw();
     void UpdateUwEntry();
 
-    bool ActivationConditions() const;
 
     // Settings
     bool show_debug_map = true;
@@ -122,7 +120,7 @@ private:
         Move{-1522.58F, 10634.12F, "Lab 1", MoveState::WAIT_AND_CONTINUE},
         Move{-2726.856F, 10239.48F, "Lab 2", MoveState::WAIT_AND_CONTINUE},
         Move{-2828.35F, 10020.46F, "Lab 3", MoveState::WAIT_AND_CONTINUE},
-        Move{-4012.72F, 11130.53F, "Lab 4", MoveState::WAIT_AND_CONTINUE},
+        Move{-4012.72F, 11130.53F, "Lab 4", MoveState::WAIT_AND_CONTINUE, cast_sq},
         Move{-4012.72F, 11130.53F, "EoE 2", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{-4012.72F, 11130.53F, "Lab 4", MoveState::WAIT_AND_CONTINUE},
         Move{-4470.48F, 11581.47F, "Lab 5", MoveState::WAIT_AND_CONTINUE},
@@ -131,13 +129,13 @@ private:
         Move{-5751.45F, 12746.52F, "Accept", MoveState::NO_WAIT_AND_CONTINUE, [&]() { return AcceptChamber(); }},
         Move{-5751.45F, 12746.52F, "Restore", MoveState::NO_WAIT_AND_CONTINUE, [&]() { return TakeRestore(); }},
         Move{-5751.45F, 12746.52F, "Escort", MoveState::WAIT_AND_CONTINUE, [&]() { return TakeEscort(); }},
-        Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::WAIT_AND_CONTINUE},
+        Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::WAIT_AND_CONTINUE, cast_sq},
         Move{-6622.24F, 10387.12F, "EoE 3", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{-6622.24F, 10387.12F, "Basement Stairs", MoveState::WAIT_AND_CONTINUE},
         Move{-5183.64F, 8876.31F, "Basement Stairs 1", MoveState::WAIT_AND_CONTINUE},
         Move{-6241.24F, 7945.73F, "Basement Mid", MoveState::DISTANCE_AND_CONTINUE},
         Move{-8798.22F, 5643.86F, "Basement Stairs 2", MoveState::WAIT_AND_CONTINUE},
-        Move{-8518.53F, 4765.09F, "Basement 3", MoveState::WAIT_AND_CONTINUE},
+        Move{-8518.53F, 4765.09F, "Basement 3", MoveState::WAIT_AND_CONTINUE, cast_sq},
         Move{-8518.53F, 4765.09F, "EoE 4", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{-8518.53F, 4765.09F, "Basement 3", MoveState::WAIT_AND_CONTINUE},
         Move{-7289.94F, 3283.81F, "Vale Door", MoveState::WAIT_AND_CONTINUE},

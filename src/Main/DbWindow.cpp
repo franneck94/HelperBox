@@ -72,13 +72,7 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (!ActivationConditions())
-        return;
-
-    if (IsLoading())
-        return;
-
-    if ((!IsUw() && !IsUwEntryOutpost()))
+    if (!UwHelperActivationConditions())
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
@@ -89,10 +83,10 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     }
     ImGui::End();
 
-#ifdef _DEBUG
+    //#ifdef _DEBUG
     if (IsUw() && show_debug_map)
         DrawMap(player, moves, move_idx, "DbMap");
-#endif
+    //#endif
 }
 
 void DbWindow::UpdateUw()
@@ -118,17 +112,20 @@ void DbWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    if (!player.ValidateData())
+    UNREFERENCED_PARAMETER(delta);
+
+    if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();
+
+    if (!IsDhuumBitch(player))
+        return;
+
     if (IsUw() && first_frame)
     {
         UpdateUwInfo(player, moves, move_idx, true);
         first_frame = false;
     }
-
-    if (!ActivationConditions())
-        return;
 
     if (IsLoading() || IsOutpost())
         move_idx = 0;
@@ -137,6 +134,8 @@ void DbWindow::Update(float delta)
         return;
     skillbar.Update();
 
+    damage_action_state = &damage.action_state;
+
     if (IsUw())
     {
         UpdateUwInfo(player, moves, move_idx, false);
@@ -144,24 +143,6 @@ void DbWindow::Update(float delta)
     }
 
     damage.Update();
-    damage_action_state = &damage.action_state;
-}
-
-bool DbWindow::ActivationConditions() const
-{
-    if (!GW::Map::GetIsMapLoaded())
-        return false;
-
-    if (!GW::PartyMgr::GetIsPartyLoaded())
-        return false;
-
-    if (!IsDhuumBitch(player))
-        return false;
-
-    if (IsUwEntryOutpost() || IsUw())
-        return true;
-
-    return false;
 }
 
 Damage::Damage(Player *p, DbSkillbar *s) : DbActionABC(p, "Damage", s)
@@ -198,6 +179,9 @@ bool Damage::RoutineKillSkele() const
     if (CastPiOnTarget())
         return true;
 
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
+        return true;
+
     return false;
 }
 
@@ -207,47 +191,17 @@ bool Damage::RoutineValeSpirits() const
     const auto found_eoe = player->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
     const auto found_winnow = player->HasEffect(GW::Constants::SkillID::Winnowing);
 
-    if (!found_honor)
-    {
-        if (RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
-            return true;
-    }
+    if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player->energy))
+        return true;
 
     if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
         return true;
 
-    if (!found_eoe)
-    {
-        if (RoutineState::FINISHED == skillbar->eoe.Cast(player->energy))
-            return true;
-    }
+    if (!found_eoe && RoutineState::FINISHED == skillbar->eoe.Cast(player->energy))
+        return true;
 
-    if (!found_winnow)
-    {
-        if (RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))
-            return true;
-    }
-
-    return false;
-}
-
-bool Damage::RoutinePI(const uint32_t dhuum_id) const
-{
-    const auto &skill = skillbar->pi;
-
-    if (!skill.SkillFound())
-        return false;
-
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
-    if (!dhuum_agent)
-        return false;
-
-    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
-    if (!dhuum_living)
-        return false;
-
-    if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
-        return (RoutineState::FINISHED == skill.Cast(player->energy, dhuum_id));
+    if (!found_winnow && RoutineState::FINISHED == skillbar->winnow.Cast(player->energy))
+        return true;
 
     return false;
 }
@@ -293,7 +247,7 @@ bool Damage::RoutineDhuumDamage() const
 
 RoutineState Damage::Routine()
 {
-    static auto was_in_dhuum_fight = false;
+    static auto dhuum_fight_ongoing = false;
 
     if (!IsUw())
         return RoutineState::FINISHED;
@@ -334,18 +288,18 @@ RoutineState Damage::Routine()
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
-    if (was_in_dhuum_fight && RoutineDhuumRecharge())
+    if (dhuum_fight_ongoing && RoutineDhuumRecharge())
         return RoutineState::FINISHED;
 
     auto dhuum_id = uint32_t{0};
     auto dhuum_hp = float{1.0F};
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    if (!is_in_dhuum_fight && was_in_dhuum_fight)
-        was_in_dhuum_fight = false;
+    const auto currently_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+    if (!currently_in_dhuum_fight && dhuum_fight_ongoing)
+        dhuum_fight_ongoing = false;
 
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
+    if (!currently_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
         return RoutineState::FINISHED;
-    was_in_dhuum_fight = true;
+    dhuum_fight_ongoing = true;
 
     const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
     if (!dhuum_agent)
@@ -358,7 +312,7 @@ RoutineState Damage::Routine()
     if (dhuum_dist > GW::Constants::Range::Spellcast)
         return RoutineState::FINISHED;
 
-    if (RoutinePI(dhuum_id))
+    if (DhuumIsCastingJudgement(dhuum_id) && (RoutineState::FINISHED == skillbar->pi.Cast(player->energy, dhuum_id)))
         return RoutineState::FINISHED;
 
     if (RoutineDhuumDamage())

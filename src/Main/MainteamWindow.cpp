@@ -92,7 +92,9 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (!ActivationConditions())
+    if (!UwHelperActivationConditions())
+        return;
+    if (!IsDhuumBitch(player) && !IsSpiker(player) && !IsLT(player) && !IsEmo(player))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
@@ -137,11 +139,11 @@ void MainteamWindow::Update(float delta)
     skele_livings.clear();
     horseman_livings.clear();
 
-    if (!player.ValidateData())
+    if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();
 
-    if (!ActivationConditions())
+    if (!IsDhuumBitch(player) && !IsSpiker(player) && !IsLT(player) && !IsEmo(player))
         return;
 
     FilterAgents(player,
@@ -160,22 +162,4 @@ void MainteamWindow::Update(float delta)
     SortByDistance(player, horseman_livings);
     SortByDistance(player, dryder_livings);
     SortByDistance(player, skele_livings);
-}
-
-bool MainteamWindow::ActivationConditions()
-{
-
-    if (!GW::Map::GetIsMapLoaded())
-        return false;
-
-    if (!GW::PartyMgr::GetIsPartyLoaded())
-        return false;
-
-    if (!IsDhuumBitch(player) && !IsSpiker(player) && !IsLT(player) && !IsEmo(player))
-        return false;
-
-    if (IsUwEntryOutpost() || IsUw())
-        return true;
-
-    return false;
 }

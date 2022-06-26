@@ -47,15 +47,11 @@ constexpr static auto CANTHA_IDS = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 
 const static auto KEEPER1_POS = GW::GamePos{-7322.44F, 7013.74F, 0};
 const static auto KEEPER2_POS = GW::GamePos{-3321.31F, 10544.94F, 0};
 const static auto KEEPER3_POS = GW::GamePos{-506.62F, 13239.04F, 0};
-const static auto KEEPER4_POS = GW::GamePos{563.62F, 7206.59F, 0};
-const static auto KEEPER5_POS = GW::GamePos{1508.51F, 4532.65F, 0};
 
 static auto KEEPER_MAP = std::map<std::string, GW::GamePos>{
     {"Keeper 1", KEEPER1_POS},
     {"Keeper 2", KEEPER2_POS},
     {"Keeper 3", KEEPER3_POS},
-    {"Keeper 4", KEEPER4_POS},
-    {"Keeper 5", KEEPER5_POS},
 };
 }; // namespace
 
@@ -104,7 +100,9 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (!ActivationConditions())
+    if (!UwHelperActivationConditions())
+        return;
+    if (!IsEmo(player))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
@@ -207,17 +205,18 @@ void EmoWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    if (!player.ValidateData())
+    if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();
+
+    if (!IsEmo(player))
+        return;
+
     if (IsUw() && first_frame)
     {
         UpdateUwInfo(player, moves, move_idx, true);
         first_frame = false;
     }
-
-    if (!ActivationConditions())
-        return;
 
     if (IsLoading() || IsOutpost())
         move_idx = 0;
@@ -239,20 +238,6 @@ void EmoWindow::Update(float delta)
     player_bonding.Update();
     fuse_pull.Update();
     pumping.Update();
-}
-
-bool EmoWindow::ActivationConditions() const
-{
-    if (!GW::Map::GetIsMapLoaded())
-        return false;
-
-    if (!GW::PartyMgr::GetIsPartyLoaded())
-        return false;
-
-    if (IsEmo(player))
-        return true;
-
-    return false;
 }
 
 Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_slot_idx)
@@ -429,26 +414,6 @@ bool Pumping::RoutineTurtle() const
     return false;
 }
 
-bool Pumping::RoutinePI(const uint32_t dhuum_id) const
-{
-    const auto &skill = skillbar->pi;
-    if (!skill.SkillFound())
-        return false;
-
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
-    if (!dhuum_agent)
-        return false;
-
-    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
-    if (!dhuum_living)
-        return false;
-
-    if (dhuum_living->GetIsCasting() && dhuum_living->skill == DHUUM_JUDGEMENT_SKILL_ID)
-        return (RoutineState::FINISHED == skillbar->pi.Cast(player->energy, dhuum_id));
-
-    return false;
-}
-
 bool Pumping::RoutineWisdom() const
 {
     return (RoutineState::FINISHED == skillbar->wisdom.Cast(player->energy));
@@ -534,7 +499,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
         return true;
 
-    if (living->hp < 0.5F && player->hp_perc > 0.5F)
+    if (living->hp < 0.50F && player->hp_perc > 0.50F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, living->agent_id));
 
     return false;
@@ -543,6 +508,9 @@ bool Pumping::RoutineDbBeforeDhuum() const
 bool Pumping::RoutineKeepPlayerAlive() const
 {
     if (player->living->GetIsMoving())
+        return false;
+
+    if (player->energy < 50U)
         return false;
 
     for (const auto &[id, _] : party_members)
@@ -569,7 +537,7 @@ bool Pumping::RoutineKeepPlayerAlive() const
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player))
                 return true;
 
-        if (player->hp_perc > 0.5F)
+        if (player->hp_perc > 0.50F)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, living->agent_id));
     }
 
@@ -627,7 +595,7 @@ RoutineState Pumping::Routine()
     if (dhuum_hp < 0.20F)
         return RoutineState::FINISHED;
 
-    if (RoutinePI(dhuum_id))
+    if (DhuumIsCastingJudgement(dhuum_id) && (RoutineState::FINISHED == skillbar->pi.Cast(player->energy, dhuum_id)))
         return RoutineState::FINISHED;
 
     if (RoutineKeepPlayerAlive())
