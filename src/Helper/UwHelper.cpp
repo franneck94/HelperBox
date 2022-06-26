@@ -149,6 +149,11 @@ bool IsInDhuumRoom(const Player &player)
     return IsNearToGamePos(player, GW::GamePos{-16105.50F, 17284.84F, 0}, GW::Constants::Range::Spellcast);
 }
 
+bool IsGoingToDhuum(const Player &player)
+{
+    return IsNearToGamePos(player, GW::GamePos{-3205.12F, 18812.15F, 0}, 500.0F);
+}
+
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
 {
     if (!IsUw())
@@ -344,8 +349,8 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
     if (!dhuum_living)
         return false;
 
-    if (dhuum_living->GetIsCasting() && dhuum_living->skill != static_cast<uint32_t>(3085))
-        return false;
+    if (dhuum_living->GetIsCasting() && dhuum_living->skill == static_cast<uint32_t>(3085))
+        return true;
 
-    return true;
+    return false;
 }

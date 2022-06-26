@@ -321,6 +321,13 @@ bool Pumping::RoutineCanthaGuards() const
             if (!cantha->GetIsWeaponSpelled())
                 return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, cantha->agent_id));
         }
+
+        if (db_agent && db_agent->agent_id)
+        {
+            const auto dist = GW::GetDistance(db_agent->pos, player->pos);
+            if (dist < GW::Constants::Range::Spellcast)
+                return (RoutineState::FINISHED == skillbar->gdw.Cast(player->energy, db_agent->agent_id));
+        }
     }
     else // Done at vale, drop buffs
     {
@@ -408,7 +415,11 @@ bool Pumping::RoutineTurtle() const
     if (CastBondIfNotAvailable(skillbar->life, turtle_agent->agent_id, player))
         return true;
 
-    if (turtle_living->hp < 0.95F && player->hp_perc > 0.5F)
+    if (turtle_living->hp < 0.80F && player->hp_perc > 0.25F)
+        return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
+    else if (turtle_living->hp < 0.95F && player->hp_perc > 0.5F)
+        return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
+    else if (turtle_living->hp < 0.99F && player->hp_perc > 0.75F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
 
     return false;
@@ -440,7 +451,7 @@ bool Pumping::RoutineGDW() const
         return false;
 
     const auto dist = GW::GetDistance(player->pos, agent->pos);
-    if (dist > GW::Constants::Range::Spellcast)
+    if (dist > 450.0F)
         return false;
 
     if (living->GetIsWeaponSpelled())
@@ -527,7 +538,7 @@ bool Pumping::RoutineKeepPlayerAlive() const
             continue;
 
         const auto dist = GW::GetDistance(player->pos, agent->pos);
-        if (dist > GW::Constants::Range::Earshot)
+        if (dist > 450.0F)
             continue;
 
         if (living->hp > 0.50F)
@@ -544,9 +555,30 @@ bool Pumping::RoutineKeepPlayerAlive() const
     return false;
 }
 
+bool Pumping::DropBondsLT() const
+{
+    if (!lt_agent || !lt_agent->agent_id)
+        return false;
+
+    auto buffs = GW::Effects::GetPlayerBuffArray();
+    if (!buffs.valid())
+        return false;
+
+    for (const auto &buff : buffs)
+    {
+        const auto agent_id = buff.target_agent_id;
+        const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);
+        const auto is_prot_bond = skill == GW::Constants::SkillID::Protective_Bond;
+        const auto is_life_bond = skill == GW::Constants::SkillID::Life_Bond;
+        const auto is_balth_bond = skill == GW::Constants::SkillID::Balthazars_Spirit;
+
+        if ((is_prot_bond || is_life_bond || is_balth_bond) && agent_id == lt_agent->agent_id)
+            GW::Effects::DropBuff(buff.buff_id);
+    }
+}
+
 RoutineState Pumping::Routine()
 {
-    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
 
     if (!player->CanCast())
         return RoutineState::ACTIVE;
@@ -560,6 +592,7 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
+    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
     if (IsAtSpawn(*player) && RoutineKeepPlayerAlive())
         return RoutineState::FINISHED;
 
@@ -570,6 +603,9 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
 
     if (IsAtValeSpirits(*player) && RoutineCanthaGuards())
+        return RoutineState::FINISHED;
+
+    if (IsGoingToDhuum(*player) && DropBondsLT())
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room)
@@ -586,7 +622,7 @@ RoutineState Pumping::Routine()
 
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
+    if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
 
     if (RoutineWisdom())

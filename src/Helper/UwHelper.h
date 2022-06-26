@@ -51,6 +51,8 @@ bool IsAtSpirits2(const Player &player);
 
 bool IsAtValeSpirits(const Player &player);
 
+bool IsGoingToDhuum(const Player &player);
+
 bool IsInDhuumRoom(const Player &player);
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp);

@@ -34,6 +34,7 @@ private:
     bool RoutineSelfBonds() const;
     bool RoutineCanthaGuards() const;
     bool RoutineLT() const;
+    bool DropBondsLT() const;
     bool RoutineDbBeforeDhuum() const;
     bool RoutineTurtle() const;
     bool RoutineDbAtDhuum() const;
@@ -216,7 +217,7 @@ private:
 
     uint32_t move_idx = 0;
     std::array<Move, 52> moves = {
-        Move{1248.00F, 6965.51F, "Spawn", MoveState::NO_WAIT_AND_STOP},
+        Move{1248.00F, 6965.51F, "Spawn", MoveState::WAIT_AND_CONTINUE},
         Move{985.70F, 7325.54F, "Chamber 1", MoveState::WAIT_AND_CONTINUE, swap_to_high_armor_fn},
         Move{-634.07F, 9071.42F, "Chamber 2", MoveState::WAIT_AND_CONTINUE},
         Move{-1522.58F, 10634.12F, "Lab 1", MoveState::WAIT_AND_CONTINUE},
@@ -263,10 +264,10 @@ private:
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{11958.36F, 6281.43F, "Pits 2", MoveState::NO_WAIT_AND_STOP},
         Move{12160.99F, -16830.55F, "Planes 1", MoveState::NO_WAIT_AND_STOP},
-        Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE, swap_to_low_armor_fn},
+        Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::NO_WAIT_AND_CONTINUE},
-        Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE},
-        Move{-13127.69F, 17284.64F, "To Dhuum 4", MoveState::NO_WAIT_AND_STOP},
+        Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE, swap_to_low_armor_fn},
+        Move{-13127.69F, 17284.64F, "To Dhuum 4", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-16105.50F, 17284.84F, "To Dhuum 5", MoveState::NO_WAIT_AND_STOP},
     };
 

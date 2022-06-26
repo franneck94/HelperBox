@@ -299,7 +299,7 @@ RoutineState Damage::Routine()
     if (!currently_in_dhuum_fight && dhuum_fight_ongoing)
         dhuum_fight_ongoing = false;
 
-    if (!currently_in_dhuum_fight || !dhuum_id || dhuum_hp == 1.0F)
+    if (!currently_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
     dhuum_fight_ongoing = true;
 
