@@ -85,10 +85,10 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     }
     ImGui::End();
 
-    //#ifdef _DEBUG
+#ifdef _DEBUG
     if (IsUw() && show_debug_map)
         DrawMap(player, moves, move_idx, "DbMap");
-    //#endif
+#endif
 }
 
 void DbWindow::UpdateUw()

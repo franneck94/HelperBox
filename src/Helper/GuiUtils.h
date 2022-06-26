@@ -92,7 +92,10 @@ void plot_enemies(const Player &player,
 template <typename T, uint32_t N>
 void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t move_idx, std::string_view label)
 {
-    const auto theta = GW::CameraMgr::GetCamera()->GetCurrentYaw() - static_cast<float>(M_PI_2);
+    const auto cam = GW::CameraMgr::GetCamera();
+    if (!cam)
+        return;
+    const auto theta = cam->GetCurrentYaw() - static_cast<float>(M_PI_2);
 
     ImGui::SetNextWindowSize(ImVec2{450.0F, 450.0F}, ImGuiCond_FirstUseEver);
     const auto label_window = fmt::format("{}Window", label.data());
