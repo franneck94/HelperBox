@@ -260,7 +260,7 @@ RoutineState Damage::Routine()
     if (!player->CanCast())
         return RoutineState::ACTIVE;
 
-    if (!HasWaitedEnough())
+    if (!HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
     if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player) || IsRightAtValeHouse(*player))

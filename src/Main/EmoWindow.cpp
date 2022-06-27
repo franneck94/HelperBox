@@ -587,7 +587,7 @@ RoutineState Pumping::Routine()
     if (!player->CanCast())
         return RoutineState::ACTIVE;
 
-    if (!HasWaitedEnough())
+    if (!HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
     if (RoutineSelfBonds())
