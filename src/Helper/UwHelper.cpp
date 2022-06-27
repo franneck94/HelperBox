@@ -146,6 +146,11 @@ bool IsAtValeSpirits(const Player &player)
 
 bool IsInDhuumRoom(const Player &player)
 {
+#ifdef _DEBUG
+    if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
+        return true;
+#endif
+
     return IsNearToGamePos(player, GW::GamePos{-16105.50F, 17284.84F, 0}, GW::Constants::Range::Spellcast);
 }
 
@@ -154,8 +159,30 @@ bool IsGoingToDhuum(const Player &player)
     return IsNearToGamePos(player, GW::GamePos{-3205.12F, 18812.15F, 0}, 500.0F);
 }
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
+bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
 {
+#ifdef _DEBUG
+    if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
+    {
+        const auto me = GW::Agents::GetPlayer();
+        if (!me || !me->agent_id)
+            return false;
+        const auto target = GW::Agents::GetTarget();
+        if (!target)
+            return false;
+        const auto target_living = target->GetAsAgentLiving();
+        if (!target_living)
+            return false;
+        if (dhuum_id)
+            *dhuum_id = target_living->agent_id;
+        if (dhuum_hp)
+            *dhuum_hp = target_living->hp;
+        if (dhuum_max_hp)
+            *dhuum_max_hp = target_living->max_hp;
+        return true;
+    }
+#endif
+
     if (!IsUw())
         return false;
 
@@ -187,8 +214,12 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp)
 
     if (dhuum_living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
     {
-        *dhuum_id = dhuum_living->agent_id;
-        *dhuum_hp = dhuum_living->hp;
+        if (dhuum_id)
+            *dhuum_id = target_living->agent_id;
+        if (dhuum_hp)
+            *dhuum_hp = target_living->hp;
+        if (dhuum_max_hp)
+            *dhuum_max_hp = target_living->max_hp;
         return true;
     }
 

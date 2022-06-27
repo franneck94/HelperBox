@@ -55,7 +55,7 @@ bool IsGoingToDhuum(const Player &player);
 
 bool IsInDhuumRoom(const Player &player);
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp);
+bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
 
 bool TankIsFullteamLT();
 
