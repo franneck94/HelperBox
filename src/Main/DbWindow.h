@@ -106,7 +106,7 @@ private:
     };
 
     uint32_t move_idx = 0;
-    std::array<Move, 58> moves = {
+    std::array<Move, 59> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NO_WAIT_AND_STOP},
         Move{613.38F, 7097.03F, "SQ", MoveState::WAIT_AND_CONTINUE, cast_sq},
         Move{314.57F, 7511.54F, "Move EoE 1", MoveState::WAIT_AND_CONTINUE},
@@ -145,7 +145,8 @@ private:
         Move{-12264.12F, 1821.18F, "EoE 5", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},
         Move{-12264.12F, 1821.18F, "Vale House", MoveState::WAIT_AND_STOP},
         Move{-12145.44F, 1101.74F, "Vale Center", MoveState::WAIT_AND_CONTINUE},
-        Move{-13760.19F, 358.15F, "Spirits 1", MoveState::NO_WAIT_AND_STOP},
+        Move{-13760.19F, 358.15F, "Spirits 1", MoveState::NO_WAIT_AND_CONTINUE},
+        Move{-13872.34F, 2332.34F, "Spirits 2", MoveState::DISTANCE_AND_CONTINUE},
         Move{-13312.71F, 5165.071F, "Vale Reaper", MoveState::WAIT_AND_STOP, target_reaper_fn},
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{12566.49F, 7812.503F, "Pits Winnow", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.winnow},
@@ -163,7 +164,7 @@ private:
         Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE},
-        Move{-13127.69F, 17284.64F, "To Dhuum 4", MoveState::NO_WAIT_AND_STOP},
+        Move{-13127.69F, 17284.64F, "To Dhuum 4", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-16410.75F, 17294.47F, "To Dhuum 5", MoveState::NO_WAIT_AND_STOP},
     };
 
