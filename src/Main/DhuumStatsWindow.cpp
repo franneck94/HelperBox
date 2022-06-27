@@ -40,9 +40,9 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *pDevice)
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
         const auto timer_ms = TIMER_DIFF(dhuum_fight_start_time_ms);
-        ImGui::Text("Timer: %4.0f", static_cast<float>(timer_ms) / 1000.0F);
+        ImGui::Text("Timer: %4.2f", static_cast<float>(timer_ms) / 1000.0F);
         ImGui::Separator();
-        ImGui::Text("Rests: %u", num_casted_rest);
+        ImGui::Text("Num Rests: %u", num_casted_rest);
         ImGui::Text("Rests (per s): %0.2f", rests_per_s);
         ImGui::Text("ETA Rest (s): %0.2f", (num_casted_rest > 0 && eta_rest < 10'000.0F) ? eta_rest : 0.0F);
         ImGui::Separator();
@@ -141,10 +141,7 @@ void DhuumStatsWindow::Update(float delta)
 
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
     if (!is_in_dhuum_fight || !dhuum_id)
-        ResetData();
-
-    if (dhuum_hp == 1.0F)
-        ResetData();
+        return;
 
     RemoveOldData();
     UpdateRestData();

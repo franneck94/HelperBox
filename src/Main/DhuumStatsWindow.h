@@ -16,12 +16,8 @@
 class DhuumStatsWindow : public HelperBoxWindow
 {
 public:
-#ifdef _DEBUG
-    static constexpr auto REST_SKILL_ID = static_cast<uint32_t>(GW::Constants::SkillID::Reversal_of_Fortune);
-#else
-    static constexpr auto REST_SKILL_ID = static_cast<uint32_t>(GW::Constants::SkillID::Reversal_of_Fortune);
-#endif
-    static constexpr auto NEEDED_NUM_REST = uint32_t{600U};
+    static constexpr auto REST_SKILL_ID = uint32_t{3087};
+    static constexpr auto NEEDED_NUM_REST = uint32_t{350U};
 
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -66,6 +62,9 @@ private:
                               const uint32_t target_id,
                               const float value)
     {
+        if (!dhuum_id || (target_id != dhuum_id && caster_id != dhuum_id))
+            return;
+
         // ignore non-damage packets
         switch (type)
         {
@@ -77,26 +76,30 @@ private:
             return;
         }
 
-        // ignore heals
-        if (value >= 0)
+        if (value >= 0 || !caster_id)
             return;
 
-        const auto agents = GW::Agents::GetAgentArray();
-        if (!agents.valid() || !caster_id)
+        const auto caster_agent = GW::Agents::GetAgentByID(caster_id);
+        if (!caster_agent)
             return;
 
-        const auto cause = agents[caster_id]->GetAsAgentLiving();
-        if (!cause)
-            return;
-        if (cause->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) &&
-            cause->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+        const auto caster_living = caster_agent->GetAsAgentLiving();
+        if (!caster_living)
             return;
 
-        const auto target = agents[target_id]->GetAsAgentLiving();
-        if (!target || target->agent_id != dhuum_id)
+        if (caster_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) &&
+            caster_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
             return;
 
-        long ldmg = std::lround(-value * target->max_hp);
+        const auto target_agent = GW::Agents::GetAgentByID(target_id);
+        if (!target_agent)
+            return;
+
+        const auto target_living = caster_agent->GetAsAgentLiving();
+        if (!target_living)
+            return;
+
+        long ldmg = std::lround(-value * target_living->max_hp);
         const uint32_t dmg = static_cast<uint32_t>(ldmg);
         ++num_attacks;
 
