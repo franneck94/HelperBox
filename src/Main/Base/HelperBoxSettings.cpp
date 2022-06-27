@@ -11,11 +11,13 @@
 #include <Defines.h>
 #include <HelperBox.h>
 
-#include <AutoFollowWindow.h>
 #include <Base/MainWindow.h>
+
+#include <AutoFollowWindow.h>
 #include <CancelActionWindow.h>
 #include <ChatCommands.h>
 #include <DbWindow.h>
+#include <DhuumStatsWindow.h>
 #include <EmoWindow.h>
 #include <MainteamWindow.h>
 #include <SettingsWindow.h>
@@ -35,6 +37,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     optional_modules.push_back(&MainteamWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
     optional_modules.push_back(&AutoFollowWindow::Instance());
+    optional_modules.push_back(&DhuumStatsWindow::Instance());
     // optional_modules.push_back(&CancelActionWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 
