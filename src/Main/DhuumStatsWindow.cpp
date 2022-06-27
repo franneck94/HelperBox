@@ -137,30 +137,14 @@ void DhuumStatsWindow::Update(float delta)
 
     const auto is_in_dhuum_room = IsInDhuumRoom(player);
     if (!is_in_dhuum_room)
-    {
-        dhuum_fight_active = false;
-        return;
-    }
+        ResetData();
 
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
     if (!is_in_dhuum_fight || !dhuum_id)
-    {
-        dhuum_fight_active = false;
-        return;
-    }
+        ResetData();
 
     if (dhuum_hp == 1.0F)
-    {
-        dhuum_fight_active = false;
-        return;
-    }
-
-    // Fight started, reset all data
-    if (!dhuum_fight_active)
-    {
         ResetData();
-        return;
-    }
 
     RemoveOldData();
     UpdateRestData();

@@ -19,7 +19,7 @@ public:
 #ifdef _DEBUG
     static constexpr auto REST_SKILL_ID = static_cast<uint32_t>(GW::Constants::SkillID::Reversal_of_Fortune);
 #else
-    static constexpr auto REST_SKILL_ID = uint32_t{GW::Constants::SkillID::Reversal_of_Fortune};
+    static constexpr auto REST_SKILL_ID = static_cast<uint32_t>(GW::Constants::SkillID::Reversal_of_Fortune);
 #endif
     static constexpr auto NEEDED_NUM_REST = uint32_t{600U};
 

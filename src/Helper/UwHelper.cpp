@@ -215,11 +215,11 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
     if (dhuum_living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
     {
         if (dhuum_id)
-            *dhuum_id = target_living->agent_id;
+            *dhuum_id = dhuum_living->agent_id;
         if (dhuum_hp)
-            *dhuum_hp = target_living->hp;
+            *dhuum_hp = dhuum_living->hp;
         if (dhuum_max_hp)
-            *dhuum_max_hp = target_living->max_hp;
+            *dhuum_max_hp = dhuum_living->max_hp;
         return true;
     }
 
