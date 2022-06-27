@@ -99,7 +99,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
 
