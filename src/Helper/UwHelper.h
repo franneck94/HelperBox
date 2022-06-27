@@ -103,10 +103,10 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
     {
         Log::Info("Ported!");
         move_idx = GetClostestMove(player, moves);
-        if (moves[move_idx].name == std::string{"Pits Reaper"} && move_idx > 4)
-            move_idx -= 3U;
-        else if (moves[move_idx].name == std::string{"Planes Reaper"} && move_idx > 4)
-            move_idx -= 4U;
+        // if (moves[move_idx].name == std::string{"Pits Reaper"} && move_idx > 4)
+        //     move_idx -= 3U;
+        // else if (moves[move_idx].name == std::string{"Planes Reaper"} && move_idx > 4)
+        //     move_idx -= 4U;
     }
     else if (port_detected && !next_move_oob)
     {
