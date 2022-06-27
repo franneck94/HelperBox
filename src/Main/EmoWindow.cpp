@@ -141,8 +141,7 @@ void EmoWindow::UpdateUwDetectKeeper()
     static auto last_name = moves[move_idx].name;
     static auto found_keeper = false;
 
-    if ((moves[move_idx].name != std::string{"Keeper 1"}) && (moves[move_idx].name != std::string{"Keeper 2"}) &&
-        (moves[move_idx].name != std::string{"Keeper 3"}))
+    if ((moves[move_idx].name != std::string{"Keeper 1"}) && (moves[move_idx].name != std::string{"Keeper 2"}))
         return;
 
     const auto curr_pos = KEEPER_MAP[moves[move_idx - 1].name];
@@ -501,7 +500,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
         return false;
 
     const auto dist = GW::GetDistance(player->pos, db_agent->pos);
-    if (dist > 2000.0F)
+    if (dist > 2100.0F)
         return false;
 
     if (living->hp > 0.75F)
@@ -573,8 +572,13 @@ bool Pumping::DropBondsLT() const
         const auto is_balth_bond = skill == GW::Constants::SkillID::Balthazars_Spirit;
 
         if ((is_prot_bond || is_life_bond || is_balth_bond) && agent_id == lt_agent->agent_id)
+        {
             GW::Effects::DropBuff(buff.buff_id);
+            return true;
+        }
     }
+
+    return false;
 }
 
 RoutineState Pumping::Routine()

@@ -249,6 +249,7 @@ public:
     SkillData winnow = SkillData{GW::Constants::SkillID::Winnowing, static_cast<uint32_t>(-1)};
     SkillData pi = SkillData{GW::Constants::SkillID::Pain_Inverter, static_cast<uint32_t>(-1)};
     SkillData sq = SkillData{GW::Constants::SkillID::Serpents_Quickness, static_cast<uint32_t>(-1)};
+    SkillData vamp = SkillData{GW::Constants::SkillID::Vampirism, static_cast<uint32_t>(-1)};
 
 public:
     virtual void LoadInternal(const GW::SkillbarSkill *skillbar_skills) override
@@ -263,6 +264,7 @@ public:
         winnow.idx = static_cast<uint32_t>(-1);
         pi.idx = static_cast<uint32_t>(-1);
         sq.idx = static_cast<uint32_t>(-1);
+        vamp.idx = static_cast<uint32_t>(-1);
 
         for (uint32_t idx = 0; idx < 8; ++idx)
         {
@@ -280,6 +282,8 @@ public:
                 pi.idx = idx;
             else if (skillbar_skills[idx].skill_id == sq.id)
                 sq.idx = idx;
+            else if (skillbar_skills[idx].skill_id == vamp.id)
+                vamp.idx = idx;
         }
     }
 
@@ -302,5 +306,7 @@ public:
             pi.Update(skillbar_skills);
         if (sq.SkillFound())
             sq.Update(skillbar_skills);
+        if (vamp.SkillFound())
+            vamp.Update(skillbar_skills);
     }
 };

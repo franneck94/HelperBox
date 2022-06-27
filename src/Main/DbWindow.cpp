@@ -181,9 +181,6 @@ bool Damage::RoutineKillSkele() const
     if (CastPiOnTarget())
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
-        return true;
-
     return false;
 }
 
@@ -197,6 +194,9 @@ bool Damage::RoutineValeSpirits() const
         return true;
 
     if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
+        return true;
+
+    if (RoutineState::FINISHED == skillbar->vamp.Cast(player->energy))
         return true;
 
     if (!found_eoe && RoutineState::FINISHED == skillbar->eoe.Cast(player->energy))
@@ -242,6 +242,9 @@ bool Damage::RoutineDhuumDamage() const
         return true;
 
     if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
+        return true;
+
+    if (RoutineState::FINISHED == skillbar->vamp.Cast(player->energy))
         return true;
 
     return false;

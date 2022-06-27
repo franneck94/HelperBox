@@ -33,8 +33,8 @@ GW::GamePos MovePointAlongVector(const GW::GamePos &pos1, const GW::GamePos &pos
 
 GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const float offset)
 {
-    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.25F); // Behind player
-    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.2F); // In front of Target
+    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.10F); // Behind player
+    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.20F); // In front of Target
 
     const auto delta_x = adj_p1.x - adj_p2.x;
     const auto delta_y = adj_p1.y - adj_p2.y;
