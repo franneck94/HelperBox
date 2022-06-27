@@ -284,9 +284,7 @@ bool TargetIsReaper(Player &player)
 
 bool TargetReaper(Player &player)
 {
-    TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
-
-    return true;
+    return TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers) != 0;
 }
 
 bool TalkReaper(Player &player)
@@ -307,9 +305,7 @@ bool TalkReaper(Player &player)
 
 bool TargetClosestKeeper(Player &player)
 {
-    TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls);
-
-    return true;
+    return TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
 
 bool AcceptChamber()
@@ -384,4 +380,86 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
         return true;
 
     return false;
+}
+
+uint32_t GetTankId()
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success || party_members.size() < 2)
+        return 0;
+
+    auto tank_idx = uint32_t{0};
+
+    switch (GW::Map::GetMapID())
+    {
+    case GW::Constants::MapID::The_Underworld:
+#ifdef _DEBUG
+    case GW::Constants::MapID::Isle_of_the_Nameless:
+#endif
+    {
+        tank_idx = party_members.size() - 2;
+        break;
+    }
+    default:
+    {
+        tank_idx = 0;
+        break;
+    }
+    }
+
+    const auto tank = party_members[tank_idx];
+    return tank.id;
+}
+
+uint32_t GetEmoId()
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success)
+        return 0;
+
+    for (const auto &member : party_members)
+    {
+        const auto agent = GW::Agents::GetAgentByID(member.id);
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->primary == static_cast<uint8_t>(GW::Constants::Profession::Elementalist) &&
+            living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Monk))
+            return agent->agent_id;
+    }
+
+    return 0;
+}
+
+uint32_t GetDhuumBitchId()
+{
+    std::vector<PlayerMapping> party_members;
+    const auto success = GetPartyMembers(party_members);
+
+    if (!success)
+        return 0;
+
+    for (const auto &member : party_members)
+    {
+        const auto agent = GW::Agents::GetAgentByID(member.id);
+        if (!agent)
+            continue;
+
+        const auto living = agent->GetAsAgentLiving();
+        if (!living)
+            continue;
+
+        if (living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+            return agent->agent_id;
+    }
+
+    return 0;
 }

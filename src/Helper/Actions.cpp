@@ -24,7 +24,7 @@ void ActionABC::Draw(const ImVec2 button_size)
     DrawButton(action_state, color, text, button_size);
 }
 
-bool HasWaitedEnough()
+bool HasWaitedLongEnough()
 {
     static auto timer_last_cast_ms = clock();
 

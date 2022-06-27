@@ -5,6 +5,7 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/CameraMgr.h>
 
+#include <Helper.h>
 #include <Player.h>
 
 #include "MathUtils.h"
@@ -83,4 +84,29 @@ GW::GamePos rotate_point(const Player &player, GW::GamePos pos)
     v = GW::GamePos(x1, y1, 0);
 
     return v;
+}
+
+bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r)
+{
+    const auto dist = GW::GetDistance(player.pos, pos);
+
+    if (dist < r)
+        return true;
+
+    return false;
+}
+
+
+std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle)
+{
+    const auto living_agents = GetEnemiesInCompass();
+    auto filtered_livings = std::vector<GW::AgentLiving *>{};
+
+    for (const auto living : living_agents)
+    {
+        if (rectangle.PointInGameRectangle(living->pos))
+            filtered_livings.push_back(living);
+    }
+
+    return filtered_livings;
 }

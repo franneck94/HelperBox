@@ -122,7 +122,7 @@ void DhuumStatsWindow::UpdateDamageData()
         damage_per_s = 0.0F;
 
     if (dhuum_hp >= 0.25F && dhuum_hp < 1.0F && damage_per_s > 0.0F)
-        eta_damage = ((dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25)) / damage_per_s;
+        eta_damage = ((dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25F)) / damage_per_s;
     else
         eta_damage = 0.0F;
 }

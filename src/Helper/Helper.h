@@ -110,12 +110,6 @@ void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filter
 
 bool CanMove();
 
-uint32_t GetTankId();
-
-uint32_t GetEmoId();
-
-uint32_t GetDhuumBitchId();
-
 bool IsAliveAlly(const GW::Agent *target);
 
 uint32_t GetPartyIdxByID(const uint32_t id);
@@ -144,13 +138,9 @@ void AttackAgent(const GW::Agent *agent);
 
 std::vector<GW::AgentLiving *> GetEnemiesInCompass();
 
-std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle);
-
 std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);
 
 void TargetAndAttackEnemyInAggro(const Player &player);
-
-bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r);

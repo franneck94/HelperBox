@@ -103,6 +103,10 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
     {
         Log::Info("Ported!");
         move_idx = GetClostestMove(player, moves);
+        if (moves[move_idx].name == std::string{"Pits Reaper"})
+            move_idx -= 3U;
+        else if (moves[move_idx].name == std::string{"Planes Reaper"})
+            move_idx -= 4U;
     }
     else if (port_detected && !next_move_oob)
     {
@@ -114,3 +118,9 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
 bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
 
 bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
+
+uint32_t GetTankId();
+
+uint32_t GetEmoId();
+
+uint32_t GetDhuumBitchId();

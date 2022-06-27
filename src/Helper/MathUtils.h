@@ -42,3 +42,7 @@ template <typename T>
 }
 
 GW::GamePos rotate_point(const Player &player, GW::GamePos pos);
+
+bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r);
+
+std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle);

@@ -45,18 +45,6 @@ RoutineState SafeWalk(const GW::GamePos target_position, const bool reset)
     return state;
 }
 
-RoutineState SafeUseSkill(const uint32_t skill_idx, const uint32_t target, const uint32_t call_target)
-{
-    if (target != 0 && call_target != 0)
-        GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_idx, target, call_target); });
-    else if (target != 0)
-        GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_idx, target); });
-    else
-        GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_idx); });
-
-    return RoutineState::FINISHED;
-}
-
 bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_id, const Player *const player)
 {
     const auto has_bond = AgentHasBuff(static_cast<GW::Constants::SkillID>(skill_data.id), target_id);

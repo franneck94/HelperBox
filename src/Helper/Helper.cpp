@@ -464,88 +464,6 @@ bool CanMove()
     return !IsLoading() && !GW::Map::GetIsObserving();
 }
 
-uint32_t GetTankId()
-{
-    std::vector<PlayerMapping> party_members;
-    const auto success = GetPartyMembers(party_members);
-
-    if (!success || party_members.size() < 2)
-        return 0;
-
-    auto tank_idx = uint32_t{0};
-
-    switch (GW::Map::GetMapID())
-    {
-    case GW::Constants::MapID::The_Underworld:
-#ifdef _DEBUG
-    case GW::Constants::MapID::Isle_of_the_Nameless:
-#endif
-    {
-        tank_idx = party_members.size() - 2;
-        break;
-    }
-    default:
-    {
-        tank_idx = 0;
-        break;
-    }
-    }
-
-    const auto tank = party_members[tank_idx];
-    return tank.id;
-}
-
-uint32_t GetEmoId()
-{
-    std::vector<PlayerMapping> party_members;
-    const auto success = GetPartyMembers(party_members);
-
-    if (!success)
-        return 0;
-
-    for (const auto &member : party_members)
-    {
-        const auto agent = GW::Agents::GetAgentByID(member.id);
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-        if (!living)
-            continue;
-
-        if (living->primary == static_cast<uint8_t>(GW::Constants::Profession::Elementalist) &&
-            living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Monk))
-            return agent->agent_id;
-    }
-
-    return 0;
-}
-
-uint32_t GetDhuumBitchId()
-{
-    std::vector<PlayerMapping> party_members;
-    const auto success = GetPartyMembers(party_members);
-
-    if (!success)
-        return 0;
-
-    for (const auto &member : party_members)
-    {
-        const auto agent = GW::Agents::GetAgentByID(member.id);
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-        if (!living)
-            continue;
-
-        if (living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Ranger))
-            return agent->agent_id;
-    }
-
-    return 0;
-}
-
 bool IsAliveAlly(const GW::Agent *target)
 {
     if (!target)
@@ -729,20 +647,6 @@ std::vector<GW::AgentLiving *> GetEnemiesInCompass()
     return living_agents;
 }
 
-std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle)
-{
-    const auto living_agents = GetEnemiesInCompass();
-    auto filtered_livings = std::vector<GW::AgentLiving *>{};
-
-    for (const auto living : living_agents)
-    {
-        if (rectangle.PointInGameRectangle(living->pos))
-            filtered_livings.push_back(living);
-    }
-
-    return filtered_livings;
-}
-
 std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player)
 {
     auto filtered_livings = std::vector<GW::AgentLiving *>{};
@@ -804,14 +708,4 @@ void TargetAndAttackEnemyInAggro(const Player &player)
         if (dist < GW::Constants::Range::Earshot)
             AttackAgent(player.target);
     }
-}
-
-bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r)
-{
-    const auto dist = GW::GetDistance(player.pos, pos);
-
-    if (dist < r)
-        return true;
-
-    return false;
 }
