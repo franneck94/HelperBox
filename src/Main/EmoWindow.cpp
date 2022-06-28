@@ -496,9 +496,6 @@ bool Pumping::RoutineDbBeforeDhuum() const
     if (!living)
         return false;
 
-    if (living->GetIsMoving())
-        return false;
-
     const auto dist = GW::GetDistance(player->pos, db_agent->pos);
     if (dist > 2100.0F)
         return false;
