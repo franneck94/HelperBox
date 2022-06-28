@@ -189,6 +189,8 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
         const auto target_living = target->GetAsAgentLiving();
         if (!target_living)
             return false;
+        if (target_living->player_number != 144)
+            return false;
         if (dhuum_id)
             *dhuum_id = target_living->agent_id;
         if (dhuum_hp)
