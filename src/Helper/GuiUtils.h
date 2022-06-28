@@ -66,28 +66,20 @@ void DrawMovingButtons(const std::array<T, N> &moves, bool &move_ongoing, uint32
     }
 }
 
-void plot_shaded_rect(const float x1,
-                      const float x2,
-                      const float y1,
-                      const float y2,
-                      const float y3,
-                      const float y4,
-                      std::string_view label);
+void PlotRectangleLine(const Player &player, const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label);
 
-void plot_rectangle_line(const Player &player, const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label);
+void PlotPoint(const Player &player,
+               const GW::GamePos &p,
+               std::string_view label,
+               const ImVec4 &color,
+               const float width = 5.0F);
 
-void plot_point(const Player &player,
-                GW::GamePos p,
-                std::string_view label,
-                const ImVec4 &color,
-                const float width = 5.0F);
+void PlotCircle(const Player &player, std::string_view label, const ImVec4 &color);
 
-void plot_circle(const Player &player, std::string_view label, const ImVec4 &color);
-
-void plot_enemies(const Player &player,
-                  const std::vector<GW::AgentLiving *> &living_agents,
-                  std::string_view label,
-                  const ImVec4 &color);
+void PlotEnemies(const Player &player,
+                 const std::vector<GW::AgentLiving *> &living_agents,
+                 std::string_view label,
+                 const ImVec4 &color);
 
 template <typename T, uint32_t N>
 void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t move_idx, std::string_view label)
@@ -96,6 +88,8 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
     if (!cam)
         return;
     const auto theta = cam->GetCurrentYaw() - static_cast<float>(M_PI_2);
+    if (std::isnan(theta))
+        return;
 
     ImGui::SetNextWindowSize(ImVec2{450.0F, 450.0F}, ImGuiCond_FirstUseEver);
     const auto label_window = fmt::format("{}Window", label.data());
@@ -109,7 +103,7 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
 
             const auto flags_axis =
                 ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels;
-            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_Lock, ImPlotAxisFlags_Lock);
+            ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_None, ImPlotAxisFlags_Lock);
             ImPlot::SetupAxis(ImAxis_X1, nullptr, flags_axis);
             ImPlot::SetupAxis(ImAxis_Y1, nullptr, flags_axis);
             ImPlot::SetupAxisLimits(ImAxis_X1,
@@ -121,21 +115,21 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
                                     GW::Constants::Range::Compass,
                                     ImGuiCond_Always);
 
-            plot_point(player, player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
-            plot_point(player, next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
+            PlotPoint(player, player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
+            PlotPoint(player, next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
 
-            plot_rectangle_line(player, rect.v1, rect.v2, "line1");
-            plot_rectangle_line(player, rect.v1, rect.v3, "line2");
-            plot_rectangle_line(player, rect.v4, rect.v2, "line3");
-            plot_rectangle_line(player, rect.v4, rect.v3, "line4");
+            PlotRectangleLine(player, rect.v1, rect.v2, "line1");
+            PlotRectangleLine(player, rect.v1, rect.v3, "line2");
+            PlotRectangleLine(player, rect.v4, rect.v2, "line3");
+            PlotRectangleLine(player, rect.v4, rect.v3, "line4");
 
-            plot_circle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
+            PlotCircle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
 
             const auto living_agents = GetEnemiesInCompass();
-            plot_enemies(player, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
+            PlotEnemies(player, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
 
             const auto filtered_livings = GetEnemiesInGameRectangle(rect);
-            plot_enemies(player, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
+            PlotEnemies(player, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();
     }
