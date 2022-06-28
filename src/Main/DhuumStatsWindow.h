@@ -171,7 +171,7 @@ private:
     GW::HookEntry SkillCasted_Entry;
     GW::HookEntry Damage_Entry;
 
-    const long TIME_WINDOW_S = 60L;
+    const long TIME_WINDOW_S = 120L;
     const long TIME_WINDOW_MS = (TIME_WINDOW_S * 1000L);
 
     uint32_t dhuum_id = 0U;

@@ -216,7 +216,7 @@ private:
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     uint32_t move_idx = 0;
-    std::array<Move, 54> moves = {
+    std::array<Move, 55> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::WAIT_AND_CONTINUE},
         Move{985.70F, 7325.54F, "Chamber 1", MoveState::WAIT_AND_CONTINUE, swap_to_high_armor_fn},
         Move{-634.07F, 9071.42F, "Chamber 2", MoveState::WAIT_AND_CONTINUE},
@@ -266,6 +266,7 @@ private:
         Move{11958.36F, 6281.43F, "Pits 2", MoveState::NO_WAIT_AND_STOP},
         Move{11368.55F, -17974.64F, "Planes Start", MoveState::NO_WAIT_AND_CONTINUE},
         Move{12160.99F, -16830.55F, "Planes 1", MoveState::NO_WAIT_AND_STOP},
+        Move{-235.05F, 18496.461F, "To Dhuum Start", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-2537.51F, 19139.91F, "To Dhuum 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-6202.59F, 18704.91F, "To Dhuum 2", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-9567.56F, 17288.916F, "To Dhuum 3", MoveState::NO_WAIT_AND_CONTINUE, swap_to_low_armor_fn},
