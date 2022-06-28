@@ -18,7 +18,7 @@ class DhuumStatsWindow : public HelperBoxWindow
 public:
     constexpr static auto REST_SKILL_ID = uint32_t{3087};
     constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
-    constexpr static auto NEEDED_NUM_REST = uint32_t{450U};
+    constexpr static auto NEEDED_NUM_REST = uint32_t{741U};
 
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -47,16 +47,6 @@ private:
             return;
         }
 
-#ifdef _DEBUG
-        if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
-        {
-            if (static_cast<uint32_t>(GW::Constants::SkillID::Reversal_of_Fortune) == activated_skill_id)
-            {
-                ++num_casted_rest;
-                rests.push_back(clock());
-            }
-        }
-#endif
         if (REST_SKILL_ID == activated_skill_id || REST_SKILL_REAPER_ID == activated_skill_id)
         {
             ++num_casted_rest;
@@ -69,7 +59,7 @@ private:
                               const uint32_t target_id,
                               const float value)
     {
-        if (!dhuum_id || (target_id != dhuum_id && caster_id != dhuum_id))
+        if (!dhuum_id || target_id != dhuum_id)
             return;
 
         // ignore non-damage packets
@@ -102,7 +92,7 @@ private:
         if (!target_agent)
             return;
 
-        const auto target_living = caster_agent->GetAsAgentLiving();
+        const auto target_living = target_agent->GetAsAgentLiving();
         if (!target_living)
             return;
 

@@ -177,30 +177,6 @@ bool IsGoingToDhuum(const Player &player)
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
 {
-#ifdef _DEBUG
-    if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
-    {
-        const auto me = GW::Agents::GetPlayer();
-        if (!me || !me->agent_id)
-            return false;
-        const auto target = GW::Agents::GetTarget();
-        if (!target)
-            return false;
-        const auto target_living = target->GetAsAgentLiving();
-        if (!target_living)
-            return false;
-        if (target_living->player_number != 144)
-            return false;
-        if (dhuum_id)
-            *dhuum_id = target_living->agent_id;
-        if (dhuum_hp)
-            *dhuum_hp = target_living->hp;
-        if (dhuum_max_hp)
-            *dhuum_max_hp = target_living->max_hp;
-        return true;
-    }
-#endif
-
     if (!IsUw())
         return false;
 
