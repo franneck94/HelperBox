@@ -106,7 +106,7 @@ private:
     };
 
     uint32_t move_idx = 0;
-    std::array<Move, 59> moves = {
+    std::array<Move, 61> moves = {
         Move{1248.00F, 6965.51F, "Spawn", MoveState::NO_WAIT_AND_STOP},
         Move{613.38F, 7097.03F, "SQ", MoveState::WAIT_AND_CONTINUE, cast_sq},
         Move{314.57F, 7511.54F, "Move EoE 1", MoveState::WAIT_AND_CONTINUE},
@@ -148,12 +148,14 @@ private:
         Move{-13760.19F, 358.15F, "Spirits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{-13872.34F, 2332.34F, "Spirits 2", MoveState::DISTANCE_AND_CONTINUE},
         Move{-13312.71F, 5165.071F, "Vale Reaper", MoveState::WAIT_AND_STOP, target_reaper_fn},
+        Move{8685.21F, 6344.59F, "Pits Start", MoveState::NO_WAIT_AND_CONTINUE},
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{12566.49F, 7812.503F, "Pits Winnow", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.winnow},
         Move{12566.49F, 7812.503F, "Pits 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{8685.21F, 6344.59F, "Pits Reaper", MoveState::NO_WAIT_AND_STOP, target_reaper_fn},
         Move{8685.21F, 6344.59F, "Pits Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
         Move{8685.21F, 6344.59F, "Pits Take", MoveState::NO_WAIT_AND_STOP, [&]() { return TakePits(); }},
+        Move{11368.55F, -17974.64F, "Planes Start", MoveState::NO_WAIT_AND_CONTINUE},
         Move{9120.00F, -18432.003F, "Planes 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{9120.00F, -18432.003F, "Planes Winnow", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.winnow},
         Move{9120.00F, -18432.003F, "Planes EoE", MoveState::CAST_SKILL_AND_CONTINUE, &skillbar.eoe},

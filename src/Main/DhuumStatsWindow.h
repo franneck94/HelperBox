@@ -17,7 +17,8 @@ class DhuumStatsWindow : public HelperBoxWindow
 {
 public:
     static constexpr auto REST_SKILL_ID = uint32_t{3087};
-    static constexpr auto NEEDED_NUM_REST = uint32_t{350U};
+    constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
+    static constexpr auto NEEDED_NUM_REST = uint32_t{450U};
 
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -39,18 +40,14 @@ private:
         case GW::Packet::StoC::GenericValueID::attack_skill_finished:
         {
             if (!no_target)
-            {
                 agent_id = target_id;
-            }
             break;
         }
         default:
-        {
             return;
         }
-        }
 
-        if (REST_SKILL_ID == activated_skill_id)
+        if (REST_SKILL_ID == activated_skill_id || REST_SKILL_REAPER_ID == activated_skill_id)
         {
             ++num_casted_rest;
             rests.push_back(clock());
@@ -99,12 +96,11 @@ private:
         if (!target_living)
             return;
 
-        long ldmg = std::lround(-value * target_living->max_hp);
-        const uint32_t dmg = static_cast<uint32_t>(ldmg);
+        const auto dmg_f32 = -value * target_living->max_hp;
         ++num_attacks;
 
         const auto time = clock();
-        damages.push_back(std::make_pair(time, dmg));
+        damages.push_back(std::make_pair(time, dmg_f32));
     }
 
     void ResetData();
@@ -175,7 +171,7 @@ private:
     GW::HookEntry SkillCasted_Entry;
     GW::HookEntry Damage_Entry;
 
-    const long TIME_WINDOW_S = 10L;
+    const long TIME_WINDOW_S = 3L;
     const long TIME_WINDOW_MS = (TIME_WINDOW_S * 1000L);
 
     uint32_t dhuum_id = 0U;

@@ -88,10 +88,7 @@ void DhuumStatsWindow::UpdateRestData()
 
     auto idx_rests = uint32_t{0};
     for (const auto time : rests)
-    {
-        if (time >= current_time_ms - TIME_WINDOW_MS)
-            ++idx_rests;
-    }
+        ++idx_rests;
 
     if (idx_rests > 0)
         rests_per_s = static_cast<float>(idx_rests) / static_cast<float>(TIME_WINDOW_S);
@@ -99,7 +96,10 @@ void DhuumStatsWindow::UpdateRestData()
         rests_per_s = 0.0F;
 
     const auto still_needed_rest = NEEDED_NUM_REST - num_casted_rest;
-    eta_rest = still_needed_rest / (rests_per_s + FLT_EPSILON);
+    if (rests_per_s > 0.0F)
+        eta_rest = 0.1F * eta_rest + 0.9F * (still_needed_rest / rests_per_s);
+    else
+        eta_rest = 0.0F;
 }
 
 void DhuumStatsWindow::UpdateDamageData()
@@ -109,11 +109,8 @@ void DhuumStatsWindow::UpdateDamageData()
     auto idx_dmg = uint32_t{0};
     for (const auto [time, dmg] : damages)
     {
-        if (time >= current_time_ms - TIME_WINDOW_MS)
-        {
-            damage_per_s += dmg;
-            ++idx_dmg;
-        }
+        damage_per_s += dmg;
+        ++idx_dmg;
     }
 
     if (idx_dmg > 0)
@@ -122,7 +119,7 @@ void DhuumStatsWindow::UpdateDamageData()
         damage_per_s = 0.0F;
 
     if (dhuum_hp >= 0.25F && dhuum_hp < 1.0F && damage_per_s > 0.0F)
-        eta_damage = ((dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25F)) / damage_per_s;
+        eta_damage = 0.1F * eta_damage + 0.9F * (((dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25F)) / damage_per_s);
     else
         eta_damage = 0.0F;
 }

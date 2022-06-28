@@ -50,9 +50,22 @@ bool IsSpiker(const Player &player)
 
 bool IsLT(const Player &player)
 {
+    if (player.primary == GW::Constants::Profession::Mesmer && player.secondary == GW::Constants::Profession::Assassin)
+        return true;
+
+    // Check if Me/E has Mantra of Earth => T4 build
+    const auto skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
+    if (skillbar)
+    {
+        for (const auto skill : skillbar->skills)
+        {
+            if (skill.skill_id == static_cast<uint32_t>(GW::Constants::SkillID::Mantra_of_Earth))
+                return false;
+        }
+    }
+
     return (player.primary == GW::Constants::Profession::Mesmer &&
-            (player.secondary == GW::Constants::Profession::Elementalist ||
-             player.secondary == GW::Constants::Profession::Assassin));
+            player.secondary == GW::Constants::Profession::Elementalist);
 }
 
 bool IsRangerTerra(const Player &player)
@@ -63,8 +76,11 @@ bool IsRangerTerra(const Player &player)
 
 bool IsMesmerTerra(const Player &player)
 {
-    return (player.primary == GW::Constants::Profession::Mesmer &&
-            player.secondary == GW::Constants::Profession::Elementalist);
+    if (player.primary != GW::Constants::Profession::Mesmer ||
+        player.secondary != GW::Constants::Profession::Elementalist)
+        return false;
+
+    return !IsLT(player);
 }
 
 bool IsAtSpawn(const Player &player)
@@ -74,7 +90,7 @@ bool IsAtSpawn(const Player &player)
 
 bool IsAtChamberSkele(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2000.0F);
+    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2200.0F);
 }
 
 bool IsAtBasementSkele(const Player &player)
