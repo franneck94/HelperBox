@@ -71,16 +71,18 @@ bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
     return ((b1 == b2) && (b2 == b3));
 }
 
-GW::GamePos rotate_point(const Player &player, GW::GamePos pos)
+GW::GamePos RotatePoint(const Player &player, GW::GamePos pos, const float theta, const bool swap)
 {
     GW::GamePos v(pos.x, pos.y, 0);
 
-    v.x = pos.x - player.pos.x;
-    v.y = player.pos.y - pos.y;
+    if (swap)
+    {
+        v.x = pos.x - player.pos.x;
+        v.y = player.pos.y - pos.y;
+    }
 
-    const auto angle = (GW::CameraMgr::GetCamera()->GetCurrentYaw() + static_cast<float>(M_PI_2));
-    const auto x1 = v.x * std::cos(angle) - v.y * std::sin(angle);
-    const auto y1 = v.x * std::sin(angle) + v.y * std::cos(angle);
+    const auto x1 = v.x * std::cos(theta) - v.y * std::sin(theta);
+    const auto y1 = v.x * std::sin(theta) + v.y * std::cos(theta);
     v = GW::GamePos(x1, y1, 0);
 
     return v;
@@ -109,4 +111,34 @@ std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &re
     }
 
     return filtered_livings;
+}
+
+std::pair<float, float> GetLineBasedOnPointAndAngle(const Player &player, const float theta)
+{
+    const auto orth_point = RotatePoint(player, player.pos, theta + static_cast<float>(M_PI_2), false);
+    const auto point2 = GW::GamePos{player.pos.x + orth_point.x, player.pos.x + orth_point.y, 0};
+
+    const auto m = (point2.y - player.pos.y) / (point2.x - player.pos.x + FLT_EPSILON);
+    const auto b = player.pos.y + m * player.pos.x;
+
+    return std::make_pair(m, b);
+}
+
+bool PointIsBelowLine(const float slope, const float bias, const GW::GamePos &point)
+{
+    const auto y_l = slope * point.x + bias;
+    const auto y_p = point.y;
+
+    const auto y_delta = y_l - y_p;
+
+    if (y_delta > 0.0F && slope > 0.0F)
+        return true;
+    if (y_delta > 0.0F && slope < 0.0F)
+        return true;
+    if (y_delta < 0.0F && slope > 0.0F)
+        return false;
+    if (y_delta < 0.0F && slope < 0.0F)
+        return false;
+
+    return false;
 }
