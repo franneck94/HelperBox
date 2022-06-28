@@ -100,7 +100,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (!UwHelperActivationConditions())
+    if (!player.ValidateData(UwHelperActivationConditions))
         return;
     if (!IsEmo(player))
         return;
@@ -749,6 +749,8 @@ RoutineState TankBonding::Routine()
         player->ChangeTarget(target_id);
         target = player->target;
     }
+    if (!player->target)
+        return RoutineState::FINISHED;
 
     if (target->agent_id != target_id)
     {

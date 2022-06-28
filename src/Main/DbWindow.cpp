@@ -72,7 +72,7 @@ void DbWindow::Draw(IDirect3DDevice9 *pDevice)
     if (!visible)
         return;
 
-    if (!UwHelperActivationConditions())
+    if (!player.ValidateData(UwHelperActivationConditions))
         return;
     if (!IsDhuumBitch(player))
         return;
