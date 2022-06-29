@@ -15,29 +15,28 @@ HelperBox.exe /pid PID
 
 ## Features
 
-Auto-Follow Button:
+### UW Helper
 
-- If is active (button is green) the targeted player is followed
-- Will be inactive when there is no target or the button state was set to inactive
-
-The following helper windows are displayed in the UW
-
-- Terra Window
+- Terra
     - Ranger/Assasin
     - Mesmer/Elementalist
-- Emo Window
+- Emo
     - Elementalist/Monk
-- Dhuum (and Vale) Bitch:
-  - X/Ranger
-- Mainteam Window
-    - Mesmer/X
-    - Ritualist/X
-    - Dervish/X
-    - Elementalist/Monk
+- Dhuum and Vale Bitch
+  - Ritualist/Ranger
+  - Dervish/Ranger
+- Mainteam (Mesmer)
+    - Mesmer/Assassin
+    - Mesmer/Elementalist
 
 For a detailed description:
 
-- For EMO Helper see [here](./Emo.md)
-- For Mainteam Helper see [here](./Mainteam.md)
-- For Terra Helper see [here](./Terra.md)
-- For Dhuum Bitch Helper see [here](./Db.md)
+- For EMO see [here](./Emo.md)
+- For Mainteam Mesmer see [here](./Mainteam.md)
+- For Terra see [here](./Terra.md)
+- For DB see [here](./Db.md)
+
+### Auto-Follow Button
+
+- If is active (button is green) the targeted player is followed
+- Will be inactive when there is no target or the button state was set to inactive

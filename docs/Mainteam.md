@@ -1,10 +1,16 @@
-# Mesmer Helper
+# Mainteam Mesmer Helper
 
-- The following enemies are displayed in the table whenever their distance is less than 1500
+- The following enemies are displayed in the table whenever they are close (1600 distance)
     - Nearby Aatxe
-        - Target Button
         - If already hexed, the text in the table is colored red-ish
     - Nearby Skeles
         - Text in the table is colored blue-ish
     - Nearby Dryder
         - Text in the table is colored orange-ish
+    - Nearby Nightmares
+        - Text in the table is colored purple-ish
+    - Nearby Keeper
+        - Text in the table is colored dark-orange-ish
+    - Nearby Horseman
+        - Text in the table is colored orange-ish
+    - For all of them there is a Target Button
