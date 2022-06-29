@@ -52,8 +52,6 @@ public:
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
-    void Spiking();
-
     Player player;
     std::vector<GW::AgentLiving *> filtered_livings;
     std::vector<GW::AgentLiving *> aatxe_livings;
@@ -61,4 +59,5 @@ private:
     std::vector<GW::AgentLiving *> nightmare_livings;
     std::vector<GW::AgentLiving *> skele_livings;
     std::vector<GW::AgentLiving *> horseman_livings;
+    std::vector<GW::AgentLiving *> keeper_livings;
 };

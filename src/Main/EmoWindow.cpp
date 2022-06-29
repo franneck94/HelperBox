@@ -420,6 +420,8 @@ bool Pumping::RoutineTurtle() const
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
     else if (turtle_living->hp < 0.99F && player->hp_perc > 0.75F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
+    else if (turtle_living->hp < 0.99F)
+        return (RoutineState::FINISHED == skillbar->sb.Cast(player->energy, turtle_agent->agent_id));
 
     return false;
 }

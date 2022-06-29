@@ -64,8 +64,6 @@ public:
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
-    void Spiking();
-
     Player player;
     std::map<uint32_t, clock_t> last_casted_times_ms;
 

@@ -9,6 +9,7 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/Managers/PartyMgr.h>
 
 #include <HelperBox.h>
 
@@ -21,6 +22,88 @@
 #include <UwHelper.h>
 
 #include "DhuumStatsWindow.h"
+
+void DhuumStatsWindow::SkillPacketCallback(const uint32_t value_id,
+                                           const uint32_t caster_id,
+                                           const uint32_t target_id,
+                                           const uint32_t value,
+                                           const bool no_target)
+{
+    uint32_t agent_id = caster_id;
+    const uint32_t activated_skill_id = value;
+
+    // ignore non-skill packets
+    switch (value_id)
+    {
+    case GW::Packet::StoC::GenericValueID::instant_skill_activated:
+    case GW::Packet::StoC::GenericValueID::skill_activated:
+    case GW::Packet::StoC::GenericValueID::skill_finished:
+    case GW::Packet::StoC::GenericValueID::attack_skill_activated:
+    case GW::Packet::StoC::GenericValueID::attack_skill_finished:
+    {
+        if (!no_target)
+            agent_id = target_id;
+        break;
+    }
+    default:
+        return;
+    }
+
+    if (REST_SKILL_ID == activated_skill_id || REST_SKILL_REAPER_ID == activated_skill_id)
+    {
+        ++num_casted_rest;
+        rests.push_back(clock());
+    }
+}
+
+void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
+                                            const uint32_t caster_id,
+                                            const uint32_t target_id,
+                                            const float value)
+{
+    if (!dhuum_id || target_id != dhuum_id)
+        return;
+
+    // ignore non-damage packets
+    switch (type)
+    {
+    case GW::Packet::StoC::P156_Type::damage:
+    case GW::Packet::StoC::P156_Type::critical:
+    case GW::Packet::StoC::P156_Type::armorignoring:
+        break;
+    default:
+        return;
+    }
+
+    if (value >= 0 || !caster_id)
+        return;
+
+    const auto caster_agent = GW::Agents::GetAgentByID(caster_id);
+    if (!caster_agent)
+        return;
+
+    const auto caster_living = caster_agent->GetAsAgentLiving();
+    if (!caster_living)
+        return;
+
+    if (caster_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) &&
+        caster_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+        return;
+
+    const auto target_agent = GW::Agents::GetAgentByID(target_id);
+    if (!target_agent)
+        return;
+
+    const auto target_living = target_agent->GetAsAgentLiving();
+    if (!target_living)
+        return;
+
+    const auto dmg_f32 = -value * target_living->max_hp;
+    ++num_attacks;
+
+    const auto time = clock();
+    damages.push_back(std::make_pair(time, dmg_f32));
+}
 
 void DhuumStatsWindow::Draw(IDirect3DDevice9 *pDevice)
 {
@@ -96,7 +179,11 @@ void DhuumStatsWindow::UpdateRestData()
     else
         rests_per_s = 0.0F;
 
-    const auto still_needed_rest = NEEDED_NUM_REST - num_casted_rest;
+    const auto party_size = GW::PartyMgr::GetPartySize();
+    auto needed_num_rest = NEEDED_NUM_REST[0];
+    if (party_size >= 1 && party_size <= 8)
+        needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
+    const auto still_needed_rest = needed_num_rest - num_casted_rest;
     if (rests_per_s > 0.0F)
         eta_rest = still_needed_rest / rests_per_s;
     else

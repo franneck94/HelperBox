@@ -94,7 +94,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsDhuumBitch(player) && !IsSpiker(player) && !IsLT(player) && !IsEmo(player))
+    if (!IsSpiker(player) && !IsLT(player))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
@@ -120,6 +120,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
             DrawSplittedAgents(horseman_livings, ImVec4(0.568F, 0.239F, 1.0F, 1.0F), "Horseman");
             DrawSplittedAgents(aatxe_livings, ImVec4(1.0F, 1.0F, 1.0F, 1.0F), "Aatxe");
             DrawSplittedAgents(nightmare_livings, ImVec4(0.6F, 0.4F, 1.0F, 1.0F), "Nightmare");
+            DrawSplittedAgents(keeper_livings, ImVec4(0.90F, 0.35F, 0.09F, 1.0F), "Keeper");
             DrawSplittedAgents(dryder_livings, ImVec4(0.94F, 0.31F, 0.09F, 1.0F), "Dryder");
             DrawSplittedAgents(skele_livings, ImVec4(0.1F, 0.8F, 0.9F, 1.0F), "Skele");
         }
@@ -138,28 +139,27 @@ void MainteamWindow::Update(float delta)
     dryder_livings.clear();
     skele_livings.clear();
     horseman_livings.clear();
+    keeper_livings.clear();
 
     if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();
 
-    if (!IsDhuumBitch(player) && !IsSpiker(player) && !IsLT(player) && !IsEmo(player))
+    if (!IsSpiker(player) && !IsLT(player))
         return;
 
-    FilterAgents(player,
-                 filtered_livings,
-                 IDS,
-                 GW::Constants::Allegiance::Enemy,
-                 GW::Constants::Range::Spellcast + 200.0F);
+    FilterAgents(player, filtered_livings, IDS, GW::Constants::Allegiance::Enemy, 1600.0F);
     SplitFilteredAgents(filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
     SplitFilteredAgents(filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
     SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
     SplitFilteredAgents(filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
+    SplitFilteredAgents(filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
     SortByDistance(player, aatxe_livings);
     SortByDistance(player, nightmare_livings);
     SortByDistance(player, horseman_livings);
+    SortByDistance(player, keeper_livings);
     SortByDistance(player, dryder_livings);
     SortByDistance(player, skele_livings);
 }
