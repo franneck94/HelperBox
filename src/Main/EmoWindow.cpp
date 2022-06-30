@@ -7,6 +7,7 @@
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/Context/GameContext.h>
+#include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
@@ -42,7 +43,11 @@ static ActionState *emo_casting_action_state = nullptr;
 static auto move_ongoing = false;
 
 constexpr static auto DHUUM_JUDGEMENT_SKILL_ID = uint32_t{3085U};
-constexpr static auto CANTHA_IDS = std::array<uint32_t, 4>{8990U, 8991U, 8992U, 8993U};
+constexpr static auto CANTHA_IDS =
+    std::array<uint32_t, 4>{GW::Constants::ModelID::SummoningStone::ImperialBarrage,
+                            GW::Constants::ModelID::SummoningStone::ImperialCripplingSlash,
+                            GW::Constants::ModelID::SummoningStone::ImperialQuiveringBlade,
+                            GW::Constants::ModelID::SummoningStone::ImperialTripleChop};
 
 const static auto KEEPER1_POS = GW::GamePos{-7322.44F, 7013.74F, 0};
 const static auto KEEPER2_POS = GW::GamePos{-3321.31F, 10544.94F, 0};
@@ -250,7 +255,7 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_slot_
 
             const auto player_number = (pak->agent_type ^ 0x20000000);
 
-            if (!IsUw() || player_number != 514) // Turtle id
+            if (!IsUw() || player_number != GW::Constants::ModelID::SummoningStone::JadeiteSiegeTurtle)
                 return;
 
             found_turtle = true;
@@ -306,15 +311,15 @@ bool Pumping::RoutineCanthaGuards() const
 
     if (enemies.size() > 0)
     {
-        for (const auto &cantha : filtered_canthas)
+        for (const auto cantha : filtered_canthas)
         {
-            if (!cantha || cantha->GetIsDead() && cantha->hp == 0.0F)
+            if (!cantha || cantha->GetIsDead() && cantha->hp == 0.00F)
                 continue;
 
             if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player))
                 return true;
 
-            if (cantha->hp < 0.70F && player->hp_perc > 0.5F)
+            if (cantha->hp < 0.70F && player->hp_perc > 0.05F)
                 return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, cantha->agent_id));
 
             if (!cantha->GetIsWeaponSpelled())
@@ -330,10 +335,11 @@ bool Pumping::RoutineCanthaGuards() const
     }
     else // Done at vale, drop buffs
     {
-        auto buffs = GW::Effects::GetPlayerBuffArray();
-        if (!buffs.valid())
+        auto buffs = GW::Effects::GetPlayerBuffs();
+        if (!buffs || !buffs->valid())
             return false;
-        for (const auto &buff : buffs)
+
+        for (const auto &buff : *buffs)
         {
             const auto agent_id = buff.target_agent_id;
             const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);
@@ -420,7 +426,7 @@ bool Pumping::RoutineTurtle() const
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
     else if (turtle_living->hp < 0.99F && player->hp_perc > 0.75F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, turtle_agent->agent_id));
-    else if (turtle_living->hp < 0.99F)
+    else if (turtle_living->hp < 0.95F)
         return (RoutineState::FINISHED == skillbar->sb.Cast(player->energy, turtle_agent->agent_id));
 
     return false;
@@ -558,11 +564,11 @@ bool Pumping::DropBondsLT() const
     if (!lt_agent || !lt_agent->agent_id)
         return false;
 
-    auto buffs = GW::Effects::GetPlayerBuffArray();
-    if (!buffs.valid())
+    auto buffs = GW::Effects::GetPlayerBuffs();
+    if (!buffs || !buffs->valid())
         return false;
 
-    for (const auto &buff : buffs)
+    for (const auto &buff : *buffs)
     {
         const auto agent_id = buff.target_agent_id;
         const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);

@@ -97,15 +97,15 @@ bool HelperActivationConditions()
 
 const GW::EffectArray *GetEffects(const uint32_t agent_id)
 {
-    const auto agent_effects = GW::Effects::GetPartyEffectArray();
+    const auto agent_effects = GW::Effects::GetPartyEffectsArray();
 
-    if (!agent_effects.valid())
+    if (!agent_effects || !agent_effects->valid())
         return nullptr;
 
-    for (size_t i = 0; i < agent_effects.size(); i++)
+    for (const auto &agent_effect : *agent_effects)
     {
-        if (agent_effects[i].agent_id == agent_id && agent_effects[i].effects.valid())
-            return &agent_effects[i].effects;
+        if (agent_effect.agent_id == agent_id && agent_effect.effects.valid())
+            return &agent_effect.effects;
     }
 
     return nullptr;
@@ -114,7 +114,7 @@ const GW::EffectArray *GetEffects(const uint32_t agent_id)
 bool TargetNearest(const TargetType type, const float max_distance)
 {
     const auto agents = GW::Agents::GetAgentArray();
-    if (!agents.valid())
+    if (!agents || !agents->valid())
         return false;
 
     const auto me = GW::Agents::GetPlayerAsAgentLiving();
@@ -124,7 +124,7 @@ bool TargetNearest(const TargetType type, const float max_distance)
     auto distance = max_distance;
     auto closest = size_t{0};
 
-    for (const auto agent : agents)
+    for (const auto agent : *agents)
     {
         if (!agent || agent == me)
             continue;
@@ -172,13 +172,12 @@ bool TargetNearest(const TargetType type, const float max_distance)
                 continue;
 
             if (type == TargetType::Living_Ally &&
-                living_agent->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable))
+                living_agent->allegiance == GW::Constants::Allegiance::Ally_NonAttackable)
                 break;
-            else if (type == TargetType::Living_Enemy &&
-                     living_agent->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+            else if (type == TargetType::Living_Enemy && living_agent->allegiance == GW::Constants::Allegiance::Enemy)
                 break;
             else if (type == TargetType::Living_Npc &&
-                     living_agent->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+                     living_agent->allegiance == GW::Constants::Allegiance::Npc_Minipet)
                 break;
 
             continue;
@@ -255,11 +254,11 @@ std::tuple<uint32_t, uint32_t, float> GetHp()
 
 bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t target_agent_id)
 {
-    const auto &effects = GW::Effects::GetPartyEffectArray();
-    if (!effects.valid())
+    const auto effects = GW::Effects::GetPartyEffectsArray();
+    if (!effects || !effects->valid())
         return false;
 
-    const auto &buffs = effects[0].buffs;
+    const auto &buffs = (*effects)[0].buffs;
     if (!buffs.valid())
         return false;
 
@@ -290,7 +289,7 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
         return false;
 
     const auto players = GW::Agents::GetPlayerArray();
-    if (!players.valid())
+    if (!players || !players->valid())
         return false;
 
     party_members.clear();
@@ -298,7 +297,7 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
     auto idx = uint32_t{0};
     for (const auto &player : info->players)
     {
-        const auto id = players[player.login_number].agent_id;
+        const auto id = (*players)[player.login_number].agent_id;
         party_members.push_back({id, idx});
         ++idx;
 
@@ -360,11 +359,14 @@ GW::Item *GetBagItem(const uint32_t bag_idx, const uint32_t slot_idx)
     if (bag_idx < 1 || bag_idx > 5 || slot_idx < 1 || slot_idx > 25)
         return nullptr;
 
-    const auto b = GW::Items::GetBag(bag_idx);
-    if (!b)
+    const auto bags = GW::Items::GetBagArray();
+    if (!bags)
+        return nullptr;
+    const auto bag = bags[bag_idx];
+    if (!bag)
         return nullptr;
 
-    auto items = b->items;
+    auto &items = bag->items;
     if (!items.valid() || slot_idx > items.size())
         return nullptr;
     item = items.at(slot_idx - 1);
@@ -476,8 +478,7 @@ bool IsAliveAlly(const GW::Agent *target)
     if (!target_living)
         return false;
 
-    if (target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) ||
-        target_living->GetIsDead())
+    if (target_living->allegiance != GW::Constants::Allegiance::Ally_NonAttackable || target_living->GetIsDead())
         return false;
 
     return true;
@@ -518,13 +519,13 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_livings,
 std::pair<GW::Agent *, float> GetClosestEnemy(const Player *player)
 {
     const auto agents = GW::Agents::GetAgentArray();
-    if (!agents.valid())
+    if (!agents || !agents->valid())
         return std::make_pair(nullptr, 0.0F);
 
     GW::Agent *closest = nullptr;
     auto closest_dist = FLT_MAX;
 
-    for (const auto agent : agents)
+    for (const auto agent : *agents)
     {
         if (!agent)
             continue;
@@ -533,7 +534,7 @@ std::pair<GW::Agent *, float> GetClosestEnemy(const Player *player)
         if (!living)
             continue;
 
-        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        if (living->allegiance != GW::Constants::Allegiance::Enemy)
             continue;
 
         const auto dist = GW::GetDistance(player->pos, living->pos);
@@ -623,10 +624,10 @@ std::vector<GW::AgentLiving *> GetEnemiesInCompass()
     auto living_agents = std::vector<GW::AgentLiving *>{};
 
     const auto agents_array = GW::Agents::GetAgentArray();
-    if (!agents_array.valid())
+    if (!agents_array || !agents_array->valid())
         return living_agents;
 
-    for (const auto agent : agents_array)
+    for (const auto agent : *agents_array)
     {
         if (!agent)
             continue;
@@ -635,7 +636,7 @@ std::vector<GW::AgentLiving *> GetEnemiesInCompass()
         if (!living)
             continue;
 
-        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        if (living->allegiance != GW::Constants::Allegiance::Enemy)
             continue;
 
         if (living->GetIsDead())
@@ -652,10 +653,10 @@ std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player)
     auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
     const auto agents_array = GW::Agents::GetAgentArray();
-    if (!agents_array.valid())
+    if (!agents_array || !agents_array->valid())
         return filtered_livings;
 
-    for (const auto agent : agents_array)
+    for (const auto agent : *agents_array)
     {
         if (!agent)
             continue;
@@ -664,7 +665,7 @@ std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player)
         if (!living)
             continue;
 
-        if (living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        if (living->allegiance != GW::Constants::Allegiance::Enemy)
             continue;
 
         if (living->GetIsDead())
@@ -699,7 +700,7 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
 void TargetAndAttackEnemyInAggro(const Player &player)
 {
     if (!player.target || !player.target->agent_id || !player.target->GetIsLivingType() ||
-        player.target->GetAsAgentLiving()->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        player.target->GetAsAgentLiving()->allegiance != GW::Constants::Allegiance::Enemy)
         TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
 
     if (player.target && player.target->agent_id)

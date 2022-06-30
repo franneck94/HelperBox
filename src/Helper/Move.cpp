@@ -129,7 +129,9 @@ bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
         started_cast = false;
 
     const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(move.skill_cb->id);
-    const auto cast_time_s = (skill_data.activation * 1.0F) * 1000.0F;
+    if (!skill_data)
+        return true;
+    const auto cast_time_s = (skill_data->activation * 1.0F) * 1000.0F;
     const auto timer_diff = TIMER_DIFF(timer);
 
     if (reached_pos && !started_cast && timer_diff > 300)
@@ -186,7 +188,7 @@ bool Move::UpdateMoveState_WaitAndStop(const Player &player, const Move &move)
     return UpdateMoveState_Wait(player, move);
 }
 
-bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &)
+bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
 {
     const auto lt_id = GetTankId();
     if (!lt_id)
@@ -196,7 +198,7 @@ bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &)
     if (!lt_agent)
         return false;
 
-    const auto dist_threshold = 3600.0F;
+    const auto dist_threshold = move.dist_threshold;
     const auto dist = GW::GetDistance(player.pos, lt_agent->pos);
     if (dist < dist_threshold)
         return false;

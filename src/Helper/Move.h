@@ -35,6 +35,14 @@ public:
     Move(const float _x, const float _y, const std::string &_name, const MoveState _move_state)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), move_state(_move_state){};
 
+    // Move and then wait for distance
+    Move(const float _x,
+         const float _y,
+         const std::string &_name,
+         const MoveState _move_state,
+         const float _dist_threshold)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), move_state(_move_state), dist_threshold(_dist_threshold){};
+
     // Move, trigger cb, and then wait
     Move(const float _x,
          const float _y,
@@ -88,29 +96,23 @@ public:
     MoveState move_state = MoveState::NO_WAIT_AND_STOP;
     const SkillData *skill_cb = nullptr;
     std::optional<std::function<bool()>> trigger_cb = std::nullopt;
+    float dist_threshold = GW::Constants::Range::Compass;
 };
 
 template <uint32_t N>
-uint32_t GetClostestMove(const Player &player, const std::array<Move, N> &moves)
+uint32_t GetFirstCloseMove(const Player &player, const std::array<Move, N> &moves)
 {
-    auto closest_move = moves[0];
-    auto closest_dist = FLT_MAX;
-    auto closest_idx = 0U;
     auto idx = 0U;
     for (const auto move : moves)
     {
         const auto dist_to_move = GW::GetDistance(player.pos, move.pos);
-        if (dist_to_move < closest_dist)
-        {
-            closest_dist = dist_to_move;
-            closest_move = move;
-            closest_idx = idx;
-        }
+        if (dist_to_move < 500.0F)
+            return idx;
 
         ++idx;
     }
 
-    return closest_idx;
+    return idx;
 }
 
 template <uint32_t N>

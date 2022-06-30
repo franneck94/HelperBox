@@ -172,7 +172,7 @@ bool IsInDhuumRoom(const Player &player)
 
 bool IsGoingToDhuum(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-3205.12F, 18812.15F, 0}, 500.0F);
+    return IsNearToGamePos(player, GW::GamePos{-9567.56F, 17288.916F, 0}, 100.0F);
 }
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
@@ -183,13 +183,13 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
     const auto agents_array = GW::Agents::GetAgentArray();
     const GW::Agent *dhuum_agent = nullptr;
 
-    for (const auto agent : agents_array)
+    for (const auto agent : *agents_array)
     {
         if (!agent)
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-        if (!living || living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+        if (!living || living->allegiance != GW::Constants::Allegiance::Enemy)
             continue;
 
         if (living->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
@@ -206,7 +206,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
     if (!dhuum_living)
         return false;
 
-    if (dhuum_living->allegiance == static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+    if (dhuum_living->allegiance == GW::Constants::Allegiance::Enemy)
     {
         if (dhuum_id)
             *dhuum_id = dhuum_living->agent_id;

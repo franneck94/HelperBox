@@ -28,7 +28,10 @@ public:
     SkillData(const GW::Constants::SkillID id_, const uint32_t idx_)
         : id(static_cast<uint32_t>(id_)), idx(idx_), energy_cost(0U), recharge(UINT32_MAX)
     {
-        energy_cost = GW::SkillbarMgr::GetSkillConstantData(id).energy_cost;
+        const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(id);
+        if (!skill_data)
+            energy_cost = 0U;
+        energy_cost = skill_data->energy_cost;
     }
 
     void Update(const GW::SkillbarSkill *const skillbar_skills)

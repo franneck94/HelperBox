@@ -157,7 +157,7 @@ bool Damage::CastPiOnTarget() const
         return false;
 
     const auto target_living = player->target->GetAsAgentLiving();
-    if (!target_living || target_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Enemy))
+    if (!target_living || target_living->allegiance != GW::Constants::Allegiance::Enemy)
         return false;
 
     const auto dist = GW::GetDistance(player->pos, target_living->pos);

@@ -201,7 +201,7 @@ void TerraWindow::Update(float delta)
     if (!auto_target_active)
         return;
 
-    for (const auto &living : behemoth_livings)
+    for (const auto living : behemoth_livings)
     {
         if (!living)
             continue;

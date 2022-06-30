@@ -61,10 +61,10 @@ void FilterAgents(const Player &player,
                   const float max_distance = 0.0F)
 {
     const auto agents_array = GW::Agents::GetAgentArray();
-    if (!agents_array.valid())
+    if (!agents_array || !agents_array->valid())
         return;
 
-    for (const auto &agent : agents_array)
+    for (const auto agent : *agents_array)
     {
         if (!agent)
             continue;
@@ -74,7 +74,7 @@ void FilterAgents(const Player &player,
         if (!living)
             continue;
 
-        if (living->allegiance != static_cast<uint8_t>(allegiance))
+        if (living->allegiance != allegiance)
             continue;
 
         for (const auto id : ids)

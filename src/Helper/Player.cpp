@@ -77,12 +77,14 @@ bool Player::CanAttack() const
 
 bool Player::HasBuff(const GW::Constants::SkillID buff_skill_id) const
 {
-    const auto &me_buffs = GW::Effects::GetPlayerBuffArray();
+    const auto me_buffs = GW::Effects::GetPlayerBuffs();
+    if (!me_buffs || !me_buffs->valid())
+        return false;
 
-    for (size_t i = 0; i < me_buffs.size(); ++i)
+    for (const auto buff : *me_buffs)
     {
-        const auto agent_id = me_buffs[i].target_agent_id;
-        const auto skill_id = me_buffs[i].skill_id;
+        const auto agent_id = buff.target_agent_id;
+        const auto skill_id = buff.skill_id;
 
         if (agent_id == id)
         {
@@ -98,12 +100,14 @@ bool Player::HasBuff(const GW::Constants::SkillID buff_skill_id) const
 
 bool Player::HasEffect(const GW::Constants::SkillID effect_skill_id) const
 {
-    const auto &me_effects = GW::Effects::GetPlayerEffectArray();
+    const auto me_effects = GW::Effects::GetPlayerEffectsArray();
+    if (!me_effects)
+        return false;
 
-    for (size_t i = 0; i < me_effects.size(); ++i)
+    for (const auto effect : me_effects->effects)
     {
-        const auto agent_id = me_effects[i].agent_id;
-        const auto skill_id = me_effects[i].skill_id;
+        const auto agent_id = effect.agent_id;
+        const auto skill_id = effect.skill_id;
 
         if (agent_id == id || agent_id == 0)
         {

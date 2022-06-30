@@ -86,8 +86,8 @@ void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
     if (!caster_living)
         return;
 
-    if (caster_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Ally_NonAttackable) &&
-        caster_living->allegiance != static_cast<uint8_t>(GW::Constants::Allegiance::Npc_Minipet))
+    if (caster_living->allegiance != GW::Constants::Allegiance::Ally_NonAttackable &&
+        caster_living->allegiance != GW::Constants::Allegiance::Npc_Minipet)
         return;
 
     const auto target_agent = GW::Agents::GetAgentByID(target_id);
