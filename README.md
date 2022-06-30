@@ -4,6 +4,8 @@ Refer to the [documentation](https://franneck94.github.io/HelperBox/).
 
 If you want to use ToolBox++ in parallel, you have to start Toolbox **before** starting this HelperBox.  
 
+Note: Most windows are only displayed in Embark Beach and in the Underworld.
+
 ## Developement
 
 * CMake 3.21+

@@ -2,7 +2,9 @@
 
 This software is based on the GWCA API and has some utilities for (low-man) UWSC.
 
-If you want to use ToolBox++ in parallel, you **should** start Toolbox **before** starting this HelperBox.  
+If you want to use ToolBox++ in parallel, you **should** start Toolbox **before** starting this HelperBox.
+
+Note: Most windows are only displayed in Embark Beach and in the Underworld.
 
 ## Features
 
@@ -29,5 +31,6 @@ For a detailed description:
 
 ### Auto-Follow Button
 
-- If is active (button is green) the targeted player is followed
-- Will be inactive when there is no target or the button state was set to inactive
+- If it is active (button is green) the targeted player is followed
+    - Note: Stucks are **not** detected
+- To deactivate, just click again on the button
