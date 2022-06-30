@@ -2,16 +2,7 @@
 
 This software is based on the GWCA API and has some utilities for (low-man) UWSC.
 
-If you want to use ToolBox++ in parallel, you have to start Toolbox **before** starting this HelperBox.  
-
-If you want to launch the HelperBox for a certain GW instance (Multi-launcher use-case), you have to get the process id of the GW instance.  
-For that, you can run the **select_instance.py** python script which will scan for all open GW instances.
-
-Or you can launch it by yourself:
-
-```bash
-HelperBox.exe /pid PID
-```
+If you want to use ToolBox++ in parallel, you **should** start Toolbox **before** starting this HelperBox.  
 
 ## Features
 
