@@ -31,8 +31,6 @@ private:
 
 protected:
     HWND m_hWnd;
-    HFONT m_hFont;
-    HICON m_hIcon;
     HINSTANCE m_hInstance;
 
 private:

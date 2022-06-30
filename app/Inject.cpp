@@ -256,7 +256,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
     return InjectReply_Inject;
 }
 
-InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_hSettings(nullptr), m_Selected(-1)
+InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_Selected(-1)
 {
 }
 
@@ -337,7 +337,6 @@ void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                    nullptr,
                                    m_hInstance,
                                    nullptr);
-    SendMessageW(hGroupBox, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0));
 
     m_hCharacters = CreateWindowW(WC_COMBOBOXW,
                                   L"",
@@ -350,7 +349,6 @@ void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                   nullptr,
                                   m_hInstance,
                                   nullptr);
-    SendMessageW(m_hCharacters, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0));
 
     m_hLaunchButton = CreateWindowW(WC_BUTTONW,
                                     L"Launch",
@@ -363,20 +361,6 @@ void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     nullptr,
                                     m_hInstance,
                                     nullptr);
-    SendMessageW(m_hLaunchButton, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0));
-
-    m_hSettings = CreateWindowW(WC_BUTTONW,
-                                L"Settings...",
-                                WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-                                200,
-                                65,
-                                80,
-                                25,
-                                hWnd,
-                                nullptr,
-                                m_hInstance,
-                                nullptr);
-    SendMessageW(m_hSettings, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0));
 }
 
 void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG NotificationCode)

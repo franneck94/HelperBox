@@ -27,8 +27,8 @@ LRESULT CALLBACK Window::MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 }
 
 Window::Window()
-    : m_hWnd(nullptr), m_hFont(nullptr), m_hIcon(nullptr), m_hEvent(nullptr), m_WindowName(nullptr), m_X(CW_USEDEFAULT),
-      m_Y(CW_USEDEFAULT), m_Width(CW_USEDEFAULT), m_Height(CW_USEDEFAULT)
+    : m_hWnd(nullptr), m_hEvent(nullptr), m_WindowName(nullptr), m_X(CW_USEDEFAULT), m_Y(CW_USEDEFAULT),
+      m_Width(CW_USEDEFAULT), m_Height(CW_USEDEFAULT)
 {
     m_hInstance = GetModuleHandleW(nullptr);
 }
@@ -37,8 +37,6 @@ Window::~Window()
 {
     if (m_hEvent)
         CloseHandle(m_hEvent);
-    if (m_hFont)
-        DeleteObject(m_hFont);
 }
 
 bool Window::Create()
@@ -55,20 +53,6 @@ bool Window::Create()
     if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, metrics.cbSize, &metrics, 0))
     {
         fprintf(stderr, "SystemParametersInfoW failed (%lu)", GetLastError());
-        return false;
-    }
-
-    m_hFont = CreateFontIndirectW(&metrics.lfMessageFont);
-    if (m_hFont == nullptr)
-    {
-        fprintf(stderr, "CreateFontIndirectW failed\n");
-        return false;
-    }
-
-    m_hIcon = LoadIconW(m_hInstance, MAKEINTRESOURCEW(IDI_ICON1));
-    if (m_hIcon == nullptr)
-    {
-        fprintf(stderr, "LoadIconW failed (%lu)\n", GetLastError());
         return false;
     }
 
@@ -99,9 +83,6 @@ bool Window::Create()
                            nullptr,
                            m_hInstance,
                            this);
-
-    SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
-    SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
 
     ShowWindow(m_hWnd, SW_SHOW);
 
