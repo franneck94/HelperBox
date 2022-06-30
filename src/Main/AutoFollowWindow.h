@@ -15,7 +15,7 @@
 class AutoFollowAction : public ActionABC
 {
 public:
-    AutoFollowAction(Player *p) : ActionABC(p, "Auto Follow")
+    AutoFollowAction(Player *p) : ActionABC(p, "Follow")
     {
     }
 
