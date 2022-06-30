@@ -2,7 +2,8 @@
 
 This software is based on the GWCA API and has some utilities for (low-man) UWSC.
 
-If you want to use ToolBox++ in parallel, you **should** start Toolbox **before** starting this HelperBox.
+If you want to use ToolBox++ in parallel, you have to start Toolbox **before** starting this HelperBox.  
+You may need to launch the HelperBox.exe as admin.  
 
 Note: Most windows are only displayed in Embark Beach and in the Underworld.
 
