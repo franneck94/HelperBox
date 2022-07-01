@@ -244,9 +244,6 @@ bool Damage::RoutineDhuumDamage() const
     if (RoutineState::FINISHED == skillbar->sos.Cast(player->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->vamp.Cast(player->energy))
-        return true;
-
     return false;
 }
 

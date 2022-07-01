@@ -90,7 +90,7 @@ bool IsAtSpawn(const Player &player)
 
 bool IsAtChamberSkele(const Player &player)
 {
-    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2200.0F);
+    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2300.0F);
 }
 
 bool IsAtBasementSkele(const Player &player)

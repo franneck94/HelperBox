@@ -123,15 +123,15 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *pDevice)
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
         const auto timer_ms = TIMER_DIFF(dhuum_fight_start_time_ms);
-        ImGui::Text("Timer: %4.2f", static_cast<float>(timer_ms) / 1000.0F);
+        ImGui::Text("Timer: %4.0f", static_cast<float>(timer_ms) / 1000.0F);
         ImGui::Separator();
         ImGui::Text("Num Rests: %u", num_casted_rest);
         ImGui::Text("Rests (per s): %0.2f", rests_per_s);
-        ImGui::Text("ETA Rest (s): %0.2f", (num_casted_rest > 0 && eta_rest < 10'000.0F) ? eta_rest : 0.0F);
+        ImGui::Text("ETA Rest (s): %2.0f", (num_casted_rest > 0 && eta_rest < 10'000.0F) ? eta_rest : 0.0F);
         ImGui::Separator();
         ImGui::Text("Num Attacks: %u", num_attacks);
         ImGui::Text("Damage (per s): %0.2f", damage_per_s);
-        ImGui::Text("ETA Damage (s): %0.2f", (num_attacks > 0 && eta_damage < 10'000.0F) ? eta_damage : 0.0F);
+        ImGui::Text("ETA Damage (s): %3.0f", (num_attacks > 0 && eta_damage < 10'000.0F) ? eta_damage : 0.0F);
     }
     ImGui::End();
 }
@@ -155,12 +155,12 @@ void DhuumStatsWindow::ResetData()
 void DhuumStatsWindow::RemoveOldData()
 {
     const auto remove_rest_it = std::remove_if(rests.begin(), rests.end(), [=](const auto t) {
-        return std::abs(TIMER_DIFF(t)) > TIME_WINDOW_MS;
+        return std::abs(TIMER_DIFF(t)) > TIME_WINDOW_REST_MS;
     });
     rests.erase(remove_rest_it, rests.end());
 
     const auto remove_dmg_it = std::remove_if(damages.begin(), damages.end(), [=](const auto p) {
-        return std::abs(TIMER_DIFF(p.first)) > TIME_WINDOW_MS;
+        return std::abs(TIMER_DIFF(p.first)) > TIME_WINDOW_DMG_MS;
     });
     damages.erase(remove_dmg_it, damages.end());
 }
@@ -175,7 +175,7 @@ void DhuumStatsWindow::UpdateRestData()
         ++idx_rests;
 
     if (idx_rests > 0)
-        rests_per_s = static_cast<float>(idx_rests) / static_cast<float>(TIME_WINDOW_S);
+        rests_per_s = static_cast<float>(idx_rests) / static_cast<float>(TIME_WINDOW_REST_S);
     else
         rests_per_s = 0.0F;
 
@@ -203,7 +203,7 @@ void DhuumStatsWindow::UpdateDamageData()
     }
 
     if (idx_dmg > 0)
-        damage_per_s /= static_cast<float>(TIME_WINDOW_S);
+        damage_per_s /= static_cast<float>(TIME_WINDOW_DMG_S);
     else
         damage_per_s = 0.0F;
 

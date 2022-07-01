@@ -263,6 +263,34 @@ Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_slot_
         });
 }
 
+bool Pumping::RoutineWhenInRangeBondLT() const
+{
+    if (!lt_agent)
+        return false;
+
+    const auto dist = GW::GetDistance(player->pos, lt_agent->pos);
+    if (dist > GW::Constants::Range::Spellcast)
+        return false;
+
+    const auto lt_living = lt_agent->GetAsAgentLiving();
+    if (!lt_living)
+        return false;
+
+    if (lt_living->GetIsMoving() || player->living->GetIsMoving())
+        return false;
+
+    if (CastBondIfNotAvailable(skillbar->balth, lt_agent->agent_id, player))
+        return true;
+
+    if (CastBondIfNotAvailable(skillbar->prot, lt_agent->agent_id, player))
+        return true;
+
+    if (CastBondIfNotAvailable(skillbar->life, lt_agent->agent_id, player))
+        return true;
+
+    return false;
+}
+
 bool Pumping::RoutineSelfBonds() const
 {
     const auto found_ether = player->HasEffect(GW::Constants::SkillID::Ether_Renewal);
@@ -336,7 +364,7 @@ bool Pumping::RoutineCanthaGuards() const
     else // Done at vale, drop buffs
     {
         auto buffs = GW::Effects::GetPlayerBuffs();
-        if (!buffs || !buffs->valid())
+        if (!buffs || !buffs->valid() || buffs->size() == 0)
             return false;
 
         for (const auto &buff : *buffs)
@@ -350,6 +378,8 @@ bool Pumping::RoutineCanthaGuards() const
             if (is_prot_bond && cantha_it != filtered_canthas.end())
                 GW::Effects::DropBuff(buff.buff_id);
         }
+
+        return true;
     }
 
     return false;
@@ -357,6 +387,8 @@ bool Pumping::RoutineCanthaGuards() const
 
 bool Pumping::RoutineLT() const
 {
+    static auto last_time_sb_ms = clock();
+
     if (!lt_agent || !player->target || player->target->agent_id != lt_agent->agent_id)
         return false;
 
@@ -373,8 +405,12 @@ bool Pumping::RoutineLT() const
     if (target_living->hp < 0.80F && player->hp_perc > 0.5F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player->energy, target_living->agent_id));
 
-    if (target_living->hp < 0.99F)
-        return (RoutineState::FINISHED == skillbar->sb.Cast(player->energy, target_living->agent_id));
+    if (TIMER_DIFF(last_time_sb_ms) > 4'000L &&
+        RoutineState::FINISHED == skillbar->sb.Cast(player->energy, target_living->agent_id))
+    {
+        last_time_sb_ms = clock();
+        return true;
+    }
 
     return false;
 }
@@ -497,9 +533,6 @@ bool Pumping::RoutineDbBeforeDhuum() const
     if (!db_agent)
         return false;
 
-    if (player->living->GetIsMoving())
-        return false;
-
     const auto living = db_agent->GetAsAgentLiving();
     if (!living)
         return false;
@@ -594,6 +627,9 @@ RoutineState Pumping::Routine()
 
     if (!HasWaitedLongEnough())
         return RoutineState::ACTIVE;
+
+    if (RoutineWhenInRangeBondLT())
+        return RoutineState::FINISHED;
 
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
