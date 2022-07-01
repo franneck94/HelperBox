@@ -4,6 +4,24 @@
 #include "Settings.h"
 #include "Window.h"
 
+struct InjectProcess
+{
+    InjectProcess(bool injected, Process &&process, std::wstring &&charname)
+        : m_Injected(injected), m_Process(std::move(process)), m_Charname(std::move(charname))
+    {
+    }
+
+    InjectProcess(const InjectProcess &) = delete;
+    InjectProcess(InjectProcess &&) = default;
+
+    InjectProcess &operator=(const InjectProcess &) = delete;
+    InjectProcess &operator=(InjectProcess &&) = default;
+
+    bool m_Injected;
+    Process m_Process;
+    std::wstring m_Charname;
+};
+
 enum InjectReply
 {
     InjectReply_Inject,

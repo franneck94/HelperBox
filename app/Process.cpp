@@ -67,8 +67,8 @@ bool Process::Read(uintptr_t address, void *buffer, size_t size)
     assert(m_Rights & PROCESS_VM_READ);
 
     SIZE_T NumberOfBytesRead;
-    LPCVOID BaseAddress = reinterpret_cast<LPCVOID>(address);
-    BOOL success = ReadProcessMemory(m_hProcess, BaseAddress, buffer, size, &NumberOfBytesRead);
+    auto BaseAddress = reinterpret_cast<LPCVOID>(address);
+    auto success = ReadProcessMemory(m_hProcess, BaseAddress, buffer, size, &NumberOfBytesRead);
 
     if (!(success && size == NumberOfBytesRead))
     {
@@ -84,8 +84,8 @@ bool Process::Write(uintptr_t address, void *buffer, size_t size)
     assert(m_Rights & PROCESS_VM_WRITE);
 
     SIZE_T NumberOfBytesWritten;
-    LPVOID BaseAddress = reinterpret_cast<LPVOID>(address);
-    BOOL success = WriteProcessMemory(m_hProcess, BaseAddress, buffer, size, &NumberOfBytesWritten);
+    auto BaseAddress = reinterpret_cast<LPVOID>(address);
+    auto success = WriteProcessMemory(m_hProcess, BaseAddress, buffer, size, &NumberOfBytesWritten);
 
     if (!(success && size == NumberOfBytesWritten))
     {
@@ -114,7 +114,7 @@ bool Process::GetName(std::wstring &name)
                 Close();
                 return false;
             }
-            size_t new_size = process_path.size() * 2;
+            const auto new_size = process_path.size() * 2;
             process_path.resize(new_size);
         }
         else
@@ -243,7 +243,7 @@ bool GetProcesses(std::vector<Process> &processes, const wchar_t *name, DWORD ri
     std::vector<DWORD> pids(1024);
     for (;;)
     {
-        DWORD size = pids.size() * sizeof(DWORD);
+        auto size = pids.size() * sizeof(DWORD);
         DWORD bytes;
         if (!EnumProcesses(pids.data(), size, &bytes))
         {
@@ -253,13 +253,13 @@ bool GetProcesses(std::vector<Process> &processes, const wchar_t *name, DWORD ri
 
         if (bytes < size)
         {
-            size_t count = bytes / sizeof(DWORD);
+            const auto count = bytes / sizeof(DWORD);
             pids.resize(count);
             break;
         }
         else
         {
-            size_t new_size = pids.size() * 2;
+            const auto new_size = pids.size() * 2;
             pids.resize(new_size);
         }
     }
@@ -286,7 +286,7 @@ struct EnumWindowUserParam
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 {
-    EnumWindowUserParam *UserParam = reinterpret_cast<EnumWindowUserParam *>(lParam);
+    auto UserParam = reinterpret_cast<EnumWindowUserParam *>(lParam);
 
     WCHAR ClassName[256];
     const auto iCopied = GetClassNameW(hWnd, ClassName, _countof(ClassName));
