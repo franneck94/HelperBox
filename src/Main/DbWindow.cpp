@@ -275,12 +275,12 @@ RoutineState Damage::Routine()
 
     if (IsAtValeSpirits(*player))
     {
-        const auto enemies = GetEnemiesInRange(*player, 1600.0F);
+        const auto enemies = GetEnemiesInRange(*player, 1700.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 
         if (!player->living->GetIsAttacking() && player->CanAttack())
-            TargetAndAttackEnemyInAggro(*player, 1600.0F);
+            TargetAndAttackEnemyInAggro(*player, 1700.0F);
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
