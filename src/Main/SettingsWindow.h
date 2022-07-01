@@ -4,10 +4,7 @@
 
 class SettingsWindow : public HelperBoxWindow
 {
-    SettingsWindow()
-    {
-        show_menubutton = true;
-    };
+    SettingsWindow(){};
     ~SettingsWindow(){};
 
 public:
@@ -21,9 +18,6 @@ public:
     {
         return "Settings";
     }
-
-    void LoadSettings(CSimpleIni *ini) override;
-    void SaveSettings(CSimpleIni *ini) override;
 
     void Draw(IDirect3DDevice9 *pDevice) override;
     bool DrawSettingsSection(const char *section);

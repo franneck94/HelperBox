@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <set>
 #include <string_view>
 
 #include <GWCA/Constants/Constants.h>

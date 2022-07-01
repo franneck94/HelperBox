@@ -46,9 +46,8 @@ DWORD WINAPI init(HMODULE hModule) noexcept
     return 0;
 }
 
-BOOL WINAPI DllMain(_In_ HMODULE _HDllHandle, _In_ DWORD _Reason, _In_opt_ LPVOID _Reserved)
+BOOL WINAPI DllMain(_In_ HMODULE _HDllHandle, _In_ DWORD _Reason, _In_opt_ LPVOID)
 {
-    UNREFERENCED_PARAMETER(_Reserved);
     DisableThreadLibraryCalls(_HDllHandle);
     if (_Reason == DLL_PROCESS_ATTACH)
     {

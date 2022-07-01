@@ -24,14 +24,14 @@ public:
     constexpr static auto REST_SKILL_ID = uint32_t{3087};
     constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
 
-    constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{760U},  // 1 ?
-                                                                    uint32_t{760U},  // 2 ?
+    constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{800U},  // 1 ?
+                                                                    uint32_t{780U},  // 2 ?
                                                                     uint32_t{760U},  // 3 ?
                                                                     uint32_t{740U},  // 4
                                                                     uint32_t{720U},  // 5
-                                                                    uint32_t{700U},  // 6 ?
-                                                                    uint32_t{680U},  // 7 ?
-                                                                    uint32_t{660U}}; // 8 ?
+                                                                    uint32_t{690U},  // 6 ?
+                                                                    uint32_t{660U},  // 7 ?
+                                                                    uint32_t{630U}}; // 8 ?
 
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -85,22 +85,6 @@ public:
     const char *Name() const override
     {
         return "DhuumStatsWindow";
-    }
-
-    void Initialize() override
-    {
-        HelperBoxWindow::Initialize();
-    }
-
-    void LoadSettings(CSimpleIni *ini) override
-    {
-        HelperBoxWindow::LoadSettings(ini);
-        show_menubutton = true;
-    }
-
-    void SaveSettings(CSimpleIni *ini) override
-    {
-        HelperBoxWindow::SaveSettings(ini);
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;

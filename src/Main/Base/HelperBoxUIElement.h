@@ -24,7 +24,6 @@ public:
     bool visible = false;
     bool lock_move = false;
     bool lock_size = false;
-    bool show_menubutton = false;
     bool show_closebutton = true;
 
     bool *GetVisiblePtr(bool force_show = false)

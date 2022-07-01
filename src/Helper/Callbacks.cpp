@@ -11,11 +11,8 @@
 
 #include "Callbacks.h"
 
-bool ExplorableLoadCallback(GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet)
+bool ExplorableLoadCallback(GW::HookStatus *, GW::Packet::StoC::MapLoaded *)
 {
-    UNREFERENCED_PARAMETER(status);
-    UNREFERENCED_PARAMETER(packet);
-
     switch (GW::Map::GetInstanceType())
     {
     case GW::Constants::InstanceType::Explorable:

@@ -24,19 +24,8 @@ enum LogType : uint8_t
 auto crash_dumped = false;
 } // namespace
 
-static void GWCALogHandler(void *context,
-                           GW::LogLevel level,
-                           const char *msg,
-                           const char *file,
-                           unsigned int line,
-                           const char *function)
+static void GWCALogHandler(void *, GW::LogLevel, const char *msg, const char *, unsigned int, const char *)
 {
-    UNREFERENCED_PARAMETER(context);
-    UNREFERENCED_PARAMETER(level);
-    UNREFERENCED_PARAMETER(file);
-    UNREFERENCED_PARAMETER(line);
-    UNREFERENCED_PARAMETER(function);
-
     Log::Log("[GWCA] %s", msg);
 }
 
@@ -64,20 +53,13 @@ void Log::Terminate()
     GW::RegisterLogHandler(nullptr, nullptr);
     GW::RegisterPanicHandler(nullptr, nullptr);
 
-#ifdef HELPERBOX_DEBUG
     if (stdout_file)
         fclose(stdout_file);
     if (stderr_file)
         fclose(stderr_file);
 
     FreeConsole();
-#else
-    if (logfile)
-    {
-        fflush(logfile);
-        fclose(logfile);
-    }
-#endif
+
     logfile = nullptr;
 }
 
@@ -115,7 +97,6 @@ void Log::LogW(const wchar_t *msg, ...)
     if (!logfile)
         return;
     PrintTimestamp();
-
 
     va_list args;
     va_start(args, msg);
@@ -165,12 +146,6 @@ static void _chatlog(LogType log_type, const wchar_t *message)
     }(log_type);
     Log::LogW(L"[%s] %s\n", c, message);
 }
-static void _vchatlogW(LogType log_type, const wchar_t *format, va_list argv)
-{
-    wchar_t buf1[512];
-    vswprintf(buf1, 512, format, argv);
-    _chatlog(log_type, buf1);
-}
 
 static void _vchatlog(LogType log_type, const char *format, va_list argv)
 {
@@ -187,25 +162,12 @@ void Log::Info(const char *format, ...)
     _vchatlog(LogType::LogType_Info, format, vl);
     va_end(vl);
 }
-void Log::InfoW(const wchar_t *format, ...)
-{
-    va_list vl;
-    va_start(vl, format);
-    _vchatlogW(LogType::LogType_Info, format, vl);
-    va_end(vl);
-}
+
 void Log::Error(const char *format, ...)
 {
     va_list vl;
     va_start(vl, format);
     _vchatlog(LogType::LogType_Error, format, vl);
-    va_end(vl);
-}
-void Log::ErrorW(const wchar_t *format, ...)
-{
-    va_list vl;
-    va_start(vl, format);
-    _vchatlogW(LogType::LogType_Error, format, vl);
     va_end(vl);
 }
 
@@ -214,12 +176,5 @@ void Log::Warning(const char *format, ...)
     va_list vl;
     va_start(vl, format);
     _vchatlog(LogType::LogType_Warning, format, vl);
-    va_end(vl);
-}
-void Log::WarningW(const wchar_t *format, ...)
-{
-    va_list vl;
-    va_start(vl, format);
-    _vchatlogW(LogType::LogType_Warning, format, vl);
     va_end(vl);
 }

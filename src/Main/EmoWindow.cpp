@@ -98,10 +98,8 @@ void EmoWindow::WarnDistanceLT() const
         warned = false;
 }
 
-void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
+void EmoWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -203,10 +201,8 @@ void EmoWindow::UpdateUwEntry()
     }
 }
 
-void EmoWindow::Update(float delta)
+void EmoWindow::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
-
     if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();

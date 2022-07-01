@@ -12,14 +12,12 @@ void ChatCommands::DrawSettingInternal()
 {
 }
 
-void ChatCommands::LoadSettings(CSimpleIni *ini)
+void ChatCommands::LoadSettings(CSimpleIni *)
 {
-    UNREFERENCED_PARAMETER(ini);
 }
 
-void ChatCommands::SaveSettings(CSimpleIni *ini)
+void ChatCommands::SaveSettings(CSimpleIni *)
 {
-    UNREFERENCED_PARAMETER(ini);
 }
 
 void ChatCommands::Initialize()
@@ -28,15 +26,12 @@ void ChatCommands::Initialize()
     GW::Chat::CreateCommand(L"hb", ChatCommands::CmdHB);
 }
 
-void ChatCommands::Update(float delta)
+void ChatCommands::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
 }
 
-void ChatCommands::CmdHB(const wchar_t *message, int argc, LPWSTR *argv)
+void ChatCommands::CmdHB(const wchar_t *, int argc, LPWSTR *argv)
 {
-    UNREFERENCED_PARAMETER(message);
-
     if (argc == 2)
     {
         const std::wstring arg = argv[1];

@@ -118,10 +118,8 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, con
     }
 }
 
-void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
+void TerraWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -164,10 +162,8 @@ void TerraWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 }
 
-void TerraWindow::Update(float delta)
+void TerraWindow::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
-
     filtered_livings.clear();
     behemoth_livings.clear();
     dryder_livings.clear();

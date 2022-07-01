@@ -105,10 +105,8 @@ void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
     damages.push_back(std::make_pair(time, dmg_f32));
 }
 
-void DhuumStatsWindow::Draw(IDirect3DDevice9 *pDevice)
+void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -216,10 +214,8 @@ void DhuumStatsWindow::UpdateDamageData()
         eta_damage = eta_damage;
 }
 
-void DhuumStatsWindow::Update(float delta)
+void DhuumStatsWindow::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
-
     if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();

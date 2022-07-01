@@ -42,22 +42,6 @@ public:
         return "TerraWindow";
     }
 
-    void Initialize() override
-    {
-        HelperBoxWindow::Initialize();
-    }
-
-    void LoadSettings(CSimpleIni *ini) override
-    {
-        HelperBoxWindow::LoadSettings(ini);
-        show_menubutton = true;
-    }
-
-    void SaveSettings(CSimpleIni *ini) override
-    {
-        HelperBoxWindow::SaveSettings(ini);
-    }
-
     void Draw(IDirect3DDevice9 *pDevice) override;
     void Update(float delta) override;
 

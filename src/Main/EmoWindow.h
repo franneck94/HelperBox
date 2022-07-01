@@ -64,8 +64,7 @@ public:
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
             &GenericValue_Entry,
-            [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
-                UNREFERENCED_PARAMETER(status);
+            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
                 if (action_state == ActionState::ACTIVE && player->SkillStoppedCallback(packet))
                     interrupted = true;
             });
@@ -85,8 +84,7 @@ public:
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
             &GenericValue_Entry,
-            [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
-                UNREFERENCED_PARAMETER(status);
+            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
                 if (action_state == ActionState::ACTIVE && player->SkillStoppedCallback(packet))
                     interrupted = true;
             });
@@ -147,7 +145,6 @@ public:
     void LoadSettings(CSimpleIni *ini) override
     {
         HelperBoxWindow::LoadSettings(ini);
-        show_menubutton = true;
         show_debug_map = ini->GetBoolValue(Name(), VAR_NAME(show_debug_map), show_debug_map);
         bag_idx = ini->GetLongValue(Name(), VAR_NAME(bag_idx), bag_idx);
         slot_idx = ini->GetLongValue(Name(), VAR_NAME(slot_idx), slot_idx);

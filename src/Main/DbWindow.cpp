@@ -58,17 +58,14 @@ DbWindow::DbWindow() : player({}), skillbar({}), damage(&player, &skillbar)
 
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
         &GenericValue_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::GenericValue *packet) -> void {
-            UNREFERENCED_PARAMETER(status);
+        [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
             if (move_ongoing && player.SkillStoppedCallback(packet))
                 interrupted = true;
         });
 };
 
-void DbWindow::Draw(IDirect3DDevice9 *pDevice)
+void DbWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -110,10 +107,8 @@ void DbWindow::UpdateUwEntry()
     }
 }
 
-void DbWindow::Update(float delta)
+void DbWindow::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
-
     if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();

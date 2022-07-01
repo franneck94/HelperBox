@@ -34,9 +34,6 @@ void MainWindow::RefreshButtons()
     modules_to_draw.clear();
     for (auto &ui_module : ui)
     {
-        if (!ui_module->show_menubutton)
-            continue;
-
         const auto weighting = 1.0F;
         auto it = modules_to_draw.begin();
         for (it = modules_to_draw.begin(); it != modules_to_draw.end(); it++)

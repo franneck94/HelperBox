@@ -19,10 +19,8 @@
 #include "CancelActionWindow.h"
 
 
-void CancelActionWindow::Draw(IDirect3DDevice9 *pDevice)
+void CancelActionWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -40,9 +38,4 @@ void CancelActionWindow::Draw(IDirect3DDevice9 *pDevice)
         }
     }
     ImGui::End();
-}
-
-void CancelActionWindow::Update(float delta)
-{
-    UNREFERENCED_PARAMETER(delta);
 }

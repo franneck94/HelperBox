@@ -11,19 +11,8 @@
 
 #include "SettingsWindow.h"
 
-void SettingsWindow::LoadSettings(CSimpleIni *ini)
+void SettingsWindow::Draw(IDirect3DDevice9 *)
 {
-    HelperBoxWindow::LoadSettings(ini);
-}
-
-void SettingsWindow::SaveSettings(CSimpleIni *ini)
-{
-    HelperBoxWindow::SaveSettings(ini);
-}
-
-void SettingsWindow::Draw(IDirect3DDevice9 *pDevice)
-{
-    UNREFERENCED_PARAMETER(pDevice);
     static auto last_instance_type = GW::Constants::InstanceType::Loading;
     auto instance_type = GW::Map::GetInstanceType();
 

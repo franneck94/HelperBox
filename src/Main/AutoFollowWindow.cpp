@@ -45,10 +45,8 @@ RoutineState AutoFollowAction::Routine()
     return RoutineState::ACTIVE;
 }
 
-void AutoFollowWindow::Draw(IDirect3DDevice9 *pDevice)
+void AutoFollowWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -65,10 +63,8 @@ void AutoFollowWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 }
 
-void AutoFollowWindow::Update(float delta)
+void AutoFollowWindow::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
-
     if (IsLoading())
         return;
 

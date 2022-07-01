@@ -76,10 +76,7 @@ DWORD __stdcall ThreadEntry(LPVOID)
     }
 
     GW::Render::SetRenderCallback([](IDirect3DDevice9 *device) { HelperBox::Instance().Draw(device); });
-    GW::Render::SetResetCallback([](IDirect3DDevice9 *device) {
-        UNREFERENCED_PARAMETER(device);
-        ImGui_ImplDX9_InvalidateDeviceObjects();
-    });
+    GW::Render::SetResetCallback([](IDirect3DDevice9 *) { ImGui_ImplDX9_InvalidateDeviceObjects(); });
 
     Log::Log("Installed dx hooks\n");
     Log::InitializeChat();

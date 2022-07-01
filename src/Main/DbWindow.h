@@ -62,7 +62,6 @@ public:
     void LoadSettings(CSimpleIni *ini) override
     {
         HelperBoxWindow::LoadSettings(ini);
-        show_menubutton = true;
         show_debug_map = ini->GetBoolValue(Name(), VAR_NAME(show_debug_map), show_debug_map);
     }
 

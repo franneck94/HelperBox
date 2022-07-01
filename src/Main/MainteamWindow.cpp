@@ -85,10 +85,8 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
     }
 }
 
-void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
+void MainteamWindow::Draw(IDirect3DDevice9 *)
 {
-    UNREFERENCED_PARAMETER(pDevice);
-
     if (!visible)
         return;
 
@@ -129,10 +127,8 @@ void MainteamWindow::Draw(IDirect3DDevice9 *pDevice)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float delta)
+void MainteamWindow::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
-
     filtered_livings.clear();
     aatxe_livings.clear();
     nightmare_livings.clear();

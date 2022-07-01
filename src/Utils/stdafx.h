@@ -1,7 +1,6 @@
 #pragma once
 
 // c++ style c headers
-#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -10,22 +9,10 @@
 // c++ headers
 #include <algorithm>
 #include <array>
-#include <bitset>
-#include <chrono>
-#include <filesystem>
 #include <fstream>
 #include <functional>
-#include <initializer_list>
-#include <iomanip>
 #include <iostream>
-#include <iterator>
-#include <list>
 #include <map>
-#include <memory>
-#include <mutex>
-#include <queue>
-#include <set>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -58,4 +45,5 @@
 #include <GWCA/GameContainers/List.h>
 
 #pragma warning(disable : 4201)
+#pragma warning(disable : 4505)
 #pragma warning(disable : 4506)

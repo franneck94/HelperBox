@@ -320,12 +320,8 @@ LRESULT InjectWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void InjectWindow::OnCreate(HWND hWnd, UINT, WPARAM, LPARAM)
 {
-    UNREFERENCED_PARAMETER(uMsg);
-    UNREFERENCED_PARAMETER(wParam);
-    UNREFERENCED_PARAMETER(lParam);
-
     HWND hGroupBox = CreateWindowW(WC_BUTTONW,
                                    L"Select Character",
                                    WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
@@ -363,10 +359,8 @@ void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     nullptr);
 }
 
-void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG NotificationCode)
+void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG)
 {
-    UNREFERENCED_PARAMETER(NotificationCode);
-
     if ((hWnd == m_hLaunchButton) && (ControlId == STN_CLICKED))
     {
         m_Selected = SendMessageW(m_hCharacters, CB_GETCURSEL, 0, 0);

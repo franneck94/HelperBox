@@ -30,20 +30,17 @@ void HelperBoxUIElement::LoadSettings(CSimpleIni *ini)
 {
     HelperBoxModule::LoadSettings(ini);
     visible = ini->GetBoolValue(Name(), VAR_NAME(visible), visible);
-    show_menubutton = ini->GetBoolValue(Name(), VAR_NAME(show_menubutton), show_menubutton);
 }
 
 void HelperBoxUIElement::SaveSettings(CSimpleIni *ini)
 {
     HelperBoxModule::SaveSettings(ini);
     ini->SetBoolValue(Name(), VAR_NAME(visible), visible);
-    ini->SetBoolValue(Name(), VAR_NAME(show_menubutton), show_menubutton);
 }
 
 void HelperBoxUIElement::RegisterSettingsContent()
 {
-    HelperBoxModule::RegisterSettingsContent(SettingsName(), [this](const std::string *section, bool is_showing) {
-        UNREFERENCED_PARAMETER(section);
+    HelperBoxModule::RegisterSettingsContent(SettingsName(), [this](const std::string *, bool is_showing) {
         ShowVisibleRadio();
         if (!is_showing)
             return;

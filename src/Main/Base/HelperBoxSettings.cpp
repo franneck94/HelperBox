@@ -36,7 +36,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     optional_modules.push_back(&DbWindow::Instance());
     optional_modules.push_back(&MainteamWindow::Instance());
     optional_modules.push_back(&TerraWindow::Instance());
-    optional_modules.push_back(&AutoFollowWindow::Instance());
+    // optional_modules.push_back(&AutoFollowWindow::Instance());
     optional_modules.push_back(&DhuumStatsWindow::Instance());
     // optional_modules.push_back(&CancelActionWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
@@ -74,7 +74,6 @@ void HelperBoxSettings::Draw(IDirect3DDevice9 *)
     ImGui::GetStyle().WindowBorderSize = (move_all ? 1.0f : 0.0f);
 }
 
-void HelperBoxSettings::Update(float delta)
+void HelperBoxSettings::Update(float)
 {
-    UNREFERENCED_PARAMETER(delta);
 }
