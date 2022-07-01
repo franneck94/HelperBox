@@ -3,8 +3,35 @@
 #include <algorithm>
 
 #include "Inject.h"
-
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
+// @Cleanup: @Remark:
+// According to Microsoft documentation for BCM_SETSHIELD:
+// > An application must be manifested to use comctl32.dll
+// > version 6 to gain this functionality.
+// If we don't do that, the shield icon doesn't show up, but is there
+// a nice way to add that? (i.e. not through a pragma)
+#pragma comment(linker, "\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
+struct InjectProcess
+{
+    InjectProcess(bool injected, Process &&process, std::wstring &&charname)
+        : m_Injected(injected), m_Process(std::move(process)), m_Charname(std::move(charname))
+    {
+    }
+
+    InjectProcess(const InjectProcess &) = delete;
+    InjectProcess(InjectProcess &&) = default;
+
+    InjectProcess &operator=(const InjectProcess &) = delete;
+    InjectProcess &operator=(InjectProcess &&) = default;
+
+    bool m_Injected;
+    Process m_Process;
+    std::wstring m_Charname;
+};
 
 static bool FindTopMostProcess(std::vector<InjectProcess> &processes, size_t *TopMostIndex)
 {
@@ -15,7 +42,7 @@ static bool FindTopMostProcess(std::vector<InjectProcess> &processes, size_t *To
                 "Consider rewriting the function to have a better scaling for large number of processes.\n");
     }
 
-    auto hWndIt = GetTopWindow(nullptr);
+    HWND hWndIt = GetTopWindow(nullptr);
     if (hWndIt == nullptr)
     {
         fprintf(stderr, "GetTopWindow failed (%lu)\n", GetLastError());
@@ -24,7 +51,7 @@ static bool FindTopMostProcess(std::vector<InjectProcess> &processes, size_t *To
 
     while (hWndIt != nullptr)
     {
-        auto WindowPid = DWORD{};
+        DWORD WindowPid;
         if (GetWindowThreadProcessId(hWndIt, &WindowPid) == 0)
         {
             // @Cleanup:
@@ -52,7 +79,7 @@ static void GetGuildWarsProcesses(std::vector<Process> &processes)
 {
     GetProcesses(processes, L"Gw.exe");
 
-    auto buffer = std::vector<Process>{};
+    std::vector<Process> buffer;
     GetProcessesFromWindowClass(buffer, L"ArenaNet_Dx_Window_Class");
 
     for (Process &process : buffer)
@@ -78,7 +105,7 @@ static void GetGuildWarsProcesses(std::vector<Process> &processes)
 
 InjectReply InjectWindow::AskInjectProcess(Process *target_process)
 {
-    auto processes = std::vector<Process>{};
+    std::vector<Process> processes;
     GetGuildWarsProcesses(processes);
 
     if (processes.empty())
@@ -87,8 +114,8 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
         return InjectReply_NoProcess;
     }
 
-    auto charname_rva = uintptr_t{};
-    auto scanner = ProcessScanner{&processes[0]};
+    uintptr_t charname_rva;
+    ProcessScanner scanner(&processes[0]);
     if (!scanner.FindPatternRva("\x8B\xF8\x6A\x03\x68\x0F\x00\x00\xC0\x8B\xCF\xE8",
                                 "xxxxxxxxxxxx",
                                 -0x42,
@@ -97,13 +124,13 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
         return InjectReply_PatternError;
     }
 
-    auto email_rva = uintptr_t{};
+    uintptr_t email_rva;
     if (!scanner.FindPatternRva("\x33\xC0\x5D\xC2\x10\x00\xCC\x68\x80\x00\x00\x00", "xxxxxxxxxxxx", 0xE, &email_rva))
     {
         return InjectReply_PatternError;
     }
 
-    auto inject_processes = std::vector<InjectProcess>{};
+    std::vector<InjectProcess> inject_processes;
 
     for (Process &process : processes)
     {
@@ -171,8 +198,8 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
             continue;
         }
 
-        const auto charname_len = wcsnlen(charname, _countof(charname));
-        auto charname2 = std::wstring{charname, charname + charname_len};
+        size_t charname_len = wcsnlen(charname, _countof(charname));
+        std::wstring charname2(charname, charname + charname_len);
 
         inject_processes.emplace_back(injected, std::move(process), std::wstring(charname2));
     }
@@ -200,7 +227,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
 
     for (size_t i = 0; i < inject_processes.size(); i++)
     {
-        auto process = &inject_processes[i];
+        InjectProcess *process = &inject_processes[i];
 
         wchar_t buffer[128];
         wcsncpy(buffer, process->m_Charname.c_str(), _countof(buffer));
@@ -229,7 +256,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
     return InjectReply_Inject;
 }
 
-InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_Selected(-1)
+InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_hSettings(nullptr), m_Selected(-1)
 {
 }
 
@@ -251,8 +278,10 @@ bool InjectWindow::GetSelected(size_t *index)
         *index = static_cast<size_t>(m_Selected);
         return true;
     }
-
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 LRESULT InjectWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -291,8 +320,24 @@ LRESULT InjectWindow::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
-void InjectWindow::OnCreate(HWND hWnd, UINT, WPARAM, LPARAM)
+void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(uMsg);
+    UNREFERENCED_PARAMETER(wParam);
+    UNREFERENCED_PARAMETER(lParam);
+
+    HWND hGroupBox = CreateWindowW(WC_BUTTONW,
+                                   L"Select Character",
+                                   WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+                                   10,
+                                   5,
+                                   270,
+                                   55,
+                                   hWnd,
+                                   nullptr,
+                                   m_hInstance,
+                                   nullptr);
+
     m_hCharacters = CreateWindowW(WC_COMBOBOXW,
                                   L"",
                                   WS_VISIBLE | WS_CHILD | WS_VSCROLL | WS_TABSTOP | CBS_DROPDOWNLIST,
@@ -316,10 +361,24 @@ void InjectWindow::OnCreate(HWND hWnd, UINT, WPARAM, LPARAM)
                                     nullptr,
                                     m_hInstance,
                                     nullptr);
+
+    m_hSettings = CreateWindowW(WC_BUTTONW,
+                                L"Settings...",
+                                WS_VISIBLE | WS_CHILD | WS_TABSTOP,
+                                200,
+                                65,
+                                80,
+                                25,
+                                hWnd,
+                                nullptr,
+                                m_hInstance,
+                                nullptr);
 }
 
-void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG)
+void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG NotificationCode)
 {
+    UNREFERENCED_PARAMETER(NotificationCode);
+
     if ((hWnd == m_hLaunchButton) && (ControlId == STN_CLICKED))
     {
         m_Selected = SendMessageW(m_hCharacters, CB_GETCURSEL, 0, 0);
@@ -329,14 +388,14 @@ void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG)
 
 static LPVOID GetLoadLibrary()
 {
-    auto Kernel32 = GetModuleHandleW(L"Kernel32.dll");
+    HMODULE Kernel32 = GetModuleHandleW(L"Kernel32.dll");
     if (Kernel32 == nullptr)
     {
         fprintf(stderr, "GetModuleHandleW failed (%lu)\n", GetLastError());
         return nullptr;
     }
 
-    auto pLoadLibraryW = GetProcAddress(Kernel32, "LoadLibraryW");
+    LPVOID pLoadLibraryW = GetProcAddress(Kernel32, "LoadLibraryW");
     if (pLoadLibraryW == nullptr)
     {
         fprintf(stderr, "GetProcAddress failed (%lu)\n", GetLastError());
@@ -350,21 +409,21 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
 {
     *lpExitCode = 0;
 
-    auto ProcessHandle = process->GetHandle();
+    HANDLE ProcessHandle = process->GetHandle();
     if (ProcessHandle == nullptr)
     {
         fprintf(stderr, "Can't inject a dll in a process which is not open\n");
         return FALSE;
     }
 
-    auto pLoadLibraryW = GetLoadLibrary();
+    LPVOID pLoadLibraryW = GetLoadLibrary();
     if (pLoadLibraryW == nullptr)
         return FALSE;
 
-    const auto ImagePathLength = wcslen(ImagePath);
-    const auto ImagePathSize = (ImagePathLength * 2) + 2;
+    size_t ImagePathLength = wcslen(ImagePath);
+    size_t ImagePathSize = (ImagePathLength * 2) + 2;
 
-    auto ImagePathAddress =
+    LPVOID ImagePathAddress =
         VirtualAllocEx(ProcessHandle, nullptr, ImagePathSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
     if (ImagePathAddress == nullptr)
@@ -373,8 +432,8 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
         return FALSE;
     }
 
-    auto BytesWritten = SIZE_T{};
-    auto Success = WriteProcessMemory(ProcessHandle, ImagePathAddress, ImagePath, ImagePathSize, &BytesWritten);
+    SIZE_T BytesWritten;
+    BOOL Success = WriteProcessMemory(ProcessHandle, ImagePathAddress, ImagePath, ImagePathSize, &BytesWritten);
 
     if (!Success || (ImagePathSize != BytesWritten))
     {
@@ -384,14 +443,14 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
     }
 
     DWORD ThreadId;
-    auto hThread = CreateRemoteThreadEx(ProcessHandle,
-                                        nullptr,
-                                        0,
-                                        reinterpret_cast<LPTHREAD_START_ROUTINE>(pLoadLibraryW),
-                                        ImagePathAddress,
-                                        0,
-                                        nullptr,
-                                        &ThreadId);
+    HANDLE hThread = CreateRemoteThreadEx(ProcessHandle,
+                                          nullptr,
+                                          0,
+                                          reinterpret_cast<LPTHREAD_START_ROUTINE>(pLoadLibraryW),
+                                          ImagePathAddress,
+                                          0,
+                                          nullptr,
+                                          &ThreadId);
 
     if (hThread == nullptr)
     {
@@ -399,7 +458,7 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
         return FALSE;
     }
 
-    const auto Reason = WaitForSingleObject(hThread, INFINITE);
+    DWORD Reason = WaitForSingleObject(hThread, INFINITE);
     if (Reason != WAIT_OBJECT_0)
     {
         fprintf(stderr, "WaitForSingleObject failed {reason: %lu, error: %lu}\n", Reason, GetLastError());

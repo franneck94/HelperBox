@@ -243,7 +243,7 @@ bool GetProcesses(std::vector<Process> &processes, const wchar_t *name, DWORD ri
     std::vector<DWORD> pids(1024);
     for (;;)
     {
-        auto size = pids.size() * sizeof(DWORD);
+        DWORD size = pids.size() * sizeof(DWORD);
         DWORD bytes;
         if (!EnumProcesses(pids.data(), size, &bytes))
         {
@@ -286,7 +286,7 @@ struct EnumWindowUserParam
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 {
-    auto UserParam = reinterpret_cast<EnumWindowUserParam *>(lParam);
+    EnumWindowUserParam *UserParam = reinterpret_cast<EnumWindowUserParam *>(lParam);
 
     WCHAR ClassName[256];
     const auto iCopied = GetClassNameW(hWnd, ClassName, _countof(ClassName));

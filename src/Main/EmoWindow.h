@@ -242,7 +242,7 @@ private:
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::NO_WAIT_AND_STOP, target_reaper_fn},
         Move{-5751.45F, 12746.52F, "Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
         Move{-5751.45F, 12746.52F, "UWG", MoveState::NO_WAIT_AND_CONTINUE, take_uwg_fn},
-        Move{-6035.29F, 11285.14F, "Keeper 1", MoveState::NO_WAIT_AND_CONTINUE},
+        Move{-6035.29F, 11285.14F, "Keeper 1", MoveState::NO_WAIT_AND_STOP},
         Move{-6511.41F, 12447.65F, "Keeper 2", MoveState::NO_WAIT_AND_STOP},
         Move{-3881.71F, 11280.04F, "Keeper 3", MoveState::NO_WAIT_AND_STOP},
         Move{-1502.45F, 9737.64F, "Keeper 4/5", MoveState::NO_WAIT_AND_STOP},
