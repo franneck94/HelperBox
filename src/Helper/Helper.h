@@ -138,9 +138,10 @@ void AttackAgent(const GW::Agent *agent);
 
 std::vector<GW::AgentLiving *> GetEnemiesInCompass();
 
-std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player);
+std::vector<GW::AgentLiving *> GetEnemiesInRange(const Player &player,
+                                                 const float range = GW::Constants::Range::Earshot);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);
 
-void TargetAndAttackEnemyInAggro(const Player &player);
+void TargetAndAttackEnemyInAggro(const Player &player, const float range = GW::Constants::Range::Spellcast);

@@ -648,7 +648,7 @@ std::vector<GW::AgentLiving *> GetEnemiesInCompass()
     return living_agents;
 }
 
-std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player)
+std::vector<GW::AgentLiving *> GetEnemiesInRange(const Player &player, const float range)
 {
     auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
@@ -672,7 +672,7 @@ std::vector<GW::AgentLiving *> GetEnemiesInAggro(const Player &player)
             continue;
 
         const auto dist = GW::GetDistance(player.pos, living->pos);
-        if (dist <= GW::Constants::Range::Earshot)
+        if (dist <= range)
             filtered_livings.push_back(living);
     }
 
@@ -697,11 +697,11 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
     return result_ids;
 }
 
-void TargetAndAttackEnemyInAggro(const Player &player)
+void TargetAndAttackEnemyInAggro(const Player &player, const float range)
 {
     if (!player.target || !player.target->agent_id || !player.target->GetIsLivingType() ||
         player.target->GetAsAgentLiving()->allegiance != GW::Constants::Allegiance::Enemy)
-        TargetNearest(TargetType::Living_Enemy, GW::Constants::Range::Spellcast);
+        TargetNearest(TargetType::Living_Enemy, range);
 
     if (player.target && player.target->agent_id)
     {

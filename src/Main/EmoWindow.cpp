@@ -325,7 +325,7 @@ bool Pumping::RoutineCanthaGuards() const
     if (!player->CanCast())
         return false;
 
-    const auto enemies = GetEnemiesInAggro(*player);
+    const auto enemies = GetEnemiesInRange(*player, GW::Constants::Range::Earshot);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterAgents(*player,

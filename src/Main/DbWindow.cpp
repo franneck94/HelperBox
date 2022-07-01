@@ -262,12 +262,12 @@ RoutineState Damage::Routine()
 
     if (IsAtChamberSkele(*player) || IsAtBasementSkele(*player) || IsRightAtValeHouse(*player))
     {
-        const auto enemies = GetEnemiesInAggro(*player);
+        const auto enemies = GetEnemiesInRange(*player, GW::Constants::Range::Earshot);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 
         if (!player->living->GetIsAttacking() && player->CanAttack())
-            TargetAndAttackEnemyInAggro(*player);
+            TargetAndAttackEnemyInAggro(*player, GW::Constants::Range::Earshot);
 
         if (RoutineKillSkele())
             return RoutineState::FINISHED;
@@ -275,12 +275,12 @@ RoutineState Damage::Routine()
 
     if (IsAtValeSpirits(*player))
     {
-        const auto enemies = GetEnemiesInAggro(*player);
+        const auto enemies = GetEnemiesInRange(*player, 1600.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 
         if (!player->living->GetIsAttacking() && player->CanAttack())
-            TargetAndAttackEnemyInAggro(*player);
+            TargetAndAttackEnemyInAggro(*player, 1600.0F);
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
@@ -321,7 +321,7 @@ RoutineState Damage::Routine()
         return RoutineState::FINISHED;
 
     if (!player->living->GetIsAttacking() && player->CanAttack())
-        TargetAndAttackEnemyInAggro(*player);
+        TargetAndAttackEnemyInAggro(*player, GW::Constants::Range::Earshot);
 
     return RoutineState::FINISHED;
 }

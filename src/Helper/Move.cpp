@@ -58,7 +58,7 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 
-    const auto livings = GetEnemiesInAggro(player);
+    const auto livings = GetEnemiesInRange(player, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
 
     if (player.pos.x == next_pos.x && player.pos.y == next_pos.y)

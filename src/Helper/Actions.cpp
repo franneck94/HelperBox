@@ -29,7 +29,7 @@ bool HasWaitedLongEnough()
     static auto timer_last_cast_ms = clock();
 
     const auto last_cast_diff_ms = TIMER_DIFF(timer_last_cast_ms);
-    if (last_cast_diff_ms < 150)
+    if (last_cast_diff_ms < 200)
         return false;
 
     timer_last_cast_ms = clock();

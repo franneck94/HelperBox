@@ -151,12 +151,13 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
     const auto state = moves[move_idx].move_state;
     const auto is_proceeding_action = (state != MoveState::NO_WAIT_AND_STOP && state != MoveState::WAIT_AND_STOP);
 
+    const auto last_trigger_timer_threshold = 500;
     if (!already_reached_pos && !is_moving && can_be_finished)
     {
         static auto last_trigger_time_ms = clock();
 
         const auto last_trigger_time_diff_ms = TIMER_DIFF(last_trigger_time_ms);
-        if (last_trigger_time_diff_ms == 0 || last_trigger_time_diff_ms >= 500)
+        if (last_trigger_time_diff_ms == 0 || last_trigger_time_diff_ms >= last_trigger_timer_threshold)
         {
             last_trigger_time_ms = clock();
             moves[move_idx].Execute();
@@ -166,9 +167,9 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         return;
     }
 
-    if (already_reached_pos)
+    if (already_reached_pos && (state != MoveState::CAST_SKILL_AND_CONTINUE ||
+                                (state == MoveState::CAST_SKILL_AND_CONTINUE && can_be_finished)))
     {
-        const auto last_trigger_timer_threshold = 500;
         const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
         if (last_trigger_timer_diff < last_trigger_timer_threshold)
             return;
