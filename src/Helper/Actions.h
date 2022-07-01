@@ -26,6 +26,15 @@ public:
     virtual RoutineState Routine() = 0;
     virtual void Update() = 0;
 
+    virtual bool PauseRoutine()
+    {
+        return false;
+    }
+    bool ResumeRoutine()
+    {
+        return !PauseRoutine();
+    }
+
     Player *player = nullptr;
     std::string_view text = nullptr;
 
@@ -35,34 +44,34 @@ public:
 class EmoActionABC : public ActionABC
 {
 public:
-    EmoActionABC(Player *p, std::string_view t, EmoSkillbar *s) : ActionABC(p, t), skillbar(s)
+    EmoActionABC(Player *p, std::string_view t, EmoSkillbarData *s) : ActionABC(p, t), skillbar(s)
     {
     }
     virtual ~EmoActionABC(){};
 
-    EmoSkillbar *skillbar = nullptr;
+    EmoSkillbarData *skillbar = nullptr;
 };
 
 class MesmerActionABC : public ActionABC
 {
 public:
-    MesmerActionABC(Player *p, std::string_view t, MesmerSkillbar *s) : ActionABC(p, t), skillbar(s)
+    MesmerActionABC(Player *p, std::string_view t, MesmerSkillbarData *s) : ActionABC(p, t), skillbar(s)
     {
     }
     virtual ~MesmerActionABC(){};
 
-    MesmerSkillbar *skillbar = nullptr;
+    MesmerSkillbarData *skillbar = nullptr;
 };
 
 class DbActionABC : public ActionABC
 {
 public:
-    DbActionABC(Player *p, std::string_view t, DbSkillbar *s) : ActionABC(p, t), skillbar(s)
+    DbActionABC(Player *p, std::string_view t, DbSkillbarData *s) : ActionABC(p, t), skillbar(s)
     {
     }
     virtual ~DbActionABC(){};
 
-    DbSkillbar *skillbar = nullptr;
+    DbSkillbarData *skillbar = nullptr;
 };
 
 bool HasWaitedLongEnough();

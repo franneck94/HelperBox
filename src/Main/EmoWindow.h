@@ -22,14 +22,13 @@
 class Pumping : public EmoActionABC
 {
 public:
-    Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_slot_idx);
+    Pumping(Player *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx);
 
     RoutineState Routine() override;
     void Update() override;
 
 private:
-    bool PauseRoutine();
-    bool ResumeRoutine();
+    bool PauseRoutine() override;
 
     bool RoutineWhenInRangeBondLT() const;
     bool RoutineSelfBonds() const;
@@ -61,7 +60,7 @@ private:
 class TankBonding : public EmoActionABC
 {
 public:
-    TankBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Tank Bonds", s)
+    TankBonding(Player *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s)
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
             &GenericValue_Entry,
@@ -82,7 +81,7 @@ public:
 class PlayerBonding : public EmoActionABC
 {
 public:
-    PlayerBonding(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Player Bonds", s)
+    PlayerBonding(Player *p, EmoSkillbarData *s) : EmoActionABC(p, "Player Bonds", s)
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
             &GenericValue_Entry,
@@ -105,7 +104,7 @@ class FuseRange : public EmoActionABC
 public:
     static constexpr auto FUSE_PULL_RANGE = float{1230.0F};
 
-    FuseRange(Player *p, EmoSkillbar *s) : EmoActionABC(p, "Fuse Range", s)
+    FuseRange(Player *p, EmoSkillbarData *s) : EmoActionABC(p, "Fuse Range", s)
     {
     }
 
@@ -203,7 +202,7 @@ private:
 
     Player player;
     bool first_frame = false;
-    EmoSkillbar skillbar;
+    EmoSkillbarData skillbar;
 
     // Settings
     bool show_debug_map = true;

@@ -114,8 +114,6 @@ void DbWindow::Update(float delta)
 {
     UNREFERENCED_PARAMETER(delta);
 
-    UNREFERENCED_PARAMETER(delta);
-
     if (!player.ValidateData(UwHelperActivationConditions))
         return;
     player.Update();
@@ -147,7 +145,7 @@ void DbWindow::Update(float delta)
     damage.Update();
 }
 
-Damage::Damage(Player *p, DbSkillbar *s) : DbActionABC(p, "Damage", s)
+Damage::Damage(Player *p, DbSkillbarData *s) : DbActionABC(p, "Damage", s)
 {
 }
 
@@ -338,11 +336,6 @@ bool Damage::PauseRoutine()
     }
 
     return false;
-}
-
-bool Damage::ResumeRoutine()
-{
-    return !PauseRoutine();
 }
 
 void Damage::Update()

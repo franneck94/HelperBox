@@ -120,9 +120,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *pDevice)
         fuse_pull.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
-        {
             DrawMovingButtons(moves, move_ongoing, move_idx);
-        }
     }
 
     ImGui::End();
@@ -244,7 +242,7 @@ void EmoWindow::Update(float delta)
     pumping.Update();
 }
 
-Pumping::Pumping(Player *p, EmoSkillbar *s, uint32_t *_bag_idx, uint32_t *_slot_idx)
+Pumping::Pumping(Player *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx)
     : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), slot_idx(_slot_idx)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
@@ -704,11 +702,6 @@ bool Pumping::PauseRoutine()
     }
 
     return false;
-}
-
-bool Pumping::ResumeRoutine()
-{
-    return !PauseRoutine();
 }
 
 void Pumping::Update()

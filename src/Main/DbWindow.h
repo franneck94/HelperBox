@@ -21,14 +21,13 @@
 class Damage : public DbActionABC
 {
 public:
-    Damage(Player *p, DbSkillbar *s);
+    Damage(Player *p, DbSkillbarData *s);
 
     RoutineState Routine() override;
     void Update() override;
 
 private:
-    bool PauseRoutine();
-    bool ResumeRoutine();
+    bool PauseRoutine() override;
 
     bool CastPiOnTarget() const;
     bool RoutineKillSkele() const;
@@ -96,7 +95,7 @@ private:
 
     Player player;
     bool first_frame = false;
-    DbSkillbar skillbar;
+    DbSkillbarData skillbar;
 
     std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player); };
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player); };
