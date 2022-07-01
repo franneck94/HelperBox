@@ -35,6 +35,23 @@ void Move::Execute() const
         trigger_cb.value()();
 }
 
+bool Move::IsAtFilterSkelePos(const Player &player, const GW::GamePos &next_pos)
+{
+    const auto is_near_chamber_skele = IsAtChamberSkele(player);
+    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player);
+    const auto is_in_chamber_where_to_move = (is_near_chamber_skele && !is_right_at_chamber_skele);
+
+    const auto is_near_to_at_vale_start = IsAtValeStart(player);
+    const auto is_near_to_vale_house = IsAtValeHouse(player);
+    const auto is_right_at_vale_house = IsRightAtValeHouse(player);
+    const auto is_in_vale_where_to_move =
+        ((is_near_to_at_vale_start || is_near_to_vale_house) && !is_right_at_vale_house);
+
+    const auto is_at_basement_stair = GW::GetDistance(next_pos, GW::GamePos{-6263.33F, 9899.79F, 0}) < 1280.0F;
+    const auto is_to_basement1 = GW::GetDistance(next_pos, GW::GamePos{-5183.64F, 8876.31F, 0}) < 1280.0F;
+
+    return (is_in_chamber_where_to_move || is_in_vale_where_to_move || is_to_basement1 || is_at_basement_stair);
+}
 
 bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
 {
@@ -52,24 +69,10 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
     const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
     const auto filtered_livings = GetEnemiesInGameRectangle(rect);
 
-    const auto is_near_chamber_skele = IsAtChamberSkele(player);
-    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player);
-    const auto is_in_chamber_where_to_move = (is_near_chamber_skele && !is_right_at_chamber_skele);
-
-    const auto is_near_to_at_vale_start = IsAtValeStart(player);
-    const auto is_near_to_vale_house = IsAtValeHouse(player);
-    const auto is_right_at_vale_house = IsRightAtValeHouse(player);
-    const auto is_in_vale_where_to_move =
-        ((is_near_to_at_vale_start || is_near_to_vale_house) && !is_right_at_vale_house);
-
     const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
 
-    const auto is_at_basement_stair = GW::GetDistance(next_pos, GW::GamePos{-6263.33F, 9899.79F, 0}) < 1280.0F;
-    const auto is_to_basement1 = GW::GetDistance(next_pos, GW::GamePos{-5183.64F, 8876.31F, 0}) < 1280.0F;
-
     auto result_ids_rect = std::set<uint32_t>{};
-    if (is_in_chamber_where_to_move || is_in_vale_where_to_move || is_to_basement1 ||
-        is_at_basement_stair) // ignore skeles here
+    if (IsAtFilterSkelePos(player, next_pos)) // ignore skeles here
     {
         result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
     }

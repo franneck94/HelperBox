@@ -51,6 +51,16 @@ public:
          std::function<bool()> _trigger_cb)
         : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), move_state(_move_state){};
 
+    // Move, trigger cb, and then wait for distance
+    Move(const float _x,
+         const float _y,
+         const std::string &_name,
+         const MoveState _move_state,
+         std::function<bool()> _trigger_cb,
+         const float _dist_threshold)
+        : x(_x), y(_y), pos({x, y, 0}), name(_name), trigger_cb(_trigger_cb), move_state(_move_state),
+          dist_threshold(_dist_threshold){};
+
     // Move, and cast skill at goal
     Move(const float _x,
          const float _y,
@@ -77,6 +87,7 @@ public:
     void Execute() const;
 
 public:
+    static bool IsAtFilterSkelePos(const Player &player, const GW::GamePos &next_pos);
     static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
     static bool UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move);
     static bool UpdateMoveState_CallbackAndContinue(const Player &player, const Move &move);
@@ -106,19 +117,20 @@ uint32_t GetFirstCloseMove(const Player &player, const std::array<Move, N> &move
     for (const auto move : moves)
     {
         const auto dist_to_move = GW::GetDistance(player.pos, move.pos);
-        if (dist_to_move < 500.0F)
+        if (dist_to_move < GW::Constants::Range::Spellcast)
             return idx;
 
         ++idx;
     }
 
-    return idx;
+    return 0U;
 }
 
 template <uint32_t N>
 void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint32_t &move_idx, bool &move_ongoing)
 {
     static auto trigger_timer_ms = clock();
+    static auto already_reached_pos = false;
 
     if (!move_ongoing)
         return;
@@ -130,14 +142,16 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
 
     const auto is_moving = player.living->GetIsMoving();
     const auto reached_pos = GamePosCompare(player.pos, moves[move_idx].pos, 0.001F);
+    if (!already_reached_pos && reached_pos)
+        already_reached_pos = true;
 
-    if (!reached_pos && is_moving)
+    if (!already_reached_pos && is_moving)
         return;
 
     const auto state = moves[move_idx].move_state;
     const auto is_proceeding_action = (state != MoveState::NO_WAIT_AND_STOP && state != MoveState::WAIT_AND_STOP);
 
-    if (!reached_pos && !is_moving && can_be_finished)
+    if (!already_reached_pos && !is_moving && can_be_finished)
     {
         static auto last_trigger_time_ms = clock();
 
@@ -152,7 +166,7 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
         return;
     }
 
-    if (reached_pos && can_be_finished)
+    if (already_reached_pos)
     {
         const auto last_trigger_timer_threshold = 500;
         const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
@@ -160,13 +174,21 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
             return;
         trigger_timer_ms = clock();
 
+        already_reached_pos = false;
         move_ongoing = false;
         ++move_idx;
         if (is_proceeding_action)
         {
             move_ongoing = true;
-            moves[move_idx].Execute();
-            Log::Info("Ongoing to next move: %s", moves[move_idx].name.data());
+            if (moves[move_idx].move_state == MoveState::DISTANCE_AND_CONTINUE)
+            {
+                Log::Info("Waiting for distance %f", moves[move_idx].dist_threshold);
+            }
+            else
+            {
+                moves[move_idx].Execute();
+                Log::Info("Ongoing to next move: %s", moves[move_idx].name.data());
+            }
         }
     }
 }

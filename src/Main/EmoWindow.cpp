@@ -698,7 +698,8 @@ bool Pumping::PauseRoutine()
 
     if (player->target)
     {
-        if (TargetIsReaper(*player) && (GW::GetDistance(player->pos, player->target->pos) < 300.0F))
+        if (TargetIsReaper(*player) && (GW::GetDistance(player->pos, player->target->pos) < 200.0F) &&
+            player->energy_perc > 0.30F)
             return true;
     }
 
