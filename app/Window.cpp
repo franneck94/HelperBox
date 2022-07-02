@@ -28,7 +28,7 @@ LRESULT CALLBACK Window::MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 Window::Window()
     : m_hWnd(nullptr), m_hEvent(nullptr), m_WindowName(nullptr), m_X(CW_USEDEFAULT), m_Y(CW_USEDEFAULT),
-      m_Width(CW_USEDEFAULT), m_Height(CW_USEDEFAULT)
+      m_hIcon(nullptr), m_Width(CW_USEDEFAULT), m_Height(CW_USEDEFAULT)
 {
     m_hInstance = GetModuleHandleW(nullptr);
 }
@@ -62,6 +62,8 @@ bool Window::Create()
     wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
     wc.lpszClassName = L"HelperBox-Window-Class";
 
+    m_hIcon = LoadIconW(m_hInstance, MAKEINTRESOURCEW(IDI_ICON1));
+
     if (!RegisterClassW(&wc))
     {
         DWORD LastError = GetLastError();
@@ -83,6 +85,12 @@ bool Window::Create()
                            nullptr,
                            m_hInstance,
                            this);
+
+    if (m_hIcon != nullptr)
+    {
+        SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)m_hIcon);
+        SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)m_hIcon);
+    }
 
     ShowWindow(m_hWnd, SW_SHOW);
 

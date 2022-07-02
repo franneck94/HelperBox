@@ -35,6 +35,7 @@ protected:
 
 private:
     HANDLE m_hEvent;
+    HICON m_hIcon;
 
     LPCWSTR m_WindowName;
     int m_X;

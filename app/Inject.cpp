@@ -256,7 +256,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
     return InjectReply_Inject;
 }
 
-InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_hSettings(nullptr), m_Selected(-1)
+InjectWindow::InjectWindow() : m_hCharacters(nullptr), m_hLaunchButton(nullptr), m_Selected(-1)
 {
 }
 
@@ -361,18 +361,6 @@ void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                     nullptr,
                                     m_hInstance,
                                     nullptr);
-
-    m_hSettings = CreateWindowW(WC_BUTTONW,
-                                L"Settings...",
-                                WS_VISIBLE | WS_CHILD | WS_TABSTOP,
-                                200,
-                                65,
-                                80,
-                                25,
-                                hWnd,
-                                nullptr,
-                                m_hInstance,
-                                nullptr);
 }
 
 void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG NotificationCode)

@@ -2,7 +2,8 @@
 
 FILE(GLOB SOURCES
     "*.h"
-    "*.cpp")
+    "*.cpp"
+    "HelperBox.rc")
 
 add_executable(HelperBox)
 target_sources(HelperBox PRIVATE ${SOURCES})
