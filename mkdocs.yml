@@ -30,5 +30,6 @@ plugins:
 nav:
   - "Index": index.md
   - "EMO": Emo.md
-  - "Mainteam": Mainteam.md
+  - "Mainteam Mesmer": Mainteam.md
   - "Terra": Terra.md
+  - "Dhuum Bitch": Db.md

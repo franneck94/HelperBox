@@ -41,16 +41,9 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(fmt)
 
-if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET nlohmann_json ENABLE OFF AS_ERROR OFF)
-    target_set_warnings(TARGET fmt ENABLE OFF AS_ERROR OFF)
-endif()
-
 # Outputs dll, exe, and pdb into a /bin/config folder
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/")
 
 add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(app)
-
-target_compile_definitions(HelperBoxDll PRIVATE "$<$<CONFIG:DEBUG>:HELPERBOX_DEBUG>")
