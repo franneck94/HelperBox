@@ -29,9 +29,9 @@ public:
                                                                     uint32_t{760U},  // 3 ?
                                                                     uint32_t{740U},  // 4
                                                                     uint32_t{720U},  // 5
-                                                                    uint32_t{690U},  // 6 ?
+                                                                    uint32_t{680U},  // 6 ?
                                                                     uint32_t{660U},  // 7 ?
-                                                                    uint32_t{630U}}; // 8 ?
+                                                                    uint32_t{640U}}; // 8 ?
 
 private:
     void SkillPacketCallback(const uint32_t value_id,
