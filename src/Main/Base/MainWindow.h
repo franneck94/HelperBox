@@ -23,7 +23,7 @@ public:
 
     const char *Name() const override
     {
-        return "HelperBox";
+        return "Main Window";
     }
 
     const char *SettingsName() const override

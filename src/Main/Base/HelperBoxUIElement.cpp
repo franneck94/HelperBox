@@ -15,7 +15,6 @@ const char *HelperBoxUIElement::UIName() const
 void HelperBoxUIElement::Initialize()
 {
     HelperBoxModule::Initialize();
-    HelperBox::Instance().RegisterUIElement(this);
 }
 
 void HelperBoxUIElement::Terminate()

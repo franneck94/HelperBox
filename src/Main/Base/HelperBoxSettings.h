@@ -19,7 +19,7 @@ public:
 
     const char *Name() const override
     {
-        return "HelperBox";
+        return "Helper Settings";
     }
 
     void LoadModules(CSimpleIni *ini);

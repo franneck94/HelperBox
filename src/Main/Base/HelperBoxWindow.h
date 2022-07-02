@@ -2,6 +2,7 @@
 
 #include <Base/HelperBoxUIElement.h>
 #include <Defines.h>
+#include <HelperBox.h>
 
 class HelperBoxWindow : public HelperBoxUIElement
 {
@@ -10,6 +11,7 @@ public:
     {
         HelperBoxUIElement::Initialize();
         has_closebutton = true;
+        HelperBox::Instance().RegisterUIElement(this);
     }
 
     virtual void LoadSettings(CSimpleIni *ini) override
