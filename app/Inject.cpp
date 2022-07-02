@@ -326,17 +326,17 @@ void InjectWindow::OnCreate(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     UNREFERENCED_PARAMETER(wParam);
     UNREFERENCED_PARAMETER(lParam);
 
-    HWND hGroupBox = CreateWindowW(WC_BUTTONW,
-                                   L"Select Character",
-                                   WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
-                                   10,
-                                   5,
-                                   270,
-                                   55,
-                                   hWnd,
-                                   nullptr,
-                                   m_hInstance,
-                                   nullptr);
+    CreateWindowW(WC_BUTTONW,
+                  L"Select Character",
+                  WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
+                  10,
+                  5,
+                  270,
+                  55,
+                  hWnd,
+                  nullptr,
+                  m_hInstance,
+                  nullptr);
 
     m_hCharacters = CreateWindowW(WC_COMBOBOXW,
                                   L"",

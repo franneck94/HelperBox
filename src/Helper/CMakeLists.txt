@@ -14,5 +14,5 @@ target_link_libraries(HelperDll PUBLIC
     UtilsDll)
 
 if (${ENABLE_WARNINGS})
-    target_set_warnings(TARGET HelperDll ENABLE ON AS_ERROR OFF)
+    target_set_warnings(TARGET HelperDll ENABLE ON AS_ERROR ON)
 endif()
