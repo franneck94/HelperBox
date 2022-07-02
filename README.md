@@ -10,10 +10,10 @@ Note: Most windows are only displayed in Embark Beach and in the Underworld.
 ## Developement
 
 * CMake 3.21+
-* Visual Studio 2019 (v142)
-* C++17
+* MSVC 2019 or 2022
+* C++20
 * Git
-* Python 3.6+ for the scripts and doc
+* Python 3 for the Documenation
 
 ```bash
 git clone --recursive https://github.com/franneck94/HelperBox.git
@@ -22,5 +22,5 @@ git clone --recursive https://github.com/franneck94/HelperBox.git
 ```bash
 mkdir build
 cd build
-cmake .. -G "Visual Studio 16 2019" -T v142 -A Win32 -B .
+cmake .. -G "Visual Studio 16 2019" -A Win32 -B .
 ```
