@@ -2,7 +2,7 @@
 
 The window will only be rendered if you are on an E/MO.
 
-- Standard Skill Routine - **Pumping**:
+- Standard Skill Routine:
     - On-hold while walking or talking to reaper (yellow colored)
     - Self-Bonds
         - Cast Balth and Bond on self, if not present
@@ -10,6 +10,7 @@ The window will only be rendered if you are on an E/MO.
         - Whenever SB or Burning is not up, cast it
         - If HP or Energy is low, cast sb or burning
     - LT
+      - On Spawn: Bond LT, or whenever reaper ported and LT has no bonds
       - If LT is in a distance $[1225, 1248]$ and you and the LT are not moving
         - Maintain SB on the LT
         - If LT drops in HP => Fuse
@@ -30,14 +31,3 @@ The window will only be rendered if you are on an E/MO.
         - From Vale House to Vale Spirits
         - From Last Keeper to Wastes
     - Below the move-to button there is the *Next Pos.* and *Prev Pos.* button to circle in the list of positions
-
-- Player Bonding:
-    - Expected to have some players in the target
-    - Balth and Bond will be cast, if not yet present
-
-- Tank Bonding:
-    - If no target is selected then the 2nd last player will be targeted in UW, elsewhere the first player
-    - Balth, Life, and Bond will be cast if not present
-
-- Fuse Range:
-    - Walk to the target at a distance of 1230

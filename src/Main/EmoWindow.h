@@ -77,48 +77,6 @@ public:
     GW::HookEntry GenericValue_Entry;
 };
 
-class PlayerBonding : public EmoActionABC
-{
-public:
-    PlayerBonding(Player *p, EmoSkillbarData *s) : EmoActionABC(p, "Player Bonds", s)
-    {
-        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-            &GenericValue_Entry,
-            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
-                if (action_state == ActionState::ACTIVE && player->SkillStoppedCallback(packet))
-                    interrupted = true;
-            });
-    }
-
-    RoutineState Routine() override;
-    void Update() override;
-
-    bool interrupted = false;
-    GW::HookEntry GenericValue_Entry;
-};
-
-class FuseRange : public EmoActionABC
-{
-public:
-    static constexpr auto FUSE_PULL_RANGE = float{1230.0F};
-
-    FuseRange(Player *p, EmoSkillbarData *s) : EmoActionABC(p, "Fuse Range", s)
-    {
-    }
-
-    RoutineState Routine();
-    void Update();
-
-    void ResetData()
-    {
-        routine_state = RoutineState::NONE;
-        requested_pos = GW::GamePos{};
-    }
-
-    RoutineState routine_state = RoutineState::NONE;
-    GW::GamePos requested_pos = GW::GamePos{};
-};
-
 class EmoWindow : public HelperBoxWindow
 {
 public:
@@ -274,8 +232,6 @@ private:
     GW::HookEntry MapLoaded_Entry;
     bool load_cb_triggered = false;
 
-    FuseRange fuse_pull;
     Pumping pumping;
     TankBonding tank_bonding;
-    PlayerBonding player_bonding;
 };

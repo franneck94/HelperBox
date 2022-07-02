@@ -61,8 +61,7 @@ static auto KEEPER_MAP = std::map<std::string, GW::GamePos>{
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : player({}), skillbar({}), fuse_pull(&player, &skillbar), pumping(&player, &skillbar, &bag_idx, &slot_idx),
-      tank_bonding(&player, &skillbar), player_bonding(&player, &skillbar)
+    : player({}), skillbar({}), pumping(&player, &skillbar, &bag_idx, &slot_idx), tank_bonding(&player, &skillbar)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -113,9 +112,6 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
     {
         pumping.Draw();
-        tank_bonding.Draw();
-        player_bonding.Draw();
-        fuse_pull.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
             DrawMovingButtons(moves, move_ongoing, move_idx);
@@ -233,8 +229,6 @@ void EmoWindow::Update(float)
     }
 
     tank_bonding.Update();
-    player_bonding.Update();
-    fuse_pull.Update();
     pumping.Update();
 }
 
@@ -615,6 +609,7 @@ bool Pumping::DropBondsLT() const
 
 RoutineState Pumping::Routine()
 {
+    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
 
     if (!player->CanCast())
         return RoutineState::ACTIVE;
@@ -622,7 +617,7 @@ RoutineState Pumping::Routine()
     if (!HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (RoutineWhenInRangeBondLT())
+    if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())
         return RoutineState::FINISHED;
 
     if (RoutineSelfBonds())
@@ -631,7 +626,6 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(*player);
     if (IsAtSpawn(*player) && RoutineKeepPlayerAlive())
         return RoutineState::FINISHED;
 
@@ -818,143 +812,6 @@ void TankBonding::Update()
     {
         StateOnHold(*emo_casting_action_state);
         const auto routine_state = Routine();
-
-        if (routine_state == RoutineState::FINISHED)
-        {
-            action_state = ActionState::INACTIVE;
-            StateOnActive(*emo_casting_action_state);
-        }
-    }
-}
-
-RoutineState PlayerBonding::Routine()
-{
-    static auto target_id = uint32_t{0};
-
-    if (interrupted)
-    {
-        target_id = 0;
-        interrupted = false;
-        return RoutineState::FINISHED;
-    }
-
-    if (!player->CanCast())
-        return RoutineState::ACTIVE;
-
-    if (!target_id && !player->target)
-    {
-        target_id = 0;
-        return RoutineState::FINISHED;
-    }
-
-    if (!target_id)
-        target_id = player->target->agent_id;
-
-    auto target = player->target;
-    if (!target || target->agent_id == player->id)
-    {
-        player->ChangeTarget(target_id);
-        target = player->target;
-    }
-
-    if (target->agent_id != target_id)
-    {
-        target_id = 0;
-        return RoutineState::FINISHED;
-    }
-
-    const auto is_alive_ally = IsAliveAlly(target);
-    if (!is_alive_ally)
-    {
-        target_id = 0;
-        return RoutineState::FINISHED;
-    }
-
-    if (CastBondIfNotAvailable(skillbar->balth, target_id, player))
-        return RoutineState::ACTIVE;
-
-    if (CastBondIfNotAvailable(skillbar->prot, target_id, player))
-        return RoutineState::ACTIVE;
-
-    target_id = 0;
-    return RoutineState::FINISHED;
-}
-
-void PlayerBonding::Update()
-{
-    if (GW::PartyMgr::GetIsPartyDefeated())
-        action_state = ActionState::INACTIVE;
-
-    if (action_state == ActionState::ACTIVE)
-    {
-        StateOnHold(*emo_casting_action_state);
-        const auto routine_state = Routine();
-
-        if (routine_state == RoutineState::FINISHED)
-        {
-            action_state = ActionState::INACTIVE;
-            StateOnActive(*emo_casting_action_state);
-        }
-    }
-}
-
-RoutineState FuseRange::Routine()
-{
-    ResetState(routine_state);
-
-    if (!player->target)
-    {
-        ResetData();
-        return RoutineState::FINISHED;
-    }
-
-    const auto is_alive_ally = IsAliveAlly(player->target);
-    if (!is_alive_ally)
-    {
-        ResetData();
-        return RoutineState::FINISHED;
-    }
-
-    const auto me_pos = player->pos;
-    const auto target_pos = player->target->pos;
-
-    if (routine_state == RoutineState::NONE)
-    {
-        const auto m_x = me_pos.x;
-        const auto m_y = me_pos.y;
-        const auto t_x = target_pos.x;
-        const auto t_y = target_pos.y;
-
-        const auto dist = GW::GetDistance(me_pos, target_pos);
-        const auto d_t = FUSE_PULL_RANGE;
-        const auto t = d_t / dist;
-
-        const auto p_x = ((1.0F - t) * t_x + t * m_x);
-        const auto p_y = ((1.0F - t) * t_y + t * m_y);
-
-        requested_pos = GW::GamePos{p_x, p_y, 0};
-        routine_state = SafeWalk(requested_pos, true);
-
-        return RoutineState::ACTIVE;
-    }
-    else if (routine_state == RoutineState::ACTIVE && player->living->GetIsMoving())
-    {
-        return RoutineState::ACTIVE;
-    }
-
-    ResetData();
-    return RoutineState::FINISHED;
-}
-
-void FuseRange::Update()
-{
-    if (GW::PartyMgr::GetIsPartyDefeated())
-        action_state = ActionState::INACTIVE;
-
-    if (action_state == ActionState::ACTIVE)
-    {
-        StateOnHold(*emo_casting_action_state);
-        routine_state = Routine();
 
         if (routine_state == RoutineState::FINISHED)
         {
