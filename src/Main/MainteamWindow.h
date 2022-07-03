@@ -8,7 +8,7 @@
 #include <GWCA/GameEntities/Agent.h>
 
 #include <Actions.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>
@@ -16,7 +16,8 @@
 class MainteamWindow : public HelperBoxWindow
 {
 public:
-    MainteamWindow() : player({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
+    MainteamWindow()
+        : player_data({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
     ~MainteamWindow(){};
 
     static MainteamWindow &Instance()
@@ -36,7 +37,7 @@ public:
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
-    Player player;
+    PlayerData player_data;
     std::vector<GW::AgentLiving *> filtered_livings;
     std::vector<GW::AgentLiving *> aatxe_livings;
     std::vector<GW::AgentLiving *> dryder_livings;

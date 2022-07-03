@@ -6,7 +6,7 @@
 #include <GWCA/Managers/CameraMgr.h>
 
 #include <Helper.h>
-#include <Player.h>
+#include <PlayerData.h>
 
 #include "MathUtils.h"
 
@@ -34,7 +34,7 @@ GW::GamePos MovePointAlongVector(const GW::GamePos &pos1, const GW::GamePos &pos
 
 GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const float offset)
 {
-    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.00F); // Behind player
+    const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.00F); // Behind player_data
     const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.20F); // In front of Target
 
     const auto delta_x = adj_p1.x - adj_p2.x;
@@ -71,14 +71,14 @@ bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
     return ((b1 == b2) && (b2 == b3));
 }
 
-GW::GamePos RotatePoint(const Player &player, GW::GamePos pos, const float theta, const bool swap)
+GW::GamePos RotatePoint(const PlayerData &player_data, GW::GamePos pos, const float theta, const bool swap)
 {
     GW::GamePos v(pos.x, pos.y, 0);
 
     if (swap)
     {
-        v.x = pos.x - player.pos.x;
-        v.y = player.pos.y - pos.y;
+        v.x = pos.x - player_data.pos.x;
+        v.y = player_data.pos.y - pos.y;
     }
 
     const auto x1 = v.x * std::cos(theta) - v.y * std::sin(theta);
@@ -88,9 +88,9 @@ GW::GamePos RotatePoint(const Player &player, GW::GamePos pos, const float theta
     return v;
 }
 
-bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r)
+bool IsNearToGamePos(const PlayerData &player_data, const GW::GamePos &pos, const float r)
 {
-    const auto dist = GW::GetDistance(player.pos, pos);
+    const auto dist = GW::GetDistance(player_data.pos, pos);
 
     if (dist < r)
         return true;
@@ -113,13 +113,13 @@ std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &re
     return filtered_livings;
 }
 
-std::pair<float, float> GetLineBasedOnPointAndAngle(const Player &player, const float theta)
+std::pair<float, float> GetLineBasedOnPointAndAngle(const PlayerData &player_data, const float theta)
 {
-    const auto orth_point = RotatePoint(player, player.pos, theta + static_cast<float>(M_PI_2), false);
-    const auto point2 = GW::GamePos{player.pos.x + orth_point.x, player.pos.x + orth_point.y, 0};
+    const auto orth_point = RotatePoint(player_data, player_data.pos, theta + static_cast<float>(M_PI_2), false);
+    const auto point2 = GW::GamePos{player_data.pos.x + orth_point.x, player_data.pos.x + orth_point.y, 0};
 
-    const auto m = (point2.y - player.pos.y) / (point2.x - player.pos.x + FLT_EPSILON);
-    const auto b = player.pos.y + m * player.pos.x;
+    const auto m = (point2.y - player_data.pos.y) / (point2.x - player_data.pos.x + FLT_EPSILON);
+    const auto b = player_data.pos.y + m * player_data.pos.x;
 
     return std::make_pair(m, b);
 }

@@ -7,7 +7,7 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Player.h>
+#include <PlayerData.h>
 
 #include "Callbacks.h"
 

@@ -8,7 +8,7 @@
 
 #include <Actions.h>
 #include <Callbacks.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>
@@ -50,9 +50,9 @@ private:
     void UpdateDamageData();
 
 public:
-    DhuumStatsWindow() : player({}), rests({}), damages({})
+    DhuumStatsWindow() : player_data({}), rests({}), damages({})
     {
-        /* Skill on self or party player */
+        /* Skill on self or party player_data */
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
             &SkillCasted_Entry,
             [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
@@ -91,7 +91,7 @@ public:
     void Update(float delta) override;
 
 private:
-    Player player;
+    PlayerData player_data;
 
     GW::HookEntry SkillCasted_Entry;
     GW::HookEntry Damage_Entry;

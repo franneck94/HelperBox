@@ -7,7 +7,7 @@
 #include <GWCA/GameEntities/Agent.h>
 
 #include <Actions.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 #include <Base/HelperBoxWindow.h>
@@ -15,7 +15,7 @@
 class AutoFollowAction : public ActionABC
 {
 public:
-    AutoFollowAction(Player *p) : ActionABC(p, "Follow")
+    AutoFollowAction(PlayerData *p) : ActionABC(p, "Follow")
     {
     }
 
@@ -26,7 +26,7 @@ public:
 class AutoFollowWindow : public HelperBoxWindow
 {
 public:
-    AutoFollowWindow() : player({}), auto_follow(&player){};
+    AutoFollowWindow() : player_data({}), auto_follow(&player_data){};
     ~AutoFollowWindow(){};
 
     static AutoFollowWindow &Instance()
@@ -44,6 +44,6 @@ public:
     void Update(float delta) override;
 
 private:
-    Player player;
+    PlayerData player_data;
     AutoFollowAction auto_follow;
 };

@@ -18,7 +18,7 @@ void StateOnHold(ActionState &state);
 enum class TargetType
 {
     Gadget = 0,
-    Player,
+    PlayerData,
     Npc,
     Item,
     Living_Ally,

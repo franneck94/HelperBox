@@ -13,7 +13,7 @@
 #include <Logger.h>
 #include <Timer.h>
 
-#include <Player.h>
+#include <PlayerData.h>
 #include <Skillbars.h>
 #include <Types.h>
 
@@ -87,14 +87,14 @@ public:
     void Execute() const;
 
 public:
-    static bool IsAtFilterSkelePos(const Player &player, const GW::GamePos &next_pos);
-    static bool CheckForAggroFree(const Player &player, const GW::GamePos &next_pos);
-    static bool UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move);
-    static bool UpdateMoveState_CallbackAndContinue(const Player &player, const Move &move);
-    static bool UpdateMoveState_CastSkill(const Player &player, const Move &move);
-    static bool UpdateMoveState_Wait(const Player &player, const Move &move);
-    static bool UpdateMoveState_WaitAndStop(const Player &player, const Move &move);
-    static bool UpdateMoveState_DistanceLT(const Player &player, const Move &move);
+    static bool IsAtFilterSkelePos(const PlayerData &player_data, const GW::GamePos &next_pos);
+    static bool CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &next_pos);
+    static bool UpdateMoveState(const PlayerData &player_data, bool &move_ongoing, const Move &move);
+    static bool UpdateMoveState_CallbackAndContinue(const PlayerData &player_data, const Move &move);
+    static bool UpdateMoveState_CastSkill(const PlayerData &player_data, const Move &move);
+    static bool UpdateMoveState_Wait(const PlayerData &player_data, const Move &move);
+    static bool UpdateMoveState_WaitAndStop(const PlayerData &player_data, const Move &move);
+    static bool UpdateMoveState_DistanceLT(const PlayerData &player_data, const Move &move);
 
 private:
     float x = 0.0F;
@@ -111,12 +111,12 @@ public:
 };
 
 template <uint32_t N>
-uint32_t GetFirstCloseMove(const Player &player, const std::array<Move, N> &moves)
+uint32_t GetFirstCloseMove(const PlayerData &player_data, const std::array<Move, N> &moves)
 {
     auto idx = 0U;
     for (const auto move : moves)
     {
-        const auto dist_to_move = GW::GetDistance(player.pos, move.pos);
+        const auto dist_to_move = GW::GetDistance(player_data.pos, move.pos);
         if (dist_to_move < GW::Constants::Range::Spellcast)
             return idx;
 
@@ -127,7 +127,10 @@ uint32_t GetFirstCloseMove(const Player &player, const std::array<Move, N> &move
 }
 
 template <uint32_t N>
-void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint32_t &move_idx, bool &move_ongoing)
+void UpdatedUwMoves_Main(const PlayerData &player_data,
+                         std::array<Move, N> &moves,
+                         uint32_t &move_idx,
+                         bool &move_ongoing)
 {
     static auto trigger_timer_ms = clock();
     static auto already_reached_pos = false;
@@ -138,10 +141,10 @@ void UpdatedUwMoves_Main(const Player &player, std::array<Move, N> &moves, uint3
     if (move_idx >= moves.size() - 1U)
         return;
 
-    const auto can_be_finished = Move::UpdateMoveState(player, move_ongoing, moves[move_idx]);
+    const auto can_be_finished = Move::UpdateMoveState(player_data, move_ongoing, moves[move_idx]);
 
-    const auto is_moving = player.living->GetIsMoving();
-    const auto reached_pos = GamePosCompare(player.pos, moves[move_idx].pos, 0.001F);
+    const auto is_moving = player_data.living->GetIsMoving();
+    const auto reached_pos = GamePosCompare(player_data.pos, moves[move_idx].pos, 0.001F);
     if (!already_reached_pos && reached_pos)
         already_reached_pos = true;
 

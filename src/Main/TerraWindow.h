@@ -8,7 +8,7 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
-#include <Player.h>
+#include <PlayerData.h>
 #include <Timer.h>
 #include <Types.h>
 
@@ -17,7 +17,7 @@
 class AutoTargetAction : public ActionABC
 {
 public:
-    AutoTargetAction(Player *p) : ActionABC(p, "Auto Target")
+    AutoTargetAction(PlayerData *p) : ActionABC(p, "Auto Target")
     {
     }
 
@@ -28,7 +28,7 @@ public:
 class TerraWindow : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player({}), filtered_livings({}), auto_target(&player), last_casted_times_ms({}){};
+    TerraWindow() : player_data({}), filtered_livings({}), auto_target(&player_data), last_casted_times_ms({}){};
     ~TerraWindow(){};
 
     static TerraWindow &Instance()
@@ -48,7 +48,7 @@ public:
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
-    Player player;
+    PlayerData player_data;
     std::map<uint32_t, clock_t> last_casted_times_ms;
 
     std::vector<GW::AgentLiving *> filtered_livings;

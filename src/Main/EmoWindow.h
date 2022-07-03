@@ -13,7 +13,7 @@
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <Move.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -22,7 +22,7 @@
 class Pumping : public EmoActionABC
 {
 public:
-    Pumping(Player *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx);
+    Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx);
 
     RoutineState Routine() override;
     void Update() override;
@@ -60,12 +60,12 @@ private:
 class TankBonding : public EmoActionABC
 {
 public:
-    TankBonding(Player *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s)
+    TankBonding(PlayerData *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s)
     {
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
             &GenericValue_Entry,
             [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
-                if (action_state == ActionState::ACTIVE && player->SkillStoppedCallback(packet))
+                if (action_state == ActionState::ACTIVE && player_data->SkillStoppedCallback(packet))
                     interrupted = true;
             });
     }
@@ -155,7 +155,7 @@ private:
 
     void WarnDistanceLT() const;
 
-    Player player;
+    PlayerData player_data;
     bool first_frame = false;
     EmoSkillbarData skillbar;
 
@@ -166,8 +166,8 @@ private:
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     uint32_t move_idx = 0;

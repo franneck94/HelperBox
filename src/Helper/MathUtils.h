@@ -2,7 +2,7 @@
 
 #include <GWCA/GameContainers/GamePos.h>
 
-#include <Player.h>
+#include <PlayerData.h>
 
 bool FloatCompare(const float a, const float b, const float epsilon = 1e-3F);
 
@@ -41,12 +41,12 @@ template <typename T>
     return deg * (PI<T> / static_cast<T>(180.0));
 }
 
-GW::GamePos RotatePoint(const Player &player, GW::GamePos pos, const float theta, const bool swap = true);
+GW::GamePos RotatePoint(const PlayerData &player_data, GW::GamePos pos, const float theta, const bool swap = true);
 
-bool IsNearToGamePos(const Player &player, const GW::GamePos &pos, const float r);
+bool IsNearToGamePos(const PlayerData &player_data, const GW::GamePos &pos, const float r);
 
 std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle);
 
 bool PointIsBelowLine(const float slope, const float bias, const GW::GamePos &point);
 
-std::pair<float, float> GetLineBasedOnPointAndAngle(const Player &player, const float theta);
+std::pair<float, float> GetLineBasedOnPointAndAngle(const PlayerData &player_data, const float theta);

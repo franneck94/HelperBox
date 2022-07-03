@@ -10,10 +10,10 @@
 
 #include <Skillbars.h>
 
-class Player
+class PlayerData
 {
 public:
-    Player(const uint32_t agent_id = UINT32_MAX) : id(agent_id), pos(GW::GamePos{0.0F, 0.0F, 0}){};
+    PlayerData(const uint32_t agent_id = UINT32_MAX) : id(agent_id), pos(GW::GamePos{0.0F, 0.0F, 0}){};
 
     bool ValidateData(std::function<bool()> cb_fn) const;
     void Update();

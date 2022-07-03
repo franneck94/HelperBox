@@ -8,7 +8,7 @@
 
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 #include "UwHelper.h"
@@ -29,28 +29,29 @@ bool UwHelperActivationConditions()
     return true;
 }
 
-bool IsEmo(const Player &player)
+bool IsEmo(const PlayerData &player_data)
 {
-    return (player.primary == GW::Constants::Profession::Elementalist &&
-            player.secondary == GW::Constants::Profession::Monk);
+    return (player_data.primary == GW::Constants::Profession::Elementalist &&
+            player_data.secondary == GW::Constants::Profession::Monk);
 }
 
-bool IsDhuumBitch(const Player &player)
+bool IsDhuumBitch(const PlayerData &player_data)
 {
-    return ((player.primary == GW::Constants::Profession::Ritualist ||
-             player.primary == GW::Constants::Profession::Dervish) &&
-            player.secondary == GW::Constants::Profession::Ranger);
+    return ((player_data.primary == GW::Constants::Profession::Ritualist ||
+             player_data.primary == GW::Constants::Profession::Dervish) &&
+            player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
-bool IsSpiker(const Player &player)
+bool IsSpiker(const PlayerData &player_data)
 {
-    return (player.primary == GW::Constants::Profession::Mesmer &&
-            player.secondary == GW::Constants::Profession::Ranger);
+    return (player_data.primary == GW::Constants::Profession::Mesmer &&
+            player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
-bool IsLT(const Player &player)
+bool IsLT(const PlayerData &player_data)
 {
-    if (player.primary == GW::Constants::Profession::Mesmer && player.secondary == GW::Constants::Profession::Assassin)
+    if (player_data.primary == GW::Constants::Profession::Mesmer &&
+        player_data.secondary == GW::Constants::Profession::Assassin)
         return true;
 
     // Check if Me/E has Mantra of Earth => T4 build
@@ -64,115 +65,115 @@ bool IsLT(const Player &player)
         }
     }
 
-    return (player.primary == GW::Constants::Profession::Mesmer &&
-            player.secondary == GW::Constants::Profession::Elementalist);
+    return (player_data.primary == GW::Constants::Profession::Mesmer &&
+            player_data.secondary == GW::Constants::Profession::Elementalist);
 }
 
-bool IsRangerTerra(const Player &player)
+bool IsRangerTerra(const PlayerData &player_data)
 {
-    return (player.primary == GW::Constants::Profession::Ranger &&
-            player.secondary == GW::Constants::Profession::Assassin);
+    return (player_data.primary == GW::Constants::Profession::Ranger &&
+            player_data.secondary == GW::Constants::Profession::Assassin);
 }
 
-bool IsMesmerTerra(const Player &player)
+bool IsMesmerTerra(const PlayerData &player_data)
 {
-    if (player.primary != GW::Constants::Profession::Mesmer ||
-        player.secondary != GW::Constants::Profession::Elementalist)
+    if (player_data.primary != GW::Constants::Profession::Mesmer ||
+        player_data.secondary != GW::Constants::Profession::Elementalist)
         return false;
 
-    return !IsLT(player);
+    return !IsLT(player_data);
 }
 
-bool IsAtSpawn(const Player &player)
+bool IsAtSpawn(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{1248.00F, 6965.51F, 0}, 500.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{1248.00F, 6965.51F, 0}, 500.0F);
 }
 
-bool IsAtChamberSkele(const Player &player)
+bool IsAtChamberSkele(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 2250.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-2726.856F, 10239.48F, 0}, 2250.0F);
 }
 
-bool IsAtBasementSkele(const Player &player)
+bool IsAtBasementSkele(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-5183.64F, 8876.31F, 0}, 2000.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-5183.64F, 8876.31F, 0}, 2000.0F);
 }
 
-bool IsRightAtChamberSkele(const Player &player)
+bool IsRightAtChamberSkele(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-2726.856F, 10239.48F, 0}, 300.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-2726.856F, 10239.48F, 0}, 300.0F);
 }
 
-bool IsAtFusePull1(const Player &player)
+bool IsAtFusePull1(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-6263.33F, 9899.79F, 0}, 1500.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-6263.33F, 9899.79F, 0}, 1500.0F);
 }
 
-bool IsAtFusePull2(const Player &player)
+bool IsAtFusePull2(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-7829.98F, 4324.09F, 0}, 1500.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-7829.98F, 4324.09F, 0}, 1500.0F);
 }
 
-bool IsAtFusePulls(const Player &player)
+bool IsAtFusePulls(const PlayerData &player_data)
 {
     if (!IsUw())
         return false;
 
-    if (IsAtFusePull1(player) || IsAtFusePull2(player))
+    if (IsAtFusePull1(player_data) || IsAtFusePull2(player_data))
         return true;
 
     return false;
 }
 
-bool IsAtValeStart(const Player &player)
+bool IsAtValeStart(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-9764.08F, 2056.60F, 0}, 1500.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-9764.08F, 2056.60F, 0}, 1500.0F);
 }
 
-bool IsAtValeHouse(const Player &player)
+bool IsAtValeHouse(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-12264.12F, 1821.18F, 0}, 1500.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-12264.12F, 1821.18F, 0}, 1500.0F);
 }
 
-bool IsRightAtValeHouse(const Player &player)
+bool IsRightAtValeHouse(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-12264.12F, 1821.18F, 0}, 5.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-12264.12F, 1821.18F, 0}, 5.0F);
 }
 
-bool IsAtSpirits1(const Player &player)
+bool IsAtSpirits1(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-13872.34F, 2332.34F, 0}, GW::Constants::Range::Spellcast);
+    return IsNearToGamePos(player_data, GW::GamePos{-13872.34F, 2332.34F, 0}, GW::Constants::Range::Spellcast);
 }
 
-bool IsAtSpirits2(const Player &player)
+bool IsAtSpirits2(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-13760.19F, 358.15F, 0}, GW::Constants::Range::Spellcast);
+    return IsNearToGamePos(player_data, GW::GamePos{-13760.19F, 358.15F, 0}, GW::Constants::Range::Spellcast);
 }
 
-bool IsAtValeSpirits(const Player &player)
+bool IsAtValeSpirits(const PlayerData &player_data)
 {
     if (!IsUw())
         return false;
 
-    if (IsAtSpirits1(player) || IsAtSpirits2(player))
+    if (IsAtSpirits1(player_data) || IsAtSpirits2(player_data))
         return true;
 
     return false;
 }
 
-bool IsInDhuumRoom(const Player &player)
+bool IsInDhuumRoom(const PlayerData &player_data)
 {
 #ifdef _DEBUG
     if (GW::Map::GetMapID() == GW::Constants::MapID::Isle_of_the_Nameless)
         return true;
 #endif
 
-    return IsNearToGamePos(player, GW::GamePos{-16105.50F, 17284.84F, 0}, GW::Constants::Range::Spellcast);
+    return IsNearToGamePos(player_data, GW::GamePos{-16105.50F, 17284.84F, 0}, GW::Constants::Range::Spellcast);
 }
 
-bool IsGoingToDhuum(const Player &player)
+bool IsGoingToDhuum(const PlayerData &player_data)
 {
-    return IsNearToGamePos(player, GW::GamePos{-9567.56F, 17288.916F, 0}, 100.0F);
+    return IsNearToGamePos(player_data, GW::GamePos{-9567.56F, 17288.916F, 0}, 100.0F);
 }
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
@@ -264,26 +265,26 @@ bool TankIsSoloLT()
     return false;
 }
 
-bool TargetIsReaper(Player &player)
+bool TargetIsReaper(PlayerData &player_data)
 {
-    if (!player.target)
+    if (!player_data.target)
         return false;
 
-    const auto living_target = player.target->GetAsAgentLiving();
+    const auto living_target = player_data.target->GetAsAgentLiving();
     if (!living_target || living_target->player_number != static_cast<uint32_t>(GW::Constants::ModelID::UW::Reapers))
         return false;
 
     return true;
 }
 
-bool TargetReaper(Player &player)
+bool TargetReaper(PlayerData &player_data)
 {
-    return TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers) != 0;
+    return TargetClosestNpcById(player_data, GW::Constants::ModelID::UW::Reapers) != 0;
 }
 
-bool TalkReaper(Player &player)
+bool TalkReaper(PlayerData &player_data)
 {
-    const auto id = TargetClosestNpcById(player, GW::Constants::ModelID::UW::Reapers);
+    const auto id = TargetClosestNpcById(player_data, GW::Constants::ModelID::UW::Reapers);
 
     if (!id)
         return true;
@@ -297,9 +298,9 @@ bool TalkReaper(Player &player)
     return true;
 }
 
-bool TargetClosestKeeper(Player &player)
+bool TargetClosestKeeper(PlayerData &player_data)
 {
-    return TargetClosestEnemyById(player, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
+    return TargetClosestEnemyById(player_data, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
 
 bool AcceptChamber()

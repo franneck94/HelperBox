@@ -8,7 +8,7 @@
 #include <GWCA/Managers/CameraMgr.h>
 
 #include <Actions.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 #include <GuiConstants.h>
@@ -66,23 +66,29 @@ void DrawMovingButtons(const std::array<T, N> &moves, bool &move_ongoing, uint32
     }
 }
 
-void PlotRectangleLine(const Player &player, const GW::GamePos &p1, const GW::GamePos &p2, std::string_view label);
+void PlotRectangleLine(const PlayerData &player_data,
+                       const GW::GamePos &p1,
+                       const GW::GamePos &p2,
+                       std::string_view label);
 
-void PlotPoint(const Player &player,
+void PlotPoint(const PlayerData &player_data,
                const GW::GamePos &p,
                std::string_view label,
                const ImVec4 &color,
                const float width = 5.0F);
 
-void PlotCircle(const Player &player, std::string_view label, const ImVec4 &color);
+void PlotCircle(const PlayerData &player_data, std::string_view label, const ImVec4 &color);
 
-void PlotEnemies(const Player &player,
+void PlotEnemies(const PlayerData &player_data,
                  const std::vector<GW::AgentLiving *> &living_agents,
                  std::string_view label,
                  const ImVec4 &color);
 
 template <typename T, uint32_t N>
-void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t move_idx, std::string_view label)
+void DrawMap(const PlayerData &player_data,
+             const std::array<T, N> &moves,
+             const uint32_t move_idx,
+             std::string_view label)
 {
     const auto cam = GW::CameraMgr::GetCamera();
     if (!cam)
@@ -99,7 +105,7 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
         if (ImPlot::BeginPlot(label_plot.data(), ImVec2{400.0F, 400.0F}, ImPlotFlags_CanvasOnly))
         {
             const auto next_pos = moves[move_idx].pos;
-            const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
+            const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
 
             const auto flags_axis =
                 ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickMarks | ImPlotAxisFlags_NoTickLabels;
@@ -115,21 +121,21 @@ void DrawMap(const Player &player, const std::array<T, N> &moves, const uint32_t
                                     GW::Constants::Range::Compass,
                                     ImGuiCond_Always);
 
-            PlotPoint(player, player.pos, "player", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
-            PlotPoint(player, next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
+            PlotPoint(player_data, player_data.pos, "player_data", ImVec4{1.0F, 1.0F, 1.0F, 1.0F}, 5.0F);
+            PlotPoint(player_data, next_pos, "target", ImVec4{0.5F, 0.5F, 0.0F, 1.0F}, 5.0F);
 
-            PlotRectangleLine(player, rect.v1, rect.v2, "line1");
-            PlotRectangleLine(player, rect.v1, rect.v3, "line2");
-            PlotRectangleLine(player, rect.v4, rect.v2, "line3");
-            PlotRectangleLine(player, rect.v4, rect.v3, "line4");
+            PlotRectangleLine(player_data, rect.v1, rect.v2, "line1");
+            PlotRectangleLine(player_data, rect.v1, rect.v3, "line2");
+            PlotRectangleLine(player_data, rect.v4, rect.v2, "line3");
+            PlotRectangleLine(player_data, rect.v4, rect.v3, "line4");
 
-            PlotCircle(player, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
+            PlotCircle(player_data, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
 
             const auto living_agents = GetEnemiesInCompass();
-            PlotEnemies(player, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
+            PlotEnemies(player_data, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
 
             const auto filtered_livings = GetEnemiesInGameRectangle(rect);
-            PlotEnemies(player, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
+            PlotEnemies(player_data, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();
     }

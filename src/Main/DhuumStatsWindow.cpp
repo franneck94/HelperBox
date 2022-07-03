@@ -17,7 +17,7 @@
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -106,7 +106,7 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
     if (!visible)
         return;
 
-    if (!player.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(170.0F, 175.0F), ImGuiCond_FirstUseEver);
@@ -212,11 +212,11 @@ void DhuumStatsWindow::UpdateDamageData()
 
 void DhuumStatsWindow::Update(float)
 {
-    if (!player.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
-    player.Update();
+    player_data.Update();
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(player);
+    const auto is_in_dhuum_room = IsInDhuumRoom(player_data);
     if (!is_in_dhuum_room)
         ResetData();
 

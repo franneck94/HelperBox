@@ -12,7 +12,7 @@
 #include <Callbacks.h>
 #include <GuiUtils.h>
 #include <Move.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -21,7 +21,7 @@
 class Damage : public DbActionABC
 {
 public:
-    Damage(Player *p, DbSkillbarData *s);
+    Damage(PlayerData *p, DbSkillbarData *s);
 
     RoutineState Routine() override;
     void Update() override;
@@ -92,14 +92,14 @@ private:
     // Settings
     bool show_debug_map = true;
 
-    Player player;
+    PlayerData player_data;
     bool first_frame = false;
     DbSkillbarData skillbar;
 
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data); };
     std::function<bool()> cast_sq = [&]() {
-        skillbar.sq.Cast(player.energy);
+        skillbar.sq.Cast(player_data.energy);
         return true;
     };
 

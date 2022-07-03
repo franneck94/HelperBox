@@ -15,7 +15,7 @@
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -34,13 +34,13 @@ void AutoFollowAction::Update()
 
 RoutineState AutoFollowAction::Routine()
 {
-    if (!player || !player->target || !player->target->GetIsLivingType())
+    if (!player_data || !player_data->target || !player_data->target->GetIsLivingType())
         return RoutineState::FINISHED;
 
-    if (player->living->GetIsMoving())
+    if (player_data->living->GetIsMoving())
         return RoutineState::ACTIVE;
 
-    GW::Agents::GoPlayer(player->target);
+    GW::Agents::GoPlayer(player_data->target);
 
     return RoutineState::ACTIVE;
 }
@@ -50,7 +50,7 @@ void AutoFollowWindow::Draw(IDirect3DDevice9 *)
     if (!visible)
         return;
 
-    if (!player.ValidateData(HelperActivationConditions))
+    if (!player_data.ValidateData(HelperActivationConditions))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);
@@ -68,9 +68,9 @@ void AutoFollowWindow::Update(float)
     if (IsLoading())
         return;
 
-    if (!player.ValidateData(HelperActivationConditions))
+    if (!player_data.ValidateData(HelperActivationConditions))
         return;
-    player.Update();
+    player_data.Update();
 
     auto_follow.Update();
 }

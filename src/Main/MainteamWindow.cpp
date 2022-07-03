@@ -22,7 +22,7 @@
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -66,7 +66,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color);
         }
-        const auto distance = GW::GetDistance(player.pos, living->pos);
+        const auto distance = GW::GetDistance(player_data.pos, living->pos);
         ImGui::TableNextColumn();
         ImGui::Text("%3.0f%%", living->hp * 100.0F);
         ImGui::TableNextColumn();
@@ -76,7 +76,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         ImGui::TableNextColumn();
         if (ImGui::Button(_label.data()))
-            player.ChangeTarget(living->agent_id);
+            player_data.ChangeTarget(living->agent_id);
 
         ++idx;
 
@@ -92,7 +92,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsSpiker(player) && !IsLT(player))
+    if (!IsSpiker(player_data) && !IsLT(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
@@ -137,14 +137,14 @@ void MainteamWindow::Update(float)
     horseman_livings.clear();
     keeper_livings.clear();
 
-    if (!player.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
-    player.Update();
+    player_data.Update();
 
-    if (!IsSpiker(player) && !IsLT(player))
+    if (!IsSpiker(player_data) && !IsLT(player_data))
         return;
 
-    FilterAgents(player, filtered_livings, IDS, GW::Constants::Allegiance::Enemy, 1600.0F);
+    FilterAgents(player_data, filtered_livings, IDS, GW::Constants::Allegiance::Enemy, 1600.0F);
     SplitFilteredAgents(filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
     SplitFilteredAgents(filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
     SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
@@ -152,10 +152,10 @@ void MainteamWindow::Update(float)
     SplitFilteredAgents(filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
-    SortByDistance(player, aatxe_livings);
-    SortByDistance(player, nightmare_livings);
-    SortByDistance(player, horseman_livings);
-    SortByDistance(player, keeper_livings);
-    SortByDistance(player, dryder_livings);
-    SortByDistance(player, skele_livings);
+    SortByDistance(player_data, aatxe_livings);
+    SortByDistance(player_data, nightmare_livings);
+    SortByDistance(player_data, horseman_livings);
+    SortByDistance(player_data, keeper_livings);
+    SortByDistance(player_data, dryder_livings);
+    SortByDistance(player_data, skele_livings);
 }

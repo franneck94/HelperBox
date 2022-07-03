@@ -13,7 +13,7 @@
 #include <GWCA/Managers/MapMgr.h>
 
 #include <MathUtils.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 bool IsLoading();
@@ -55,7 +55,7 @@ bool LowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 bool HighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx);
 
 template <uint32_t N>
-void FilterAgents(const Player &player,
+void FilterAgents(const PlayerData &player_data,
                   std::vector<GW::AgentLiving *> &filtered_livings,
                   const std::array<uint32_t, N> &ids,
                   const GW::Constants::Allegiance allegiance,
@@ -91,7 +91,7 @@ void FilterAgents(const Player &player,
                 }
                 else
                 {
-                    const auto dist = GW::GetDistance(player.pos, agent->pos);
+                    const auto dist = GW::GetDistance(player_data.pos, agent->pos);
 
                     if (dist < max_distance)
                     {
@@ -107,7 +107,7 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_livings,
                          std::vector<GW::AgentLiving *> &splitted_agents,
                          const uint32_t id);
 
-void SortByDistance(const Player &player, std::vector<GW::AgentLiving *> &filtered_livings);
+void SortByDistance(const PlayerData &player_data, std::vector<GW::AgentLiving *> &filtered_livings);
 
 bool CanMove();
 
@@ -115,21 +115,21 @@ bool IsAliveAlly(const GW::Agent *target);
 
 uint32_t GetPartyIdxByID(const uint32_t id);
 
-std::pair<GW::Agent *, float> GetClosestEnemy(const Player *player);
+std::pair<GW::Agent *, float> GetClosestEnemy(const PlayerData *player_data);
 
-uint32_t GetClosesTypeID(const Player &player, const uint32_t id, const GW::Constants::Allegiance type);
+uint32_t GetClosesTypeID(const PlayerData &player_data, const uint32_t id, const GW::Constants::Allegiance type);
 
-uint32_t GetClosestEnemyTypeID(const Player &player, const uint32_t id);
+uint32_t GetClosestEnemyTypeID(const PlayerData &player_data, const uint32_t id);
 
-uint32_t GetClosestAllyTypeID(const Player &player, const uint32_t id);
+uint32_t GetClosestAllyTypeID(const PlayerData &player_data, const uint32_t id);
 
-uint32_t GetClosestNpcTypeID(const Player &player, const uint32_t id);
+uint32_t GetClosestNpcTypeID(const PlayerData &player_data, const uint32_t id);
 
-uint32_t TargetClosestEnemyById(Player &player, const uint32_t id);
+uint32_t TargetClosestEnemyById(PlayerData &player_data, const uint32_t id);
 
-uint32_t TargetClosestAllyById(Player &player, const uint32_t id);
+uint32_t TargetClosestAllyById(PlayerData &player_data, const uint32_t id);
 
-uint32_t TargetClosestNpcById(Player &player, const uint32_t id);
+uint32_t TargetClosestNpcById(PlayerData &player_data, const uint32_t id);
 
 DWORD QuestAcceptDialog(DWORD quest);
 
@@ -139,10 +139,10 @@ void AttackAgent(const GW::Agent *agent);
 
 std::vector<GW::AgentLiving *> GetEnemiesInCompass();
 
-std::vector<GW::AgentLiving *> GetEnemiesInRange(const Player &player,
+std::vector<GW::AgentLiving *> GetEnemiesInRange(const PlayerData &player_data,
                                                  const float range = GW::Constants::Range::Earshot);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);
 
-void TargetAndAttackEnemyInAggro(const Player &player, const float range = GW::Constants::Range::Spellcast);
+void TargetAndAttackEnemyInAggro(const PlayerData &player_data, const float range = GW::Constants::Range::Spellcast);

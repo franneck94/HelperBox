@@ -35,15 +35,15 @@ void Move::Execute() const
         trigger_cb.value()();
 }
 
-bool Move::IsAtFilterSkelePos(const Player &player, const GW::GamePos &next_pos)
+bool Move::IsAtFilterSkelePos(const PlayerData &player_data, const GW::GamePos &next_pos)
 {
-    const auto is_near_chamber_skele = IsAtChamberSkele(player);
-    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player);
+    const auto is_near_chamber_skele = IsAtChamberSkele(player_data);
+    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player_data);
     const auto is_in_chamber_where_to_move = (is_near_chamber_skele && !is_right_at_chamber_skele);
 
-    const auto is_near_to_at_vale_start = IsAtValeStart(player);
-    const auto is_near_to_vale_house = IsAtValeHouse(player);
-    const auto is_right_at_vale_house = IsRightAtValeHouse(player);
+    const auto is_near_to_at_vale_start = IsAtValeStart(player_data);
+    const auto is_near_to_vale_house = IsAtValeHouse(player_data);
+    const auto is_right_at_vale_house = IsRightAtValeHouse(player_data);
     const auto is_in_vale_where_to_move =
         ((is_near_to_at_vale_start || is_near_to_vale_house) && !is_right_at_vale_house);
 
@@ -53,32 +53,32 @@ bool Move::IsAtFilterSkelePos(const Player &player, const GW::GamePos &next_pos)
     return (is_in_chamber_where_to_move || is_in_vale_where_to_move || is_to_basement1 || is_at_basement_stair);
 }
 
-bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
+bool Move::CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &next_pos)
 {
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 
-    const auto livings = GetEnemiesInRange(player, GW::Constants::Range::Earshot);
+    const auto livings = GetEnemiesInRange(player_data, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
 
-    if (player.pos.x == next_pos.x && player.pos.y == next_pos.y)
+    if (player_data.pos.x == next_pos.x && player_data.pos.y == next_pos.y)
         return result_ids_Aggro.size() == 0;
     else if (result_ids_Aggro.size() == 1)
         return false;
 
-    const auto rect = GameRectangle(player.pos, next_pos, GW::Constants::Range::Spellcast);
+    const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
     const auto filtered_livings = GetEnemiesInGameRectangle(rect);
 
     const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
 
     auto result_ids_rect = std::set<uint32_t>{};
-    if (IsAtFilterSkelePos(player, next_pos)) // ignore skeles here
+    if (IsAtFilterSkelePos(player_data, next_pos)) // ignore skeles here
     {
         result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
     }
     else if (move_pos_is_right_at_spirits1) // ignore spirits here
     {
-        const auto player_pos = player.pos;
+        const auto player_pos = player_data.pos;
         auto enemies = GetEnemiesInCompass();
         if (enemies.size() == 0)
             return true;
@@ -100,12 +100,12 @@ bool Move::CheckForAggroFree(const Player &player, const GW::GamePos &next_pos)
     return result_ids_rect.size() == 0;
 }
 
-bool Move::UpdateMoveState_CallbackAndContinue(const Player &player, const Move &move)
+bool Move::UpdateMoveState_CallbackAndContinue(const PlayerData &player_data, const Move &move)
 {
     static auto executed_callback_successful = false;
 
-    const auto reached_pos = GamePosCompare(player.pos, move.pos, 0.1F);
-    if (reached_pos && executed_callback_successful && !player.living->GetIsMoving())
+    const auto reached_pos = GamePosCompare(player_data.pos, move.pos, 0.1F);
+    if (reached_pos && executed_callback_successful && !player_data.living->GetIsMoving())
         executed_callback_successful = false;
 
     if (reached_pos && !executed_callback_successful)
@@ -119,16 +119,16 @@ bool Move::UpdateMoveState_CallbackAndContinue(const Player &player, const Move 
     return true;
 }
 
-bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
+bool Move::UpdateMoveState_CastSkill(const PlayerData &player_data, const Move &move)
 {
     static auto started_cast = false;
     static auto timer = clock();
 
-    if (player.living->GetIsMoving())
+    if (player_data.living->GetIsMoving())
         timer = clock();
 
-    const auto reached_pos = GamePosCompare(player.pos, move.pos, 0.1F);
-    if (reached_pos && started_cast && !player.living->GetIsMoving() && !player.living->GetIsCasting())
+    const auto reached_pos = GamePosCompare(player_data.pos, move.pos, 0.1F);
+    if (reached_pos && started_cast && !player_data.living->GetIsMoving() && !player_data.living->GetIsCasting())
         started_cast = false;
 
     const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(move.skill_cb->id);
@@ -146,14 +146,14 @@ bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
             return true;
         }
 
-        move.skill_cb->Cast(player.energy);
+        move.skill_cb->Cast(player_data.energy);
         return false;
     }
 
     if (timer_diff < 300)
         return false;
 
-    const auto is_casting = player.living->GetIsCasting();
+    const auto is_casting = player_data.living->GetIsCasting();
     const auto timer_exceeded = timer_diff > cast_time_s;
     const auto wait = (timer_exceeded || is_casting);
 
@@ -164,18 +164,18 @@ bool Move::UpdateMoveState_CastSkill(const Player &player, const Move &move)
     return true;
 }
 
-bool Move::UpdateMoveState_Wait(const Player &player, const Move &move)
+bool Move::UpdateMoveState_Wait(const PlayerData &player_data, const Move &move)
 {
     static auto canceled_move = false;
 
-    const auto aggro_free = Move::CheckForAggroFree(player, move.pos);
+    const auto aggro_free = Move::CheckForAggroFree(player_data, move.pos);
     if (aggro_free)
     {
         canceled_move = false;
         return true;
     }
 
-    if (!canceled_move && player.living->GetIsMoving())
+    if (!canceled_move && player_data.living->GetIsMoving())
     {
         canceled_move = true;
         Log::Info("Canceled Movement based on aggro");
@@ -186,12 +186,12 @@ bool Move::UpdateMoveState_Wait(const Player &player, const Move &move)
     return false;
 }
 
-bool Move::UpdateMoveState_WaitAndStop(const Player &player, const Move &move)
+bool Move::UpdateMoveState_WaitAndStop(const PlayerData &player_data, const Move &move)
 {
-    return UpdateMoveState_Wait(player, move);
+    return UpdateMoveState_Wait(player_data, move);
 }
 
-bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
+bool Move::UpdateMoveState_DistanceLT(const PlayerData &player_data, const Move &move)
 {
     const auto lt_id = GetTankId();
     if (!lt_id)
@@ -202,7 +202,7 @@ bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
         return false;
 
     const auto dist_threshold = move.dist_threshold;
-    const auto dist = GW::GetDistance(player.pos, lt_agent->pos);
+    const auto dist = GW::GetDistance(player_data.pos, lt_agent->pos);
     if (dist < dist_threshold)
         return false;
 
@@ -210,7 +210,7 @@ bool Move::UpdateMoveState_DistanceLT(const Player &player, const Move &move)
 }
 
 
-bool Move::UpdateMoveState(const Player &player, bool &move_ongoing, const Move &move)
+bool Move::UpdateMoveState(const PlayerData &player_data, bool &move_ongoing, const Move &move)
 {
     move_ongoing = true;
 
@@ -218,23 +218,23 @@ bool Move::UpdateMoveState(const Player &player, bool &move_ongoing, const Move 
     {
     case MoveState::CAST_SKILL_AND_CONTINUE:
     {
-        return Move::UpdateMoveState_CastSkill(player, move);
+        return Move::UpdateMoveState_CastSkill(player_data, move);
     }
     case MoveState::WAIT_AND_CONTINUE:
     {
-        return Move::UpdateMoveState_Wait(player, move);
+        return Move::UpdateMoveState_Wait(player_data, move);
     }
     case MoveState::DISTANCE_AND_CONTINUE:
     {
-        return Move::UpdateMoveState_DistanceLT(player, move);
+        return Move::UpdateMoveState_DistanceLT(player_data, move);
     }
     case MoveState::WAIT_AND_STOP:
     {
-        return Move::UpdateMoveState_WaitAndStop(player, move);
+        return Move::UpdateMoveState_WaitAndStop(player_data, move);
     }
     case MoveState::CALLBACK_AND_CONTINUE:
     {
-        return Move::UpdateMoveState_CallbackAndContinue(player, move);
+        return Move::UpdateMoveState_CallbackAndContinue(player_data, move);
     }
     case MoveState::NO_WAIT_AND_CONTINUE:
     case MoveState::NO_WAIT_AND_STOP:

@@ -20,7 +20,7 @@
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Skillbars.h>
 #include <Types.h>
 #include <UwHelper.h>
@@ -88,7 +88,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, con
         {
             ImGui::PushStyleColor(ImGuiCol_Text, color);
         }
-        const auto distance = GW::GetDistance(player.pos, living->pos);
+        const auto distance = GW::GetDistance(player_data.pos, living->pos);
         ImGui::TableNextColumn();
         ImGui::Text("%3.0f%%", living->hp * 100.0F);
         ImGui::TableNextColumn();
@@ -109,7 +109,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, con
         ImGui::TableNextColumn();
         const auto _label = fmt::format("Target##{}{}", label.data(), idx);
         if (ImGui::Button(_label.data()))
-            player.ChangeTarget(living->agent_id);
+            player_data.ChangeTarget(living->agent_id);
 
         ++idx;
 
@@ -125,7 +125,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *)
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsRangerTerra(player) && !IsMesmerTerra(player))
+    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
@@ -173,26 +173,26 @@ void TerraWindow::Update(float)
     if (IsLoading())
         last_casted_times_ms.clear();
 
-    if (!player.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
-    player.Update();
+    player_data.Update();
 
-    if (!IsRangerTerra(player) && !IsMesmerTerra(player))
+    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
         return;
 
     auto_target.Update();
 
-    FilterAgents(player, filtered_livings, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
-    FilterAgents(player, filtered_livings, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
+    FilterAgents(player_data, filtered_livings, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
+    FilterAgents(player_data, filtered_livings, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
     SplitFilteredAgents(filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
     SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
     SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
     SplitFilteredAgents(filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
-    SortByDistance(player, behemoth_livings);
-    SortByDistance(player, dryder_livings);
-    SortByDistance(player, skele_livings);
-    SortByDistance(player, horseman_livings);
+    SortByDistance(player_data, behemoth_livings);
+    SortByDistance(player_data, dryder_livings);
+    SortByDistance(player_data, skele_livings);
+    SortByDistance(player_data, horseman_livings);
 
     if (!auto_target_active)
         return;
@@ -202,9 +202,9 @@ void TerraWindow::Update(float)
         if (!living)
             continue;
 
-        const auto dist = GW::GetDistance(player.pos, living->pos);
+        const auto dist = GW::GetDistance(player_data.pos, living->pos);
 
         if (dist < GW::Constants::Range::Earshot && living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
-            player.ChangeTarget(living->agent_id);
+            player_data.ChangeTarget(living->agent_id);
     }
 }

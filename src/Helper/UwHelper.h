@@ -6,7 +6,7 @@
 #include <Actions.h>
 #include <MathUtils.h>
 #include <Move.h>
-#include <Player.h>
+#include <PlayerData.h>
 #include <Types.h>
 
 #include <Logger.h>
@@ -17,43 +17,43 @@ bool IsUw();
 
 bool UwHelperActivationConditions();
 
-bool IsEmo(const Player &player);
+bool IsEmo(const PlayerData &player_data);
 
-bool IsDhuumBitch(const Player &player);
+bool IsDhuumBitch(const PlayerData &player_data);
 
-bool IsSpiker(const Player &player);
+bool IsSpiker(const PlayerData &player_data);
 
-bool IsLT(const Player &player);
+bool IsLT(const PlayerData &player_data);
 
-bool IsRangerTerra(const Player &player);
+bool IsRangerTerra(const PlayerData &player_data);
 
-bool IsMesmerTerra(const Player &player);
+bool IsMesmerTerra(const PlayerData &player_data);
 
-bool IsAtSpawn(const Player &player);
+bool IsAtSpawn(const PlayerData &player_data);
 
-bool IsAtChamberSkele(const Player &player);
+bool IsAtChamberSkele(const PlayerData &player_data);
 
-bool IsAtBasementSkele(const Player &player);
+bool IsAtBasementSkele(const PlayerData &player_data);
 
-bool IsRightAtChamberSkele(const Player &player);
+bool IsRightAtChamberSkele(const PlayerData &player_data);
 
-bool IsAtFusePulls(const Player &player);
+bool IsAtFusePulls(const PlayerData &player_data);
 
-bool IsAtValeStart(const Player &player);
+bool IsAtValeStart(const PlayerData &player_data);
 
-bool IsAtValeHouse(const Player &player);
+bool IsAtValeHouse(const PlayerData &player_data);
 
-bool IsRightAtValeHouse(const Player &player);
+bool IsRightAtValeHouse(const PlayerData &player_data);
 
-bool IsAtSpirits1(const Player &player);
+bool IsAtSpirits1(const PlayerData &player_data);
 
-bool IsAtSpirits2(const Player &player);
+bool IsAtSpirits2(const PlayerData &player_data);
 
-bool IsAtValeSpirits(const Player &player);
+bool IsAtValeSpirits(const PlayerData &player_data);
 
-bool IsGoingToDhuum(const Player &player);
+bool IsGoingToDhuum(const PlayerData &player_data);
 
-bool IsInDhuumRoom(const Player &player);
+bool IsInDhuumRoom(const PlayerData &player_data);
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
 
@@ -61,13 +61,13 @@ bool TankIsFullteamLT();
 
 bool TankIsSoloLT();
 
-bool TargetIsReaper(Player &player);
+bool TargetIsReaper(PlayerData &player_data);
 
-bool TargetReaper(Player &player);
+bool TargetReaper(PlayerData &player_data);
 
-bool TalkReaper(Player &player);
+bool TalkReaper(PlayerData &player_data);
 
-bool TargetClosestKeeper(Player &player);
+bool TargetClosestKeeper(PlayerData &player_data);
 
 bool AcceptChamber();
 
@@ -82,14 +82,17 @@ bool TakePits();
 bool TakePlanes();
 
 template <uint32_t N>
-void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_t &move_idx, const bool first_call)
+void UpdateUwInfo(const PlayerData &player_data,
+                  const std::array<Move, N> moves,
+                  uint32_t &move_idx,
+                  const bool first_call)
 {
-    static auto last_pos = player.pos;
+    static auto last_pos = player_data.pos;
 
     if (move_idx >= moves.size() - 1)
         return;
 
-    const auto curr_pos = player.pos;
+    const auto curr_pos = player_data.pos;
     const auto port_detected = GW::GetDistance(last_pos, curr_pos) > GW::Constants::Range::Compass;
     const auto is_spawn = GW::GetDistance(GW::GamePos{1248.00F, 6965.51F, 0}, curr_pos) < GW::Constants::Range::Compass;
 
@@ -102,7 +105,7 @@ void UpdateUwInfo(const Player &player, const std::array<Move, N> moves, uint32_
     if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
     {
         Log::Info("Ported!");
-        move_idx = GetFirstCloseMove(player, moves);
+        move_idx = GetFirstCloseMove(player_data, moves);
     }
     else if (port_detected && !next_move_oob)
     {
