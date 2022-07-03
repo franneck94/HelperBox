@@ -61,10 +61,9 @@ void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
                                             const uint32_t target_id,
                                             const float value)
 {
-    if (!dhuum_id || target_id != dhuum_id)
+    if (!dhuum_id || target_id != dhuum_id || value >= 0 || !caster_id)
         return;
 
-    // ignore non-damage packets
     switch (type)
     {
     case GW::Packet::StoC::P156_Type::damage:
@@ -74,9 +73,6 @@ void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
     default:
         return;
     }
-
-    if (value >= 0 || !caster_id)
-        return;
 
     const auto caster_agent = GW::Agents::GetAgentByID(caster_id);
     if (!caster_agent)
@@ -125,11 +121,10 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
         ImGui::Separator();
         ImGui::Text("Num Rests: %u", num_casted_rest);
         ImGui::Text("Rests (per s): %0.2f", rests_per_s);
-        ImGui::Text("ETA Rest (s): %2.0f", (num_casted_rest > 0 && eta_rest < 10'000.0F) ? eta_rest : 0.0F);
+        ImGui::Text("ETA Rest (s): %2.0f", num_casted_rest > 0 ? eta_rest : 0.0F);
         ImGui::Separator();
-        ImGui::Text("Num Attacks: %u", num_attacks);
-        ImGui::Text("Damage (per s): %0.2f", damage_per_s);
-        ImGui::Text("ETA Damage (s): %3.0f", (num_attacks > 0 && eta_damage < 10'000.0F) ? eta_damage : 0.0F);
+        ImGui::Text("Damage (per s): %0.0f", damage_per_s);
+        ImGui::Text("ETA Damage (s): %3.0f", num_attacks > 0 ? eta_damage : 0.0F);
     }
     ImGui::End();
 }
@@ -204,6 +199,7 @@ void DhuumStatsWindow::UpdateDamageData()
         damage_per_s /= static_cast<float>(TIME_WINDOW_DMG_S);
     else
         damage_per_s = 0.0F;
+    damage_per_s = std::roundf(damage_per_s);
 
     const auto damage_to_be_done = (dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25F);
     if (dhuum_hp >= 0.25F && dhuum_hp < 1.0F && damage_per_s > 0.0F)

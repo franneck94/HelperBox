@@ -18,17 +18,17 @@ class DhuumStatsWindow : public HelperBoxWindow
 public:
     constexpr static auto TIME_WINDOW_DMG_S = long{180L};
     constexpr static auto TIME_WINDOW_DMG_MS = (TIME_WINDOW_DMG_S * 1000L);
-    constexpr static auto TIME_WINDOW_REST_S = long{30L};
+    constexpr static auto TIME_WINDOW_REST_S = long{20L};
     constexpr static auto TIME_WINDOW_REST_MS = (TIME_WINDOW_REST_S * 1000L);
 
     constexpr static auto REST_SKILL_ID = uint32_t{3087};
     constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
 
-    constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{800U},  // 1 ?
-                                                                    uint32_t{780U},  // 2 ?
-                                                                    uint32_t{760U},  // 3 ?
-                                                                    uint32_t{740U},  // 4
-                                                                    uint32_t{720U},  // 5
+    constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{780U},  // 1 ?
+                                                                    uint32_t{760U},  // 2 ?
+                                                                    uint32_t{740U},  // 3 ?
+                                                                    uint32_t{720U},  // 4
+                                                                    uint32_t{700U},  // 5
                                                                     uint32_t{680U},  // 6 ?
                                                                     uint32_t{660U},  // 7 ?
                                                                     uint32_t{640U}}; // 8 ?
