@@ -10,12 +10,12 @@
 
 #include <Defines.h>
 
+#include <Base/ChatCommands.h>
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 
 #include <AutoFollowWindow.h>
 #include <CancelActionWindow.h>
-#include <ChatCommands.h>
 #include <DbWindow.h>
 #include <DhuumStatsWindow.h>
 #include <EmoWindow.h>

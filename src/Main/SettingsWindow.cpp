@@ -1,10 +1,10 @@
 #include "stdafx.h"
 
+#include <Base/ChatCommands.h>
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxSettings.h>
 #include <Base/MainWindow.h>
 
-#include <ChatCommands.h>
 #include <Defines.h>
 
 #include <GWCA/Managers/MapMgr.h>
