@@ -134,7 +134,7 @@ void DrawMap(const GW::GamePos &player_pos,
             const auto living_agents = GetEnemiesInCompass();
             PlotEnemies(player_pos, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
 
-            const auto filtered_livings = GetEnemiesInGameRectangle(rect);
+            const auto filtered_livings = GetEnemiesInGameRectangle(rect, living_agents);
             PlotEnemies(player_pos, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();

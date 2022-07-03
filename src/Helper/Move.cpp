@@ -67,7 +67,8 @@ bool Move::CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &n
         return false;
 
     const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
-    const auto filtered_livings = GetEnemiesInGameRectangle(rect);
+    const auto living_agents = GetEnemiesInCompass();
+    const auto filtered_livings = GetEnemiesInGameRectangle(rect, living_agents);
 
     const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
 

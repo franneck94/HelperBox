@@ -1,6 +1,9 @@
 #pragma once
 
+#include <vector>
+
 #include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Agent.h>
 
 bool FloatCompare(const float a, const float b, const float epsilon = 1e-3F);
 
@@ -43,7 +46,8 @@ GW::GamePos RotatePoint(const GW::GamePos &player_pos, GW::GamePos pos, const fl
 
 bool IsNearToGamePos(const GW::GamePos &player_pos, const GW::GamePos &pos, const float r);
 
-std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle);
+std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle,
+                                                         const std::vector<GW::AgentLiving *> &living_agents);
 
 bool PointIsBelowLine(const float slope, const float bias, const GW::GamePos &point);
 

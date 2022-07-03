@@ -1,11 +1,11 @@
 #include <cmath>
+#include <vector>
 
 #include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Camera.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/CameraMgr.h>
-
-#include <Helper.h>
 
 #include "MathUtils.h"
 
@@ -98,9 +98,9 @@ bool IsNearToGamePos(const GW::GamePos &player_pos, const GW::GamePos &pos, cons
 }
 
 
-std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle)
+std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle,
+                                                         const std::vector<GW::AgentLiving *> &living_agents)
 {
-    const auto living_agents = GetEnemiesInCompass();
     auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
     for (const auto living : living_agents)
