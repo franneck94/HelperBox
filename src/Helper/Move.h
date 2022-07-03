@@ -13,6 +13,8 @@
 #include <Logger.h>
 #include <Timer.h>
 
+#include <AgentLivingData.h>
+#include <Helper.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
 #include <Types.h>
@@ -88,12 +90,18 @@ public:
 
 public:
     static bool IsAtFilterSkelePos(const PlayerData &player_data, const GW::GamePos &next_pos);
-    static bool CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &next_pos);
-    static bool UpdateMoveState(const PlayerData &player_data, bool &move_ongoing, const Move &move);
+    static bool CheckForAggroFree(const PlayerData &player_data,
+                                  const AgentLivingData *agents_data,
+                                  const GW::GamePos &next_pos);
+    static bool UpdateMoveState(const PlayerData &player_data,
+                                const AgentLivingData *agents_data,
+                                bool &move_ongoing,
+                                const Move &move);
     static bool UpdateMoveState_CallbackAndContinue(const PlayerData &player_data, const Move &move);
     static bool UpdateMoveState_CastSkill(const PlayerData &player_data, const Move &move);
-    static bool UpdateMoveState_Wait(const PlayerData &player_data, const Move &move);
-    static bool UpdateMoveState_WaitAndStop(const PlayerData &player_data, const Move &move);
+    static bool UpdateMoveState_Wait(const PlayerData &player_data,
+                                     const AgentLivingData *agents_data,
+                                     const Move &move);
     static bool UpdateMoveState_DistanceLT(const PlayerData &player_data, const Move &move);
 
 private:
@@ -128,6 +136,7 @@ uint32_t GetFirstCloseMove(const PlayerData &player_data, const std::array<Move,
 
 template <uint32_t N>
 void UpdatedUwMoves_Main(const PlayerData &player_data,
+                         const AgentLivingData *agents_data,
                          std::array<Move, N> &moves,
                          uint32_t &move_idx,
                          bool &move_ongoing)
@@ -141,7 +150,7 @@ void UpdatedUwMoves_Main(const PlayerData &player_data,
     if (move_idx >= moves.size() - 1U)
         return;
 
-    const auto can_be_finished = Move::UpdateMoveState(player_data, move_ongoing, moves[move_idx]);
+    const auto can_be_finished = Move::UpdateMoveState(player_data, agents_data, move_ongoing, moves[move_idx]);
 
     const auto is_moving = player_data.living->GetIsMoving();
     const auto reached_pos = GamePosCompare(player_data.pos, moves[move_idx].pos, 0.001F);

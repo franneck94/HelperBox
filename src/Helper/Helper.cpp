@@ -620,35 +620,6 @@ void AttackAgent(const GW::Agent *agent)
     GW::CtoS::SendPacket(0xC, GAME_CMSG_ATTACK_AGENT, agent->agent_id, 0);
 }
 
-std::vector<GW::AgentLiving *> GetEnemiesInCompass()
-{
-    auto living_agents = std::vector<GW::AgentLiving *>{};
-
-    const auto agents_array = GW::Agents::GetAgentArray();
-    if (!agents_array || !agents_array->valid())
-        return living_agents;
-
-    for (const auto agent : *agents_array)
-    {
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-        if (!living)
-            continue;
-
-        if (living->allegiance != GW::Constants::Allegiance::Enemy)
-            continue;
-
-        if (living->GetIsDead())
-            continue;
-
-        living_agents.push_back(living);
-    }
-
-    return living_agents;
-}
-
 std::vector<GW::AgentLiving *> GetEnemiesInRange(const PlayerData &player_data, const float range)
 {
     auto filtered_livings = std::vector<GW::AgentLiving *>{};

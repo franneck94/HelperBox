@@ -9,6 +9,7 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
+#include <AgentLivingData.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
 #include <Helper.h>
@@ -151,11 +152,12 @@ public:
 private:
     void UpdateUw();
     void UpdateUwEntry();
-    void UpdateUwDetectKeeper();
+    void UpdateUwDetectKeeper(const std::vector<GW::AgentLiving *> &enemies);
 
     void WarnDistanceLT() const;
 
     PlayerData player_data;
+    const AgentLivingData *agents_data = nullptr;
     bool first_frame = false;
     EmoSkillbarData skillbar;
 

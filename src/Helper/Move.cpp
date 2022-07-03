@@ -2,7 +2,9 @@
 
 #include <GWCA/Managers/ChatMgr.h>
 
+#include <AgentLivingData.h>
 #include <Helper.h>
+#include <PlayerData.h>
 #include <UwHelper.h>
 
 #include <Logger.h>
@@ -53,8 +55,13 @@ bool Move::IsAtFilterSkelePos(const PlayerData &player_data, const GW::GamePos &
     return (is_in_chamber_where_to_move || is_in_vale_where_to_move || is_to_basement1 || is_at_basement_stair);
 }
 
-bool Move::CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &next_pos)
+bool Move::CheckForAggroFree(const PlayerData &player_data,
+                             const AgentLivingData *agents_data,
+                             const GW::GamePos &next_pos)
 {
+    if (!agents_data)
+        return true;
+
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 
@@ -67,8 +74,7 @@ bool Move::CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &n
         return false;
 
     const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
-    const auto living_agents = GetEnemiesInCompass();
-    const auto filtered_livings = GetEnemiesInGameRectangle(rect, living_agents);
+    const auto filtered_livings = GetEnemiesInGameRectangle(rect, agents_data->enemies);
 
     const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
 
@@ -80,7 +86,7 @@ bool Move::CheckForAggroFree(const PlayerData &player_data, const GW::GamePos &n
     else if (move_pos_is_right_at_spirits1) // ignore spirits here
     {
         const auto player_pos = player_data.pos;
-        auto enemies = GetEnemiesInCompass();
+        auto enemies = agents_data->enemies;
         if (enemies.size() == 0)
             return true;
 
@@ -165,11 +171,11 @@ bool Move::UpdateMoveState_CastSkill(const PlayerData &player_data, const Move &
     return true;
 }
 
-bool Move::UpdateMoveState_Wait(const PlayerData &player_data, const Move &move)
+bool Move::UpdateMoveState_Wait(const PlayerData &player_data, const AgentLivingData *agents_data, const Move &move)
 {
     static auto canceled_move = false;
 
-    const auto aggro_free = Move::CheckForAggroFree(player_data, move.pos);
+    const auto aggro_free = Move::CheckForAggroFree(player_data, agents_data, move.pos);
     if (aggro_free)
     {
         canceled_move = false;
@@ -185,11 +191,6 @@ bool Move::UpdateMoveState_Wait(const PlayerData &player_data, const Move &move)
     }
 
     return false;
-}
-
-bool Move::UpdateMoveState_WaitAndStop(const PlayerData &player_data, const Move &move)
-{
-    return UpdateMoveState_Wait(player_data, move);
 }
 
 bool Move::UpdateMoveState_DistanceLT(const PlayerData &player_data, const Move &move)
@@ -210,8 +211,10 @@ bool Move::UpdateMoveState_DistanceLT(const PlayerData &player_data, const Move 
     return true;
 }
 
-
-bool Move::UpdateMoveState(const PlayerData &player_data, bool &move_ongoing, const Move &move)
+bool Move::UpdateMoveState(const PlayerData &player_data,
+                           const AgentLivingData *agents_data,
+                           bool &move_ongoing,
+                           const Move &move)
 {
     move_ongoing = true;
 
@@ -222,16 +225,13 @@ bool Move::UpdateMoveState(const PlayerData &player_data, bool &move_ongoing, co
         return Move::UpdateMoveState_CastSkill(player_data, move);
     }
     case MoveState::WAIT_AND_CONTINUE:
+    case MoveState::WAIT_AND_STOP:
     {
-        return Move::UpdateMoveState_Wait(player_data, move);
+        return Move::UpdateMoveState_Wait(player_data, agents_data, move);
     }
     case MoveState::DISTANCE_AND_CONTINUE:
     {
         return Move::UpdateMoveState_DistanceLT(player_data, move);
-    }
-    case MoveState::WAIT_AND_STOP:
-    {
-        return Move::UpdateMoveState_WaitAndStop(player_data, move);
     }
     case MoveState::CALLBACK_AND_CONTINUE:
     {

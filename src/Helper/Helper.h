@@ -137,8 +137,6 @@ DWORD QuestRewardDialog(DWORD quest);
 
 void AttackAgent(const GW::Agent *agent);
 
-std::vector<GW::AgentLiving *> GetEnemiesInCompass();
-
 std::vector<GW::AgentLiving *> GetEnemiesInRange(const PlayerData &player_data,
                                                  const float range = GW::Constants::Range::Earshot);
 

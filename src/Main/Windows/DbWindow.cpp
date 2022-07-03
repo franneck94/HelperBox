@@ -83,14 +83,14 @@ void DbWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map)
-        DrawMap(player_data.pos, moves, move_idx, "DbMap");
+        DrawMap(player_data.pos, agents_data->enemies, moves, move_idx, "DbMap");
 #endif
 }
 
 void DbWindow::UpdateUw()
 {
     UpdateUwEntry();
-    UpdatedUwMoves_Main(player_data, moves, move_idx, move_ongoing);
+    UpdatedUwMoves_Main(player_data, agents_data, moves, move_idx, move_ongoing);
 }
 
 void DbWindow::UpdateUwEntry()
@@ -106,11 +106,15 @@ void DbWindow::UpdateUwEntry()
     }
 }
 
-void DbWindow::Update(float, const AgentLivingData &)
+void DbWindow::Update(float, const AgentLivingData &_agents_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
+    {
+        agents_data = nullptr;
         return;
+    }
     player_data.Update();
+    agents_data = &_agents_data;
 
     if (!IsDhuumBitch(player_data))
         return;

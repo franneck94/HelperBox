@@ -36,6 +36,9 @@ void AgentLivingData::UpdateType(std::vector<GW::AgentLiving *> &filtered_agents
         if (living->allegiance != type)
             continue;
 
+        if (type != GW::Constants::Allegiance::Ally_NonAttackable && living->GetIsDead())
+            continue;
+
         filtered_agents.push_back(living);
     }
 }

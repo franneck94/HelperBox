@@ -9,6 +9,7 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
+#include <AgentLivingData.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
 #include <Move.h>
@@ -88,11 +89,11 @@ private:
     void UpdateUw();
     void UpdateUwEntry();
 
-
     // Settings
     bool show_debug_map = true;
 
     PlayerData player_data;
+    const AgentLivingData *agents_data = nullptr;
     bool first_frame = false;
     DbSkillbarData skillbar;
 

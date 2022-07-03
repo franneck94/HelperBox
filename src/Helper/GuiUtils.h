@@ -86,6 +86,7 @@ void PlotEnemies(const GW::GamePos &player_pos,
 
 template <typename T, uint32_t N>
 void DrawMap(const GW::GamePos &player_pos,
+             const std::vector<GW::AgentLiving *> &enemies,
              const std::array<T, N> &moves,
              const uint32_t move_idx,
              std::string_view label)
@@ -131,10 +132,9 @@ void DrawMap(const GW::GamePos &player_pos,
 
             PlotCircle(player_pos, "circle", ImVec4{0.0, 0.0, 1.0, 1.0});
 
-            const auto living_agents = GetEnemiesInCompass();
-            PlotEnemies(player_pos, living_agents, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
+            PlotEnemies(player_pos, enemies, "enemiesAll", ImVec4{1.0F, 0.65F, 0.0, 1.0});
 
-            const auto filtered_livings = GetEnemiesInGameRectangle(rect, living_agents);
+            const auto filtered_livings = GetEnemiesInGameRectangle(rect, enemies);
             PlotEnemies(player_pos, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
         }
         ImPlot::EndPlot();
