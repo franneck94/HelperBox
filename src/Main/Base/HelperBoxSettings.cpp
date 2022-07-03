@@ -14,14 +14,14 @@
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 
-#include <AutoFollowWindow.h>
-#include <CancelActionWindow.h>
-#include <DbWindow.h>
-#include <DhuumStatsWindow.h>
-#include <EmoWindow.h>
-#include <MainteamWindow.h>
-#include <SettingsWindow.h>
-#include <TerraWindow.h>
+#include <Windows/AutoFollowWindow.h>
+#include <Windows/CancelActionWindow.h>
+#include <Windows/DbWindow.h>
+#include <Windows/DhuumStatsWindow.h>
+#include <Windows/EmoWindow.h>
+#include <Windows/MainteamWindow.h>
+#include <Windows/SettingsWindow.h>
+#include <Windows/TerraWindow.h>
 
 #include "HelperBoxSettings.h"
 
