@@ -196,7 +196,7 @@ void EmoWindow::UpdateUwEntry()
     }
 }
 
-void EmoWindow::Update(float)
+void EmoWindow::Update(float, const PlayerData &, const AgentLivingData &)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;

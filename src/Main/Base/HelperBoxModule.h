@@ -1,5 +1,13 @@
 #pragma once
 
+#include <functional>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <AgentLivingData.h>
+#include <PlayerData.h>
+
 typedef std::function<void(const std::string *section, bool is_showing)> SectionDrawCallback;
 typedef std::vector<std::pair<float, SectionDrawCallback>> SectionDrawCallbackList;
 
@@ -28,7 +36,7 @@ public:
     virtual void Initialize();
 
     virtual void Terminate(){};
-    virtual void Update(float){};
+    virtual void Update(float, const PlayerData &, const AgentLivingData &){};
 
     virtual void LoadSettings(CSimpleIni *){};
     virtual void SaveSettings(CSimpleIni *){};

@@ -63,7 +63,7 @@ void AutoFollowWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void AutoFollowWindow::Update(float)
+void AutoFollowWindow::Update(float, const PlayerData &, const AgentLivingData &)
 {
     if (IsLoading())
         return;

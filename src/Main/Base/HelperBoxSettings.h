@@ -24,8 +24,6 @@ public:
 
     void LoadModules(CSimpleIni *ini);
 
-    void Update(float delta) override;
-
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
     void DrawSettingInternal() override;

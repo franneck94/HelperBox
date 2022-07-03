@@ -73,7 +73,3 @@ void HelperBoxSettings::Draw(IDirect3DDevice9 *)
 {
     ImGui::GetStyle().WindowBorderSize = (move_all ? 1.0f : 0.0f);
 }
-
-void HelperBoxSettings::Update(float)
-{
-}

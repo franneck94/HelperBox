@@ -7,6 +7,9 @@
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
 
+#include <AgentLivingData.h>
+#include <PlayerData.h>
+
 DWORD __stdcall SafeThreadEntry(LPVOID mod);
 DWORD __stdcall ThreadEntry(LPVOID);
 
@@ -74,6 +77,9 @@ public:
     }
 
     bool right_mouse_down = false;
+
+    PlayerData player_data = {};
+    AgentLivingData agents_data = {};
 
 private:
     std::vector<HelperBoxModule *> modules;

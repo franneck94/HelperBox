@@ -162,7 +162,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void TerraWindow::Update(float)
+void TerraWindow::Update(float, const PlayerData &, const AgentLivingData &)
 {
     filtered_livings.clear();
     behemoth_livings.clear();

@@ -106,7 +106,7 @@ void DbWindow::UpdateUwEntry()
     }
 }
 
-void DbWindow::Update(float)
+void DbWindow::Update(float, const PlayerData &, const AgentLivingData &)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;

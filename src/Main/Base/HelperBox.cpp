@@ -16,19 +16,17 @@
 #include <GWCA/Utilities/Hooker.h>
 #include <GWCA/Utilities/Scanner.h>
 
-#include <Base/HelperBox.h>
-
 #include <Logger.h>
 #include <Path.h>
 
-#include <imgui_impl_dx9.h>
-#include <imgui_impl_win32.h>
-
+#include <Base/HelperBox.h>
 #include <Base/HelperBoxSettings.h>
 #include <Base/HelperBoxTheme.h>
 #include <Base/MainWindow.h>
 
 #include <imgui.h>
+#include <imgui_impl_dx9.h>
+#include <imgui_impl_win32.h>
 #include <implot.h>
 
 namespace
@@ -283,7 +281,6 @@ void HelperBox::Initialize()
 
 void HelperBox::OpenSettingsFile()
 {
-    Log::Log("Opening ini file");
     if (!inifile)
         inifile = new CSimpleIni(false, false, false);
     inifile->Reset();
@@ -302,8 +299,6 @@ void HelperBox::LoadModuleSettings()
 
 void HelperBox::SaveSettings()
 {
-    Log::Log("Saving ini file");
-
     for (HelperBoxModule *module : modules)
         module->SaveSettings(inifile);
 
@@ -440,7 +435,7 @@ void HelperBox::Update(GW::HookStatus *)
         const auto delta_f = delta / 1000.f;
 
         for (HelperBoxModule *module : helper_box.modules)
-            module->Update(delta_f);
+            module->Update(delta_f, HelperBox::Instance().player_data, HelperBox::Instance().agents_data);
 
         last_tick_count = tick;
     }

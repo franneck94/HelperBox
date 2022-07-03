@@ -32,7 +32,7 @@ public:
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
-    void Update(float delta) override;
+    void Update(float delta, const PlayerData &, const AgentLivingData &) override;
 
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);

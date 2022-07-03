@@ -41,7 +41,7 @@ public:
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
-    void Update(float delta) override;
+    void Update(float delta, const PlayerData &, const AgentLivingData &) override;
 
 private:
     PlayerData player_data;
