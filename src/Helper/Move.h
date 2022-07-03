@@ -14,7 +14,7 @@
 #include <Timer.h>
 
 #include <PlayerData.h>
-#include <Skillbars.h>
+#include <SkillbarData.h>
 #include <Types.h>
 
 enum class MoveState

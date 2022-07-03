@@ -15,7 +15,7 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Callbacks.h>
-#include <Skilldata.h>
+#include <SkillData.h>
 #include <Types.h>
 
 

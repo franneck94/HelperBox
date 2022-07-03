@@ -29,7 +29,7 @@
 #include <Helper.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
-#include <Skillbars.h>
+#include <SkillbarData.h>
 #include <Types.h>
 #include <UwHelper.h>
 
@@ -614,7 +614,7 @@ RoutineState Pumping::Routine()
     if (!player_data->CanCast())
         return RoutineState::ACTIVE;
 
-    if (!HasWaitedLongEnough())
+    if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
     if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())

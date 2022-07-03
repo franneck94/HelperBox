@@ -11,12 +11,16 @@
 
 #include <GuiConstants.h>
 #include <PlayerData.h>
-#include <Skillbars.h>
+#include <SkillbarData.h>
 #include <Types.h>
 
 class ActionABC
 {
 public:
+    constexpr static auto TIMER_THRESHOLD_MS = uint32_t{200U};
+
+    static bool HasWaitedLongEnough();
+
     ActionABC(PlayerData *p, std::string_view t) : player_data(p), text(t)
     {
     }
@@ -73,5 +77,3 @@ public:
 
     DbSkillbarData *skillbar = nullptr;
 };
-
-bool HasWaitedLongEnough();

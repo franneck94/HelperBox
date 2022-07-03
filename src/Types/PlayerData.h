@@ -8,7 +8,7 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Skill.h>
 
-#include <Skillbars.h>
+#include <SkillbarData.h>
 
 class PlayerData
 {
