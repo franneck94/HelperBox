@@ -146,3 +146,5 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
                                   const std::set<uint32_t> &filter_ids);
 
 void TargetAndAttackEnemyInAggro(const PlayerData &player_data, const float range = GW::Constants::Range::Spellcast);
+
+bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_id, const PlayerData *const player_data);

@@ -29,31 +29,31 @@ bool IsRangerTerra(const PlayerData &player_data);
 
 bool IsMesmerTerra(const PlayerData &player_data);
 
-bool IsAtSpawn(const PlayerData &player_data);
+bool IsAtSpawn(const GW::GamePos &player_pos);
 
-bool IsAtChamberSkele(const PlayerData &player_data);
+bool IsAtChamberSkele(const GW::GamePos &player_pos);
 
-bool IsAtBasementSkele(const PlayerData &player_data);
+bool IsAtBasementSkele(const GW::GamePos &player_pos);
 
-bool IsRightAtChamberSkele(const PlayerData &player_data);
+bool IsRightAtChamberSkele(const GW::GamePos &player_pos);
 
-bool IsAtFusePulls(const PlayerData &player_data);
+bool IsAtFusePulls(const GW::GamePos &player_pos);
 
-bool IsAtValeStart(const PlayerData &player_data);
+bool IsAtValeStart(const GW::GamePos &player_pos);
 
-bool IsAtValeHouse(const PlayerData &player_data);
+bool IsAtValeHouse(const GW::GamePos &player_pos);
 
-bool IsRightAtValeHouse(const PlayerData &player_data);
+bool IsRightAtValeHouse(const GW::GamePos &player_pos);
 
-bool IsAtSpirits1(const PlayerData &player_data);
+bool IsAtSpirits1(const GW::GamePos &player_pos);
 
-bool IsAtSpirits2(const PlayerData &player_data);
+bool IsAtSpirits2(const GW::GamePos &player_pos);
 
-bool IsAtValeSpirits(const PlayerData &player_data);
+bool IsAtValeSpirits(const GW::GamePos &player_pos);
 
-bool IsGoingToDhuum(const PlayerData &player_data);
+bool IsGoingToDhuum(const GW::GamePos &player_pos);
 
-bool IsInDhuumRoom(const PlayerData &player_data);
+bool IsInDhuumRoom(const GW::GamePos &player_pos);
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
 

@@ -1,7 +1,6 @@
 #include <string_view>
 
 #include <Helper.h>
-#include <Types.h>
 
 #include "GuiUtils.h"
 
@@ -28,7 +27,7 @@ void DrawButton(ActionState &action_state, const ImVec4 color, std::string_view 
         ImGui::PopStyleColor();
 }
 
-void PlotRectangleLine(const PlayerData &player_data,
+void PlotRectangleLine(const GW::GamePos &player_pos,
                        const GW::GamePos &p1,
                        const GW::GamePos &p2,
                        std::string_view label)
@@ -37,8 +36,8 @@ void PlotRectangleLine(const PlayerData &player_data,
     if (!cam)
         return;
     const auto angle = (cam->GetCurrentYaw() + static_cast<float>(M_PI_2));
-    const auto p1_ = RotatePoint(player_data, p1, angle);
-    const auto p2_ = RotatePoint(player_data, p2, angle);
+    const auto p1_ = RotatePoint(player_pos, p1, angle);
+    const auto p2_ = RotatePoint(player_pos, p2, angle);
 
     const float xs[2] = {p1_.x * -1.0F, p2_.x * -1.0F};
     const float ys[2] = {p1_.y, p2_.y};
@@ -46,7 +45,7 @@ void PlotRectangleLine(const PlayerData &player_data,
     ImPlot::PlotLine(label.data(), xs, ys, 2);
 }
 
-void PlotPoint(const PlayerData &player_data,
+void PlotPoint(const GW::GamePos &player_pos,
                const GW::GamePos &p,
                std::string_view label,
                const ImVec4 &color,
@@ -56,7 +55,7 @@ void PlotPoint(const PlayerData &player_data,
     if (!cam)
         return;
     const auto angle = (cam->GetCurrentYaw() + static_cast<float>(M_PI_2));
-    const auto p_ = RotatePoint(player_data, p, angle);
+    const auto p_ = RotatePoint(player_pos, p, angle);
 
     const float xs[1] = {p_.x * -1.0F};
     const float ys[1] = {p_.y};
@@ -64,19 +63,19 @@ void PlotPoint(const PlayerData &player_data,
     ImPlot::PlotScatter(label.data(), xs, ys, 1);
 }
 
-void PlotCircle(const PlayerData &player_data, std::string_view label, const ImVec4 &color)
+void PlotCircle(const GW::GamePos &player_pos, std::string_view label, const ImVec4 &color)
 {
     for (int i = 0; i < 360; i++)
     {
         const auto label_ = fmt::format("{}###{}", label.data(), i);
-        const auto x_p = player_data.pos.x + 1050.0F * std::sin((float)i);
-        const auto y_p = player_data.pos.y + 1050.0F * std::cos((float)i);
+        const auto x_p = player_pos.x + 1050.0F * std::sin((float)i);
+        const auto y_p = player_pos.y + 1050.0F * std::cos((float)i);
         const auto pos = GW::GamePos{x_p, y_p, 0};
-        PlotPoint(player_data, pos, label_, color, 1.0F);
+        PlotPoint(player_pos, pos, label_, color, 1.0F);
     }
 }
 
-void PlotEnemies(const PlayerData &player_data,
+void PlotEnemies(const GW::GamePos &player_pos,
                  const std::vector<GW::AgentLiving *> &living_agents,
                  std::string_view label,
                  const ImVec4 &color)
@@ -89,9 +88,9 @@ void PlotEnemies(const PlayerData &player_data,
         const auto label_ = fmt::format("{}##{}", label.data(), idx);
         if (living->login_number == GW::Constants::ModelID::UW::SkeletonOfDhuum1 ||
             living->login_number == GW::Constants::ModelID::UW::SkeletonOfDhuum2)
-            PlotPoint(player_data, living->pos, label_, ImVec4{0.0F, 0.0F, 1.0f, 1.0F});
+            PlotPoint(player_pos, living->pos, label_, ImVec4{0.0F, 0.0F, 1.0f, 1.0F});
         else
-            PlotPoint(player_data, living->pos, label_, color);
+            PlotPoint(player_pos, living->pos, label_, color);
         ++idx;
     }
 }

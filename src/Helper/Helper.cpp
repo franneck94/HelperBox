@@ -711,3 +711,16 @@ void TargetAndAttackEnemyInAggro(const PlayerData &player_data, const float rang
             AttackAgent(player_data.target);
     }
 }
+
+bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_id, const PlayerData *const player_data)
+{
+    const auto has_bond = AgentHasBuff(static_cast<GW::Constants::SkillID>(skill_data.id), target_id);
+    const auto bond_avail = skill_data.CanBeCasted(player_data->energy);
+
+    if (!has_bond && bond_avail)
+    {
+        GW::GameThread::Enqueue([&]() { GW::SkillbarMgr::UseSkill(skill_data.idx, target_id); });
+        return true;
+    }
+    return false;
+}

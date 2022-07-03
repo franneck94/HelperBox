@@ -37,13 +37,13 @@ void Move::Execute() const
 
 bool Move::IsAtFilterSkelePos(const PlayerData &player_data, const GW::GamePos &next_pos)
 {
-    const auto is_near_chamber_skele = IsAtChamberSkele(player_data);
-    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player_data);
+    const auto is_near_chamber_skele = IsAtChamberSkele(player_data.pos);
+    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player_data.pos);
     const auto is_in_chamber_where_to_move = (is_near_chamber_skele && !is_right_at_chamber_skele);
 
-    const auto is_near_to_at_vale_start = IsAtValeStart(player_data);
-    const auto is_near_to_vale_house = IsAtValeHouse(player_data);
-    const auto is_right_at_vale_house = IsRightAtValeHouse(player_data);
+    const auto is_near_to_at_vale_start = IsAtValeStart(player_data.pos);
+    const auto is_near_to_vale_house = IsAtValeHouse(player_data.pos);
+    const auto is_right_at_vale_house = IsRightAtValeHouse(player_data.pos);
     const auto is_in_vale_where_to_move =
         ((is_near_to_at_vale_start || is_near_to_vale_house) && !is_right_at_vale_house);
 

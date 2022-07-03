@@ -18,7 +18,6 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <GuiUtils.h>
 #include <HelperBox.h>
 #include <Logger.h>
 #include <Timer.h>
@@ -28,7 +27,6 @@
 #include <Helper.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
-#include <SafeFuncs.h>
 #include <Skillbars.h>
 #include <Types.h>
 #include <UwHelper.h>
@@ -84,7 +82,7 @@ void DbWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map)
-        DrawMap(player_data, moves, move_idx, "DbMap");
+        DrawMap(player_data.pos, moves, move_idx, "DbMap");
 #endif
 }
 
@@ -254,7 +252,8 @@ RoutineState Damage::Routine()
     if (!HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (IsAtChamberSkele(*player_data) || IsAtBasementSkele(*player_data) || IsRightAtValeHouse(*player_data))
+    if (IsAtChamberSkele(player_data->pos) || IsAtBasementSkele(player_data->pos) ||
+        IsRightAtValeHouse(player_data->pos))
     {
         const auto enemies = GetEnemiesInRange(*player_data, GW::Constants::Range::Earshot);
         if (enemies.size() == 0)
@@ -267,7 +266,7 @@ RoutineState Damage::Routine()
             return RoutineState::FINISHED;
     }
 
-    if (IsAtValeSpirits(*player_data))
+    if (IsAtValeSpirits(player_data->pos))
     {
         const auto enemies = GetEnemiesInRange(*player_data, 1700.0F);
         if (enemies.size() == 0)
@@ -280,7 +279,7 @@ RoutineState Damage::Routine()
             return RoutineState::FINISHED;
     }
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(*player_data);
+    const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 

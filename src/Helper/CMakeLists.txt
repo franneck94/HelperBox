@@ -11,7 +11,8 @@ target_link_libraries(HelperDll PUBLIC
     gwca
     simpleini
     fmt::fmt
-    UtilsDll)
+    UtilsDll
+    TypesDll)
 
 if (${ENABLE_WARNINGS})
     target_set_warnings(TARGET HelperDll ENABLE ON AS_ERROR ON)

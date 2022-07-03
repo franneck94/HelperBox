@@ -20,7 +20,6 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <GuiUtils.h>
 #include <HelperBox.h>
 #include <Logger.h>
 #include <Timer.h>
@@ -30,7 +29,6 @@
 #include <Helper.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
-#include <SafeFuncs.h>
 #include <Skillbars.h>
 #include <Types.h>
 #include <UwHelper.h>
@@ -122,7 +120,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map)
-        DrawMap(player_data, moves, move_idx, "DbMap");
+        DrawMap(player_data.pos, moves, move_idx, "DbMap");
 #endif
 }
 
@@ -611,7 +609,7 @@ bool Pumping::DropBondsLT() const
 
 RoutineState Pumping::Routine()
 {
-    const auto is_in_dhuum_room = IsInDhuumRoom(*player_data);
+    const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
 
     if (!player_data->CanCast())
         return RoutineState::ACTIVE;
@@ -628,19 +626,19 @@ RoutineState Pumping::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (IsAtSpawn(*player_data) && RoutineKeepPlayerAlive())
+    if (IsAtSpawn(player_data->pos) && RoutineKeepPlayerAlive())
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
         return RoutineState::FINISHED;
 
-    if (IsAtFusePulls(*player_data) && RoutineLT())
+    if (IsAtFusePulls(player_data->pos) && RoutineLT())
         return RoutineState::FINISHED;
 
-    if (IsAtValeSpirits(*player_data) && RoutineCanthaGuards())
+    if (IsAtValeSpirits(player_data->pos) && RoutineCanthaGuards())
         return RoutineState::FINISHED;
 
-    if (IsGoingToDhuum(*player_data) && DropBondsLT())
+    if (IsGoingToDhuum(player_data->pos) && DropBondsLT())
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room)

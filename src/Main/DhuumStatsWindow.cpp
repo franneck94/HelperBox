@@ -216,7 +216,7 @@ void DhuumStatsWindow::Update(float)
         return;
     player_data.Update();
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(player_data);
+    const auto is_in_dhuum_room = IsInDhuumRoom(player_data.pos);
     if (!is_in_dhuum_room)
         ResetData();
 
