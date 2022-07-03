@@ -434,8 +434,10 @@ void HelperBox::Update(GW::HookStatus *)
         const auto delta = tick - last_tick_count;
         const auto delta_f = delta / 1000.f;
 
+        HelperBox::Instance().agents_data.Update();
+
         for (HelperBoxModule *module : helper_box.modules)
-            module->Update(delta_f, HelperBox::Instance().player_data, HelperBox::Instance().agents_data);
+            module->Update(delta_f, HelperBox::Instance().agents_data);
 
         last_tick_count = tick;
     }

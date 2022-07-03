@@ -128,7 +128,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float, const PlayerData &, const AgentLivingData &)
+void MainteamWindow::Update(float, const AgentLivingData &)
 {
     filtered_livings.clear();
     aatxe_livings.clear();

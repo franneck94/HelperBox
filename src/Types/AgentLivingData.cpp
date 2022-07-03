@@ -6,18 +6,6 @@
 
 #include "AgentLivingData.h"
 
-bool AgentLivingData::ValidateData() const
-{
-    if (!GW::Map::GetIsMapLoaded())
-        return false;
-
-    const auto agents = GW::Agents::GetAgentArray();
-    if (!agents || !agents->valid())
-        return false;
-
-    return true;
-}
-
 void AgentLivingData::Update()
 {
     UpdateType(allies, GW::Constants::Allegiance::Ally_NonAttackable);
@@ -33,6 +21,8 @@ void AgentLivingData::UpdateType(std::vector<GW::AgentLiving *> &filtered_agents
     filtered_agents.clear();
 
     const auto agents = GW::Agents::GetAgentArray();
+    if (!agents || !agents->valid())
+        return;
 
     for (const auto agent : *agents)
     {

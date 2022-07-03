@@ -210,7 +210,7 @@ void DhuumStatsWindow::UpdateDamageData()
         eta_damage = eta_damage;
 }
 
-void DhuumStatsWindow::Update(float, const PlayerData &, const AgentLivingData &)
+void DhuumStatsWindow::Update(float, const AgentLivingData &)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;

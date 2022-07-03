@@ -36,7 +36,7 @@ public:
     virtual void Initialize();
 
     virtual void Terminate(){};
-    virtual void Update(float, const PlayerData &, const AgentLivingData &){};
+    virtual void Update(float, const AgentLivingData &){};
 
     virtual void LoadSettings(CSimpleIni *){};
     virtual void SaveSettings(CSimpleIni *){};

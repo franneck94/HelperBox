@@ -78,7 +78,6 @@ public:
 
     bool right_mouse_down = false;
 
-    PlayerData player_data = {};
     AgentLivingData agents_data = {};
 
 private:

@@ -11,7 +11,6 @@ struct AgentLivingData
     AgentLivingData() : allies({}), neutrals({}), enemies({}), spirits({}), minions({}), npcs({}){};
     ~AgentLivingData(){};
 
-    bool ValidateData() const;
     void Update();
     void UpdateType(std::vector<GW::AgentLiving *> &filtered_agents, const GW::Constants::Allegiance type);
 
