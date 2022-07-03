@@ -9,8 +9,8 @@
 #include <GWCA/Packets/StoC.h>
 
 #include <Defines.h>
-#include <HelperBox.h>
 
+#include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 
 #include <AutoFollowWindow.h>

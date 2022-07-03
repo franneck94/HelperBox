@@ -16,7 +16,8 @@
 #include <GWCA/Utilities/Hooker.h>
 #include <GWCA/Utilities/Scanner.h>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
+
 #include <Logger.h>
 #include <Path.h>
 

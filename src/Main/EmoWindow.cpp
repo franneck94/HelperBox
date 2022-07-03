@@ -20,16 +20,16 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <HelperBox.h>
-#include <Logger.h>
-#include <Timer.h>
+#include <Base/HelperBox.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <Logger.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
+#include <Timer.h>
 #include <Types.h>
 #include <UwHelper.h>
 

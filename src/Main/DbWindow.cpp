@@ -18,7 +18,8 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
+
 #include <Logger.h>
 #include <Timer.h>
 

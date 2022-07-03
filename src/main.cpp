@@ -2,7 +2,8 @@
 
 #include <GWCA/Utilities/Scanner.h>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
+
 #include <Logger.h>
 
 DWORD WINAPI init(HMODULE hModule) noexcept

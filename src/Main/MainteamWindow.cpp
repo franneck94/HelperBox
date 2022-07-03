@@ -12,10 +12,9 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <fmt/format.h>
+#include <Base/HelperBox.h>
 
 #include <GuiUtils.h>
-#include <HelperBox.h>
 #include <Logger.h>
 
 #include <Actions.h>
@@ -25,6 +24,8 @@
 #include <PlayerData.h>
 #include <Types.h>
 #include <UwHelper.h>
+
+#include <fmt/format.h>
 
 #include "MainteamWindow.h"
 

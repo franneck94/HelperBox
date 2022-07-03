@@ -11,7 +11,7 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>

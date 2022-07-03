@@ -9,7 +9,7 @@
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
 
 #include <Actions.h>
 #include <Helper.h>

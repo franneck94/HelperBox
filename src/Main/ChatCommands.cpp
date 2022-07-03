@@ -3,33 +3,18 @@
 #include <GWCA/Managers/CameraMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 
+#include <Base/HelperBox.h>
 #include <Base/HelperBoxWindow.h>
 #include <Base/MainWindow.h>
-#include <HelperBox.h>
+
 #include <Logger.h>
 
 #include "ChatCommands.h"
-
-void ChatCommands::DrawSettingInternal()
-{
-}
-
-void ChatCommands::LoadSettings(CSimpleIni *)
-{
-}
-
-void ChatCommands::SaveSettings(CSimpleIni *)
-{
-}
 
 void ChatCommands::Initialize()
 {
     HelperBoxModule::Initialize();
     GW::Chat::CreateCommand(L"hb", ChatCommands::CmdHB);
-}
-
-void ChatCommands::Update(float)
-{
 }
 
 void ChatCommands::CmdHB(const wchar_t *, int argc, LPWSTR *argv)
