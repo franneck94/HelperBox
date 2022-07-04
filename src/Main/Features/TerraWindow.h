@@ -6,11 +6,14 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
+#include <Base/HelperBoxWindow.h>
+
 #include <PlayerData.h>
 #include <Timer.h>
 #include <Types.h>
 
-#include <Base/HelperBoxWindow.h>
+#include <SimpleIni.h>
+#include <imgui.h>
 
 class AutoTargetAction : public ActionABC
 {

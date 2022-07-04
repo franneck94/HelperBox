@@ -6,6 +6,8 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include <Base/HelperBoxWindow.h>
+
 #include <Actions.h>
 #include <AgentData.h>
 #include <GuiUtils.h>
@@ -17,7 +19,8 @@
 #include <PlayerData.h>
 #include <Types.h>
 
-#include <Base/HelperBoxWindow.h>
+#include <SimpleIni.h>
+#include <imgui.h>
 
 class Pumping : public EmoActionABC
 {

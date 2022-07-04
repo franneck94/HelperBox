@@ -4,11 +4,14 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
+#include <Base/HelperBoxWindow.h>
+
 #include <Actions.h>
 #include <PlayerData.h>
 #include <Types.h>
 
-#include <Base/HelperBoxWindow.h>
+#include <SimpleIni.h>
+#include <imgui.h>
 
 class AutoFollowAction : public ActionABC
 {
