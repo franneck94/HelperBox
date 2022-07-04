@@ -170,7 +170,7 @@ private:
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     uint32_t move_idx = 0;
-    std::array<MoveABC *, 55> moves = {
+    std::array<MoveABC *, 56> moves = {
         new Move_WaitAndContinue{1248.00F, 6965.51F, "Spawn"},
         new Move_WaitAndContinue{985.70F, 7325.54F, "Chamber 1", swap_to_high_armor_fn},
         new Move_WaitAndContinue{-634.07F, 9071.42F, "Chamber 2"},
@@ -180,7 +180,8 @@ private:
         new Move_WaitAndContinue{-4012.72F, 11130.53F, "Lab 4"},
         new Move_WaitAndContinue{-4390.63F, 11647.44F, "Lab 5"},
         new Move_WaitAndContinue{-5751.45F, 12746.52F, "Lab Reaper", target_reaper_fn},
-        new Move_DistanceAndContinue{-6263.33F, 9899.79F, "Fuse 1", 3700.0F, swap_to_low_armor_fn},
+        new Move_DistanceAndContinue{-5830.34F, 11781.70F, "To Fuse 1", 3700.0F},
+        new Move_NoWaitAndContinue{-6263.33F, 9899.79F, "Fuse 1", swap_to_low_armor_fn},
         new Move_DistanceAndContinue{-5183.64F, 8876.31F, "Basement Stairs 1", 2000.0F},
         new Move_DistanceAndContinue{-6241.24F, 7945.73F, "Basement Mid", 2000.0F},
         new Move_DistanceAndContinue{-8798.22F, 5643.86F, "Basement Stairs 2", 4000.0F},
@@ -200,10 +201,10 @@ private:
         new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "Talk", talk_reaper_fn},
         new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "UWG", take_uwg_fn},
         new Move_NoWaitAndContinue{-6035.29F, 11285.14F, "Keeper 1"},
-        new Move_WaitAndContinue{-6511.41F, 12447.65F, "Keeper 2"},
-        new Move_DistanceAndContinue{-3881.71F, 11280.04F, "Keeper 3", 4000.0F},
-        new Move_DistanceAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", 4500.0F},
-        new Move_DistanceAndContinue{-266.03F, 9304.26F, "Lab 1", 4000.0F},
+        new Move_WaitAndStop{-6511.41F, 12447.65F, "Keeper 2"},
+        new Move_NoWaitAndStop{-3881.71F, 11280.04F, "Keeper 3"},
+        new Move_DistanceAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", 4300.0F},
+        new Move_DistanceAndContinue{-266.03F, 9304.26F, "Lab 1", 4300.0F},
         new Move_NoWaitAndStop{1207.05F, 7732.16F, "Keeper 6"},
         new Move_NoWaitAndContinue{819.44F, 9769.97F, "To Wastes 1"},
         new Move_NoWaitAndContinue{2247.60F, 10529.446F, "To Wastes 2"},

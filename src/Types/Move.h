@@ -81,7 +81,7 @@ public:
             return;
         }
 
-        if (already_reached_pos && can_be_finished)
+        if (already_reached_pos)
         {
             const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
             if (last_trigger_timer_diff < MoveABC::last_trigger_timer_threshold_ms)
@@ -90,12 +90,19 @@ public:
 
             already_reached_pos = false;
             move_ongoing = false;
+            const auto proceed = moves[move_idx]->is_proceeding_move;
             ++move_idx;
-            if (moves[move_idx]->is_proceeding_move)
+            const auto trigger = moves[move_idx]->is_distance_based;
+            if (proceed)
             {
                 move_ongoing = true;
-                moves[move_idx]->Execute();
-                Log::Info("Ongoing to next move: %s", moves[move_idx]->name.data());
+                if (trigger)
+                {
+                    moves[move_idx]->Execute();
+                    Log::Info("Ongoing to next move: %s", moves[move_idx]->name.data());
+                }
+                else
+                    Log::Info("Waiting...");
             }
         }
     }
@@ -124,7 +131,8 @@ public:
     GW::GamePos pos;
     std::string name;
     std::optional<std::function<bool()>> cb_fn = std::nullopt;
-    const bool is_proceeding_move = false;
+    bool is_proceeding_move = false;
+    bool is_distance_based = true;
 
     static const long last_trigger_timer_threshold_ms = 500L;
 };
@@ -136,14 +144,15 @@ public:
                        const float _y,
                        const std::string &_name,
                        std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _cb_fn){};
+        : MoveABC(_x, _y, _name, _cb_fn)
+    {
+        is_proceeding_move = false;
+    };
     ~Move_NoWaitAndStop(){};
 
     bool UpdateMoveState(const PlayerData &player_data,
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
-
-    static const bool is_proceeding_move = false;
 };
 
 class Move_NoWaitAndContinue : public MoveABC
@@ -153,14 +162,15 @@ public:
                            const float _y,
                            const std::string &_name,
                            std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _cb_fn){};
+        : MoveABC(_x, _y, _name, _cb_fn)
+    {
+        is_proceeding_move = true;
+    };
     ~Move_NoWaitAndContinue(){};
 
     bool UpdateMoveState(const PlayerData &player_data,
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
-
-    static const bool is_proceeding_move = true;
 };
 
 class Move_WaitAndStop : public MoveABC
@@ -170,14 +180,15 @@ public:
                      const float _y,
                      const std::string &_name,
                      std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _cb_fn){};
+        : MoveABC(_x, _y, _name, _cb_fn)
+    {
+        is_proceeding_move = false;
+    };
     ~Move_WaitAndStop(){};
 
     bool UpdateMoveState(const PlayerData &player_data,
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
-
-    static const bool is_proceeding_move = false;
 };
 
 class Move_WaitAndContinue : public MoveABC
@@ -187,14 +198,15 @@ public:
                          const float _y,
                          const std::string &_name,
                          std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _cb_fn){};
+        : MoveABC(_x, _y, _name, _cb_fn)
+    {
+        is_proceeding_move = true;
+    };
     ~Move_WaitAndContinue(){};
 
     bool UpdateMoveState(const PlayerData &player_data,
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
-
-    static const bool is_proceeding_move = true;
 };
 
 class Move_DistanceAndContinue : public MoveABC
@@ -205,7 +217,11 @@ public:
                              const std::string &_name,
                              const float _dist_threshold,
                              std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _cb_fn), dist_threshold(_dist_threshold){};
+        : MoveABC(_x, _y, _name, _cb_fn), dist_threshold(_dist_threshold)
+    {
+        is_proceeding_move = true;
+        is_distance_based = false;
+    };
     ~Move_DistanceAndContinue(){};
 
     bool UpdateMoveState(const PlayerData &player_data,
@@ -213,7 +229,6 @@ public:
                          bool &move_ongoing) override;
 
     float dist_threshold;
-    static const bool is_proceeding_move = true;
 };
 
 class Move_CastSkillAndContinue : public MoveABC
@@ -224,7 +239,10 @@ public:
                               const std::string &_name,
                               const SkillData *_skill_cb,
                               std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _cb_fn), skill_cb(_skill_cb){};
+        : MoveABC(_x, _y, _name, _cb_fn), skill_cb(_skill_cb)
+    {
+        is_proceeding_move = true;
+    };
     ~Move_CastSkillAndContinue(){};
 
     bool UpdateMoveState(const PlayerData &player_data,
@@ -232,5 +250,4 @@ public:
                          bool &move_ongoing) override;
 
     const SkillData *skill_cb = nullptr;
-    static const bool is_proceeding_move = true;
 };
