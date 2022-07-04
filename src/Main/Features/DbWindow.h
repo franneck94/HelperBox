@@ -74,12 +74,14 @@ public:
 
     void DrawSettingInternal() override
     {
+#ifdef _DEBUG
         const auto width = ImGui::GetWindowWidth();
         ImGui::Text("Show Debug Map:");
         ImGui::SameLine(width * 0.5F);
         ImGui::PushItemWidth(width * 0.5F);
         ImGui::Checkbox("debugMapActive", &show_debug_map);
         ImGui::PopItemWidth();
+#endif
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
