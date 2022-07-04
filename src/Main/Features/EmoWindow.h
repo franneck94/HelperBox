@@ -224,7 +224,7 @@ private:
         new Move_NoWaitAndContinue{12566.49F, 7812.503F, "Pits 1"},
         new Move_NoWaitAndStop{11958.36F, 6281.43F, "Pits 2"},
         new Move_NoWaitAndContinue{11368.55F, -17974.64F, "Planes Start"},
-        new Move_NoWaitAndStop{12160.99F, -16830.55F, "Planes 1"},
+        new Move_WaitAndStop{12160.99F, -16830.55F, "Planes 1"},
         new Move_NoWaitAndContinue{-235.05F, 18496.461F, "To Dhuum Start"},
         new Move_NoWaitAndContinue{-2537.51F, 19139.91F, "To Dhuum 1"},
         new Move_NoWaitAndContinue{-6202.59F, 18704.91F, "To Dhuum 2"},

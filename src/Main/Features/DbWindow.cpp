@@ -110,6 +110,12 @@ void DbWindow::UpdateUwEntry()
 
 void DbWindow::Update(float, const AgentLivingData &_agents_data)
 {
+    if (!IsUw())
+    {
+        move_idx = 0;
+        damage.action_state = ActionState::INACTIVE;
+    }
+
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
     player_data.Update();

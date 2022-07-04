@@ -133,6 +133,12 @@ void EmoWindow::UpdateUwEntry()
 
 void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 {
+    if (!IsUw())
+    {
+        move_idx = 0;
+        tank_bonding.action_state = ActionState::INACTIVE;
+    }
+
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
     player_data.Update();
