@@ -124,10 +124,6 @@ void EmoWindow::UpdateUwEntry()
         return;
     }
 
-    const auto timer_diff = TIMER_DIFF(timer);
-    if (timer_diff < 500)
-        return;
-
     if (triggered_move_start && move_idx == 1)
     {
         pumping.action_state = ActionState::ACTIVE;
@@ -269,7 +265,7 @@ bool Pumping::RoutineCanthaGuards() const
     {
         for (const auto cantha : filtered_canthas)
         {
-            if (!cantha || cantha->GetIsDead() && cantha->hp == 0.00F)
+            if (!cantha || cantha->GetIsDead())
                 continue;
 
             if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player_data))
@@ -327,13 +323,15 @@ bool Pumping::RoutineLT() const
 
     const auto dist = GW::GetDistance(player_data->pos, player_data->target->pos);
 
-    if (dist < 1225.0F || dist > GW::Constants::Range::Spellcast)
+    const auto min_range_fuse = 1220.0F;
+    if (dist < min_range_fuse || dist > GW::Constants::Range::Spellcast)
         return false;
 
     if (target_living->hp < 0.80F && player_data->hp_perc > 0.5F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, target_living->agent_id));
 
-    if (TIMER_DIFF(last_time_sb_ms) > 4'000L &&
+    const auto sb_recast_threshold_ms = 4'000L;
+    if (TIMER_DIFF(last_time_sb_ms) > sb_recast_threshold_ms &&
         RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, target_living->agent_id))
     {
         last_time_sb_ms = clock();
@@ -421,8 +419,8 @@ bool Pumping::RoutineGDW() const
     if (!living || living->GetIsMoving())
         return false;
 
-    const auto dist = GW::GetDistance(player_data->pos, agent->pos);
-    if (dist > 450.0F)
+    const auto dist = GW::GetDistance(GW::GamePos{-16410.75F, 17294.47F, 0}, agent->pos);
+    if (dist > GW::Constants::Range::Area)
         return false;
 
     if (living->GetIsWeaponSpelled())
@@ -446,7 +444,7 @@ bool Pumping::RoutineTurtleGDW() const
     if (!living || living->GetIsMoving())
         return false;
 
-    const auto dist = GW::GetDistance(player_data->pos, agent->pos);
+    const auto dist = GW::GetDistance(GW::GamePos{-16105.50F, 17284.84F, 0}, agent->pos);
     if (dist > GW::Constants::Range::Spellcast)
         return false;
 
@@ -486,7 +484,7 @@ bool Pumping::RoutineKeepPlayerAlive() const
     if (player_data->living->GetIsMoving())
         return false;
 
-    if (player_data->energy < 50U)
+    if (player_data->energy_perc < 0.30F)
         return false;
 
     for (const auto &[id, _] : party_members)
@@ -627,7 +625,8 @@ bool Pumping::PauseRoutine()
 
     if (player_data->target)
     {
-        if (TargetIsReaper(*player_data) && (GW::GetDistance(player_data->pos, player_data->target->pos) < 200.0F) &&
+        if (TargetIsReaper(*player_data) &&
+            (GW::GetDistance(player_data->pos, player_data->target->pos) < GW::Constants::Range::Nearby) &&
             player_data->energy_perc > 0.30F)
             return true;
     }

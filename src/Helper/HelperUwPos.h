@@ -32,6 +32,6 @@ bool IsAtValeSpirits(const GW::GamePos &player_pos);
 
 bool IsGoingToDhuum(const GW::GamePos &player_pos);
 
-bool IsInDhuumRoom(const GW::GamePos &player_pos);
+bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Spellcast);
 
 bool IsAtFilterSkelePos(const GW::GamePos &player_pos, const GW::GamePos &next_pos);

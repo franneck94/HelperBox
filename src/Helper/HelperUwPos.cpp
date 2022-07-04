@@ -94,9 +94,9 @@ bool IsAtValeSpirits(const GW::GamePos &player_pos)
     return false;
 }
 
-bool IsInDhuumRoom(const GW::GamePos &player_pos)
+bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range)
 {
-    return IsNearToGamePos(player_pos, GW::GamePos{-16105.50F, 17284.84F, 0}, GW::Constants::Range::Spellcast);
+    return IsNearToGamePos(player_pos, GW::GamePos{-16105.50F, 17284.84F, 0}, range);
 }
 
 bool IsGoingToDhuum(const GW::GamePos &player_pos)

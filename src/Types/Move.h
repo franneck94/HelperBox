@@ -226,10 +226,6 @@ public:
         is_proceeding_move = false;
     };
     ~Move_WaitAndStop(){};
-
-    bool UpdateMoveState(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
-                         bool &move_ongoing) override;
 };
 
 class Move_CastSkillABC : public MoveABC
