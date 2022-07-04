@@ -31,17 +31,6 @@ public:
     GW::GamePos v4;
 };
 
-template <typename T>
-constexpr T PI = T(3.14159265358979323846L);
-
-template <typename T>
-[[nodiscard]] constexpr T deg_to_rad(const T deg)
-{
-    static_assert(std::is_floating_point_v<T>, "Must be floating point type.");
-
-    return deg * (PI<T> / static_cast<T>(180.0));
-}
-
 GW::GamePos RotatePoint(const GW::GamePos &player_pos, GW::GamePos pos, const float theta, const bool swap = true);
 
 bool IsNearToGamePos(const GW::GamePos &player_pos, const GW::GamePos &pos, const float r);

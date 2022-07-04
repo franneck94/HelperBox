@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <map>
+
 #include <Types.h>
 
 #include <imgui.h>

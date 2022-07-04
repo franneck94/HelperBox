@@ -10,6 +10,8 @@
 #include <AgentData.h>
 #include <PlayerData.h>
 
+#include <SimpleIni.h>
+
 DWORD __stdcall SafeThreadEntry(LPVOID mod);
 DWORD __stdcall ThreadEntry(LPVOID);
 

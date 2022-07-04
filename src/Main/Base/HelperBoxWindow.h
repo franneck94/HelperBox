@@ -5,6 +5,8 @@
 
 #include <Defines.h>
 
+#include <imgui.h>
+
 class HelperBoxWindow : public HelperBoxUIElement
 {
 public:

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <filesystem>
+#include <fstream>
 
 #include <GWCA/Context/CharContext.h>
 #include <GWCA/Context/GameContext.h>
@@ -24,6 +25,7 @@
 #include <Base/HelperBoxTheme.h>
 #include <Base/MainWindow.h>
 
+#include <SimpleIni.h>
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>

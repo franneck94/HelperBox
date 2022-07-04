@@ -5,7 +5,9 @@
 #include <Logger.h>
 #include <Path.h>
 
+#include <SimpleIni.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include "HelperBoxTheme.h"
 

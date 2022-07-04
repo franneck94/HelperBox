@@ -42,15 +42,15 @@ private:
     bool RoutineTurtleGDW() const;
     bool RoutineKeepPlayerAlive() const;
 
-    uint32_t *bag_idx = nullptr;
-    uint32_t *slot_idx = nullptr;
+    const uint32_t *bag_idx = nullptr;
+    const uint32_t *slot_idx = nullptr;
 
     GW::HookEntry Summon_AgentAdd_Entry;
     bool found_turtle = false;
     uint32_t turtle_id = 0;
 
-    GW::Agent *lt_agent = nullptr;
-    GW::Agent *db_agent = nullptr;
+    const GW::Agent *lt_agent = nullptr;
+    const GW::Agent *db_agent = nullptr;
 
     std::vector<PlayerMapping> party_members{};
     bool party_data_valid = false;
