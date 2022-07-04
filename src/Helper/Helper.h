@@ -34,7 +34,9 @@ bool IsDoaEntryOutpost();
 
 bool HelperActivationConditions();
 
-bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
+bool TargetNearest(const GW::GamePos &player_pos,
+                   const std::vector<GW::AgentLiving *> &livings,
+                   const float max_distance = GW::Constants::SqrRange::Compass);
 
 bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 

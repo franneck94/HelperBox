@@ -265,7 +265,7 @@ RoutineState Damage::Routine()
         }
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-            TargetAndAttackEnemyInAggro(*player_data, GW::Constants::Range::Earshot);
+            TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, GW::Constants::Range::Earshot);
 
         if (RoutineKillSkele())
             return RoutineState::FINISHED;
@@ -278,7 +278,7 @@ RoutineState Damage::Routine()
             return RoutineState::ACTIVE;
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-            TargetAndAttackEnemyInAggro(*player_data, 1700.0F);
+            TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, 1700.0F);
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
@@ -320,7 +320,7 @@ RoutineState Damage::Routine()
         return RoutineState::FINISHED;
 
     if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-        TargetAndAttackEnemyInAggro(*player_data, GW::Constants::Range::Earshot);
+        TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, GW::Constants::Range::Earshot);
 
     return RoutineState::FINISHED;
 }

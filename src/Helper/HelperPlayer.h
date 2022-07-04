@@ -32,6 +32,8 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
 
 void AttackAgent(const GW::Agent *agent);
 
-void TargetAndAttackEnemyInAggro(const PlayerData &player_data, const float range = GW::Constants::Range::Spellcast);
+void TargetAndAttackEnemyInAggro(const PlayerData &player_data,
+                                 const std::vector<GW::AgentLiving *> &enemies,
+                                 const float range = GW::Constants::Range::Spellcast);
 
 bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_id, const PlayerData *const player_data);

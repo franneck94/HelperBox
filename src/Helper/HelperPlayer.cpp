@@ -57,87 +57,22 @@ const GW::EffectArray *GetEffects(const uint32_t agent_id)
     return nullptr;
 }
 
-bool TargetNearest(const TargetType type, const float max_distance)
+bool TargetNearest(const GW::GamePos &player_pos,
+                   const std::vector<GW::AgentLiving *> &livings,
+                   const float max_distance)
 {
-    const auto agents = GW::Agents::GetAgentArray();
-    if (!agents || !agents->valid())
-        return false;
-
-    const auto me = GW::Agents::GetPlayerAsAgentLiving();
-    if (!me)
-        return false;
-
     auto distance = max_distance;
     auto closest = size_t{0};
 
-    for (const auto agent : *agents)
+    for (const auto living : livings)
     {
-        if (!agent || agent == me)
+        if (!living)
             continue;
 
-        switch (type)
-        {
-        case TargetType::Gadget:
-        {
-            const auto gadget = agent->GetAsAgentGadget();
-            if (!gadget)
-                continue;
-            break;
-        }
-        case TargetType::Item:
-        {
-            const auto item_agent = agent->GetAsAgentItem();
-            if (!item_agent)
-                continue;
-
-            const auto item = GW::Items::GetItemById(item_agent->item_id);
-            if (!item)
-                continue;
-            break;
-        }
-        case TargetType::Npc:
-        {
-            const auto living_agent = agent->GetAsAgentLiving();
-            if (!living_agent || !living_agent->IsNPC() || !living_agent->GetIsAlive())
-                continue;
-            break;
-        }
-        case TargetType::PlayerData:
-        {
-            const auto living_agent = agent->GetAsAgentLiving();
-            if (!living_agent || !living_agent->IsPlayer())
-                continue;
-            break;
-        }
-        case TargetType::Living_Ally:
-        case TargetType::Living_Enemy:
-        case TargetType::Living_Npc:
-        {
-            const auto living_agent = agent->GetAsAgentLiving();
-            if (!living_agent || !living_agent->GetIsAlive())
-                continue;
-
-            if (type == TargetType::Living_Ally &&
-                living_agent->allegiance == GW::Constants::Allegiance::Ally_NonAttackable)
-                break;
-            else if (type == TargetType::Living_Enemy && living_agent->allegiance == GW::Constants::Allegiance::Enemy)
-                break;
-            else if (type == TargetType::Living_Npc &&
-                     living_agent->allegiance == GW::Constants::Allegiance::Npc_Minipet)
-                break;
-
-            continue;
-        }
-        default:
-        {
-            continue;
-        }
-        }
-
-        const auto newDistance = GW::GetDistance(me->pos, agent->pos);
+        const auto newDistance = GW::GetDistance(player_pos, living->pos);
         if (newDistance < distance)
         {
-            closest = agent->agent_id;
+            closest = living->agent_id;
             distance = newDistance;
         }
     }
@@ -223,11 +158,13 @@ bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t tar
     return false;
 }
 
-void TargetAndAttackEnemyInAggro(const PlayerData &player_data, const float range)
+void TargetAndAttackEnemyInAggro(const PlayerData &player_data,
+                                 const std::vector<GW::AgentLiving *> &enemies,
+                                 const float range)
 {
     if (!player_data.target || !player_data.target->agent_id || !player_data.target->GetIsLivingType() ||
         player_data.target->GetAsAgentLiving()->allegiance != GW::Constants::Allegiance::Enemy)
-        TargetNearest(TargetType::Living_Enemy, range);
+        TargetNearest(player_data.pos, enemies, range);
 
     if (player_data.target && player_data.target->agent_id)
     {
