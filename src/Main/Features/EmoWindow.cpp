@@ -93,7 +93,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 void EmoWindow::UpdateUw()
 {
     UpdateUwEntry();
-    UpdatedUwMoves_Main(player_data, agents_data, moves, move_idx, move_ongoing);
+    MoveABC::UpdatedUwMoves(player_data, agents_data, moves, move_idx, move_ongoing);
 }
 
 void EmoWindow::UpdateUwEntry()

@@ -81,7 +81,7 @@ void UpdateUwInfo(const PlayerData &player_data,
     if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
     {
         Log::Info("Ported!");
-        move_idx = GetFirstCloseMove(player_data, moves);
+        move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
     }
     else if (port_detected && !next_move_oob)
     {

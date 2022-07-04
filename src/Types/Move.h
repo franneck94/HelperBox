@@ -40,6 +40,82 @@ public:
                                  const AgentLivingData *agents_data,
                                  bool &move_ongoing) = 0;
 
+    template <uint32_t N>
+    static void UpdatedUwMoves(const PlayerData &player_data,
+                               const AgentLivingData *agents_data,
+                               std::array<MoveABC *, N> &moves,
+                               uint32_t &move_idx,
+                               bool &move_ongoing)
+    {
+        static auto trigger_timer_ms = clock();
+        static auto already_reached_pos = false;
+
+        if (!move_ongoing)
+            return;
+
+        if (move_idx >= moves.size() - 1U)
+            return;
+
+        const auto can_be_finished = moves[move_idx]->UpdateMoveState(player_data, agents_data, move_ongoing);
+
+        const auto is_moving = player_data.living->GetIsMoving();
+        const auto reached_pos = GamePosCompare(player_data.pos, moves[move_idx]->pos, 0.001F);
+        if (!already_reached_pos && reached_pos)
+            already_reached_pos = true;
+
+        if (!already_reached_pos && is_moving)
+            return;
+
+        if (!already_reached_pos && !is_moving && can_be_finished)
+        {
+            static auto last_trigger_time_ms = clock();
+
+            const auto last_trigger_time_diff_ms = TIMER_DIFF(last_trigger_time_ms);
+            if (last_trigger_time_diff_ms == 0 || last_trigger_time_diff_ms >= MoveABC::last_trigger_timer_threshold_ms)
+            {
+                last_trigger_time_ms = clock();
+                moves[move_idx]->Execute();
+                Log::Info("Retrigger current move: %s", moves[move_idx]->name.data());
+                trigger_timer_ms = clock();
+            }
+            return;
+        }
+
+        if (already_reached_pos && can_be_finished)
+        {
+            const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
+            if (last_trigger_timer_diff < MoveABC::last_trigger_timer_threshold_ms)
+                return;
+            trigger_timer_ms = clock();
+
+            already_reached_pos = false;
+            move_ongoing = false;
+            ++move_idx;
+            if (moves[move_idx]->is_proceeding_move)
+            {
+                move_ongoing = true;
+                moves[move_idx]->Execute();
+                Log::Info("Ongoing to next move: %s", moves[move_idx]->name.data());
+            }
+        }
+    }
+
+    template <uint32_t N>
+    static uint32_t GetFirstCloseMove(const PlayerData &player_data, const std::array<MoveABC *, N> &moves)
+    {
+        auto idx = 0U;
+        for (const auto move : moves)
+        {
+            const auto dist_to_move = GW::GetDistance(player_data.pos, move->pos);
+            if (dist_to_move < GW::Constants::Range::Spellcast)
+                return idx;
+
+            ++idx;
+        }
+
+        return 0U;
+    }
+
 private:
     float x = 0.0F;
     float y = 0.0F;
@@ -67,7 +143,7 @@ public:
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
 
-    const bool is_proceeding_move = false;
+    static const bool is_proceeding_move = false;
 };
 
 class Move_NoWaitAndContinue : public MoveABC
@@ -84,7 +160,7 @@ public:
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
 
-    const bool is_proceeding_move = true;
+    static const bool is_proceeding_move = true;
 };
 
 class Move_WaitAndStop : public MoveABC
@@ -101,7 +177,7 @@ public:
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
 
-    const bool is_proceeding_move = false;
+    static const bool is_proceeding_move = false;
 };
 
 class Move_WaitAndContinue : public MoveABC
@@ -118,7 +194,7 @@ public:
                          const AgentLivingData *agents_data,
                          bool &move_ongoing) override;
 
-    const bool is_proceeding_move = true;
+    static const bool is_proceeding_move = true;
 };
 
 class Move_DistanceAndContinue : public MoveABC
@@ -137,7 +213,7 @@ public:
                          bool &move_ongoing) override;
 
     float dist_threshold;
-    const bool is_proceeding_move = true;
+    static const bool is_proceeding_move = true;
 };
 
 class Move_CastSkillAndContinue : public MoveABC
@@ -156,81 +232,5 @@ public:
                          bool &move_ongoing) override;
 
     const SkillData *skill_cb = nullptr;
-    const bool is_proceeding_move = true;
+    static const bool is_proceeding_move = true;
 };
-
-template <uint32_t N>
-uint32_t GetFirstCloseMove(const PlayerData &player_data, const std::array<MoveABC *, N> &moves)
-{
-    auto idx = 0U;
-    for (const auto move : moves)
-    {
-        const auto dist_to_move = GW::GetDistance(player_data.pos, move->pos);
-        if (dist_to_move < GW::Constants::Range::Spellcast)
-            return idx;
-
-        ++idx;
-    }
-
-    return 0U;
-}
-
-template <uint32_t N>
-void UpdatedUwMoves_Main(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
-                         std::array<MoveABC *, N> &moves,
-                         uint32_t &move_idx,
-                         bool &move_ongoing)
-{
-    static auto trigger_timer_ms = clock();
-    static auto already_reached_pos = false;
-
-    if (!move_ongoing)
-        return;
-
-    if (move_idx >= moves.size() - 1U)
-        return;
-
-    const auto can_be_finished = moves[move_idx]->UpdateMoveState(player_data, agents_data, move_ongoing);
-
-    const auto is_moving = player_data.living->GetIsMoving();
-    const auto reached_pos = GamePosCompare(player_data.pos, moves[move_idx]->pos, 0.001F);
-    if (!already_reached_pos && reached_pos)
-        already_reached_pos = true;
-
-    if (!already_reached_pos && is_moving)
-        return;
-
-    if (!already_reached_pos && !is_moving && can_be_finished)
-    {
-        static auto last_trigger_time_ms = clock();
-
-        const auto last_trigger_time_diff_ms = TIMER_DIFF(last_trigger_time_ms);
-        if (last_trigger_time_diff_ms == 0 || last_trigger_time_diff_ms >= MoveABC::last_trigger_timer_threshold_ms)
-        {
-            last_trigger_time_ms = clock();
-            moves[move_idx]->Execute();
-            Log::Info("Retrigger current move: %s", moves[move_idx]->name.data());
-            trigger_timer_ms = clock();
-        }
-        return;
-    }
-
-    if (already_reached_pos && can_be_finished)
-    {
-        const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
-        if (last_trigger_timer_diff < MoveABC::last_trigger_timer_threshold_ms)
-            return;
-        trigger_timer_ms = clock();
-
-        already_reached_pos = false;
-        move_ongoing = false;
-        ++move_idx;
-        if (moves[move_idx]->is_proceeding_move)
-        {
-            move_ongoing = true;
-            moves[move_idx]->Execute();
-            Log::Info("Ongoing to next move: %s", moves[move_idx]->name.data());
-        }
-    }
-}
