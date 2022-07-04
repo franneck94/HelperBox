@@ -40,15 +40,12 @@ void MoveABC::Execute() const
         cb_fn.value()();
 }
 
-
-bool Move_CastSkillAndContinue::UpdateMoveState(const PlayerData &player_data,
-                                                const AgentLivingData *,
-                                                bool &move_ongoing)
+bool Move_CastSkillABC::UpdateMoveState(const PlayerData &player_data, const AgentLivingData *, bool &move_ongoing)
 {
+    move_ongoing = true;
+
     static auto started_cast = false;
     static auto timer = clock();
-
-    move_ongoing = true;
 
     if (player_data.living->GetIsMoving())
         timer = clock();
@@ -90,14 +87,13 @@ bool Move_CastSkillAndContinue::UpdateMoveState(const PlayerData &player_data,
     return true;
 }
 
-bool Move_WaitAndContinue::UpdateMoveState(const PlayerData &player_data,
-                                           const AgentLivingData *agents_data,
-                                           bool &move_ongoing)
+bool Move_WaitABC::UpdateMoveState(const PlayerData &player_data,
+                                   const AgentLivingData *agents_data,
+                                   bool &move_ongoing)
 {
-    static auto canceled_move = false;
-
     move_ongoing = true;
 
+    static auto canceled_move = false;
     const auto aggro_free = CheckForAggroFree(player_data, agents_data, pos);
     if (aggro_free)
     {
@@ -116,35 +112,7 @@ bool Move_WaitAndContinue::UpdateMoveState(const PlayerData &player_data,
     return false;
 }
 
-bool Move_WaitAndStop::UpdateMoveState(const PlayerData &player_data,
-                                       const AgentLivingData *agents_data,
-                                       bool &move_ongoing)
-{
-    static auto canceled_move = false;
-
-    move_ongoing = true;
-
-    const auto aggro_free = CheckForAggroFree(player_data, agents_data, pos);
-    if (aggro_free)
-    {
-        canceled_move = false;
-        return true;
-    }
-
-    if (!canceled_move && player_data.living->GetIsMoving())
-    {
-        canceled_move = true;
-        Log::Info("Canceled Movement based on aggro");
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
-        return false;
-    }
-
-    return false;
-}
-
-bool Move_DistanceAndContinue::UpdateMoveState(const PlayerData &player_data,
-                                               const AgentLivingData *,
-                                               bool &move_ongoing)
+bool Move_DistanceABC::UpdateMoveState(const PlayerData &player_data, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
 
@@ -163,14 +131,21 @@ bool Move_DistanceAndContinue::UpdateMoveState(const PlayerData &player_data,
     return true;
 }
 
-bool Move_NoWaitAndStop::UpdateMoveState(const PlayerData &, const AgentLivingData *, bool &move_ongoing)
+bool Move_NoWaitABC::UpdateMoveState(const PlayerData &, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
     return true;
 }
 
-bool Move_NoWaitAndContinue::UpdateMoveState(const PlayerData &, const AgentLivingData *, bool &move_ongoing)
+bool Move_PositionABC::UpdateMoveState(const PlayerData &, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
-    return true;
+
+    if (!trigger_agent)
+        return true;
+
+    if (IsNearToGamePos(trigger_pos, trigger_agent->pos, 300.0F))
+        return true;
+
+    return false;
 }
