@@ -95,6 +95,9 @@ void DbWindow::UpdateUw()
 
 void DbWindow::UpdateUwEntry()
 {
+    if (GW::PartyMgr::GetPartySize() >= 7)
+        load_cb_triggered = false;
+
     if (load_cb_triggered)
     {
         move_idx = 0;

@@ -102,6 +102,9 @@ void EmoWindow::UpdateUwEntry()
     static auto triggered_tank_bonds_at_start = false;
     static auto triggered_move_start = false;
 
+    if (GW::PartyMgr::GetPartySize() >= 7)
+        load_cb_triggered = false;
+
     if (load_cb_triggered)
     {
         move_idx = 0;
@@ -229,10 +232,10 @@ bool Pumping::RoutineSelfBonds() const
             return true;
     }
 
-    if (found_ether && (player_data->hp_perc < 0.90F || !found_sb) && player_data->SpamEffect(skillbar->sb))
+    if (found_ether && (player_data->hp_perc < 0.85F || !found_sb) && player_data->SpamEffect(skillbar->sb))
         return true;
 
-    if (found_ether && (player_data->energy_perc < 0.90F || !found_burning) &&
+    if (found_ether && (player_data->energy_perc < 0.85F || !found_burning) &&
         player_data->SpamEffect(skillbar->burning))
         return true;
 
@@ -664,6 +667,10 @@ void Pumping::Update()
         paused = false;
         action_state = ActionState::ACTIVE;
     }
+
+    if (action_state == ActionState::INACTIVE && player_data->living && player_data->living->GetIsIdle() &&
+        (player_data->energy_perc < 0.30F || player_data->hp_perc < 0.30F))
+        action_state = ActionState::ACTIVE;
 
     if (action_state == ActionState::ACTIVE)
         (void)Routine();

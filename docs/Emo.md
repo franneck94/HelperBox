@@ -23,6 +23,7 @@ The window will only be rendered if you are on an E/MO.
         - If PI is in the skillbar, cast whenever Dhuum cast judgment
 
 - Move-To Feature:
+    - Auto moving at instance load is only enabled for low-man teams (less than 7 player)
     - Pre-defined set of positions, like goto Lab Reaper, etc.
     - Move-to button has the name of the next position
     - Most position movements are executed like a bot, only the following need to be triggered
