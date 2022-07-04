@@ -86,7 +86,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map && agents_data)
-        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx].pos, "DbMap");
+        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "DbMap");
 #endif
 }
 
@@ -114,7 +114,7 @@ void EmoWindow::UpdateUwEntry()
 
     if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
     {
-        moves[0].Execute();
+        moves[0]->Execute();
         triggered_tank_bonds_at_start = false;
         triggered_move_start = true;
         move_ongoing = true;

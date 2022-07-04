@@ -1,4 +1,5 @@
 #pragma once
+
 #include <array>
 #include <cstdint>
 
@@ -58,7 +59,7 @@ bool TakePlanes();
 
 template <uint32_t N>
 void UpdateUwInfo(const PlayerData &player_data,
-                  const std::array<Move, N> &moves,
+                  const std::array<MoveABC *, N> &moves,
                   uint32_t &move_idx,
                   const bool first_call)
 {
@@ -71,10 +72,10 @@ void UpdateUwInfo(const PlayerData &player_data,
     const auto port_detected = GW::GetDistance(last_pos, curr_pos) > GW::Constants::Range::Compass;
     const auto is_spawn = GW::GetDistance(GW::GamePos{1248.00F, 6965.51F, 0}, curr_pos) < GW::Constants::Range::Compass;
 
-    const auto curr_move = moves[move_idx].pos;
+    const auto curr_move = moves[move_idx]->pos;
     const auto curr_move_oob = GW::GetDistance(curr_move, curr_pos) > GW::Constants::Range::Compass;
 
-    const auto next_move = moves[move_idx + 1].pos;
+    const auto next_move = moves[move_idx + 1]->pos;
     const auto next_move_oob = GW::GetDistance(next_move, curr_pos) > GW::Constants::Range::Compass;
 
     if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
@@ -92,3 +93,5 @@ void UpdateUwInfo(const PlayerData &player_data,
 bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
 
 bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
+
+bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos);

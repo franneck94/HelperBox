@@ -1,5 +1,7 @@
 
+#include <algorithm>
 #include <cstdint>
+#include <vector>
 
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/GameContainers/Array.h>
@@ -364,4 +366,54 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
         return true;
 
     return false;
+}
+
+bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos)
+{
+    if (!agents_data)
+        return true;
+
+    const auto filter_ids =
+        std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+
+    const auto livings = FilterAgentsByRange(agents_data->enemies, player_data, GW::Constants::Range::Earshot);
+    const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
+
+    if (player_data.pos.x == next_pos.x && player_data.pos.y == next_pos.y)
+        return result_ids_Aggro.size() == 0;
+    else if (result_ids_Aggro.size() == 1)
+        return false;
+
+    const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
+    const auto filtered_livings = GetEnemiesInGameRectangle(rect, agents_data->enemies);
+
+    const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
+
+    auto result_ids_rect = std::set<uint32_t>{};
+    if (IsAtFilterSkelePos(player_data.pos, next_pos)) // ignore skeles here
+    {
+        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
+    }
+    else if (move_pos_is_right_at_spirits1) // ignore spirits here
+    {
+        const auto player_pos = player_data.pos;
+        auto enemies = agents_data->enemies;
+        if (enemies.size() == 0)
+            return true;
+
+        std::sort(enemies.begin(), enemies.end(), [&player_pos](const auto a1, const auto a2) {
+            const auto sqrd1 = GW::GetDistance(player_pos, a1->pos);
+            const auto sqrd2 = GW::GetDistance(player_pos, a2->pos);
+            return sqrd1 < sqrd2;
+        });
+
+        const auto dist = GW::GetDistance(player_pos, enemies[0]->pos);
+        return dist > 3000.0F;
+    }
+    else
+    {
+        result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
+    }
+
+    return result_ids_rect.size() == 0;
 }

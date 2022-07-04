@@ -107,3 +107,21 @@ bool IsGoingToDhuum(const GW::GamePos &player_pos)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{-9567.56F, 17288.916F, 0}, 100.0F);
 }
+
+bool IsAtFilterSkelePos(const GW::GamePos &player_pos, const GW::GamePos &next_pos)
+{
+    const auto is_near_chamber_skele = IsAtChamberSkele(player_pos);
+    const auto is_right_at_chamber_skele = IsRightAtChamberSkele(player_pos);
+    const auto is_in_chamber_where_to_move = (is_near_chamber_skele && !is_right_at_chamber_skele);
+
+    const auto is_near_to_at_vale_start = IsAtValeStart(player_pos);
+    const auto is_near_to_vale_house = IsAtValeHouse(player_pos);
+    const auto is_right_at_vale_house = IsRightAtValeHouse(player_pos);
+    const auto is_in_vale_where_to_move =
+        ((is_near_to_at_vale_start || is_near_to_vale_house) && !is_right_at_vale_house);
+
+    const auto is_at_basement_stair = GW::GetDistance(next_pos, GW::GamePos{-6263.33F, 9899.79F, 0}) < 1280.0F;
+    const auto is_to_basement1 = GW::GetDistance(next_pos, GW::GamePos{-5183.64F, 8876.31F, 0}) < 1280.0F;
+
+    return (is_in_chamber_where_to_move || is_in_vale_where_to_move || is_to_basement1 || is_at_basement_stair);
+}

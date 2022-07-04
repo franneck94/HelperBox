@@ -83,7 +83,7 @@ void DbWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map && agents_data)
-        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx].pos, "DbMap");
+        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "DbMap");
 #endif
 }
 
@@ -98,7 +98,7 @@ void DbWindow::UpdateUwEntry()
     if (load_cb_triggered)
     {
         move_idx = 0;
-        moves[0].Execute();
+        moves[0]->Execute();
         load_cb_triggered = false;
         move_ongoing = true;
 
