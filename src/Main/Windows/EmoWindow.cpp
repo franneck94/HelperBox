@@ -25,13 +25,14 @@
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperPlayer.h>
+#include <HelperUw.h>
 #include <Logger.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
 #include <Timer.h>
 #include <Types.h>
-#include <UwHelper.h>
 
 #include "EmoWindow.h"
 
@@ -72,30 +73,6 @@ EmoWindow::EmoWindow()
         });
 };
 
-void EmoWindow::WarnDistanceLT() const
-{
-    static auto warned = false;
-    constexpr auto warn_dist = GW::Constants::Range::Compass - 20.0F;
-
-    const auto lt_id = GetTankId();
-    const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
-
-    if (!lt_agent)
-        return;
-
-    const auto dist = GW::GetDistance(player_data.pos, lt_agent->pos);
-    if (!warned && dist > warn_dist)
-    {
-        GW::Chat::WriteChat(GW::Chat::Channel::CHANNEL_GROUP, L"LT is leaving EMO's compass range!");
-        warned = true;
-
-        return;
-    }
-
-    if (warned && dist < warn_dist)
-        warned = false;
-}
-
 void EmoWindow::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
@@ -120,7 +97,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map)
-        DrawMap(player_data.pos, agents_data->enemies, moves, move_idx, "DbMap");
+        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx].pos, "DbMap");
 #endif
 }
 
@@ -128,35 +105,6 @@ void EmoWindow::UpdateUw()
 {
     UpdateUwEntry();
     UpdatedUwMoves_Main(player_data, agents_data, moves, move_idx, move_ongoing);
-    WarnDistanceLT();
-}
-
-void EmoWindow::UpdateUwDetectKeeper(const std::vector<GW::AgentLiving *> &enemies)
-{
-    static auto printed = false;
-    static auto last_name = moves[move_idx].name;
-    static auto found_keeper = false;
-
-    if ((moves[move_idx].name != std::string{"Keeper 1"}) && (moves[move_idx].name != std::string{"Keeper 2"}))
-        return;
-
-    const auto curr_pos = KEEPER_MAP[moves[move_idx - 1].name];
-    if (last_name != moves[move_idx].name)
-        printed = false;
-
-    std::vector<GW::AgentLiving *> keeper_livings;
-    SplitFilteredAgents(enemies, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
-
-    if (!found_keeper)
-        found_keeper = FoundKeeperAtPos(keeper_livings, curr_pos);
-    const auto still_found_keeper = FoundKeeperAtPos(keeper_livings, curr_pos);
-    if (!printed && found_keeper && !still_found_keeper)
-    {
-        printed = true;
-        found_keeper = false;
-        Log::Info("Keeper died!");
-        moves[move_idx].Execute();
-    }
 }
 
 void EmoWindow::UpdateUwEntry()
@@ -198,10 +146,7 @@ void EmoWindow::UpdateUwEntry()
 void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
-    {
-        agents_data = nullptr;
         return;
-    }
     player_data.Update();
     agents_data = &_agents_data;
 
@@ -214,9 +159,6 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
         first_frame = false;
     }
 
-    if (IsLoading() || IsOutpost())
-        move_idx = 0;
-
     if (!skillbar.ValidateData())
         return;
     skillbar.Update();
@@ -227,7 +169,6 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
     {
         UpdateUwInfo(player_data, moves, move_idx, false);
         UpdateUw();
-        UpdateUwDetectKeeper(agents_data->enemies);
     }
 
     tank_bonding.Update();

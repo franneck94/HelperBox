@@ -13,7 +13,7 @@
 #include <Logger.h>
 #include <Timer.h>
 
-#include <AgentLivingData.h>
+#include <AgentData.h>
 #include <Helper.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>

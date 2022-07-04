@@ -18,12 +18,12 @@
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperUw.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
 #include <Timer.h>
 #include <Types.h>
-#include <UwHelper.h>
 
 #include "TerraWindow.h"
 

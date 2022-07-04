@@ -4,7 +4,7 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 
-#include "AgentLivingData.h"
+#include "AgentData.h"
 
 void AgentLivingData::Update()
 {

@@ -7,7 +7,7 @@
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
 
-#include <AgentLivingData.h>
+#include <AgentData.h>
 #include <PlayerData.h>
 
 DWORD __stdcall SafeThreadEntry(LPVOID mod);

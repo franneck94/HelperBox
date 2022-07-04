@@ -34,17 +34,6 @@ bool HelperActivationConditions();
 
 bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
 
-const GW::EffectArray *GetEffects(const uint32_t agent_id);
-
-bool DetectPlayerIsDead();
-
-std::tuple<uint32_t, uint32_t, float> GetEnergy();
-
-std::tuple<uint32_t, uint32_t, float> GetHp();
-
-bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t target_agent_id);
-
-bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 
 bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
@@ -109,10 +98,6 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_livings,
 
 void SortByDistance(const PlayerData &player_data, std::vector<GW::AgentLiving *> &filtered_livings);
 
-bool CanMove();
-
-bool IsAliveAlly(const GW::Agent *target);
-
 uint32_t GetPartyIdxByID(const uint32_t id);
 
 std::pair<GW::Agent *, float> GetClosestEnemy(const PlayerData *player_data);
@@ -135,14 +120,10 @@ DWORD QuestAcceptDialog(DWORD quest);
 
 DWORD QuestRewardDialog(DWORD quest);
 
-void AttackAgent(const GW::Agent *agent);
+bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 
 std::vector<GW::AgentLiving *> GetEnemiesInRange(const PlayerData &player_data,
                                                  const float range = GW::Constants::Range::Earshot);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);
-
-void TargetAndAttackEnemyInAggro(const PlayerData &player_data, const float range = GW::Constants::Range::Spellcast);
-
-bool CastBondIfNotAvailable(const SkillData &skill_data, const uint32_t target_id, const PlayerData *const player_data);

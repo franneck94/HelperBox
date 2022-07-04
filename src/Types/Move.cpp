@@ -2,11 +2,12 @@
 
 #include <GWCA/Managers/ChatMgr.h>
 
-#include <AgentLivingData.h>
+#include <AgentData.h>
 #include <Helper.h>
+#include <HelperUw.h>
 #include <PlayerData.h>
-#include <UwHelper.h>
 
+#include <HelperPlayer.h>
 #include <Logger.h>
 #include <Timer.h>
 

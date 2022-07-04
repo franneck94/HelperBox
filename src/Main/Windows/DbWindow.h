@@ -9,13 +9,13 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
-#include <AgentLivingData.h>
+#include <AgentData.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
+#include <HelperUw.h>
 #include <Move.h>
 #include <PlayerData.h>
 #include <Types.h>
-#include <UwHelper.h>
 
 #include <Base/HelperBoxWindow.h>
 

@@ -26,11 +26,12 @@
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperPlayer.h>
+#include <HelperUw.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
 #include <Types.h>
-#include <UwHelper.h>
 
 #include "DbWindow.h"
 
@@ -83,7 +84,7 @@ void DbWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map)
-        DrawMap(player_data.pos, agents_data->enemies, moves, move_idx, "DbMap");
+        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx].pos, "DbMap");
 #endif
 }
 
@@ -109,10 +110,7 @@ void DbWindow::UpdateUwEntry()
 void DbWindow::Update(float, const AgentLivingData &_agents_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
-    {
-        agents_data = nullptr;
         return;
-    }
     player_data.Update();
     agents_data = &_agents_data;
 
@@ -124,9 +122,6 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
         UpdateUwInfo(player_data, moves, move_idx, true);
         first_frame = false;
     }
-
-    if (IsLoading() || IsOutpost())
-        move_idx = 0;
 
     if (!skillbar.ValidateData())
         return;

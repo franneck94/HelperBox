@@ -12,6 +12,7 @@ target_link_libraries(TypesDll PUBLIC
     simpleini
     fmt::fmt
     UtilsDll
+    DataDll
     HelperDll)
 
 if (${ENABLE_WARNINGS})

@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include <AgentLivingData.h>
+#include <AgentData.h>
 #include <PlayerData.h>
 
 typedef std::function<void(const std::string *section, bool is_showing)> SectionDrawCallback;

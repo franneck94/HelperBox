@@ -9,14 +9,14 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
-#include <AgentLivingData.h>
+#include <AgentData.h>
 #include <Callbacks.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperUw.h>
 #include <Move.h>
 #include <PlayerData.h>
 #include <Types.h>
-#include <UwHelper.h>
 
 #include <Base/HelperBoxWindow.h>
 
@@ -152,9 +152,6 @@ public:
 private:
     void UpdateUw();
     void UpdateUwEntry();
-    void UpdateUwDetectKeeper(const std::vector<GW::AgentLiving *> &enemies);
-
-    void WarnDistanceLT() const;
 
     PlayerData player_data;
     const AgentLivingData *agents_data = nullptr;
@@ -202,11 +199,11 @@ private:
         Move{-5751.45F, 12746.52F, "Lab Reaper", MoveState::NO_WAIT_AND_STOP, target_reaper_fn},
         Move{-5751.45F, 12746.52F, "Talk", MoveState::NO_WAIT_AND_CONTINUE, talk_reaper_fn},
         Move{-5751.45F, 12746.52F, "UWG", MoveState::NO_WAIT_AND_CONTINUE, take_uwg_fn},
-        Move{-6035.29F, 11285.14F, "Keeper 1", MoveState::NO_WAIT_AND_STOP},
-        Move{-6511.41F, 12447.65F, "Keeper 2", MoveState::NO_WAIT_AND_STOP},
-        Move{-3881.71F, 11280.04F, "Keeper 3", MoveState::NO_WAIT_AND_STOP},
-        Move{-1502.45F, 9737.64F, "Keeper 4/5", MoveState::NO_WAIT_AND_STOP},
-        Move{-266.03F, 9304.26F, "Lab 1", MoveState::NO_WAIT_AND_CONTINUE},
+        Move{-6035.29F, 11285.14F, "Keeper 1", MoveState::NO_WAIT_AND_CONTINUE},
+        Move{-6511.41F, 12447.65F, "Keeper 2", MoveState::WAIT_AND_CONTINUE},
+        Move{-3881.71F, 11280.04F, "Keeper 3", MoveState::DISTANCE_AND_CONTINUE, 4000.0F},
+        Move{-1502.45F, 9737.64F, "Keeper 4/5", MoveState::DISTANCE_AND_CONTINUE, 4500.0F},
+        Move{-266.03F, 9304.26F, "Lab 1", MoveState::DISTANCE_AND_CONTINUE, 4000.0F},
         Move{1207.05F, 7732.16F, "Keeper 6", MoveState::NO_WAIT_AND_STOP},
         Move{819.44F, 9769.97F, "To Wastes 1", MoveState::NO_WAIT_AND_CONTINUE},
         Move{2247.60F, 10529.446F, "To Wastes 2", MoveState::NO_WAIT_AND_CONTINUE},

@@ -17,6 +17,7 @@ target_link_libraries(MainDll PUBLIC
     fmt::fmt
     UtilsDll
     TypesDll
+    DataDll
     HelperDll)
 
 if (${ENABLE_WARNINGS})

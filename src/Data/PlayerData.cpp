@@ -12,6 +12,7 @@
 
 #include <Actions.h>
 #include <Helper.h>
+#include <HelperPlayer.h>
 #include <SkillbarData.h>
 
 #include "PlayerData.h"
@@ -89,9 +90,7 @@ bool PlayerData::HasBuff(const GW::Constants::SkillID buff_skill_id) const
         if (agent_id == id)
         {
             if (skill_id == static_cast<uint32_t>(buff_skill_id))
-            {
                 return true;
-            }
         }
     }
 
@@ -112,9 +111,7 @@ bool PlayerData::HasEffect(const GW::Constants::SkillID effect_skill_id) const
         if (agent_id == id || agent_id == 0)
         {
             if (skill_id == static_cast<uint32_t>(effect_skill_id))
-            {
                 return true;
-            }
         }
     }
 

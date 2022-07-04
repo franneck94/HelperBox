@@ -7,11 +7,12 @@
 #include <GWCA/Managers/PartyMgr.h>
 
 #include <Helper.h>
+#include <HelperPlayer.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <Types.h>
 
-#include "UwHelper.h"
+#include "HelperUw.h"
 
 bool IsUw()
 {
