@@ -15,25 +15,7 @@
 #include <MathUtils.h>
 #include <Types.h>
 
-bool IsLoading();
-
-bool IsExplorable();
-
-bool IsOutpost();
-
-bool IsMapReady();
-
-bool IsEndGameEntryOutpost();
-
-bool IsFowEntryOutpost();
-
-bool IsDoa();
-
-bool IsDoaEntryOutpost();
-
 bool HelperActivationConditions();
-
-uint32_t GetPartyIdxByID(const uint32_t id);
 
 DWORD QuestAcceptDialog(DWORD quest);
 

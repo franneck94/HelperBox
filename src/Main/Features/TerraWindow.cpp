@@ -13,8 +13,8 @@
 
 #include <Actions.h>
 #include <GuiUtils.h>
-#include <Helper.h>
 #include <HelperAgents.h>
+#include <HelperMaps.h>
 #include <HelperUw.h>
 #include <MathUtils.h>
 #include <PlayerData.h>

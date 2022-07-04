@@ -16,7 +16,7 @@
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <Helper.h>
+#include <HelperMaps.h>
 #include <PlayerData.h>
 #include <SkillData.h>
 #include <Types.h>
@@ -337,16 +337,6 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_livings,
         if (agent->player_number == id)
             splitted_agents.push_back(agent);
     }
-}
-
-DWORD QuestAcceptDialog(DWORD quest)
-{
-    return (quest << 8) | 0x800001;
-}
-
-DWORD QuestRewardDialog(DWORD quest)
-{
-    return (quest << 8) | 0x800007;
 }
 
 void AttackAgent(const GW::Agent *agent)

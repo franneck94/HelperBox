@@ -9,7 +9,7 @@
 #include <GWCA/Packets/StoC.h>
 
 #include <GuiUtils.h>
-#include <Helper.h>
+#include <HelperMaps.h>
 #include <HelperUw.h>
 #include <Timer.h>
 

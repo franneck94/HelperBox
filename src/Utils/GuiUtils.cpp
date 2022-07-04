@@ -2,6 +2,7 @@
 
 #include <GWCA/GameContainers/GamePos.h>
 
+#include <HelperMaps.h>
 #include <Types.h>
 
 #include <fmt/format.h>

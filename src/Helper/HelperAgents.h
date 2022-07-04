@@ -121,3 +121,5 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);
+
+uint32_t GetPartyIdxByID(const uint32_t id);
