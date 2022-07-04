@@ -9,7 +9,7 @@
 
 #include <PlayerData.h>
 
-#include "Callbacks.h"
+#include "HelperCallbacks.h"
 
 bool ExplorableLoadCallback(GW::HookStatus *, GW::Packet::StoC::MapLoaded *)
 {

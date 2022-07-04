@@ -10,7 +10,7 @@
 #include <GWCA/Managers/PartyMgr.h>
 
 #include <Helper.h>
-#include <HelperPlayer.h>
+#include <HelperAgents.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
 #include <PlayerData.h>

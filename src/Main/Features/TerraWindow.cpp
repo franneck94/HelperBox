@@ -9,19 +9,20 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <fmt/format.h>
-
 #include <Base/HelperBox.h>
 
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperAgents.h>
 #include <HelperUw.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
 #include <Timer.h>
 #include <Types.h>
+
+#include <fmt/format.h>
 
 #include "TerraWindow.h"
 

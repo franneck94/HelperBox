@@ -8,9 +8,10 @@
 
 #include <Actions.h>
 #include <AgentData.h>
-#include <Callbacks.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperCallbacks.h>
+#include <HelperItems.h>
 #include <HelperUw.h>
 #include <Move.h>
 #include <PlayerData.h>

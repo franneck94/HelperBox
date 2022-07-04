@@ -18,18 +18,17 @@
 
 #include <Base/HelperBox.h>
 
-#include <Logger.h>
-#include <Timer.h>
-
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
-#include <HelperPlayer.h>
+#include <HelperAgents.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
+#include <Logger.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
+#include <Timer.h>
 #include <Types.h>
 
 #include "DbWindow.h"

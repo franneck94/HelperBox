@@ -12,7 +12,7 @@
 
 #include <Actions.h>
 #include <Helper.h>
-#include <HelperPlayer.h>
+#include <HelperAgents.h>
 #include <SkillbarData.h>
 
 #include "PlayerData.h"

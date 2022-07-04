@@ -12,13 +12,12 @@
 
 #include <Base/HelperBox.h>
 
-#include <GuiUtils.h>
-#include <Logger.h>
-
 #include <Actions.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperAgents.h>
 #include <HelperUw.h>
+#include <Logger.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <Types.h>

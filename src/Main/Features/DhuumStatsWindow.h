@@ -5,7 +5,7 @@
 #include <GWCA/GameEntities/Agent.h>
 
 #include <Actions.h>
-#include <Callbacks.h>
+#include <HelperCallbacks.h>
 #include <PlayerData.h>
 #include <Types.h>
 

@@ -16,7 +16,7 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Callbacks.h>
+#include <HelperCallbacks.h>
 #include <SkillData.h>
 #include <Types.h>
 
