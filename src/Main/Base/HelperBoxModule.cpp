@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 
-#include <Base/HelperBoxModule.h>
 #include <Base/HelperBox.h>
+#include <Base/HelperBoxModule.h>
 
 namespace
 {

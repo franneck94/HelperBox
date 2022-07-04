@@ -1,6 +1,4 @@
-#include "stdafx.h"
-
-#include <algorithm>
+include <algorithm>
 #include <array>
 #include <cstdint>
 
@@ -10,6 +8,10 @@
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
+#include <GWCA/Managers/StoCMgr.h>
+#include <GWCA/Packets/Opcodes.h>
+#include <GWCA/Packets/StoC.h>
+#include <GWCA/Utilities/Hook.h>
 
 #include <Base/HelperBox.h>
 
@@ -17,6 +19,7 @@
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <Types.h>

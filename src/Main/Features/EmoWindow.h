@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include <array>
 #include <cstdint>
 
@@ -23,7 +21,7 @@
 class Pumping : public EmoActionABC
 {
 public:
-    Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx);
+    Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -56,6 +54,8 @@ private:
 
     std::vector<PlayerMapping> party_members{};
     bool party_data_valid = false;
+
+    const AgentLivingData *agents_data = nullptr;
 };
 
 class TankBonding : public EmoActionABC

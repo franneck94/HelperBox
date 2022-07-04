@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <GWCA/Managers/MapMgr.h>
+
 #include <Base/ChatCommands.h>
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxSettings.h>
@@ -7,7 +9,7 @@
 
 #include <Defines.h>
 
-#include <GWCA/Managers/MapMgr.h>
+#include <imgui.h>
 
 #include "SettingsWindow.h"
 

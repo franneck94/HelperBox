@@ -1,5 +1,4 @@
 #pragma once
-
 #include <array>
 #include <cstdint>
 
@@ -11,11 +10,13 @@
 
 #include <Logger.h>
 
-bool IsUwEntryOutpost();
-
-bool IsUw();
-
 bool UwHelperActivationConditions();
+
+uint32_t GetTankId();
+
+uint32_t GetEmoId();
+
+uint32_t GetDhuumBitchId();
 
 bool IsEmo(const PlayerData &player_data);
 
@@ -28,32 +29,6 @@ bool IsLT(const PlayerData &player_data);
 bool IsRangerTerra(const PlayerData &player_data);
 
 bool IsMesmerTerra(const PlayerData &player_data);
-
-bool IsAtSpawn(const GW::GamePos &player_pos);
-
-bool IsAtChamberSkele(const GW::GamePos &player_pos);
-
-bool IsAtBasementSkele(const GW::GamePos &player_pos);
-
-bool IsRightAtChamberSkele(const GW::GamePos &player_pos);
-
-bool IsAtFusePulls(const GW::GamePos &player_pos);
-
-bool IsAtValeStart(const GW::GamePos &player_pos);
-
-bool IsAtValeHouse(const GW::GamePos &player_pos);
-
-bool IsRightAtValeHouse(const GW::GamePos &player_pos);
-
-bool IsAtSpirits1(const GW::GamePos &player_pos);
-
-bool IsAtSpirits2(const GW::GamePos &player_pos);
-
-bool IsAtValeSpirits(const GW::GamePos &player_pos);
-
-bool IsGoingToDhuum(const GW::GamePos &player_pos);
-
-bool IsInDhuumRoom(const GW::GamePos &player_pos);
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
 
@@ -83,7 +58,7 @@ bool TakePlanes();
 
 template <uint32_t N>
 void UpdateUwInfo(const PlayerData &player_data,
-                  const std::array<Move, N> moves,
+                  const std::array<Move, N> &moves,
                   uint32_t &move_idx,
                   const bool first_call)
 {
@@ -117,9 +92,3 @@ void UpdateUwInfo(const PlayerData &player_data,
 bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
 
 bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
-
-uint32_t GetTankId();
-
-uint32_t GetEmoId();
-
-uint32_t GetDhuumBitchId();

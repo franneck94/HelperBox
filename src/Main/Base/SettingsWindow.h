@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <map>
+
 #include <Base/HelperBoxWindow.h>
 
 class SettingsWindow : public HelperBoxWindow

@@ -1,8 +1,8 @@
 file(GLOB MAIN_SOURCES
     "Base/*.h"
     "Base/*.cpp"
-    "Windows/*.h"
-    "Windows/*.cpp"
+    "Features/*.h"
+    "Features/*.cpp"
     "*.h"
     "*.cpp")
 

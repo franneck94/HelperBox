@@ -1,11 +1,9 @@
 #pragma once
 
 #include <GWCA/Constants/Constants.h>
-#include <GWCA/Utilities/Hook.h>
-
 #include <GWCA/GameContainers/GamePos.h>
-
 #include <GWCA/Managers/UIMgr.h>
+#include <GWCA/Utilities/Hook.h>
 
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>

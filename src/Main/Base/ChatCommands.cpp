@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
-#include <GWCA/Managers/CameraMgr.h>
+#include <string>
+
 #include <GWCA/Managers/ChatMgr.h>
 
 #include <Base/HelperBox.h>

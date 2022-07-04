@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <cmath>
 #include <cstdint>
 #include <vector>
@@ -28,6 +26,7 @@
 #include <Helper.h>
 #include <HelperPlayer.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
@@ -45,7 +44,7 @@ static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
 }; // namespace
 
-DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skillbar)
+DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skillbar, agents_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -83,7 +82,7 @@ void DbWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 
 #ifdef _DEBUG
-    if (IsUw() && show_debug_map)
+    if (IsUw() && show_debug_map && agents_data)
         DrawMap(player_data.pos, agents_data->enemies, moves[move_idx].pos, "DbMap");
 #endif
 }
@@ -138,7 +137,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
     damage.Update();
 }
 
-Damage::Damage(PlayerData *p, DbSkillbarData *s) : DbActionABC(p, "Damage", s)
+Damage::Damage(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a) : DbActionABC(p, "Damage", s), agents_data(a)
 {
 }
 
@@ -255,9 +254,12 @@ RoutineState Damage::Routine()
     if (IsAtChamberSkele(player_data->pos) || IsAtBasementSkele(player_data->pos) ||
         IsRightAtValeHouse(player_data->pos))
     {
-        const auto enemies = GetEnemiesInRange(*player_data, GW::Constants::Range::Earshot);
-        if (enemies.size() == 0)
-            return RoutineState::ACTIVE;
+        if (agents_data)
+        {
+            const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+            if (enemies.size() == 0)
+                return RoutineState::ACTIVE;
+        }
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
             TargetAndAttackEnemyInAggro(*player_data, GW::Constants::Range::Earshot);
@@ -268,7 +270,7 @@ RoutineState Damage::Routine()
 
     if (IsAtValeSpirits(player_data->pos))
     {
-        const auto enemies = GetEnemiesInRange(*player_data, 1700.0F);
+        const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, 1700.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 

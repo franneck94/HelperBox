@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include <cstdint>
 
 #include <GWCA/GameEntities/Agent.h>

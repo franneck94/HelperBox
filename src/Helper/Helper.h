@@ -24,6 +24,8 @@ bool IsOutpost();
 
 bool IsMapReady();
 
+bool IsEndGameEntryOutpost();
+
 bool IsFowEntryOutpost();
 
 bool IsDoa();
@@ -33,7 +35,6 @@ bool IsDoaEntryOutpost();
 bool HelperActivationConditions();
 
 bool TargetNearest(const TargetType type, const float max_distance = GW::Constants::SqrRange::Compass);
-
 
 bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx);
 
@@ -122,8 +123,9 @@ DWORD QuestRewardDialog(DWORD quest);
 
 bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 
-std::vector<GW::AgentLiving *> GetEnemiesInRange(const PlayerData &player_data,
-                                                 const float range = GW::Constants::Range::Earshot);
+std::vector<GW::AgentLiving *> FilterAgentsByRange(const std::vector<GW::AgentLiving *> &livings,
+                                                   const PlayerData &player_data,
+                                                   const float dist_threshold = GW::Constants::Range::Earshot);
 
 std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered_livings,
                                   const std::set<uint32_t> &filter_ids);

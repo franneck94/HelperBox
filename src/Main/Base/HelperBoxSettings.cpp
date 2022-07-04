@@ -1,27 +1,19 @@
 #include "stdafx.h"
 
-#include <GWCA/Constants/Constants.h>
-#include <GWCA/GameContainers/Array.h>
-#include <GWCA/GameContainers/GamePos.h>
-#include <GWCA/GameEntities/Party.h>
-#include <GWCA/Managers/AgentMgr.h>
-#include <GWCA/Managers/MapMgr.h>
-#include <GWCA/Packets/StoC.h>
-
 #include <Defines.h>
 
 #include <Base/ChatCommands.h>
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
+#include <Base/SettingsWindow.h>
 
-#include <Windows/AutoFollowWindow.h>
-#include <Windows/CancelActionWindow.h>
-#include <Windows/DbWindow.h>
-#include <Windows/DhuumStatsWindow.h>
-#include <Windows/EmoWindow.h>
-#include <Windows/MainteamWindow.h>
-#include <Windows/SettingsWindow.h>
-#include <Windows/TerraWindow.h>
+#include <Features/AutoFollowWindow.h>
+#include <Features/CancelActionWindow.h>
+#include <Features/DbWindow.h>
+#include <Features/DhuumStatsWindow.h>
+#include <Features/EmoWindow.h>
+#include <Features/MainteamWindow.h>
+#include <Features/TerraWindow.h>
 
 #include "HelperBoxSettings.h"
 
@@ -48,10 +40,6 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     }
 }
 
-void HelperBoxSettings::DrawSettingInternal()
-{
-}
-
 void HelperBoxSettings::LoadSettings(CSimpleIni *ini)
 {
     HelperBoxModule::LoadSettings(ini);
@@ -59,6 +47,10 @@ void HelperBoxSettings::LoadSettings(CSimpleIni *ini)
     use_emo = ini->GetBoolValue(Name(), VAR_NAME(use_emo), use_emo);
     use_mainteam = ini->GetBoolValue(Name(), VAR_NAME(use_mainteam), use_mainteam);
     use_terra = ini->GetBoolValue(Name(), VAR_NAME(use_terra), use_terra);
+    use_db = ini->GetBoolValue(Name(), VAR_NAME(use_db), use_db);
+    use_dhuum_stats = ini->GetBoolValue(Name(), VAR_NAME(use_dhuum_stats), use_dhuum_stats);
+    use_follow = ini->GetBoolValue(Name(), VAR_NAME(use_follow), use_follow);
+    use_cancel = ini->GetBoolValue(Name(), VAR_NAME(use_cancel), use_cancel);
 }
 
 void HelperBoxSettings::SaveSettings(CSimpleIni *ini)
@@ -67,6 +59,10 @@ void HelperBoxSettings::SaveSettings(CSimpleIni *ini)
     ini->SetBoolValue(Name(), VAR_NAME(use_emo), use_emo);
     ini->SetBoolValue(Name(), VAR_NAME(use_mainteam), use_mainteam);
     ini->SetBoolValue(Name(), VAR_NAME(use_terra), use_terra);
+    ini->SetBoolValue(Name(), VAR_NAME(use_db), use_db);
+    ini->SetBoolValue(Name(), VAR_NAME(use_dhuum_stats), use_dhuum_stats);
+    ini->SetBoolValue(Name(), VAR_NAME(use_follow), use_follow);
+    ini->SetBoolValue(Name(), VAR_NAME(use_cancel), use_cancel);
 }
 
 void HelperBoxSettings::Draw(IDirect3DDevice9 *)

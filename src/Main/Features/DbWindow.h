@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include <array>
 #include <cstdint>
 
@@ -22,7 +20,7 @@
 class Damage : public DbActionABC
 {
 public:
-    Damage(PlayerData *p, DbSkillbarData *s);
+    Damage(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -35,6 +33,8 @@ private:
     bool RoutineValeSpirits() const;
     bool RoutineDhuumRecharge() const;
     bool RoutineDhuumDamage() const;
+
+    const AgentLivingData *agents_data = nullptr;
 };
 
 class DbWindow : public HelperBoxWindow

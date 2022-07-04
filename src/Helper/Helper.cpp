@@ -45,7 +45,7 @@ bool IsMapReady()
     return (!IsLoading() && !GW::Map::GetIsObserving());
 }
 
-static bool _IsEndGameEntryOutpost()
+bool IsEndGameEntryOutpost()
 {
     return (
 #ifdef _DEBUG
@@ -58,14 +58,9 @@ static bool _IsEndGameEntryOutpost()
         GW::Map::GetMapID() == GW::Constants::MapID::Zin_Ku_Corridor_outpost);
 }
 
-bool IsUwEntryOutpost()
-{
-    return _IsEndGameEntryOutpost();
-}
-
 bool IsFowEntryOutpost()
 {
-    return _IsEndGameEntryOutpost();
+    return IsEndGameEntryOutpost();
 }
 
 bool IsFow()
@@ -416,31 +411,16 @@ bool GetPartyMembers(std::vector<PlayerMapping> &party_members)
     return true;
 }
 
-std::vector<GW::AgentLiving *> GetEnemiesInRange(const PlayerData &player_data, const float range)
+std::vector<GW::AgentLiving *> FilterAgentsByRange(const std::vector<GW::AgentLiving *> &livings,
+                                                   const PlayerData &player_data,
+                                                   const float dist_threshold)
 {
     auto filtered_livings = std::vector<GW::AgentLiving *>{};
 
-    const auto agents_array = GW::Agents::GetAgentArray();
-    if (!agents_array || !agents_array->valid())
-        return filtered_livings;
-
-    for (const auto agent : *agents_array)
+    for (const auto living : livings)
     {
-        if (!agent)
-            continue;
-
-        const auto living = agent->GetAsAgentLiving();
-        if (!living)
-            continue;
-
-        if (living->allegiance != GW::Constants::Allegiance::Enemy)
-            continue;
-
-        if (living->GetIsDead())
-            continue;
-
         const auto dist = GW::GetDistance(player_data.pos, living->pos);
-        if (dist <= range)
+        if (dist <= dist_threshold)
             filtered_livings.push_back(living);
     }
 

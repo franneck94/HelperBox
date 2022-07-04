@@ -1,7 +1,10 @@
 #pragma once
 
-#include <GWCA/Constants/Maps.h>
+#include "stdafx.h"
 
+#include <vector>
+
+#include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
 
 class HelperBoxSettings : public HelperBoxUIElement
@@ -26,9 +29,7 @@ public:
 
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
-    void DrawSettingInternal() override;
     void Draw(IDirect3DDevice9 *) override;
-    void ShowVisibleRadio() override{};
 
     const std::vector<HelperBoxModule *> &GetOptionalModules() const
     {
@@ -43,6 +44,8 @@ private:
     bool use_emo = true;
     bool use_mainteam = true;
     bool use_terra = true;
+    bool use_db = true;
+    bool use_dhuum_stats = true;
     bool use_follow = true;
     bool use_cancel = true;
 };

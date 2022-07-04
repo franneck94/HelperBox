@@ -4,10 +4,11 @@
 
 #include <AgentData.h>
 #include <Helper.h>
+#include <HelperPlayer.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <PlayerData.h>
 
-#include <HelperPlayer.h>
 #include <Logger.h>
 #include <Timer.h>
 
@@ -66,7 +67,7 @@ bool Move::CheckForAggroFree(const PlayerData &player_data,
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 
-    const auto livings = GetEnemiesInRange(player_data, GW::Constants::Range::Earshot);
+    const auto livings = FilterAgentsByRange(agents_data->enemies, player_data, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
 
     if (player_data.pos.x == next_pos.x && player_data.pos.y == next_pos.y)

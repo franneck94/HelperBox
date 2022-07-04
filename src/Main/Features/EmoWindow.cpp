@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <cstdint>
 #include <vector>
 
@@ -27,6 +25,7 @@
 #include <Helper.h>
 #include <HelperPlayer.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <Logger.h>
 #include <MathUtils.h>
 #include <PlayerData.h>
@@ -47,20 +46,10 @@ constexpr static auto CANTHA_IDS =
                             GW::Constants::ModelID::SummoningStone::ImperialCripplingSlash,
                             GW::Constants::ModelID::SummoningStone::ImperialQuiveringBlade,
                             GW::Constants::ModelID::SummoningStone::ImperialTripleChop};
-
-const static auto KEEPER1_POS = GW::GamePos{-7322.44F, 7013.74F, 0};
-const static auto KEEPER2_POS = GW::GamePos{-3321.31F, 10544.94F, 0};
-const static auto KEEPER3_POS = GW::GamePos{-506.62F, 13239.04F, 0};
-
-static auto KEEPER_MAP = std::map<std::string, GW::GamePos>{
-    {"Keeper 1", KEEPER1_POS},
-    {"Keeper 2", KEEPER2_POS},
-    {"Keeper 3", KEEPER3_POS},
-};
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : player_data({}), skillbar({}), pumping(&player_data, &skillbar, &bag_idx, &slot_idx),
+    : player_data({}), skillbar({}), pumping(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data),
       tank_bonding(&player_data, &skillbar)
 {
     if (skillbar.ValidateData())
@@ -96,7 +85,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 
 #ifdef _DEBUG
-    if (IsUw() && show_debug_map)
+    if (IsUw() && show_debug_map && agents_data)
         DrawMap(player_data.pos, agents_data->enemies, moves[move_idx].pos, "DbMap");
 #endif
 }
@@ -175,8 +164,8 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
     pumping.Update();
 }
 
-Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx)
-    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), slot_idx(_slot_idx)
+Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a)
+    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), slot_idx(_slot_idx), agents_data(a)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
         &Summon_AgentAdd_Entry,
@@ -257,7 +246,11 @@ bool Pumping::RoutineCanthaGuards() const
     if (!player_data->CanCast())
         return false;
 
-    const auto enemies = GetEnemiesInRange(*player_data, GW::Constants::Range::Earshot);
+    if (!agents_data)
+        return true;
+
+    const auto filtered_enemies =
+        FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterAgents(*player_data,
@@ -269,7 +262,7 @@ bool Pumping::RoutineCanthaGuards() const
     if (filtered_canthas.size() == 0)
         return false;
 
-    if (enemies.size() > 0)
+    if (filtered_enemies.size() > 0)
     {
         for (const auto cantha : filtered_canthas)
         {
