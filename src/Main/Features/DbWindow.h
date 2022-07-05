@@ -101,8 +101,8 @@ private:
     bool first_frame = false;
     DbSkillbarData skillbar;
 
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
     std::function<bool()> cast_sq = [&]() {
         skillbar.sq.Cast(player_data.energy);
         return true;

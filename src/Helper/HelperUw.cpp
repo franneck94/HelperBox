@@ -268,14 +268,14 @@ bool TargetIsReaper(PlayerData &player_data)
     return true;
 }
 
-bool TargetReaper(PlayerData &player_data)
+bool TargetReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
-    return TargetClosestNpcById(player_data, GW::Constants::ModelID::UW::Reapers) != 0U;
+    return TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers) != 0U;
 }
 
-bool TalkReaper(PlayerData &player_data)
+bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
-    const auto id = TargetClosestNpcById(player_data, GW::Constants::ModelID::UW::Reapers);
+    const auto id = TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers);
 
     if (!id)
         return true;
@@ -289,9 +289,9 @@ bool TalkReaper(PlayerData &player_data)
     return true;
 }
 
-bool TargetClosestKeeper(PlayerData &player_data)
+bool TargetClosestKeeper(PlayerData &player_data, const std::vector<GW::AgentLiving *> enemies)
 {
-    return TargetClosestEnemyById(player_data, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
+    return TargetClosestEnemyById(player_data, enemies, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
 
 bool AcceptChamber()

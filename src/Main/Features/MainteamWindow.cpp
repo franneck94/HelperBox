@@ -126,7 +126,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float, const AgentLivingData &)
+void MainteamWindow::Update(float, const AgentLivingData &agents_data)
 {
     filtered_livings.clear();
     aatxe_livings.clear();
@@ -143,14 +143,15 @@ void MainteamWindow::Update(float, const AgentLivingData &)
     if (!IsSpiker(player_data) && !IsLT(player_data))
         return;
 
-    FilterAgents(player_data, filtered_livings, IDS, GW::Constants::Allegiance::Enemy, 1600.0F);
-    SplitFilteredAgents(filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
-    SplitFilteredAgents(filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
-    SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
-    SplitFilteredAgents(filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
-    SplitFilteredAgents(filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
-    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
-    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    const auto &pos = player_data.pos;
+    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, IDS, 1600.0F);
+    FilterByIdAndDistance(pos, filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
+    FilterByIdAndDistance(pos, filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
+    FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
+    FilterByIdAndDistance(pos, filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
+    FilterByIdAndDistance(pos, filtered_livings, keeper_livings, GW::Constants::ModelID::UW::KeeperOfSouls);
+    FilterByIdAndDistance(pos, filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    FilterByIdAndDistance(pos, filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
     SortByDistance(player_data, aatxe_livings);
     SortByDistance(player_data, nightmare_livings);
     SortByDistance(player_data, horseman_livings);

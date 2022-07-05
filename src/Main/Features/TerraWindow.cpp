@@ -162,7 +162,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void TerraWindow::Update(float, const AgentLivingData &)
+void TerraWindow::Update(float, const AgentLivingData &agents_data)
 {
     filtered_livings.clear();
     behemoth_livings.clear();
@@ -182,13 +182,14 @@ void TerraWindow::Update(float, const AgentLivingData &)
 
     auto_target.Update();
 
-    FilterAgents(player_data, filtered_livings, T2_IDS, GW::Constants::Allegiance::Enemy, 800.0F);
-    FilterAgents(player_data, filtered_livings, GENERAL_IDS, GW::Constants::Allegiance::Enemy, 1500.0F);
-    SplitFilteredAgents(filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
-    SplitFilteredAgents(filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
-    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
-    SplitFilteredAgents(filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
-    SplitFilteredAgents(filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
+    const auto &pos = player_data.pos;
+    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, T2_IDS, 800.0F);
+    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, GENERAL_IDS, 1500.0F);
+    FilterByIdAndDistance(pos, filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
+    FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
+    FilterByIdAndDistance(pos, filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    FilterByIdAndDistance(pos, filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum2);
+    FilterByIdAndDistance(pos, filtered_livings, horseman_livings, GW::Constants::ModelID::UW::FourHorseman);
     SortByDistance(player_data, behemoth_livings);
     SortByDistance(player_data, dryder_livings);
     SortByDistance(player_data, skele_livings);

@@ -38,11 +38,11 @@ bool TankIsSoloLT();
 
 bool TargetIsReaper(PlayerData &player_data);
 
-bool TargetReaper(PlayerData &player_data);
+bool TargetReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs);
 
-bool TalkReaper(PlayerData &player_data);
+bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs);
 
-bool TargetClosestKeeper(PlayerData &player_data);
+bool TargetClosestKeeper(PlayerData &player_data, const std::vector<GW::AgentLiving *> enemies);
 
 bool AcceptChamber();
 
