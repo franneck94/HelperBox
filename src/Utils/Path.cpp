@@ -15,14 +15,7 @@ std::filesystem::path GetSettingsFolderPath()
 
     if (!std::filesystem::exists(helperbox_settings_path))
     {
-        try
-        {
-            std::filesystem::create_directory(helperbox_settings_path);
-        }
-        catch (const std::exception &e)
-        {
-            Log::Error("%s\n", e.what());
-        }
+        std::filesystem::create_directory(helperbox_settings_path);
     }
 
     return helperbox_settings_path;

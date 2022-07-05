@@ -87,8 +87,6 @@ CSimpleIni *HelperBoxTheme::GetLayoutIni()
 
     if (std::filesystem::exists(filename.c_str()))
         windows_ini->LoadFile(filename.c_str());
-    else
-        Log::LogW(L"File %s doesn't exist.", filename.c_str());
 
     return windows_ini;
 }

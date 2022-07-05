@@ -116,6 +116,7 @@ void EmoWindow::UpdateUwEntry()
     if (load_cb_triggered)
     {
         move_idx = 0;
+        move_ongoing = false;
         tank_bonding.action_state = ActionState::ACTIVE;
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
@@ -144,6 +145,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {
         move_idx = 0;
+        move_ongoing = false;
         tank_bonding.action_state = ActionState::INACTIVE;
         return;
     }

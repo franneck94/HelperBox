@@ -52,6 +52,4 @@ void ChatCommands::CmdHB(const wchar_t *, int argc, LPWSTR *argv)
             return;
         }
     }
-
-    Log::Error("Unknown command!");
 }

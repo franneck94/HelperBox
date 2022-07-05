@@ -102,6 +102,7 @@ void DbWindow::UpdateUwEntry()
     if (load_cb_triggered)
     {
         move_idx = 0;
+        move_ongoing = false;
         moves[0]->Execute();
         load_cb_triggered = false;
         move_ongoing = true;
@@ -115,6 +116,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {
         move_idx = 0;
+        move_ongoing = false;
         damage.action_state = ActionState::INACTIVE;
         return;
     }
