@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "Process.h"
 #include "Settings.h"
 #include "Window.h"

@@ -18,9 +18,8 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <Base/HelperBox.h>
-
 #include <Actions.h>
+#include <Base/HelperBox.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
@@ -64,12 +63,7 @@ EmoWindow::EmoWindow()
 
 void EmoWindow::Draw(IDirect3DDevice9 *)
 {
-    if (!visible)
-        return;
-
-    if (!player_data.ValidateData(UwHelperActivationConditions))
-        return;
-    if (!IsEmo(player_data))
+    if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
@@ -86,7 +80,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 
 #ifdef _DEBUG
     if (IsUw() && show_debug_map && agents_data)
-        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "DbMap");
+        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "EmoMap");
 #endif
 }
 
@@ -133,14 +127,12 @@ void EmoWindow::UpdateUwEntry()
 
 void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 {
-    if (!IsUw())
+    if (!player_data.ValidateData(UwHelperActivationConditions))
     {
         move_idx = 0;
         tank_bonding.action_state = ActionState::INACTIVE;
-    }
-
-    if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
+    }
     player_data.Update();
     agents_data = &_agents_data;
 

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>

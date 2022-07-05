@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <map>
+#include <string>
 
 #include <Base/HelperBoxWindow.h>
 

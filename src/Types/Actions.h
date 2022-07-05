@@ -21,9 +21,7 @@ public:
 
     static bool HasWaitedLongEnough();
 
-    ActionABC(PlayerData *p, std::string_view t) : player_data(p), text(t)
-    {
-    }
+    ActionABC(PlayerData *p, std::string_view t) : player_data(p), text(t){};
     virtual ~ActionABC(){};
 
     void Draw(const ImVec2 button_size = DEFAULT_BUTTON_SIZE);
@@ -39,8 +37,8 @@ public:
         return !PauseRoutine();
     }
 
-    PlayerData *player_data = nullptr;
-    std::string_view text = nullptr;
+    PlayerData *player_data;
+    std::string_view text;
 
     ActionState action_state = ActionState::INACTIVE;
 };
@@ -48,9 +46,7 @@ public:
 class EmoActionABC : public ActionABC
 {
 public:
-    EmoActionABC(PlayerData *p, std::string_view t, EmoSkillbarData *s) : ActionABC(p, t), skillbar(s)
-    {
-    }
+    EmoActionABC(PlayerData *p, std::string_view t, EmoSkillbarData *s) : ActionABC(p, t), skillbar(s){};
     virtual ~EmoActionABC(){};
 
     EmoSkillbarData *skillbar = nullptr;
@@ -59,9 +55,7 @@ public:
 class MesmerActionABC : public ActionABC
 {
 public:
-    MesmerActionABC(PlayerData *p, std::string_view t, MesmerSkillbarData *s) : ActionABC(p, t), skillbar(s)
-    {
-    }
+    MesmerActionABC(PlayerData *p, std::string_view t, MesmerSkillbarData *s) : ActionABC(p, t), skillbar(s){};
     virtual ~MesmerActionABC(){};
 
     MesmerSkillbarData *skillbar = nullptr;
@@ -70,9 +64,7 @@ public:
 class DbActionABC : public ActionABC
 {
 public:
-    DbActionABC(PlayerData *p, std::string_view t, DbSkillbarData *s) : ActionABC(p, t), skillbar(s)
-    {
-    }
+    DbActionABC(PlayerData *p, std::string_view t, DbSkillbarData *s) : ActionABC(p, t), skillbar(s){};
     virtual ~DbActionABC(){};
 
     DbSkillbarData *skillbar = nullptr;

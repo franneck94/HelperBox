@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <string>
 
 #include <GWCA/Managers/ChatMgr.h>
@@ -7,7 +5,6 @@
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxWindow.h>
 #include <Base/MainWindow.h>
-
 #include <Logger.h>
 
 #include "ChatCommands.h"

@@ -13,7 +13,3 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include <atomic>
-#include <string>
-#include <vector>

@@ -1,6 +1,9 @@
 #include <string_view>
 
+#include <GWCA/Constants/Constants.h>
 #include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Agent.h>
+#include <GWCA/GameEntities/Camera.h>
 
 #include <HelperMaps.h>
 #include <Types.h>

@@ -32,7 +32,7 @@ void CancelActionWindow::Draw(IDirect3DDevice9 *)
         const auto width = ImGui::GetWindowWidth();
         if (ImGui::Button("Cancel Action", ImVec2(width, 35.0F)))
         {
-            GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+            CancelMovement();
         }
     }
     ImGui::End();

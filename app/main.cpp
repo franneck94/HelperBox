@@ -36,14 +36,14 @@ static bool InjectInstalledDllInProcess(Process *process)
 
 static bool SetProcessForeground(Process *process)
 {
-    HWND hWndIt = GetTopWindow(nullptr);
+    auto hWndIt = GetTopWindow(nullptr);
     if (hWndIt == nullptr)
     {
         fprintf(stderr, "GetTopWindow failed (%lu)\n", GetLastError());
         return false;
     }
 
-    DWORD ProcessId = process->GetProcessId();
+    const auto ProcessId = process->GetProcessId();
 
     while (hWndIt != nullptr)
     {

@@ -9,12 +9,11 @@
 #include <GWCA/Managers/CameraMgr.h>
 
 #include <Actions.h>
-#include <Types.h>
-
 #include <GuiConstants.h>
 #include <Helper.h>
 #include <MathUtils.h>
 #include <Move.h>
+#include <Types.h>
 
 #include <fmt/format.h>
 #include <imgui.h>
@@ -41,7 +40,7 @@ void DrawMovingButtons(const std::array<MoveABC *, N> &moves, bool &move_ongoing
         else
         {
             move_ongoing = false;
-            GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+            CancelMovement();
         }
     }
     if (was_already_ongoing)

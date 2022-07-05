@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <set>
 
+#include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 
 #include <AgentData.h>
@@ -8,9 +10,8 @@
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
-#include <PlayerData.h>
-
 #include <Logger.h>
+#include <PlayerData.h>
 #include <Timer.h>
 
 #include <fmt/format.h>
@@ -105,7 +106,7 @@ bool Move_WaitABC::UpdateMoveState(const PlayerData &player_data,
     {
         canceled_move = true;
         Log::Info("Canceled Movement based on aggro");
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        CancelMovement();
         return false;
     }
 
@@ -144,7 +145,7 @@ bool Move_PositionABC::UpdateMoveState(const PlayerData &, const AgentLivingData
     if (!trigger_agent)
         return true;
 
-    if (IsNearToGamePos(trigger_pos, trigger_agent->pos, 300.0F))
+    if (IsNearToGamePos(trigger_pos, trigger_agent->pos, trigger_threshold))
         return true;
 
     return false;

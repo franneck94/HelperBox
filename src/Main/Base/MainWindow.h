@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 
+#include <Base/HelperBoxUIElement.h>
 #include <Base/HelperBoxWindow.h>
 
 class MainWindow : public HelperBoxWindow
@@ -34,8 +35,8 @@ public:
     void Draw(IDirect3DDevice9 *pDevice) override;
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
-    void DrawSettingInternal() override;
-    void RegisterSettingsContent() override;
+    void DrawSettingInternal() override{};
+    void RegisterSettingsContent() override{};
 
     void RefreshButtons();
     bool pending_refresh_buttons = true;

@@ -16,6 +16,7 @@
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <Helper.h>
 #include <HelperMaps.h>
 #include <PlayerData.h>
 #include <SkillData.h>
@@ -337,11 +338,6 @@ void SplitFilteredAgents(const std::vector<GW::AgentLiving *> &filtered_livings,
         if (agent->player_number == id)
             splitted_agents.push_back(agent);
     }
-}
-
-void AttackAgent(const GW::Agent *agent)
-{
-    GW::CtoS::SendPacket(0xC, GAME_CMSG_ATTACK_AGENT, agent->agent_id, 0);
 }
 
 bool GetPartyMembers(std::vector<PlayerMapping> &party_members)

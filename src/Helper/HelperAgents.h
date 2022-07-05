@@ -30,8 +30,6 @@ std::tuple<uint32_t, uint32_t, float> GetHp();
 
 bool AgentHasBuff(const GW::Constants::SkillID buff_skill_id, const uint32_t target_agent_id);
 
-void AttackAgent(const GW::Agent *agent);
-
 void TargetAndAttackEnemyInAggro(const PlayerData &player_data,
                                  const std::vector<GW::AgentLiving *> &enemies,
                                  const float range = GW::Constants::Range::Spellcast);

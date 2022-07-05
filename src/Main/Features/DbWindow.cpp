@@ -16,9 +16,8 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
-#include <Base/HelperBox.h>
-
 #include <Actions.h>
+#include <Base/HelperBox.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
@@ -31,11 +30,11 @@
 #include <Timer.h>
 #include <Types.h>
 
-#include "DbWindow.h"
-
 #include <fmt/format.h>
 #include <imgui.h>
 #include <implot.h>
+
+#include "DbWindow.h"
 
 namespace
 {
@@ -64,12 +63,7 @@ DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skil
 
 void DbWindow::Draw(IDirect3DDevice9 *)
 {
-    if (!visible)
-        return;
-
-    if (!player_data.ValidateData(UwHelperActivationConditions))
-        return;
-    if (!IsDhuumBitch(player_data))
+    if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsDhuumBitch(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
@@ -110,14 +104,12 @@ void DbWindow::UpdateUwEntry()
 
 void DbWindow::Update(float, const AgentLivingData &_agents_data)
 {
-    if (!IsUw())
+    if (!player_data.ValidateData(UwHelperActivationConditions))
     {
         move_idx = 0;
         damage.action_state = ActionState::INACTIVE;
-    }
-
-    if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
+    }
     player_data.Update();
     agents_data = &_agents_data;
 

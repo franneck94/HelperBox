@@ -1,13 +1,13 @@
 #pragma once
 
-#include "stdafx.h"
+#include <string>
+#include <vector>
 
 #include <GWCA/Managers/GameThreadMgr.h>
 
+#include <AgentData.h>
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
-
-#include <AgentData.h>
 #include <PlayerData.h>
 
 #include <SimpleIni.h>

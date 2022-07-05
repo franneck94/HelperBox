@@ -1,12 +1,8 @@
-#include "stdafx.h"
-
-#include <Defines.h>
-
 #include <Base/ChatCommands.h>
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 #include <Base/SettingsWindow.h>
-
+#include <Defines.h>
 #include <Features/AutoFollowWindow.h>
 #include <Features/CancelActionWindow.h>
 #include <Features/DbWindow.h>
@@ -14,6 +10,8 @@
 #include <Features/EmoWindow.h>
 #include <Features/MainteamWindow.h>
 #include <Features/TerraWindow.h>
+
+#include <SimpleIni.h>
 
 #include "HelperBoxSettings.h"
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include <array>
 #include <cstdint>
 #include <string_view>
@@ -19,7 +17,6 @@
 #include <HelperCallbacks.h>
 #include <SkillData.h>
 #include <Types.h>
-
 
 template <uint32_t N>
 class SkillbarDataABC

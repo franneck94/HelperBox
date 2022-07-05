@@ -359,7 +359,7 @@ uintptr_t ProcessScanner::FindPattern(const char *pattern, const char *mask, int
 
 bool ProcessScanner::FindPatternRva(const char *pattern, const char *mask, int offset, uintptr_t *rva)
 {
-    auto length = strlen(mask);
+    const auto length = strlen(mask);
     const auto *upattern = reinterpret_cast<const uint8_t *>(pattern);
     for (size_t i = 0; i < m_size; i++)
     {

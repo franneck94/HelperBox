@@ -1,5 +1,9 @@
 #pragma once
 
+#include "stdafx.h"
+
+#include <GWCA/Managers/ChatMgr.h>
+
 #define HELPERBOX_CHAN GW::Chat::Channel::CHANNEL_GWCA2
 #define HELPERBOX_SENDER L"HelperBox++"
 #define HELPERBOX_SENDER_COL 0x00ccff

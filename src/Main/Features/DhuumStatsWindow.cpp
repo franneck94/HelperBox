@@ -207,10 +207,8 @@ void DhuumStatsWindow::UpdateDamageData()
     const auto damage_to_be_done = (dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25F);
     if (dhuum_hp >= 0.25F && dhuum_hp < 1.0F && damage_per_s > 0.0F)
         eta_damage = damage_to_be_done / damage_per_s;
-    else if (dhuum_hp < 0.25F)
-        eta_damage = 0.0F;
     else
-        eta_damage = eta_damage;
+        eta_damage = 0.0F;
 }
 
 void DhuumStatsWindow::Update(float, const AgentLivingData &)

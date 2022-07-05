@@ -8,6 +8,8 @@
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
+#include <Helper.h>
+
 #include "HelperItems.h"
 
 bool IsEquippable(const GW::Item *item)
@@ -86,7 +88,7 @@ bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
 
     if (p->skill)
     {
-        GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+        CancelMovement();
         return false;
     }
 

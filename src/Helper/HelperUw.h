@@ -4,12 +4,11 @@
 #include <cstdint>
 
 #include <Actions.h>
+#include <Logger.h>
 #include <MathUtils.h>
 #include <Move.h>
 #include <PlayerData.h>
 #include <Types.h>
-
-#include <Logger.h>
 
 bool UwHelperActivationConditions();
 

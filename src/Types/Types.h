@@ -15,17 +15,6 @@ void StateOnActive(ActionState &state);
 
 void StateOnHold(ActionState &state);
 
-enum class TargetType
-{
-    Gadget = 0,
-    PlayerData,
-    Npc,
-    Item,
-    Living_Ally,
-    Living_Enemy,
-    Living_Npc,
-};
-
 enum class RoutineState
 {
     NONE = 0,

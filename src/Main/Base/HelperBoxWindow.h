@@ -2,7 +2,6 @@
 
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxUIElement.h>
-
 #include <Defines.h>
 
 #include <imgui.h>

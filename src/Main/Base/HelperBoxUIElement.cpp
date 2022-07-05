@@ -1,7 +1,4 @@
-#include "stdafx.h"
-
 #include <Base/HelperBox.h>
-
 #include <Defines.h>
 
 #include <imgui.h>

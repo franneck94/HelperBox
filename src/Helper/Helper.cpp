@@ -41,3 +41,15 @@ DWORD QuestRewardDialog(DWORD quest)
 {
     return (quest << 8) | 0x800007;
 }
+
+void CancelMovement()
+{
+    GW::CtoS::SendPacket(0x4, GAME_CMSG_CANCEL_MOVEMENT);
+}
+
+void AttackAgent(const GW::Agent *agent)
+{
+    if (!agent)
+        return;
+    GW::CtoS::SendPacket(0xC, GAME_CMSG_ATTACK_AGENT, agent->agent_id, 0);
+}

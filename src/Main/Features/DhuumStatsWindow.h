@@ -1,12 +1,16 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <vector>
 
 #include <GWCA/GameEntities/Agent.h>
-
-#include <Base/HelperBoxWindow.h>
+#include <GWCA/Managers/StoCMgr.h>
+#include <GWCA/Packets/StoC.h>
+#include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
+#include <Base/HelperBoxWindow.h>
 #include <HelperCallbacks.h>
 #include <PlayerData.h>
 #include <Types.h>

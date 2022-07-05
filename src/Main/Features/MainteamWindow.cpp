@@ -1,5 +1,7 @@
 #include <array>
 #include <cstdint>
+#include <string_view>
+#include <vector>
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
@@ -10,9 +12,8 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <Base/HelperBox.h>
-
 #include <Actions.h>
+#include <Base/HelperBox.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include <vector>
 
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
+
+#include <SimpleIni.h>
 
 class HelperBoxSettings : public HelperBoxUIElement
 {

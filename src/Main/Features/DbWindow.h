@@ -6,10 +6,9 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Base/HelperBoxWindow.h>
-
 #include <Actions.h>
 #include <AgentData.h>
+#include <Base/HelperBoxWindow.h>
 #include <GuiUtils.h>
 #include <HelperCallbacks.h>
 #include <HelperUw.h>

@@ -50,10 +50,7 @@ bool Thread::StartThread()
     m_Handle = CreateThread(nullptr, 0, Thread::ThreadEntry, this, 0, &ThreadId);
 
     if (!m_Handle)
-    {
-        // @Enhancement: Add logging
         return false;
-    }
 
     ::SetThreadName(ThreadId, m_ThreadName);
     m_ThreadId = ThreadId;
@@ -84,10 +81,7 @@ uint32_t Thread::GetExitCode() const
     assert(!Alive());
     DWORD ExitCode;
     if (!GetExitCodeThread(m_Handle, &ExitCode))
-    {
-        // @Enhancement: Add logging
         return 0;
-    }
     return ExitCode;
 }
 
