@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <vector>
 
@@ -110,11 +111,11 @@ private:
 
     uint32_t num_casted_rest = 0U;
     float rests_per_s = 0.0F;
-    float eta_rest = 0.0F;
+    float eta_rest_s = 0.0F;
     std::vector<long> rests;
 
     uint32_t num_attacks = 0U;
     float damage_per_s = 0.0F;
-    float eta_damage = 0.0F;
+    float eta_damage_s = 0.0F;
     std::vector<std::pair<long, float>> damages;
 };

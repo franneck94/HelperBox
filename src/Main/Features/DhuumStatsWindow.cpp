@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdint>
 
 #include <GWCA/Constants/Constants.h>
@@ -104,6 +105,14 @@ void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
     damages.push_back(std::make_pair(time, dmg_f32));
 }
 
+static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
+{
+    auto time = std::chrono::milliseconds(duration);
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
+    auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
+    snprintf(buf, bufsize, "%02d:%02llu.%04llu", mins, secs, time.count() / 10 % 100);
+}
+
 void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
@@ -124,10 +133,22 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
         ImGui::Separator();
         ImGui::Text("Num Rests: %u", num_casted_rest);
         ImGui::Text("Rests (per s): %0.2f", rests_per_s);
-        ImGui::Text("ETA Rest (s): %2.0f", num_casted_rest > 0 ? eta_rest : 0.0F);
+        ImGui::Text("ETA Rest (s): %2.0f", num_casted_rest > 0 ? eta_rest_s : 0.0F);
         ImGui::Separator();
         ImGui::Text("Damage (per s): %0.0f", damage_per_s);
-        ImGui::Text("ETA Damage (s): %3.0f", num_attacks > 0 ? eta_damage : 0.0F);
+        ImGui::Text("ETA Damage (s): %3.0f", num_attacks > 0 ? eta_damage_s : 0.0F);
+        ImGui::Separator();
+        const auto instance_time_ms = GW::Map::GetInstanceTime();
+        const auto finished_ms =
+            static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000LL, eta_damage_s * 1000LL));
+        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass))
+        {
+            char buffer[32];
+            FormatTime(finished_ms, 32, buffer);
+            ImGui::Text("Finished: %s", buffer);
+        }
+        else
+            ImGui::Text("Finished: n/a");
     }
     ImGui::End();
 }
@@ -139,12 +160,12 @@ void DhuumStatsWindow::ResetData()
 
     num_casted_rest = 0U;
     rests_per_s = 0.0F;
-    eta_rest = 0.0F;
+    eta_rest_s = 0.0F;
     rests.clear();
 
     num_attacks = 0U;
     damage_per_s = 0.0F;
-    eta_damage = 0.0F;
+    eta_damage_s = 0.0F;
     damages.clear();
 }
 
@@ -181,9 +202,9 @@ void DhuumStatsWindow::UpdateRestData()
         needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
     const auto still_needed_rest = needed_num_rest - num_casted_rest;
     if (rests_per_s > 0.0F)
-        eta_rest = still_needed_rest / rests_per_s;
+        eta_rest_s = still_needed_rest / rests_per_s;
     else
-        eta_rest = eta_rest;
+        eta_rest_s = eta_rest_s;
 }
 
 void DhuumStatsWindow::UpdateDamageData()
@@ -206,9 +227,9 @@ void DhuumStatsWindow::UpdateDamageData()
 
     const auto damage_to_be_done = (dhuum_max_hp * dhuum_hp) - (dhuum_max_hp * 0.25F);
     if (dhuum_hp >= 0.25F && dhuum_hp < 1.0F && damage_per_s > 0.0F)
-        eta_damage = damage_to_be_done / damage_per_s;
+        eta_damage_s = damage_to_be_done / damage_per_s;
     else
-        eta_damage = 0.0F;
+        eta_damage_s = 0.0F;
 }
 
 void DhuumStatsWindow::Update(float, const AgentLivingData &)
