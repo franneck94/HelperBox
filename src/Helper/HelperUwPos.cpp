@@ -27,6 +27,11 @@ bool IsAtChamberSkele(const GW::GamePos &player_pos)
     return IsNearToGamePos(player_pos, GW::GamePos{-2726.856F, 10239.48F, 0}, 2250.0F);
 }
 
+bool IsInBasement(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-6241.24F, 7945.73F, 0}, 5000.0F);
+}
+
 bool IsAtBasementSkele(const GW::GamePos &player_pos)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{-5183.64F, 8876.31F, 0}, 2000.0F);
@@ -56,6 +61,11 @@ bool IsAtFusePulls(const GW::GamePos &player_pos)
         return true;
 
     return false;
+}
+
+bool IsInVale(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-12264.12F, 1821.18F, 0}, 5000.0F);
 }
 
 bool IsAtValeStart(const GW::GamePos &player_pos)

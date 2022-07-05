@@ -266,7 +266,7 @@ bool Pumping::RoutineEscortSpirits() const
 
         if (spirit->hp < 0.25F || is_far_away)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
-        else if (spirit->hp < 0.50F && player_data->hp_perc > 0.50F)
+        else if (player_data->hp_perc > 0.50F)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
     }
 
@@ -605,7 +605,7 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
         return RoutineState::FINISHED;
 
-    if (RoutineEscortSpirits())
+    if ((IsInBasement(player_data->pos) || IsInVale(player_data->pos)) && RoutineEscortSpirits())
         return RoutineState::FINISHED;
 
     if (IsAtFusePulls(player_data->pos) && RoutineLT())

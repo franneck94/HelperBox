@@ -12,11 +12,15 @@ bool IsAtSpawn(const GW::GamePos &player_pos);
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos);
 
+bool IsInBasement(const GW::GamePos &player_pos);
+
 bool IsAtBasementSkele(const GW::GamePos &player_pos);
 
 bool IsRightAtChamberSkele(const GW::GamePos &player_pos);
 
 bool IsAtFusePulls(const GW::GamePos &player_pos);
+
+bool IsInVale(const GW::GamePos &player_pos);
 
 bool IsAtValeStart(const GW::GamePos &player_pos);
 
