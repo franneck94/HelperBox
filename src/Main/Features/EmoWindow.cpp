@@ -45,6 +45,12 @@ constexpr static auto CANTHA_IDS =
                             GW::Constants::ModelID::SummoningStone::ImperialCripplingSlash,
                             GW::Constants::ModelID::SummoningStone::ImperialQuiveringBlade,
                             GW::Constants::ModelID::SummoningStone::ImperialTripleChop};
+constexpr static auto ESCORT_IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Escort1,
+                                                           GW::Constants::ModelID::UW::Escort2,
+                                                           GW::Constants::ModelID::UW::Escort3,
+                                                           GW::Constants::ModelID::UW::Escort4,
+                                                           GW::Constants::ModelID::UW::Escort5,
+                                                           GW::Constants::ModelID::UW::Escort6};
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -236,6 +242,37 @@ bool Pumping::RoutineSelfBonds() const
     return false;
 }
 
+bool Pumping::RoutineEscortSpirits() const
+{
+    if (!agents_data || agents_data->npcs.size() == 0)
+        return false;
+
+    auto spirits_livings = std::vector<GW::AgentLiving *>{};
+    FilterByIdsAndDistances(player_data->pos, agents_data->npcs, spirits_livings, ESCORT_IDS);
+
+    if (spirits_livings.size() == 0)
+        return false;
+
+    for (const auto spirit : spirits_livings)
+    {
+        if (!spirit)
+            continue;
+
+        if (spirit->hp > 0.50F)
+            continue;
+
+        const auto dist = GW::GetDistance(player_data->pos, spirit->pos);
+        const auto is_far_away = dist > 3000.0F;
+
+        if (spirit->hp < 0.25F || is_far_away)
+            return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
+        else if (spirit->hp < 0.50F && player_data->hp_perc > 0.50F)
+            return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
+    }
+
+    return false;
+}
+
 bool Pumping::RoutineCanthaGuards() const
 {
     static auto last_gdw_idx = 0;
@@ -250,11 +287,11 @@ bool Pumping::RoutineCanthaGuards() const
         FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
-    FilterAgents(*player_data,
-                 filtered_canthas,
-                 CANTHA_IDS,
-                 GW::Constants::Allegiance::Npc_Minipet,
-                 GW::Constants::Range::Spellcast);
+    FilterByIdsAndDistances(player_data->pos,
+                            agents_data->npcs,
+                            filtered_canthas,
+                            CANTHA_IDS,
+                            GW::Constants::Range::Spellcast);
 
     if (filtered_canthas.size() == 0)
         return false;
@@ -566,6 +603,9 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
+        return RoutineState::FINISHED;
+
+    if (RoutineEscortSpirits())
         return RoutineState::FINISHED;
 
     if (IsAtFusePulls(player_data->pos) && RoutineLT())
