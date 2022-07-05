@@ -217,7 +217,7 @@ void DhuumStatsWindow::Update(float, const AgentLivingData &)
         return;
     player_data.Update();
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(player_data.pos, 2500.0F);
+    const auto is_in_dhuum_room = IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass);
     if (!is_in_dhuum_room)
         ResetData();
 
