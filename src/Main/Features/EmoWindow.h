@@ -54,13 +54,14 @@ private:
     bool found_turtle = false;
     uint32_t turtle_id = 0;
 
+public:
     const GW::Agent *lt_agent = nullptr;
     const GW::Agent *db_agent = nullptr;
+    const AgentLivingData *agents_data = nullptr;
 
+private:
     std::vector<PlayerMapping> party_members{};
     bool party_data_valid = false;
-
-    const AgentLivingData *agents_data = nullptr;
 };
 
 class TankBonding : public EmoActionABC
@@ -158,8 +159,8 @@ private:
     void UpdateUw();
     void UpdateUwEntry();
 
-    PlayerData player_data;
     const AgentLivingData *agents_data = nullptr;
+    PlayerData player_data;
     bool first_frame = false;
     EmoSkillbarData skillbar;
 
@@ -168,11 +169,24 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
 
+    GW::HookEntry ObjectiveDone_Entry;
+    GW::HookEntry MapLoaded_Entry;
+    bool load_cb_triggered = false;
+    uint32_t num_finished_objectives = 0U;
+
+    Pumping pumping;
+    TankBonding tank_bonding;
+
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
     std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
+
+    const GW::Agent *lt_agent = pumping.lt_agent;
+    static inline const auto KEEPER3_TRIGGER = GW::GamePos{-2655.90F, 13362.98F, 0};
+    static inline const auto KEEPER4_TRIGGER = GW::GamePos{161.13F, 13122.947F, 0};
+    static inline const auto KEEPER6_TRIGGER = GW::GamePos{3023.24F, 9980.01F, 0};
 
     uint32_t move_idx = 0;
     std::array<MoveABC *, 56> moves = {
@@ -206,17 +220,17 @@ private:
         new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "Talk", talk_reaper_fn},
         new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "UWG", take_uwg_fn},
         new Move_NoWaitAndContinue{-6035.29F, 11285.14F, "Keeper 1"},
-        new Move_WaitAndStop{-6511.41F, 12447.65F, "Keeper 2"},
-        new Move_NoWaitAndStop{-3881.71F, 11280.04F, "Keeper 3"},
-        new Move_DistanceAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", 4300.0F},
-        new Move_DistanceAndContinue{-266.03F, 9304.26F, "Lab 1", 4300.0F},
+        new Move_WaitAndContinue{-6511.41F, 12447.65F, "Keeper 2"},
+        new Move_PositionAndContinue{-3881.71F, 11280.04F, "Keeper 3", KEEPER3_TRIGGER, 300.0F, lt_agent},
+        new Move_PositionAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", KEEPER4_TRIGGER, 500.0F, lt_agent},
+        new Move_PositionAndContinue{-266.03F, 9304.26F, "Lab 1", KEEPER6_TRIGGER, 200.0F, lt_agent},
         new Move_NoWaitAndStop{1207.05F, 7732.16F, "Keeper 6"},
         new Move_NoWaitAndContinue{819.44F, 9769.97F, "To Wastes 1"},
         new Move_NoWaitAndContinue{2247.60F, 10529.446F, "To Wastes 2"},
         new Move_NoWaitAndContinue{3247.06F, 9099.98F, "To Wastes 3"},
         new Move_NoWaitAndContinue{3853.85F, 7802.04F, "To Wastes 4"},
         new Move_NoWaitAndContinue{5498.42F, 8995.82F, "To Wastes 5"},
-        new Move_NoWaitAndStop{6831.40F, 11142.24F, "To Wastes 6"},
+        new Move_NoWaitAndStop{6921.85F, 11222.38F, "To Wastes 6"},
         new Move_NoWaitAndStop{6633.37F, 15385.31F, "Wastes 1"},
         new Move_NoWaitAndContinue{6054.83F, 18997.46F, "Wastes 2"},
         new Move_WaitAndContinue{4968.64F, 16555.77F, "Wastes 3"},
@@ -233,11 +247,4 @@ private:
         new Move_NoWaitAndContinue{-13127.69F, 17284.64F, "To Dhuum 4"},
         new Move_NoWaitAndStop{-16105.50F, 17284.84F, "To Dhuum 5"},
     };
-
-    GW::HookEntry ObjectiveDone_Entry;
-    GW::HookEntry MapLoaded_Entry;
-    bool load_cb_triggered = false;
-
-    Pumping pumping;
-    TankBonding tank_bonding;
 };

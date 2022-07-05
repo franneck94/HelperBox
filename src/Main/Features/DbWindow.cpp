@@ -51,6 +51,7 @@ DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skil
         &MapLoaded_Entry,
         [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
             load_cb_triggered = ExplorableLoadCallback(status, packet);
+            num_finished_objectives = 0U;
         });
 
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
@@ -63,7 +64,8 @@ DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skil
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
         &ObjectiveDone_Entry,
         [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
-            Log::Info("Finished Objective : %u", packet->objective_id);
+            ++num_finished_objectives;
+            Log::Info("Finished Objective : %u, Num objectives: %u", packet->objective_id, num_finished_objectives);
         });
 };
 
@@ -118,6 +120,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
     }
     player_data.Update();
     agents_data = &_agents_data;
+    damage.agents_data = agents_data;
 
     if (!IsDhuumBitch(player_data))
         return;

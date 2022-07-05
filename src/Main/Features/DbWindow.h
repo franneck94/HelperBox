@@ -36,6 +36,7 @@ private:
     bool RoutineDhuumRecharge() const;
     bool RoutineDhuumDamage() const;
 
+public:
     const AgentLivingData *agents_data = nullptr;
 };
 
@@ -100,6 +101,15 @@ private:
     const AgentLivingData *agents_data = nullptr;
     bool first_frame = false;
     DbSkillbarData skillbar;
+
+    GW::HookEntry ObjectiveDone_Entry;
+    GW::HookEntry MapLoaded_Entry;
+    bool load_cb_triggered = false;
+    uint32_t num_finished_objectives = 0U;
+    GW::HookEntry GenericValue_Entry;
+    bool interrupted = false;
+
+    Damage damage;
 
     std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
@@ -173,12 +183,4 @@ private:
         new Move_NoWaitAndContinue{-13127.69F, 17284.64F, "To Dhuum 4"},
         new Move_NoWaitAndStop{-16410.75F, 17294.47F, "To Dhuum 5"},
     };
-
-    GW::HookEntry ObjectiveDone_Entry;
-    GW::HookEntry MapLoaded_Entry;
-    bool load_cb_triggered = false;
-    GW::HookEntry GenericValue_Entry;
-    bool interrupted = false;
-
-    Damage damage;
 };
