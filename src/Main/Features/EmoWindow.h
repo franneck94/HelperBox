@@ -225,7 +225,7 @@ private:
         new Move_PositionAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", KEEPER4_TRIGGER, 500.0F, lt_agent},
         new Move_PositionAndContinue{-266.03F, 9304.26F, "Lab 1", KEEPER6_TRIGGER, 200.0F, lt_agent},
         new Move_NoWaitAndStop{1207.05F, 7732.16F, "Keeper 6"},
-        new Move_NoWaitAndContinue{161.13F, 13122.947F, "To Wastes 1"},
+        new Move_NoWaitAndContinue{819.44F, 9769.97F, "To Wastes 1"},
         new Move_NoWaitAndContinue{2247.60F, 10529.446F, "To Wastes 2"},
         new Move_NoWaitAndContinue{3247.06F, 9099.98F, "To Wastes 3"},
         new Move_NoWaitAndContinue{3853.85F, 7802.04F, "To Wastes 4"},
