@@ -34,11 +34,12 @@ private:
     bool PauseRoutine() override;
 
     bool RoutineWhenInRangeBondLT() const;
-    bool RoutineSelfBonds() const;
-    bool RoutineCanthaGuards() const;
-    bool RoutineLT() const;
-    bool DropBondsLT() const;
     bool RoutineDbBeforeDhuum() const;
+    bool RoutineSelfBonds() const;
+    bool RoutineLT() const;
+    bool RoutineCanthaGuards() const;
+    bool RoutineEscortSpirits() const;
+    bool DropBondsLT() const;
     bool RoutineTurtle() const;
     bool RoutineDbAtDhuum() const;
     bool RoutineWisdom() const;
@@ -169,8 +170,8 @@ private:
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     uint32_t move_idx = 0;
