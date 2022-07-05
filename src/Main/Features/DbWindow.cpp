@@ -252,6 +252,7 @@ bool Damage::RoutineDhuumDamage() const
 RoutineState Damage::Routine()
 {
     static auto dhuum_fight_ongoing = false;
+    const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
 
     if (!IsUw())
         return RoutineState::FINISHED;
@@ -261,6 +262,9 @@ RoutineState Damage::Routine()
 
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
+
+    if (GW::PartyMgr::GetPartySize() >= 7 && !is_in_dhuum_room)
+        return RoutineState::FINISHED;
 
     if (IsAtChamberSkele(player_data->pos) || IsAtBasementSkele(player_data->pos) ||
         IsRightAtValeHouse(player_data->pos))
@@ -292,7 +296,6 @@ RoutineState Damage::Routine()
             return RoutineState::FINISHED;
     }
 
-    const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 

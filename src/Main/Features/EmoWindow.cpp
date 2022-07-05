@@ -176,6 +176,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 
     tank_bonding.Update();
     pumping.Update();
+    lt_agent = pumping.lt_agent;
 }
 
 Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a)
@@ -624,6 +625,9 @@ RoutineState Pumping::Routine()
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
+        return RoutineState::FINISHED;
+
+    if (GW::PartyMgr::GetPartySize() >= 7 && !is_in_dhuum_room)
         return RoutineState::FINISHED;
 
     if ((IsInBasement(player_data->pos) || IsInVale(player_data->pos)) && RoutineEscortSpirits())

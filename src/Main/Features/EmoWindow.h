@@ -183,7 +183,7 @@ private:
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
-    const GW::Agent *lt_agent = pumping.lt_agent;
+    const GW::Agent *lt_agent = nullptr;
     static inline const auto KEEPER3_TRIGGER = GW::GamePos{-2655.90F, 13362.98F, 0};
     static inline const auto KEEPER4_TRIGGER = GW::GamePos{161.13F, 13122.947F, 0};
     static inline const auto KEEPER6_TRIGGER = GW::GamePos{3023.24F, 9980.01F, 0};

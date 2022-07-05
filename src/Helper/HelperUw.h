@@ -81,8 +81,8 @@ void UpdateUwInfo(const PlayerData &player_data,
     {
         Log::Info("Ported!");
         move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
-        if (IsDhuumBitch(player_data) && (moves[move_idx]->name == std::string{"Pits Start"} ||
-                                          moves[move_idx]->name == std::string{"Planes Start"}))
+        if (IsEmo(player_data) && (moves[move_idx]->name == std::string{"Pits Start"} ||
+                                   moves[move_idx]->name == std::string{"Planes Start"}))
         {
             Log::Info("Auto trigger!");
             moves[move_idx]->Execute();

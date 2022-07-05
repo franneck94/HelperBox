@@ -34,7 +34,8 @@ void DrawMovingButtons(const std::array<MoveABC *, N> &moves, bool &move_ongoing
     {
         if (!move_ongoing)
         {
-            moves[move_idx]->Execute();
+            if (!moves[move_idx]->is_distance_based)
+                moves[move_idx]->Execute();
             move_ongoing = true;
         }
         else
