@@ -31,11 +31,12 @@ static void GWCALogHandler(void *, GW::LogLevel, const char *msg, const char *, 
 bool Log::InitializeLog()
 {
     logfile = stdout;
+#ifdef _DEBUG
     AllocConsole();
     freopen_s(&stdout_file, "CONOUT$", "w", stdout);
     freopen_s(&stderr_file, "CONOUT$", "w", stderr);
     SetConsoleTitle("HelperBox Debug Console");
-
+#endif
     GW::RegisterLogHandler(GWCALogHandler, nullptr);
     return true;
 }
