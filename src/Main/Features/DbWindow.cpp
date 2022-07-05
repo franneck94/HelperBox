@@ -59,6 +59,12 @@ DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skil
             if (move_ongoing && player_data.SkillStoppedCallback(packet))
                 interrupted = true;
         });
+
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
+        &ObjectiveDone_Entry,
+        [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
+            Log::Info("Finished Objective : %u", packet->objective_id);
+        });
 };
 
 void DbWindow::Draw(IDirect3DDevice9 *)

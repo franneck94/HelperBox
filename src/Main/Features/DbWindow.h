@@ -174,6 +174,7 @@ private:
         new Move_NoWaitAndStop{-16410.75F, 17294.47F, "To Dhuum 5"},
     };
 
+    GW::HookEntry ObjectiveDone_Entry;
     GW::HookEntry MapLoaded_Entry;
     bool load_cb_triggered = false;
     GW::HookEntry GenericValue_Entry;

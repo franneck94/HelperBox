@@ -65,6 +65,12 @@ EmoWindow::EmoWindow()
         [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
             load_cb_triggered = ExplorableLoadCallback(status, packet);
         });
+
+    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
+        &ObjectiveDone_Entry,
+        [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
+            Log::Info("Finished Objective : %u", packet->objective_id);
+        });
 };
 
 void EmoWindow::Draw(IDirect3DDevice9 *)
