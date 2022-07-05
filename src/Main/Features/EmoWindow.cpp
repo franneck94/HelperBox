@@ -491,6 +491,8 @@ bool Pumping::RoutineTurtleGDW() const
 
 bool Pumping::RoutineDbBeforeDhuum() const
 {
+    static auto last_time_sb_ms = clock();
+
     if (!db_agent)
         return false;
 
@@ -510,6 +512,14 @@ bool Pumping::RoutineDbBeforeDhuum() const
 
     if (living->hp < 0.50F && player_data->hp_perc > 0.50F)
         return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, living->agent_id));
+
+    const auto sb_recast_threshold_ms = 4'000L;
+    if (TIMER_DIFF(last_time_sb_ms) > sb_recast_threshold_ms && living->hp < 0.50F &&
+        RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, living->agent_id))
+    {
+        last_time_sb_ms = clock();
+        return true;
+    }
 
     return false;
 }
