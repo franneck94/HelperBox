@@ -142,21 +142,38 @@ bool Move_PositionABC::UpdateMoveState(const PlayerData &, const AgentLivingData
 {
     move_ongoing = true;
 
-    const GW::Agent *_lt_agent = trigger_agent;
-    if (!trigger_agent)
+    const GW::Agent *trigger_agent = nullptr;
+    uint32_t trigger_id = 0U;
+    switch (role)
     {
-        const auto lt_id = GetTankId();
-
-        if (!lt_id)
-            return false;
-
-        _lt_agent = GW::Agents::GetAgentByID(lt_id);
-
-        if (!_lt_agent)
-            return false;
+    case TriggerRole::LT:
+    {
+        trigger_id = GetTankId();
+        break;
+    }
+    case TriggerRole::EMO:
+    {
+        trigger_id = GetEmoId();
+        break;
+    }
+    case TriggerRole::DB:
+    {
+        trigger_id = GetDhuumBitchId();
+        break;
+    }
     }
 
-    if (IsNearToGamePos(trigger_pos, _lt_agent->pos, trigger_threshold))
+    if (!trigger_id)
+        return false;
+
+    trigger_agent = GW::Agents::GetAgentByID(trigger_id);
+    if (!trigger_agent)
+        return false;
+
+    if (!trigger_agent)
+        return true;
+
+    if (IsNearToGamePos(trigger_pos, trigger_agent->pos, trigger_threshold))
         return true;
 
     return false;

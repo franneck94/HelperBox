@@ -176,7 +176,6 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 
     tank_bonding.Update();
     pumping.Update();
-    lt_agent = pumping.lt_agent;
 }
 
 Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a)

@@ -183,13 +183,12 @@ private:
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
-    const GW::Agent *lt_agent = nullptr;
     static inline const auto KEEPER3_TRIGGER = GW::GamePos{-2655.90F, 13362.98F, 0};
     static inline const auto KEEPER4_TRIGGER = GW::GamePos{161.13F, 13122.947F, 0};
     static inline const auto KEEPER6_TRIGGER = GW::GamePos{3023.24F, 9980.01F, 0};
 
     uint32_t move_idx = 0;
-    std::array<MoveABC *, 56> moves = {
+    std::array<MoveABC *, 55> moves = {
         new Move_WaitAndContinue{1248.00F, 6965.51F, "Spawn"},
         new Move_WaitAndContinue{985.70F, 7325.54F, "Chamber 1", swap_to_high_armor_fn},
         new Move_WaitAndContinue{-634.07F, 9071.42F, "Chamber 2"},
@@ -221,16 +220,15 @@ private:
         new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "UWG", take_uwg_fn},
         new Move_NoWaitAndContinue{-6035.29F, 11285.14F, "Keeper 1"},
         new Move_WaitAndContinue{-6511.41F, 12447.65F, "Keeper 2"},
-        new Move_PositionAndContinue{-3881.71F, 11280.04F, "Keeper 3", KEEPER3_TRIGGER, 300.0F, lt_agent},
-        new Move_PositionAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", KEEPER4_TRIGGER, 500.0F, lt_agent},
-        new Move_PositionAndContinue{-266.03F, 9304.26F, "Lab 1", KEEPER6_TRIGGER, 200.0F, lt_agent},
+        new Move_PositionAndContinue{-3881.71F, 11280.04F, "Keeper 3", KEEPER3_TRIGGER, 300.0F, TriggerRole::LT},
+        new Move_PositionAndContinue{-1502.45F, 9737.64F, "Keeper 4/5", KEEPER4_TRIGGER, 500.0F, TriggerRole::LT},
+        new Move_PositionAndContinue{-266.03F, 9304.26F, "Lab 1", KEEPER6_TRIGGER, 200.0F, TriggerRole::LT},
         new Move_NoWaitAndStop{1207.05F, 7732.16F, "Keeper 6"},
-        new Move_NoWaitAndContinue{819.44F, 9769.97F, "To Wastes 1"},
-        new Move_NoWaitAndContinue{2247.60F, 10529.446F, "To Wastes 2"},
-        new Move_NoWaitAndContinue{3247.06F, 9099.98F, "To Wastes 3"},
-        new Move_NoWaitAndContinue{3853.85F, 7802.04F, "To Wastes 4"},
-        new Move_NoWaitAndContinue{5498.42F, 8995.82F, "To Wastes 5"},
-        new Move_NoWaitAndStop{6921.85F, 11222.38F, "To Wastes 6"},
+        new Move_NoWaitAndContinue{1543.75F, 10709.27F, "To Wastes 1"},
+        new Move_NoWaitAndContinue{2532.49F, 10349.75F, "To Wastes 2"},
+        new Move_NoWaitAndContinue{3360.00F, 9404.54F, "To Wastes 3"},
+        new Move_NoWaitAndContinue{4398.38F, 7507.83F, "To Wastes 4"},
+        new Move_NoWaitAndContinue{6599.55F, 11016.60F, "To Wastes 5"},
         new Move_NoWaitAndStop{6633.37F, 15385.31F, "Wastes 1"},
         new Move_NoWaitAndContinue{6054.83F, 18997.46F, "Wastes 2"},
         new Move_WaitAndContinue{4968.64F, 16555.77F, "Wastes 3"},

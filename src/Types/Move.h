@@ -316,6 +316,14 @@ public:
         : Move_DistanceABC(_x, _y, _name, false, _dist_threshold, _cb_fn){};
 };
 
+
+enum class TriggerRole
+{
+    LT,
+    EMO,
+    DB,
+};
+
 class Move_PositionABC : public MoveABC
 {
 public:
@@ -325,10 +333,10 @@ public:
                      const bool _is_proceeding_move,
                      const GW::GamePos &_trigger_pos,
                      const float _trigger_threshold,
-                     const GW::Agent *_trigger_agent,
+                     const TriggerRole _role,
                      std::optional<std::function<bool()>> _cb_fn = std::nullopt)
         : MoveABC(_x, _y, _name, _is_proceeding_move, _cb_fn), trigger_pos(_trigger_pos),
-          trigger_threshold(_trigger_threshold), trigger_agent(_trigger_agent)
+          trigger_threshold(_trigger_threshold), role(_role)
     {
         is_distance_based = true;
     };
@@ -346,7 +354,7 @@ public:
     };
 
     GW::GamePos trigger_pos;
-    const GW::Agent *trigger_agent = nullptr;
+    TriggerRole role;
     float trigger_threshold;
 };
 
@@ -358,9 +366,9 @@ public:
                              const std::string &_name,
                              const GW::GamePos &_trigger_pos,
                              const float _trigger_threshold,
-                             const GW::Agent *_trigger_agent,
+                             const TriggerRole _role,
                              std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : Move_PositionABC(_x, _y, _name, true, _trigger_pos, _trigger_threshold, _trigger_agent, _cb_fn){};
+        : Move_PositionABC(_x, _y, _name, true, _trigger_pos, _trigger_threshold, _role, _cb_fn){};
 };
 
 class Move_PositionAndStop : public Move_PositionABC
@@ -371,7 +379,7 @@ public:
                          const std::string &_name,
                          const GW::GamePos &_trigger_pos,
                          const float _trigger_threshold,
-                         const GW::Agent *_trigger_agent,
+                         const TriggerRole _role,
                          std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : Move_PositionABC(_x, _y, _name, false, _trigger_pos, _trigger_threshold, _trigger_agent, _cb_fn){};
+        : Move_PositionABC(_x, _y, _name, false, _trigger_pos, _trigger_threshold, _role, _cb_fn){};
 };
