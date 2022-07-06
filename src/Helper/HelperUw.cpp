@@ -417,3 +417,22 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
 
     return result_ids_rect.size() == 0;
 }
+
+bool FoundSpidersAtEndOfDhuumFight(const std::vector<GW::AgentLiving *> &npcs)
+{
+    constexpr static auto DHUUM_SPIDER_IDS = std::array<uint32_t, 2>{1391, 1392};
+
+    for (const auto npc : npcs)
+    {
+        if (!npc)
+            continue;
+
+        for (const auto id : DHUUM_SPIDER_IDS)
+        {
+            if (npc->player_number == id)
+                return true;
+        }
+    }
+
+    return false;
+}

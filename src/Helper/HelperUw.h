@@ -60,7 +60,8 @@ template <uint32_t N>
 void UpdateUwInfo(const PlayerData &player_data,
                   const std::array<MoveABC *, N> &moves,
                   uint32_t &move_idx,
-                  const bool first_call)
+                  const bool first_call,
+                  bool &move_ongoing)
 {
     static auto last_pos = player_data.pos;
 
@@ -81,10 +82,12 @@ void UpdateUwInfo(const PlayerData &player_data,
     {
         Log::Info("Ported!");
         move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
+        move_ongoing = false;
         if (IsEmo(player_data) && (moves[move_idx]->name == std::string{"Pits Start"} ||
                                    moves[move_idx]->name == std::string{"Planes Start"}))
         {
             Log::Info("Auto trigger!");
+            move_ongoing = true;
             moves[move_idx]->Execute();
         }
     }
@@ -100,3 +103,5 @@ bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, cons
 bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
 
 bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos);
+
+bool FoundSpidersAtEndOfDhuumFight(const std::vector<GW::AgentLiving *> &npcs);

@@ -153,3 +153,5 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
                                   const std::set<uint32_t> &filter_ids);
 
 uint32_t GetPartyIdxByID(const uint32_t id);
+
+bool DropBondsOnLiving(const GW::AgentLiving *living);

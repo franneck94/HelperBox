@@ -33,8 +33,8 @@ public:
     constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{780U},  // 1 ?
                                                                     uint32_t{760U},  // 2 ?
                                                                     uint32_t{740U},  // 3 ?
-                                                                    uint32_t{720U},  // 4
-                                                                    uint32_t{700U},  // 5
+                                                                    uint32_t{730U},  // 4
+                                                                    uint32_t{710U},  // 5
                                                                     uint32_t{680U},  // 6 ?
                                                                     uint32_t{660U},  // 7 ?
                                                                     uint32_t{640U}}; // 8 ?

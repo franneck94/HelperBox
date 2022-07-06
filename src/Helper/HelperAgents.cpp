@@ -417,3 +417,27 @@ std::set<uint32_t> FilterAgentIDS(const std::vector<GW::AgentLiving *> &filtered
 
     return result_ids;
 }
+
+bool DropBondsOnLiving(const GW::AgentLiving *living)
+{
+    auto dropped_smth = false;
+
+    auto buffs = GW::Effects::GetPlayerBuffs();
+    if (!buffs || !buffs->valid() || buffs->size() == 0)
+        return false;
+
+    for (const auto &buff : *buffs)
+    {
+        const auto agent_id = buff.target_agent_id;
+        const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);
+        const auto is_prot_bond = skill == GW::Constants::SkillID::Protective_Bond;
+        const auto is_life_bond = skill == GW::Constants::SkillID::Life_Bond;
+        const auto is_balth_bond = skill == GW::Constants::SkillID::Balthazars_Spirit;
+        const auto is_any_bond = is_prot_bond || is_life_bond || is_balth_bond;
+
+        if (is_any_bond && living->agent_id == agent_id)
+            GW::Effects::DropBuff(buff.buff_id);
+    }
+
+    return dropped_smth;
+}

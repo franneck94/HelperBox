@@ -129,7 +129,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
 
     if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player_data, moves, move_idx, true);
+        UpdateUwInfo(player_data, moves, move_idx, true, move_ongoing);
         first_frame = false;
     }
 
@@ -141,7 +141,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
 
     if (IsUw())
     {
-        UpdateUwInfo(player_data, moves, move_idx, false);
+        UpdateUwInfo(player_data, moves, move_idx, false, move_ongoing);
         UpdateUw();
     }
 
@@ -304,11 +304,17 @@ RoutineState Damage::Routine()
 
     auto dhuum_id = uint32_t{0};
     auto dhuum_hp = float{1.0F};
-    const auto currently_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    if (!currently_in_dhuum_fight && dhuum_fight_ongoing)
+    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+    if (!is_in_dhuum_fight && dhuum_fight_ongoing)
         dhuum_fight_ongoing = false;
 
-    if (!currently_in_dhuum_fight || !dhuum_id)
+    if (!is_in_dhuum_fight && FoundSpidersAtEndOfDhuumFight(agents_data->npcs))
+    {
+        action_state = ActionState::INACTIVE;
+        move_ongoing = false;
+    }
+
+    if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
     dhuum_fight_ongoing = true;
 

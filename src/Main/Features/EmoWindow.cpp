@@ -158,7 +158,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 
     if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player_data, moves, move_idx, true);
+        UpdateUwInfo(player_data, moves, move_idx, true, move_ongoing);
         first_frame = false;
     }
 
@@ -170,7 +170,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
 
     if (IsUw())
     {
-        UpdateUwInfo(player_data, moves, move_idx, false);
+        UpdateUwInfo(player_data, moves, move_idx, false, move_ongoing);
         UpdateUw();
     }
 
@@ -337,19 +337,15 @@ bool Pumping::RoutineCanthaGuards() const
         if (!buffs || !buffs->valid() || buffs->size() == 0)
             return false;
 
-        for (const auto &buff : *buffs)
+        auto droppped_smth = false;
+        for (auto living : filtered_canthas)
         {
-            const auto agent_id = buff.target_agent_id;
-            const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);
-            const auto is_prot_bond = skill == GW::Constants::SkillID::Protective_Bond;
-            const auto cantha_it = std::find_if(filtered_canthas.begin(),
-                                                filtered_canthas.end(),
-                                                [=](const auto living) { return living->agent_id == agent_id; });
-            if (is_prot_bond && cantha_it != filtered_canthas.end())
-                GW::Effects::DropBuff(buff.buff_id);
+            if (DropBondsOnLiving(living))
+                droppped_smth = true;
         }
 
-        return true;
+        if (droppped_smth)
+            return true;
     }
 
     return false;
@@ -580,23 +576,15 @@ bool Pumping::DropBondsLT() const
         return false;
 
     auto buffs = GW::Effects::GetPlayerBuffs();
-    if (!buffs || !buffs->valid())
+    if (!buffs || !buffs->valid() || buffs->size() == 0)
         return false;
 
-    for (const auto &buff : *buffs)
-    {
-        const auto agent_id = buff.target_agent_id;
-        const auto skill = static_cast<GW::Constants::SkillID>(buff.skill_id);
-        const auto is_prot_bond = skill == GW::Constants::SkillID::Protective_Bond;
-        const auto is_life_bond = skill == GW::Constants::SkillID::Life_Bond;
-        const auto is_balth_bond = skill == GW::Constants::SkillID::Balthazars_Spirit;
+    const auto lt_living = lt_agent->GetAsAgentLiving();
+    if (!lt_living)
+        return false;
 
-        if ((is_prot_bond || is_life_bond || is_balth_bond) && agent_id == lt_agent->agent_id)
-        {
-            GW::Effects::DropBuff(buff.buff_id);
-            return true;
-        }
-    }
+    if (DropBondsOnLiving(lt_living))
+        return true;
 
     return false;
 }
@@ -611,10 +599,10 @@ RoutineState Pumping::Routine()
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())
+    if (RoutineSelfBonds())
         return RoutineState::FINISHED;
 
-    if (RoutineSelfBonds())
+    if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())
         return RoutineState::FINISHED;
 
     if (!IsUw())
@@ -654,6 +642,12 @@ RoutineState Pumping::Routine()
     auto dhuum_hp = float{1.0F};
 
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+
+    if (!is_in_dhuum_fight && FoundSpidersAtEndOfDhuumFight(agents_data->npcs))
+    {
+        action_state = ActionState::INACTIVE;
+        move_ongoing = false;
+    }
 
     if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
