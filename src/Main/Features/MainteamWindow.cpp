@@ -126,7 +126,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float, const AgentLivingData &agents_data)
+void MainteamWindow::Update(float, const AgentLivingData &_agents_data)
 {
     filtered_livings.clear();
     aatxe_livings.clear();
@@ -144,7 +144,8 @@ void MainteamWindow::Update(float, const AgentLivingData &agents_data)
         return;
 
     const auto &pos = player_data.pos;
-    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, IDS, 1600.0F);
+    agents_data = &_agents_data;
+    FilterByIdsAndDistances(pos, _agents_data.enemies, filtered_livings, IDS, 1600.0F);
     FilterByIdAndDistance(pos, filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
     FilterByIdAndDistance(pos, filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
     FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);

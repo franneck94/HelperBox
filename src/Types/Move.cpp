@@ -170,9 +170,6 @@ bool Move_PositionABC::UpdateMoveState(const PlayerData &, const AgentLivingData
     if (!trigger_agent)
         return false;
 
-    if (!trigger_agent)
-        return true;
-
     if (IsNearToGamePos(trigger_pos, trigger_agent->pos, trigger_threshold))
         return true;
 

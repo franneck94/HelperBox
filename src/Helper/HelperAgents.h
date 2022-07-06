@@ -117,7 +117,7 @@ void SortByDistance(const PlayerData &player_data, std::vector<GW::AgentLiving *
 
 std::pair<GW::Agent *, float> GetClosestEnemy(const PlayerData *player_data);
 
-uint32_t GetClosestbyId(const PlayerData &player_data,
+uint32_t GetClosestById(const PlayerData &player_data,
                         const std::vector<GW::AgentLiving *> &livings,
                         const uint32_t id);
 

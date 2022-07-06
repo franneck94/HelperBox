@@ -94,8 +94,8 @@ public:
             if (last_trigger_time_diff_ms == 0 || last_trigger_time_diff_ms >= MoveABC::TRIGGER_TIMER_THRESHOLD_MS)
             {
                 last_trigger_time_ms = clock();
-                moves[move_idx]->Execute();
                 moves[move_idx]->ReTriggerMessage();
+                moves[move_idx]->Execute();
                 trigger_timer_ms = clock();
             }
             return;
@@ -289,7 +289,7 @@ public:
     void NoTriggerMessage() const override
     {
         Log::Info("Waiting for distance %f", dist_threshold);
-    };
+    }
 
     float dist_threshold;
 };
