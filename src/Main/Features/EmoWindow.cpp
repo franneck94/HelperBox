@@ -643,7 +643,7 @@ RoutineState Pumping::Routine()
 
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight && FoundSpidersAtEndOfDhuumFight(agents_data->npcs))
+    if (!is_in_dhuum_fight && DhuumFightDone(agents_data->npcs))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;

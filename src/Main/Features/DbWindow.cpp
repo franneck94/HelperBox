@@ -308,7 +308,7 @@ RoutineState Damage::Routine()
     if (!is_in_dhuum_fight && dhuum_fight_ongoing)
         dhuum_fight_ongoing = false;
 
-    if (!is_in_dhuum_fight && FoundSpidersAtEndOfDhuumFight(agents_data->npcs))
+    if (!is_in_dhuum_fight && DhuumFightDone(agents_data->npcs))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;

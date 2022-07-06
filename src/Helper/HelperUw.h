@@ -104,4 +104,4 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
 
 bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos);
 
-bool FoundSpidersAtEndOfDhuumFight(const std::vector<GW::AgentLiving *> &npcs);
+bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs);
