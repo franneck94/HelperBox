@@ -1,20 +1,12 @@
 #include <cstdint>
 
-#include <GWCA/Constants/Constants.h>
-#include <GWCA/Constants/Maps.h>
-#include <GWCA/GameContainers/Array.h>
-#include <GWCA/GameEntities/Party.h>
 #include <GWCA/GameEntities/Player.h>
-#include <GWCA/GameEntities/Skill.h>
-#include <GWCA/Managers/ChatMgr.h>
-#include <GWCA/Managers/EffectMgr.h>
-#include <GWCA/Managers/MemoryMgr.h>
+#include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
+#include <GWCA/Packets/Opcodes.h>
 
-#include <Actions.h>
-#include <HelperAgents.h>
 #include <HelperMaps.h>
-#include <PlayerData.h>
 
 #include "Helper.h"
 

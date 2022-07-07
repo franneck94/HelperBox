@@ -8,6 +8,7 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Managers/StoCMgr.h>
 #include <GWCA/Packets/Opcodes.h>
