@@ -34,12 +34,10 @@ uint32_t GetTankId()
 {
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
-
     if (!success || party_members.size() < 2)
         return 0;
 
     auto tank_idx = uint32_t{0};
-
     switch (GW::Map::GetMapID())
     {
     case GW::Constants::MapID::The_Underworld:
@@ -65,7 +63,6 @@ uint32_t GetEmoId()
 {
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
-
     if (!success)
         return 0;
 
@@ -91,7 +88,6 @@ uint32_t GetDhuumBitchId()
 {
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
-
     if (!success)
         return 0;
 
@@ -219,7 +215,6 @@ bool TankIsFullteamLT()
         return false;
 
     const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
-
     if (!lt_agent)
         return false;
 
@@ -241,7 +236,6 @@ bool TankIsSoloLT()
         return false;
 
     const auto lt_agent = GW::Agents::GetAgentByID(lt_id);
-
     if (!lt_agent)
         return false;
 
@@ -276,7 +270,6 @@ bool TargetReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> 
 bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
     const auto id = TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers);
-
     if (!id)
         return true;
 
