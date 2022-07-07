@@ -190,3 +190,20 @@ public:
         skills = {&sos, &honor, &eoe, &qz, &winnow, &pi, &sq, &vamp};
     }
 };
+
+static constexpr auto NUM_SKILLS_DB = size_t{5U};
+class RangerSkillbarData : public SkillbarDataABC<NUM_SKILLS_DB>
+{
+public:
+    // General Ranger Skills
+    SkillData shroud = SkillData{GW::Constants::SkillID::Shroud_of_Distress, static_cast<uint32_t>(-1)};
+    SkillData sf = SkillData{GW::Constants::SkillID::Shadow_Form, static_cast<uint32_t>(-1)};
+    SkillData dc = SkillData{GW::Constants::SkillID::Deaths_Charge, static_cast<uint32_t>(-1)};
+    SkillData dwarfen = SkillData{GW::Constants::SkillID::Dwarven_Stability, static_cast<uint32_t>(-1)};
+    SkillData whirl = SkillData{GW::Constants::SkillID::Whirling_Defense, static_cast<uint32_t>(-1)};
+
+    RangerSkillbarData() : SkillbarDataABC()
+    {
+        skills = {&shroud, &sf, &dc, &dwarfen, &whirl};
+    }
+};
