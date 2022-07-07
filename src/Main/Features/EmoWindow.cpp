@@ -119,8 +119,9 @@ void EmoWindow::UpdateUw()
         move_ongoing = true;
     }
 
-    if (lt_is_ready && !move_ongoing && ((moves[move_idx]->name == "Talk Lab Reaper" || moves[move_idx]->name == "Go Wastes 1" ||
-                        moves[move_idx]->name == "Go To Dhuum 1"))
+    if (lt_is_ready && !move_ongoing &&
+        (moves[move_idx]->name == "Talk Lab Reaper" || moves[move_idx]->name == "Go Wastes 1" ||
+         moves[move_idx]->name == "Go To Dhuum 1"))
     {
         moves[move_idx]->Execute();
         move_ongoing = true;
