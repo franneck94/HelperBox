@@ -131,17 +131,39 @@ public:
     }
 };
 
-static constexpr auto NUM_SKILLS_MESMER = size_t{3U};
+static constexpr auto NUM_SKILLS_MESMER = size_t{10U};
 class MesmerSkillbarData : public SkillbarDataABC<NUM_SKILLS_MESMER>
 {
 public:
+    // General Mesmer Skills
+    SkillData stoneflesh = SkillData{GW::Constants::SkillID::Stoneflesh_Aura, static_cast<uint32_t>(-1)};
+    SkillData obsi = SkillData{GW::Constants::SkillID::Obsidian_Flesh, static_cast<uint32_t>(-1)};
     SkillData demise = SkillData{GW::Constants::SkillID::Wastrels_Demise, static_cast<uint32_t>(-1)};
     SkillData worry = SkillData{GW::Constants::SkillID::Wastrels_Worry, static_cast<uint32_t>(-1)};
-    SkillData pi = SkillData{GW::Constants::SkillID::Pain_Inverter, static_cast<uint32_t>(-1)};
+    SkillData ebon = SkillData{GW::Constants::SkillID::Ebon_Escape, static_cast<uint32_t>(-1)};
+    SkillData empathy = SkillData{GW::Constants::SkillID::Empathy, static_cast<uint32_t>(-1)};
+
+    // Solo LT Skills
+    SkillData mantra_of_concentration =
+        SkillData{GW::Constants::SkillID::Mantra_of_Concentration, static_cast<uint32_t>(-1)};
+    SkillData visage = SkillData{GW::Constants::SkillID::Sympathetic_Visage, static_cast<uint32_t>(-1)};
+
+    // T4 Skills
+    SkillData mantra_of_earth = SkillData{GW::Constants::SkillID::Mantra_of_Earth, static_cast<uint32_t>(-1)};
+    SkillData stonestriker = SkillData{GW::Constants::SkillID::Stone_Striker, static_cast<uint32_t>(-1)};
 
     MesmerSkillbarData() : SkillbarDataABC()
     {
-        skills = {&demise, &worry, &pi};
+        skills = {&stoneflesh,
+                  &obsi,
+                  &demise,
+                  &worry,
+                  &ebon,
+                  &empathy,
+                  &mantra_of_concentration,
+                  &visage,
+                  &mantra_of_earth,
+                  &stonestriker};
     }
 
 public:
@@ -151,12 +173,15 @@ static constexpr auto NUM_SKILLS_DB = size_t{8U};
 class DbSkillbarData : public SkillbarDataABC<NUM_SKILLS_DB>
 {
 public:
-    SkillData sos = SkillData{GW::Constants::SkillID::Signet_of_Spirits, static_cast<uint32_t>(-1)};
+    // General DB Skills
     SkillData honor = SkillData{GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor, static_cast<uint32_t>(-1)};
     SkillData eoe = SkillData{GW::Constants::SkillID::Edge_of_Extinction, static_cast<uint32_t>(-1)};
     SkillData qz = SkillData{GW::Constants::SkillID::Quickening_Zephyr, static_cast<uint32_t>(-1)};
     SkillData winnow = SkillData{GW::Constants::SkillID::Winnowing, static_cast<uint32_t>(-1)};
     SkillData pi = SkillData{GW::Constants::SkillID::Pain_Inverter, static_cast<uint32_t>(-1)};
+
+    // Only Rit Skills
+    SkillData sos = SkillData{GW::Constants::SkillID::Signet_of_Spirits, static_cast<uint32_t>(-1)};
     SkillData sq = SkillData{GW::Constants::SkillID::Serpents_Quickness, static_cast<uint32_t>(-1)};
     SkillData vamp = SkillData{GW::Constants::SkillID::Vampirism, static_cast<uint32_t>(-1)};
 
