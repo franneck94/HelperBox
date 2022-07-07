@@ -39,6 +39,6 @@ bool IsNearToGamePos(const GW::GamePos &player_pos, const GW::GamePos &pos, cons
 std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle,
                                                          const std::vector<GW::AgentLiving *> &living_agents);
 
-bool PointIsBelowLine(const float slope, const float bias, const GW::GamePos &point);
+bool PointIsBelowLine(const float slope, const float intercept, const GW::GamePos &point);
 
 std::pair<float, float> GetLineBasedOnPointAndAngle(const GW::GamePos &player_pos, const float theta);

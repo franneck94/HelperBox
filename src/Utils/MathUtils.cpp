@@ -89,14 +89,8 @@ GW::GamePos RotatePoint(const GW::GamePos &player_pos, GW::GamePos pos, const fl
 
 bool IsNearToGamePos(const GW::GamePos &player_pos, const GW::GamePos &pos, const float r)
 {
-    const auto dist = GW::GetDistance(player_pos, pos);
-
-    if (dist < r)
-        return true;
-
-    return false;
+    return GW::GetDistance(player_pos, pos) < r;
 }
-
 
 std::vector<GW::AgentLiving *> GetEnemiesInGameRectangle(const GameRectangle &rectangle,
                                                          const std::vector<GW::AgentLiving *> &living_agents)
@@ -123,9 +117,9 @@ std::pair<float, float> GetLineBasedOnPointAndAngle(const GW::GamePos &player_po
     return std::make_pair(m, b);
 }
 
-bool PointIsBelowLine(const float slope, const float bias, const GW::GamePos &point)
+bool PointIsBelowLine(const float slope, const float intercept, const GW::GamePos &point)
 {
-    const auto y_l = slope * point.x + bias;
+    const auto y_l = slope * point.x + intercept;
     const auto y_p = point.y;
 
     const auto y_delta = y_l - y_p;

@@ -4,13 +4,6 @@
 
 #include <GWCA/Managers/ChatMgr.h>
 
-#define HELPERBOX_CHAN GW::Chat::Channel::CHANNEL_GWCA2
-#define HELPERBOX_SENDER L"HelperBox++"
-#define HELPERBOX_SENDER_COL 0x00ccff
-#define HELPERBOX_WARNING_COL 0xFFFF44
-#define HELPERBOX_ERROR_COL 0xFF4444
-#define HELPERBOX_INFO_COL 0xFFFFFF
-
 namespace Log
 {
 // === Setup and cleanup ====

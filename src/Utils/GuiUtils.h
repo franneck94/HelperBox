@@ -29,7 +29,7 @@ void DrawMovingButtons(const std::array<MoveABC *, N> &moves, bool &move_ongoing
 {
     bool was_already_ongoing = move_ongoing;
     if (was_already_ongoing)
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1F, 0.9F, 0.1F, 1.0F));
     if (ImGui::Button(moves[move_idx]->Name(), DEFAULT_BUTTON_SIZE))
     {
         if (!move_ongoing)

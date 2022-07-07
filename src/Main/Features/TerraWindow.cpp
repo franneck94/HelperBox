@@ -81,7 +81,7 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, con
         if (living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
             living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0F));
             last_casted_times_ms[living->agent_id] = clock();
         }
         else
