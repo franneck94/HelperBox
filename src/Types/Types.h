@@ -29,3 +29,10 @@ struct PlayerMapping
     uint32_t id;
     uint32_t party_idx;
 };
+
+enum class TriggerRole
+{
+    LT,
+    EMO,
+    DB,
+};

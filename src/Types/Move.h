@@ -316,14 +316,6 @@ public:
         : Move_DistanceABC(_x, _y, _name, false, _dist_threshold, _cb_fn){};
 };
 
-
-enum class TriggerRole
-{
-    LT,
-    EMO,
-    DB,
-};
-
 class Move_PositionABC : public MoveABC
 {
 public:
