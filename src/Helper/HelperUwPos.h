@@ -16,6 +16,8 @@ bool IsInBasement(const GW::GamePos &player_pos);
 
 bool IsAtBasementSkele(const GW::GamePos &player_pos);
 
+bool InBackPatrolArea(const GW::GamePos &player_pos);
+
 bool IsRightAtChamberSkele(const GW::GamePos &player_pos);
 
 bool IsAtFusePulls(const GW::GamePos &player_pos);
