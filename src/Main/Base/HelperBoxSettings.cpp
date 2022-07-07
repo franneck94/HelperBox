@@ -1,10 +1,10 @@
-#include <Base/ChatCommands.h>
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 #include <Base/SettingsWindow.h>
 #include <Defines.h>
 #include <Features/General/AutoFollowWindow.h>
 #include <Features/General/CancelActionWindow.h>
+#include <Features/General/ChatCommands.h>
 #include <Features/Uw/DbWindow.h>
 #include <Features/Uw/DhuumStatsWindow.h>
 #include <Features/Uw/EmoWindow.h>
