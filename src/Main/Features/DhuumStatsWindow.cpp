@@ -141,7 +141,7 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
             static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000LL, eta_damage_s * 1000LL));
-        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass))
+        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F)
         {
             char buffer[32];
             FormatTime(finished_ms, 32, buffer);
@@ -200,8 +200,17 @@ void DhuumStatsWindow::UpdateRestData()
     auto needed_num_rest = NEEDED_NUM_REST[0];
     if (party_size >= 1 && party_size <= 8)
         needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
+
     const auto still_needed_rest = needed_num_rest - num_casted_rest;
-    if (rests_per_s > 0.0F)
+    if (still_needed_rest == 0 && eta_damage_s == 0.0F)
+    {
+        const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+
+        if (is_in_dhuum_fight)
+            needed_num_rest += 5;
+    }
+
+    if (still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
     else
         eta_rest_s = eta_rest_s;
