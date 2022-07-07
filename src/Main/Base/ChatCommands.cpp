@@ -19,11 +19,15 @@ void ChatCommands::Initialize()
     GW::Chat::CreateCommand(L"dhuum", ChatCommands::CmdDhuumUseSkill);
 }
 
-void ChatCommands::Update(float, const AgentLivingData &)
+void ChatCommands::Update(float, const AgentLivingData &_agents_data)
 {
     if (!IsMapReady())
+    {
+        skill_to_use.slot = 0;
         return;
+    }
 
+    agents_data = &_agents_data;
     skill_to_use.Update();
 }
 
@@ -70,11 +74,6 @@ void ChatCommands::SkillToUse::Update()
 {
     if (!slot)
         return;
-    if (IsMapReady())
-    {
-        slot = 0;
-        return;
-    }
     if ((clock() - skill_timer) / 1000.0f < skill_usage_delay)
         return;
     const auto skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
@@ -93,10 +92,13 @@ void ChatCommands::SkillToUse::Update()
     uint32_t lslot = slot - 1;
     const auto &skill = skillbar->skills[lslot];
     const GW::Skill &skilldata = *GW::SkillbarMgr::GetSkillConstantData(skill.skill_id);
-    if (skill.GetRecharge() == 0 && me_living->energy >= skilldata.energy_cost &&
-        ((skilldata.adrenaline == 0) || (skilldata.adrenaline > 0 && skill.adrenaline_a >= skilldata.adrenaline)))
+
+    const auto enough_energy = (me_living->energy * me_living->max_energy) > skilldata.energy_cost;
+    const auto enough_adrenaline =
+        (skilldata.adrenaline == 0) || (skilldata.adrenaline > 0 && skill.adrenaline_a >= skilldata.adrenaline);
+    if (skill.GetRecharge() == 0 && enough_energy && enough_adrenaline)
     {
-        GW::SkillbarMgr::UseSkill(lslot, GW::Agents::GetTargetId());
+        GW::SkillbarMgr::UseSkill(lslot);
         skill_usage_delay = skilldata.activation + skilldata.aftercast;
         skill_timer = clock();
     }
@@ -108,26 +110,23 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
         return;
 
     auto &skill_to_use = Instance().skill_to_use;
+    // const auto agents_data = Instance().agents_data;
     skill_to_use.slot = 0;
 
     if (argc < 2)
         return;
     const auto arg1 = std::wstring{argv[1]};
-    if (arg1 == L"stop" || arg1 == L"off" || arg1 == L"0")
+    if (arg1 != L"start")
         return;
 
-    auto dhuum_id = uint32_t{0};
-    auto dhuum_hp = float{1.0F};
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    if (!is_in_dhuum_fight)
-        return;
+    // auto dhuum_id = uint32_t{0};
+    // auto dhuum_hp = float{1.0F};
+    // const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+    // if (!is_in_dhuum_fight)
+    //     return;
+    // if (agents_data && DhuumFightDone(agents_data->npcs))
+    //     return;
 
-    uint32_t num = _wtoi(argv[1]);
-    if (!num || num < 1 || num > 8)
-    {
-        Log::Error("Invalid argument '%ls', please use an integer value of 1 to 8", argv[1]);
-        return;
-    }
-    skill_to_use.slot = num;
+    skill_to_use.slot = 1;
     skill_to_use.skill_usage_delay = 0.0F;
 }
