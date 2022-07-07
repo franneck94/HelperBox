@@ -6,7 +6,7 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
-#include <Actions.h>
+#include <ActionsUw.h>
 #include <AgentData.h>
 #include <Base/HelperBoxWindow.h>
 #include <PlayerData.h>

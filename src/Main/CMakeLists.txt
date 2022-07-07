@@ -3,6 +3,10 @@ file(GLOB MAIN_SOURCES
     "Base/*.cpp"
     "Features/*.h"
     "Features/*.cpp"
+    "Features/Uw/*.h"
+    "Features/Uw/*.cpp"
+    "Features/General/*.h"
+    "Features/General/*.cpp"
     "*.h"
     "*.cpp")
 

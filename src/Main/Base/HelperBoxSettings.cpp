@@ -3,13 +3,13 @@
 #include <Base/MainWindow.h>
 #include <Base/SettingsWindow.h>
 #include <Defines.h>
-#include <Features/AutoFollowWindow.h>
-#include <Features/CancelActionWindow.h>
-#include <Features/DbWindow.h>
-#include <Features/DhuumStatsWindow.h>
-#include <Features/EmoWindow.h>
-#include <Features/MainteamWindow.h>
-#include <Features/TerraWindow.h>
+#include <Features/General/AutoFollowWindow.h>
+#include <Features/General/CancelActionWindow.h>
+#include <Features/Uw/DbWindow.h>
+#include <Features/Uw/DhuumStatsWindow.h>
+#include <Features/Uw/EmoWindow.h>
+#include <Features/Uw/MainteamWindow.h>
+#include <Features/Uw/TerraWindow.h>
 
 #include <SimpleIni.h>
 

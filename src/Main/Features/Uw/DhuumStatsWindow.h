@@ -10,7 +10,7 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Actions.h>
+#include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
 #include <HelperCallbacks.h>
 #include <PlayerData.h>

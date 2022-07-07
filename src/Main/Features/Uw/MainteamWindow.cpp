@@ -12,7 +12,7 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <Actions.h>
+#include <ActionsUw.h>
 #include <Base/HelperBox.h>
 #include <GuiUtils.h>
 #include <Helper.h>

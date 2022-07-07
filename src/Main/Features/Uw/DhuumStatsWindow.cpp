@@ -17,7 +17,7 @@
 
 #include <Base/HelperBox.h>
 
-#include <Actions.h>
+#include <ActionsUw.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>

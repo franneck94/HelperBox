@@ -1,17 +1,12 @@
 #pragma once
 
-#include <array>
 #include <cstdint>
 #include <string_view>
-
-#include <GWCA/Constants/Constants.h>
-#include <GWCA/Constants/Maps.h>
-#include <GWCA/Constants/Skills.h>
-#include <GWCA/GameContainers/GamePos.h>
 
 #include <GuiConstants.h>
 #include <PlayerData.h>
 #include <SkillbarData.h>
+#include <SkillbarDataUw.h>
 #include <Types.h>
 
 class ActionABC
@@ -41,31 +36,4 @@ public:
     std::string_view text;
 
     ActionState action_state = ActionState::INACTIVE;
-};
-
-class EmoActionABC : public ActionABC
-{
-public:
-    EmoActionABC(PlayerData *p, std::string_view t, EmoSkillbarData *s) : ActionABC(p, t), skillbar(s){};
-    virtual ~EmoActionABC(){};
-
-    EmoSkillbarData *skillbar = nullptr;
-};
-
-class MesmerActionABC : public ActionABC
-{
-public:
-    MesmerActionABC(PlayerData *p, std::string_view t, MesmerSkillbarData *s) : ActionABC(p, t), skillbar(s){};
-    virtual ~MesmerActionABC(){};
-
-    MesmerSkillbarData *skillbar = nullptr;
-};
-
-class DbActionABC : public ActionABC
-{
-public:
-    DbActionABC(PlayerData *p, std::string_view t, DbSkillbarData *s) : ActionABC(p, t), skillbar(s){};
-    virtual ~DbActionABC(){};
-
-    DbSkillbarData *skillbar = nullptr;
 };
