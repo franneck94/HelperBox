@@ -24,7 +24,7 @@ bool IsAtSpawn(const GW::GamePos &player_pos)
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos)
 {
-    return IsNearToGamePos(player_pos, GW::GamePos{-2726.856F, 10239.48F, 0}, 2250.0F);
+    return IsNearToGamePos(player_pos, GW::GamePos{-2726.856F, 10239.48F, 0}, 2500.0F);
 }
 
 bool InBackPatrolArea(const GW::GamePos &player_pos)

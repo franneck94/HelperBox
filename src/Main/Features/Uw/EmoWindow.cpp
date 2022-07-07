@@ -127,6 +127,8 @@ void EmoWindow::UpdateUw()
         move_ongoing = true;
         lt_is_ready = false;
     }
+    if (move_ongoing)
+        lt_is_ready = false;
 }
 
 void EmoWindow::UpdateUwEntry()
@@ -135,12 +137,13 @@ void EmoWindow::UpdateUwEntry()
     static auto triggered_tank_bonds_at_start = false;
     static auto triggered_move_start = false;
 
-    if (GW::PartyMgr::GetPartySize() > 6)
+    if (TankIsFullteamLT())
         load_cb_triggered = false;
 
     if (load_cb_triggered)
     {
         move_idx = 0;
+        num_finished_objectives = 0U;
         move_ongoing = false;
         tank_bonding.action_state = ActionState::ACTIVE;
         load_cb_triggered = false;
@@ -662,7 +665,7 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
         return RoutineState::FINISHED;
 
-    if (GW::PartyMgr::GetPartySize() > 6 && !is_in_dhuum_room)
+    if (TankIsFullteamLT() && !is_in_dhuum_room)
         return RoutineState::FINISHED;
 
     if ((IsInBasement(player_data->pos) || IsInVale(player_data->pos)) && RoutineEscortSpirits())
@@ -671,7 +674,8 @@ RoutineState Pumping::Routine()
     if (IsAtFusePulls(player_data->pos) && RoutineLT())
         return RoutineState::FINISHED;
 
-    if (IsAtValeSpirits(player_data->pos) && !used_canthas && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
+    if (IsAtValeSpirits(player_data->pos) && GW::PartyMgr::GetPartySize() < 6 && !used_canthas &&
+        UseInventoryItem(CANTHA_STONE_ID, 1, 5))
     {
         used_canthas = true;
         return RoutineState::FINISHED;
@@ -696,7 +700,7 @@ RoutineState Pumping::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight && DhuumFightDone(agents_data->npcs))
+    if (!is_in_dhuum_fight && (DhuumFightDone(agents_data->npcs) || DhuumFightDone(agents_data->neutrals)))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;

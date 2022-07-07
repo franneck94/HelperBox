@@ -403,6 +403,10 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
         const auto dist = GW::GetDistance(player_pos, enemies[0]->pos);
         return dist > 3000.0F;
     }
+    else if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 400.0F)
+    {
+        result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{GW::Constants::ModelID::UW::BladedAatxe});
+    }
     else
     {
         result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
@@ -413,7 +417,7 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
 
 bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs)
 {
-    constexpr static auto DHUUM_SPIDER_IDS = std::array<uint32_t, 2>{1391, 1392};
+    constexpr static auto DHUUM_SPIDER_IDS = std::array<uint32_t, 3>{1390, 1391, 1392};
 
     for (const auto npc : npcs)
     {

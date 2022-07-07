@@ -101,7 +101,8 @@ public:
             return;
         }
 
-        if (already_reached_pos)
+        if (already_reached_pos &&
+            (!moves[move_idx]->is_casting_action || (can_be_finished && moves[move_idx]->is_casting_action)))
         {
             const auto last_trigger_timer_diff = TIMER_DIFF(trigger_timer_ms);
             if (last_trigger_timer_diff < MoveABC::TRIGGER_TIMER_THRESHOLD_MS)
@@ -154,6 +155,7 @@ public:
     std::string name;
     std::optional<std::function<bool()>> cb_fn = std::nullopt;
     bool is_distance_based = false;
+    bool is_casting_action = false;
 
     static constexpr long TRIGGER_TIMER_THRESHOLD_MS = 500L;
 };
@@ -237,7 +239,10 @@ public:
                       const bool _is_proceeding_move,
                       const SkillData *_skill_cb,
                       std::optional<std::function<bool()>> _cb_fn = std::nullopt)
-        : MoveABC(_x, _y, _name, _is_proceeding_move, _cb_fn), skill_cb(_skill_cb){};
+        : MoveABC(_x, _y, _name, _is_proceeding_move, _cb_fn), skill_cb(_skill_cb)
+    {
+        is_casting_action = true;
+    };
 
     bool UpdateMoveState(const PlayerData &player_data,
                          const AgentLivingData *agents_data,

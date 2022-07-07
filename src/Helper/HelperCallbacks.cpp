@@ -109,17 +109,9 @@ bool OnChatMessageLtIsReady(GW::HookStatus *, GW::Packet::StoC::PacketBase *pack
     if (!trigger_agent)
         return false;
 
-#ifndef _DEBUG
     const auto trigger_living = trigger_agent->GetAsAgentLiving();
     if (!trigger_living || trigger_living->player_number != player_number)
         return false;
-#else
-    const auto me = GW::Agents::GetPlayer();
-    if (!me)
-        return false;
-    if (me->GetAsAgentLiving()->player_number != player_number)
-        return false;
-#endif
 
     const auto message_utf8 = DataToUtf8String(message);
 

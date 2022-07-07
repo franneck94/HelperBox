@@ -127,6 +127,7 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
     if (ImGui::Begin("DhuumStatsWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
+        const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
         const auto timer_ms = TIMER_DIFF(dhuum_fight_start_time_ms);
@@ -134,10 +135,10 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
         ImGui::Separator();
         ImGui::Text("Num Rests: %u", num_casted_rest);
         ImGui::Text("Rests (per s): %0.2f", rests_per_s);
-        ImGui::Text("ETA Rest (s): %2.0f", num_casted_rest > 0 ? eta_rest_s : 0.0F);
+        ImGui::Text("ETA Rest (s): %2.0f", num_casted_rest > 0 && is_in_dhuum_fight ? eta_rest_s : 0.0F);
         ImGui::Separator();
         ImGui::Text("Damage (per s): %0.0f", damage_per_s);
-        ImGui::Text("ETA Damage (s): %3.0f", num_attacks > 0 ? eta_damage_s : 0.0F);
+        ImGui::Text("ETA Damage (s): %3.0f", num_attacks > 0 && is_in_dhuum_fight ? eta_damage_s : 0.0F);
         ImGui::Separator();
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
@@ -202,13 +203,13 @@ void DhuumStatsWindow::UpdateRestData()
     if (party_size >= 1 && party_size <= 8)
         needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
 
-    const auto still_needed_rest = needed_num_rest - num_casted_rest;
+    auto still_needed_rest = needed_num_rest - num_casted_rest;
     if (still_needed_rest == 0 && eta_damage_s == 0.0F)
     {
         const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
         if (is_in_dhuum_fight)
-            needed_num_rest += 5;
+            still_needed_rest = 5;
     }
 
     if (still_needed_rest > 0 && rests_per_s > 0.0F)
