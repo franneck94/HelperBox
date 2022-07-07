@@ -40,12 +40,18 @@ namespace
 {
 static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
+static auto lt_is_ready = false;
 }; // namespace
 
 DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skillbar, agents_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
+
+    GW::Chat::RegisterSendChatCallback(&SendChat_Entry,
+                                       [this](GW::HookStatus *status, int channel, wchar_t *message) -> void {
+                                           lt_is_ready = OnChatMessageLtIsReady(status, channel, message);
+                                       });
 
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
         &MapLoaded_Entry,
@@ -97,6 +103,13 @@ void DbWindow::UpdateUw()
     {
         moves[move_idx]->Execute();
         move_ongoing = true;
+    }
+
+    if (lt_is_ready && (moves[move_idx]->name == "Talk Lab" || moves[move_idx]->name == "Go To Dhuum 1"))
+    {
+        moves[move_idx]->Execute();
+        move_ongoing = true;
+        lt_is_ready = false;
     }
 }
 

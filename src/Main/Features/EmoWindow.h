@@ -161,6 +161,7 @@ private:
     GW::HookEntry MapLoaded_Entry;
     bool load_cb_triggered = false;
     uint32_t num_finished_objectives = 0U;
+    GW::HookEntry SendChat_Entry;
 
     Pumping pumping;
     TankBonding tank_bonding;
@@ -204,7 +205,7 @@ private:
         new Move_NoWaitAndContinue{-7980.55F, 4308.90F, "Go Basement 4"},
         new Move_WaitAndContinue{-6241.24F, 7945.73F, "Go Basement 5"},
         new Move_NoWaitAndStop{-5751.45F, 12746.52F, "Go Lab Reaper", target_reaper_fn},
-        new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "Talk Reaper", talk_reaper_fn},
+        new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "Talk Lab Reaper", talk_reaper_fn},
         new Move_NoWaitAndContinue{-5751.45F, 12746.52F, "Take UWG", take_uwg_fn},
         new Move_NoWaitAndContinue{-6035.29F, 11285.14F, "Go Keeper 1"},
         new Move_WaitAndContinue{-6511.41F, 12447.65F, "Go Keeper 2"},

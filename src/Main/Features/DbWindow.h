@@ -109,6 +109,7 @@ private:
     uint32_t num_finished_objectives = 0U;
     GW::HookEntry GenericValue_Entry;
     bool interrupted = false;
+    GW::HookEntry SendChat_Entry;
 
     Damage damage;
 
@@ -176,7 +177,7 @@ private:
         new Move_NoWaitAndContinue{9120.00F, -18432.003F, "Go Planes 1"},
         new Move_CastSkillAndContinue{9120.00F, -18432.003F, "Cast Winnow 2", &skillbar.winnow},
         new Move_CastSkillAndContinue{9120.00F, -18432.003F, "Cast EoE 6", &skillbar.eoe},
-        new Move_NoWaitAndContinue{11368.55F, -17974.64F, "Go Planes Start"},
+        new Move_NoWaitAndStop{9120.00F, -18432.003F, "Finish Planes"},
         new Move_NoWaitAndContinue{-235.05F, 18496.461F, "Go To Dhuum 1"},
         new Move_NoWaitAndContinue{-2537.51F, 19139.91F, "Go To Dhuum 2"},
         new Move_NoWaitAndContinue{-6202.59F, 18704.91F, "Go To Dhuum 3"},
