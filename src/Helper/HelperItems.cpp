@@ -67,7 +67,7 @@ GW::Item *GetBagItem(const uint32_t bag_idx, const uint32_t slot_idx)
     return item;
 }
 
-bool EquipItemExecute(const uint32_t bag_idx, const uint32_t slot_idx)
+bool EquipItem(const uint32_t bag_idx, const uint32_t slot_idx)
 {
     const auto item = GetBagItem(bag_idx, slot_idx);
     if (!item)
@@ -124,7 +124,7 @@ bool ArmorSwap(const uint32_t bag_idx, const uint32_t start_slot_idx, const bool
     }
 
     for (uint32_t offset = 0U; offset < 5U; offset++)
-        EquipItemExecute(bag_idx, start_slot_idx + offset);
+        EquipItem(bag_idx, start_slot_idx + offset);
 
     return true;
 }
@@ -137,4 +137,35 @@ bool LowArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 bool HighArmor(const uint32_t bag_idx, const uint32_t start_slot_idx)
 {
     return ArmorSwap(bag_idx, start_slot_idx, false);
+}
+
+bool UseInventoryItem(const uint32_t item_id, const size_t from_bag, const size_t to_bag)
+{
+    auto bags = GW::Items::GetBagArray();
+    if (!bags)
+        return false;
+
+    for (size_t bagIndex = from_bag; bagIndex <= to_bag; bagIndex++)
+    {
+        auto bag = bags[bagIndex];
+        if (!bag)
+            continue;
+        auto &items = bag->items;
+        if (!items.valid())
+            continue;
+
+        for (const auto item : items)
+        {
+            if (!item)
+                continue;
+
+            if (item->model_id == item_id)
+            {
+                GW::Items::UseItem(item);
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
