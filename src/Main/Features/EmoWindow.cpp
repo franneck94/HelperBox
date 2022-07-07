@@ -64,10 +64,11 @@ EmoWindow::EmoWindow()
     if (skillbar.ValidateData())
         skillbar.Load();
 
-    GW::Chat::RegisterSendChatCallback(&SendChat_Entry,
-                                       [this](GW::HookStatus *status, int channel, wchar_t *message) -> void {
-                                           lt_is_ready = OnChatMessageLtIsReady(status, channel, message);
-                                       });
+    GW::StoC::RegisterPacketCallback(&SendChat_Entry,
+                                     GAME_SMSG_CHAT_MESSAGE_LOCAL,
+                                     [this](GW::HookStatus *status, GW::Packet::StoC::PacketBase *packet) -> void {
+                                         lt_is_ready = OnChatMessageLtIsReady(status, packet, TriggerRole::LT);
+                                     });
 
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
         &MapLoaded_Entry,
