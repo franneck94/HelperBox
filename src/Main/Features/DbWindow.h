@@ -32,6 +32,7 @@ private:
 
     bool CastPiOnTarget() const;
     bool RoutineKillSkele() const;
+    bool RoutineKillEnemiesStandard() const;
     bool RoutineValeSpirits() const;
     bool RoutineDhuumRecharge() const;
     bool RoutineDhuumDamage() const;

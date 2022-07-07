@@ -92,6 +92,12 @@ void DbWindow::UpdateUw()
 {
     UpdateUwEntry();
     MoveABC::UpdatedUwMoves(player_data, agents_data, moves, move_idx, move_ongoing);
+
+    if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
+    {
+        moves[move_idx]->Execute();
+        move_ongoing = true;
+    }
 }
 
 void DbWindow::UpdateUwEntry()
@@ -173,13 +179,21 @@ bool Damage::CastPiOnTarget() const
 
 bool Damage::RoutineKillSkele() const
 {
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy))
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) || CastPiOnTarget())
         return true;
 
-    if (!player_data->target)
-        return false;
+    return false;
+}
 
-    if (CastPiOnTarget())
+bool Damage::RoutineKillEnemiesStandard() const
+{
+    const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
+
+    if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
+        return true;
+
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) ||
+        RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
         return true;
 
     return false;
@@ -194,13 +208,11 @@ bool Damage::RoutineValeSpirits() const
     if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy))
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) ||
+        RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
-        return true;
-
-    if (!found_eoe && RoutineState::FINISHED == skillbar->eoe.Cast(player_data->energy))
+    if (!found_eoe && player_data->energy >= 30U && RoutineState::FINISHED == skillbar->eoe.Cast(player_data->energy))
         return true;
 
     if (!found_winnow && RoutineState::FINISHED == skillbar->winnow.Cast(player_data->energy))
@@ -257,7 +269,7 @@ RoutineState Damage::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (!player_data->CanCast())
+    if (!player_data->CanCast() || !agents_data)
         return RoutineState::ACTIVE;
 
     if (!ActionABC::HasWaitedLongEnough())
@@ -269,18 +281,24 @@ RoutineState Damage::Routine()
     if (IsAtChamberSkele(player_data->pos) || IsAtBasementSkele(player_data->pos) ||
         IsRightAtValeHouse(player_data->pos))
     {
-        if (agents_data)
-        {
-            const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
-            if (enemies.size() == 0)
-                return RoutineState::ACTIVE;
-        }
+        const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+        if (enemies.size() == 0)
+            return RoutineState::ACTIVE;
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
             TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, GW::Constants::Range::Earshot);
 
         if (RoutineKillSkele())
             return RoutineState::FINISHED;
+    }
+
+    // If mindblades were not stucked by LT, or back patrol aggro
+    if (IsAtFusePulls(player_data->pos) || InBackPatrolArea(player_data->pos))
+    {
+        const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+        if (enemies.size() == 0)
+            return RoutineState::ACTIVE;
+        RoutineKillEnemiesStandard();
     }
 
     if (IsAtValeSpirits(player_data->pos))

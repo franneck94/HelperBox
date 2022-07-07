@@ -5,6 +5,7 @@
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
@@ -51,6 +52,8 @@ constexpr static auto ESCORT_IDS = std::array<uint32_t, 6>{GW::Constants::ModelI
                                                            GW::Constants::ModelID::UW::Escort4,
                                                            GW::Constants::ModelID::UW::Escort5,
                                                            GW::Constants::ModelID::UW::Escort6};
+constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
+constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
 EmoWindow::EmoWindow()
@@ -102,6 +105,12 @@ void EmoWindow::UpdateUw()
 {
     UpdateUwEntry();
     MoveABC::UpdatedUwMoves(player_data, agents_data, moves, move_idx, move_ongoing);
+
+    if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
+    {
+        moves[move_idx]->Execute();
+        move_ongoing = true;
+    }
 }
 
 void EmoWindow::UpdateUwEntry()
@@ -591,6 +600,7 @@ bool Pumping::DropBondsLT() const
 
 RoutineState Pumping::Routine()
 {
+    static bool used_canthas = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
 
     if (!player_data->CanCast())
@@ -623,6 +633,12 @@ RoutineState Pumping::Routine()
     if (IsAtFusePulls(player_data->pos) && RoutineLT())
         return RoutineState::FINISHED;
 
+    if (IsAtValeSpirits(player_data->pos) && !used_canthas && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
+    {
+        used_canthas = true;
+        return RoutineState::FINISHED;
+    }
+
     if (IsAtValeSpirits(player_data->pos) && RoutineCanthaGuards())
         return RoutineState::FINISHED;
 
@@ -647,9 +663,14 @@ RoutineState Pumping::Routine()
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;
+        used_canthas = false;
     }
 
     if (!is_in_dhuum_fight || !dhuum_id)
+        return RoutineState::FINISHED;
+
+    const auto current_morale = GW::GameContext::instance()->world->morale;
+    if (current_morale <= 90 && UseInventoryItem(COOKIE_ID, 1, 5))
         return RoutineState::FINISHED;
 
     if (RoutineWisdom())
