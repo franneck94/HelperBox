@@ -211,6 +211,9 @@ bool Pumping::RoutineWhenInRangeBondLT() const
     if (!lt_agent)
         return false;
 
+    if (player_data->energy < 40U)
+        return false;
+
     const auto dist = GW::GetDistance(player_data->pos, lt_agent->pos);
     if (dist > GW::Constants::Range::Spellcast)
         return false;
