@@ -153,6 +153,6 @@ void DrawMap(const GW::GamePos &player_pos,
             PlotEnemies(player_pos, filtered_livings, "enemyInside", ImVec4{1.0, 0.0, 0.0, 1.0});
             ImPlot::EndPlot();
         }
-        ImGui::End();
     }
+    ImGui::End();
 }
