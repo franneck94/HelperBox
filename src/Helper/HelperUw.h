@@ -105,3 +105,5 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
 bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos);
 
 bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs);
+
+uint32_t GetUwTriggerRoleId(const TriggerRole role);

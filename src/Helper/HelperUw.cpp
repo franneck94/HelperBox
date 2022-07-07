@@ -436,3 +436,29 @@ bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs)
 
     return false;
 }
+
+uint32_t GetUwTriggerRoleId(const TriggerRole role)
+{
+    uint32_t trigger_id = 0U;
+
+    switch (role)
+    {
+    case TriggerRole::LT:
+    {
+        trigger_id = GetTankId();
+        break;
+    }
+    case TriggerRole::EMO:
+    {
+        trigger_id = GetEmoId();
+        break;
+    }
+    case TriggerRole::DB:
+    {
+        trigger_id = GetDhuumBitchId();
+        break;
+    }
+    }
+
+    return trigger_id;
+}
