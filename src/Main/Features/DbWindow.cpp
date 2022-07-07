@@ -115,7 +115,7 @@ void DbWindow::UpdateUw()
 
 void DbWindow::UpdateUwEntry()
 {
-    if (GW::PartyMgr::GetPartySize() >= 7)
+    if (GW::PartyMgr::GetPartySize() > 6)
         load_cb_triggered = false;
 
     if (load_cb_triggered)
@@ -288,7 +288,7 @@ RoutineState Damage::Routine()
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (GW::PartyMgr::GetPartySize() >= 7 && !is_in_dhuum_room)
+    if (GW::PartyMgr::GetPartySize() > 6 && !is_in_dhuum_room)
         return RoutineState::FINISHED;
 
     if (IsAtChamberSkele(player_data->pos) || IsAtBasementSkele(player_data->pos) ||

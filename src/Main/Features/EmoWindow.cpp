@@ -133,7 +133,7 @@ void EmoWindow::UpdateUwEntry()
     static auto triggered_tank_bonds_at_start = false;
     static auto triggered_move_start = false;
 
-    if (GW::PartyMgr::GetPartySize() >= 7)
+    if (GW::PartyMgr::GetPartySize() > 6)
         load_cb_triggered = false;
 
     if (load_cb_triggered)
@@ -660,7 +660,7 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
         return RoutineState::FINISHED;
 
-    if (GW::PartyMgr::GetPartySize() >= 7 && !is_in_dhuum_room)
+    if (GW::PartyMgr::GetPartySize() > 6 && !is_in_dhuum_room)
         return RoutineState::FINISHED;
 
     if ((IsInBasement(player_data->pos) || IsInVale(player_data->pos)) && RoutineEscortSpirits())
