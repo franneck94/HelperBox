@@ -67,21 +67,10 @@ private:
 class TankBonding : public EmoActionABC
 {
 public:
-    TankBonding(PlayerData *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s)
-    {
-        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-            &GenericValue_Entry,
-            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
-                if (action_state == ActionState::ACTIVE && player_data->SkillStoppedCallback(packet))
-                    interrupted = true;
-            });
-    }
+    TankBonding(PlayerData *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s){};
 
     RoutineState Routine() override;
     void Update() override;
-
-    bool interrupted = false;
-    GW::HookEntry GenericValue_Entry;
 };
 
 class EmoWindow : public HelperBoxWindow
