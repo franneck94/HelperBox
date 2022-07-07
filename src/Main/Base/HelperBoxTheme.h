@@ -2,6 +2,9 @@
 
 #include <Base/HelperBoxUIElement.h>
 
+#include <SimpleIni.h>
+#include <imgui.h>
+
 class HelperBoxTheme : public HelperBoxUIElement
 {
     HelperBoxTheme();

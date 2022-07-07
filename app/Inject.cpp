@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "Inject.h"
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -35,13 +37,6 @@ struct InjectProcess
 
 static bool FindTopMostProcess(std::vector<InjectProcess> &processes, size_t *TopMostIndex)
 {
-    if (processes.size() >= 250)
-    {
-        fprintf(stderr,
-                "Process::FindTopMostProcess is O(n^2) where n is the number of processes."
-                "Consider rewriting the function to have a better scaling for large number of processes.\n");
-    }
-
     HWND hWndIt = GetTopWindow(nullptr);
     if (hWndIt == nullptr)
     {
@@ -54,8 +49,6 @@ static bool FindTopMostProcess(std::vector<InjectProcess> &processes, size_t *To
         DWORD WindowPid;
         if (GetWindowThreadProcessId(hWndIt, &WindowPid) == 0)
         {
-            // @Cleanup:
-            // Not clear whether this is the return value hold an error, so we just log.
             fprintf(stderr, "GetWindowThreadProcessId returned 0\n");
             continue;
         }

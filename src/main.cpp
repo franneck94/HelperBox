@@ -2,7 +2,7 @@
 
 #include <GWCA/Utilities/Scanner.h>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
 #include <Logger.h>
 
 DWORD WINAPI init(HMODULE hModule) noexcept
@@ -21,7 +21,7 @@ DWORD WINAPI init(HMODULE hModule) noexcept
 
     GW::Scanner::Initialize();
 
-    DWORD **found = (DWORD **)GW::Scanner::Find("\xA3\x00\x00\x00\x00\xFF\x75\x0C\xC7\x05", "x????xxxxx", +1);
+    auto found = (DWORD **)GW::Scanner::Find("\xA3\x00\x00\x00\x00\xFF\x75\x0C\xC7\x05", "x????xxxxx", +1);
     if (!(found && *found))
     {
         MessageBoxA(0,
@@ -33,7 +33,7 @@ DWORD WINAPI init(HMODULE hModule) noexcept
 
     printf("[SCAN] is_ingame = %p\n", found);
 
-    DWORD *is_ingame = *found;
+    auto is_ingame = *found;
     while (*is_ingame == 0)
     {
         Sleep(100);
@@ -51,7 +51,7 @@ BOOL WINAPI DllMain(_In_ HMODULE _HDllHandle, _In_ DWORD _Reason, _In_opt_ LPVOI
     DisableThreadLibraryCalls(_HDllHandle);
     if (_Reason == DLL_PROCESS_ATTACH)
     {
-        HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init, _HDllHandle, 0, 0);
+        auto hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)init, _HDllHandle, 0, 0);
 
         if (hThread != NULL)
             CloseHandle(hThread);

@@ -1,8 +1,6 @@
-#include "stdafx.h"
-
 #include <cstdint>
 
-#include <HelperBox.h>
+#include <Base/HelperBox.h>
 
 #include <imgui.h>
 
@@ -17,14 +15,6 @@ void MainWindow::LoadSettings(CSimpleIni *ini)
 void MainWindow::SaveSettings(CSimpleIni *ini)
 {
     HelperBoxWindow::SaveSettings(ini);
-}
-
-void MainWindow::DrawSettingInternal()
-{
-}
-
-void MainWindow::RegisterSettingsContent()
-{
 }
 
 void MainWindow::RefreshButtons()

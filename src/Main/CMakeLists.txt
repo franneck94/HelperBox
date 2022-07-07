@@ -1,6 +1,12 @@
 file(GLOB MAIN_SOURCES
     "Base/*.h"
     "Base/*.cpp"
+    "Features/*.h"
+    "Features/*.cpp"
+    "Features/Uw/*.h"
+    "Features/Uw/*.cpp"
+    "Features/General/*.h"
+    "Features/General/*.cpp"
     "*.h"
     "*.cpp")
 
@@ -14,8 +20,9 @@ target_link_libraries(MainDll PUBLIC
     simpleini
     fmt::fmt
     UtilsDll
-    HelperDll
-    gwca)
+    TypesDll
+    DataDll
+    HelperDll)
 
 if (${ENABLE_WARNINGS})
     target_set_warnings(TARGET MainDll ENABLE ON AS_ERROR OFF)

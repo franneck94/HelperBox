@@ -1,6 +1,8 @@
-#include "stdafx.h"
-
 #include <Base/HelperBoxWindow.h>
+
+#include <imgui.h>
+
+#include "HelperBoxWindow.h"
 
 ImGuiWindowFlags HelperBoxWindow::GetWinFlags(ImGuiWindowFlags flags) const
 {

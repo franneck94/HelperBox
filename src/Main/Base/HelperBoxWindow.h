@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Base/HelperBox.h>
 #include <Base/HelperBoxUIElement.h>
 #include <Defines.h>
-#include <HelperBox.h>
+
+#include <imgui.h>
 
 class HelperBoxWindow : public HelperBoxUIElement
 {

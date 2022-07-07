@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
@@ -10,6 +8,13 @@
 
 namespace
 {
+static constexpr auto HELPERBOX_CHAN = GW::Chat::Channel::CHANNEL_GWCA2;
+static constexpr auto HELPERBOX_SENDER = L"HelperBox++";
+static constexpr auto HELPERBOX_SENDER_COL = 0x00ccff;
+static constexpr auto HELPERBOX_WARNING_COL = 0xFFFF44;
+static constexpr auto HELPERBOX_ERROR_COL = 0xFF4444;
+static constexpr auto HELPERBOX_INFO_COL = 0xFFFFFF;
+
 FILE *logfile = nullptr;
 FILE *stdout_file = nullptr;
 FILE *stderr_file = nullptr;
@@ -33,11 +38,12 @@ static void GWCALogHandler(void *, GW::LogLevel, const char *msg, const char *, 
 bool Log::InitializeLog()
 {
     logfile = stdout;
+#ifdef _DEBUG
     AllocConsole();
     freopen_s(&stdout_file, "CONOUT$", "w", stdout);
     freopen_s(&stderr_file, "CONOUT$", "w", stderr);
     SetConsoleTitle("HelperBox Debug Console");
-
+#endif
     GW::RegisterLogHandler(GWCALogHandler, nullptr);
     return true;
 }
@@ -131,20 +137,7 @@ static void _chatlog(LogType log_type, const wchar_t *message)
         delete[] to_send;
     });
 
-    const wchar_t *c = [](LogType log_type) -> const wchar_t * {
-        switch (log_type)
-        {
-        case LogType::LogType_Info:
-            return L"Info";
-        case LogType::LogType_Warning:
-            return L"Warning";
-        case LogType::LogType_Error:
-            return L"Error";
-        default:
-            return L"";
-        }
-    }(log_type);
-    Log::LogW(L"[%s] %s\n", c, message);
+    Log::LogW(L"[HB++] %s\n", message);
 }
 
 static void _vchatlog(LogType log_type, const char *format, va_list argv)

@@ -1,10 +1,8 @@
-#include "stdafx.h"
-
 #include <string>
 #include <unordered_map>
 
+#include <Base/HelperBox.h>
 #include <Base/HelperBoxModule.h>
-#include <HelperBox.h>
 
 namespace
 {

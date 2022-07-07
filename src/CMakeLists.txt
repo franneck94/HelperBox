@@ -1,4 +1,6 @@
 add_subdirectory(Utils)
+add_subdirectory(Types)
+add_subdirectory(Data)
 add_subdirectory(Helper)
 add_subdirectory(Main)
 
@@ -10,6 +12,8 @@ target_compile_definitions(HelperBoxDll PRIVATE "_USRDLL")
 target_compile_options(HelperBoxDll PRIVATE /ZI)
 target_link_libraries(HelperBoxDll PRIVATE
     UtilsDll
+    TypesDll
+    DataDll
     HelperDll
     MainDll
     impl

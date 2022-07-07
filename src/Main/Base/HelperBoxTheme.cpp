@@ -1,17 +1,18 @@
-#include "stdafx.h"
-
 #include <filesystem>
-
-#include <imgui.h>
-
-#include <GWCA/Managers/RenderMgr.h>
 
 #include <Logger.h>
 #include <Path.h>
 
+#include <SimpleIni.h>
+#include <imgui.h>
+#include <imgui_internal.h>
+
 #include "HelperBoxTheme.h"
 
-#define WindowPositionsFilename L"Layout.ini"
+namespace
+{
+static constexpr auto WindowPositionsFilename = L"Layout.ini";
+};
 
 HelperBoxTheme::HelperBoxTheme()
 {
@@ -85,13 +86,7 @@ CSimpleIni *HelperBoxTheme::GetLayoutIni()
     std::wstring filename = GetPath(WindowPositionsFilename);
 
     if (std::filesystem::exists(filename.c_str()))
-    {
         windows_ini->LoadFile(filename.c_str());
-    }
-    else
-    {
-        Log::LogW(L"File %s doesn't exist.", filename.c_str());
-    }
 
     return windows_ini;
 }

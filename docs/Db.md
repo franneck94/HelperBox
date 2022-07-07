@@ -1,6 +1,6 @@
 # EMO Helper
 
-The window will only be rendered if you are on an Ritualist/Ranger or Dervish/Ranger.
+The window will only be rendered if you are on an Rit/R or D/R.
 
 - Skill Routines:
     - At Chamber and Basement Skele
@@ -9,6 +9,7 @@ The window will only be rendered if you are on an Ritualist/Ranger or Dervish/Ra
     - At Dhuum Fight
 
 - Move-To Feature:
+    - Auto moving at instance load is only enabled for low-man teams (less than 7 player)
     - Pre-defined set of positions, like goto Lab Reaper, etc.
     - Move-to button has the name of the next position
     - Most position movements are executed like a bot, only the following need to be triggered

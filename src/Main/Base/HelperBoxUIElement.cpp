@@ -1,9 +1,8 @@
-#include "stdafx.h"
+#include <Base/HelperBox.h>
+#include <Defines.h>
 
 #include <imgui.h>
-
-#include <Defines.h>
-#include <HelperBox.h>
+#include <imgui_internal.h>
 
 #include "HelperBoxUIElement.h"
 
