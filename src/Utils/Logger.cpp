@@ -8,7 +8,7 @@
 
 namespace
 {
-static constexpr auto HELPERBOX_CHAN = GW::Chat::Channel::CHANNEL_GWCA3;
+static constexpr auto HELPERBOX_CHAN = GW::Chat::Channel::CHANNEL_GWCA2;
 static constexpr auto HELPERBOX_SENDER = L"HelperBox++";
 static constexpr auto HELPERBOX_SENDER_COL = 0x00ccff;
 static constexpr auto HELPERBOX_WARNING_COL = 0xFFFF44;

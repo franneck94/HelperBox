@@ -208,8 +208,10 @@ void TerraWindow::Update(float, const AgentLivingData &agents_data)
         if (dist < GW::Constants::Range::Earshot && living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
         {
             player_data.ChangeTarget(living->agent_id);
+#ifdef _DEBUG
             if (player_data.living->GetIsIdle() && player_data.target)
                 AttackAgent(player_data.target);
+#endif
         }
     }
 }
