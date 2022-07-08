@@ -1,5 +1,6 @@
 #include <string>
 
+#include <GWCA/Context/CharContext.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 
@@ -104,13 +105,25 @@ void ChatCommands::SkillToUse::Update()
     }
 }
 
+static float GetProgressValue()
+{
+    const auto c = GW::CharContext::instance();
+
+    if (!c || !c->progress_bar)
+        return 0.0F;
+
+    return c->progress_bar->progress;
+}
+
 void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 {
     if (!IsMapReady())
         return;
 
     auto &skill_to_use = Instance().skill_to_use;
-    // const auto livings_data = Instance().livings_data;
+    const auto livings_data = Instance().livings_data;
+
+    skill_to_use.skill_usage_delay = 0.0F;
     skill_to_use.slot = 0;
 
     if (argc < 2)
@@ -119,14 +132,19 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
     if (arg1 != L"start")
         return;
 
-    // auto dhuum_id = uint32_t{0};
-    // auto dhuum_hp = float{1.0F};
-    // const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    // if (!is_in_dhuum_fight)
-    //     return;
-    // if (livings_data && DhuumFightDone(livings_data->npcs))
-    //     return;
+    const auto dhuum_agent = GetDhuumAgent();
+    if (!dhuum_agent)
+        return;
 
     skill_to_use.slot = 1;
-    skill_to_use.skill_usage_delay = 0.0F;
+
+    const auto progress_perc = GetProgressValue();
+    if (progress_perc > 0.99F)
+        skill_to_use.slot = 5;
+
+    if (!livings_data)
+        return;
+    const auto dhuum_fight_done = DhuumFightDone(livings_data->npcs) || DhuumFightDone(livings_data->neutrals);
+    if (dhuum_fight_done)
+        skill_to_use.slot = 0;
 }

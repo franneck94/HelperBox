@@ -171,11 +171,8 @@ bool IsMesmerTerra(const DataPlayer &player_data)
     return !IsLT(player_data);
 }
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
+const GW::Agent *GetDhuumAgent()
 {
-    if (!IsUw())
-        return false;
-
     const auto agents_array = GW::Agents::GetAgentArray();
     const GW::Agent *dhuum_agent = nullptr;
 
@@ -185,7 +182,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-        if (!living || living->allegiance != GW::Constants::Allegiance::Enemy)
+        if (!living)
             continue;
 
         if (living->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
@@ -195,6 +192,15 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
         }
     }
 
+    return dhuum_agent;
+}
+
+bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
+{
+    if (!IsUw())
+        return false;
+
+    const auto dhuum_agent = GetDhuumAgent();
     if (!dhuum_agent)
         return false;
 

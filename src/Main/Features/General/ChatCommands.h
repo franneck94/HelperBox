@@ -43,7 +43,7 @@ public:
     }
 
     void Initialize() override;
-    void Update(float delta, const AgentLivingData &) override;
+    void Update(float delta, const AgentLivingData &livings_data) override;
 
     static void CmdHB(const wchar_t *message, int argc, LPWSTR *argv);
     static void CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv);

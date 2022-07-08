@@ -32,6 +32,8 @@ bool IsRangerTerra(const DataPlayer &player_data);
 
 bool IsMesmerTerra(const DataPlayer &player_data);
 
+const GW::Agent *GetDhuumAgent();
+
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
 
 bool TankIsFullteamLT();
