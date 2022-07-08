@@ -142,7 +142,7 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
         ImGui::Separator();
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
-            static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000LL, eta_damage_s * 1000LL));
+            static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
         if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F)
         {
             char buffer[32];
@@ -204,16 +204,13 @@ void DhuumStatsWindow::UpdateRestData()
         needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
 
     auto still_needed_rest = needed_num_rest - num_casted_rest;
-    if (still_needed_rest == 0 && eta_damage_s == 0.0F)
-    {
-        const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-
-        if (is_in_dhuum_fight)
-            still_needed_rest = 5;
-    }
+    if (still_needed_rest == 0 && eta_damage_s == 0.0F && IsInDhuumFight(&dhuum_id, &dhuum_hp))
+        still_needed_rest = 5;
 
     if (still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
+    else if (still_needed_rest == 0)
+        eta_rest_s = 0.0F;
     else
         eta_rest_s = eta_rest_s;
 }
