@@ -9,11 +9,9 @@ The window will only be rendered if you are on an Rit/R or D/R.
     - At Dhuum Fight
 
 - Move-To Feature:
-    - Auto moving at instance load is only enabled for low-man teams (less than 7 player)
+    - Auto moving at instance load is only enabled for Solo LT tactics
     - Pre-defined set of positions, like goto Lab Reaper, etc.
-    - Move-to button has the name of the next position
-    - Most position movements are executed like a bot, only the following need to be triggered
+    - Most position movements are executed automatically
+    - The following position movements are triggered by *HM ping* of the LT
         - From Spawn to Start Movement
         - Take Quests at Lab Reaper
-        - From Vale House to Vale Spirits
-    - Below the move-to button there is the *Next Pos.* and *Prev Pos.* button to circle in the list of positions

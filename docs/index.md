@@ -3,35 +3,29 @@
 This software is based on the GWCA API and has some utilities for (low-man) UWSC.
 
 If you want to use ToolBox++ in parallel, you have to start Toolbox **before** starting this HelperBox.  
-You may need to launch the HelperBox.exe as admin.  
+You *may* need to launch the HelperBox.exe as admin.  
 
-Note: Most windows are only displayed in Embark Beach and in the Underworld.
+Note: Thw UW Helper Windows are only displayed in Embark Beach and in the Underworld.
 
 ## Features
 
 ### UW Helper
 
-- Terra
+- Ranger Helper
     - Ranger/Assasin
-    - Mesmer/Elementalist
-- Emo
+- Emo Helper
     - Elementalist/Monk
-- Dhuum and Vale Bitch
+- Dhuum and Vale Bitch Helper
   - Ritualist/Ranger
   - Dervish/Ranger
-- Mainteam (Mesmer)
+- Mesmer Helper
     - Mesmer/Assassin
     - Mesmer/Elementalist
+    - Mesmer/Ranger
 
 For a detailed description:
 
 - For EMO see [here](./Emo.md)
-- For Mainteam Mesmer see [here](./Mainteam.md)
-- For Terra see [here](./Terra.md)
+- For Mesmer see [here](./Mesmer.md)
+- For Ranger see [here](./Ranger.md)
 - For DB see [here](./Db.md)
-
-### Auto-Follow Button
-
-- If it is active (button is green) the targeted player is followed
-    - Note: Stucks are **not** detected
-- To deactivate, just click again on the button
