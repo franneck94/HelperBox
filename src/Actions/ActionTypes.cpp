@@ -1,4 +1,4 @@
-#include "Types.h"
+#include "ActionTypes.h"
 
 ActionState StateNegation(const ActionState state)
 {

@@ -16,7 +16,6 @@
 
 #include <DataSkill.h>
 #include <HelperCallbacks.h>
-#include <Types.h>
 
 template <uint32_t N>
 class SkillbarDataABC

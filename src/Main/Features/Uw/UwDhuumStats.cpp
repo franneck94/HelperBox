@@ -17,6 +17,7 @@
 
 #include <Base/HelperBox.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <DataPlayer.h>
 #include <GuiUtils.h>
@@ -24,7 +25,6 @@
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
-#include <Types.h>
 
 #include "UwDhuumStats.h"
 

@@ -3,11 +3,9 @@
 #include <cstdint>
 #include <string_view>
 
+#include <ActionTypes.h>
 #include <DataPlayer.h>
-#include <DataSkillbar.h>
-#include <DataSkillbarUw.h>
 #include <GuiConstants.h>
-#include <Types.h>
 
 class ActionABC
 {

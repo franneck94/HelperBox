@@ -12,10 +12,10 @@
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
 #include <DataSkill.h>
-#include <Types.h>
 
 bool CanMove();
 
@@ -146,6 +146,12 @@ uint32_t TargetClosestNpcById(DataPlayer &player_data, const std::vector<GW::Age
 std::vector<GW::AgentLiving *> FilterAgentsByRange(const std::vector<GW::AgentLiving *> &livings,
                                                    const DataPlayer &player_data,
                                                    const float dist_threshold = GW::Constants::Range::Earshot);
+
+struct PlayerMapping
+{
+    uint32_t id;
+    uint32_t party_idx;
+};
 
 bool GetPartyMembers(std::vector<PlayerMapping> &party_members);
 

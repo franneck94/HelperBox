@@ -10,13 +10,14 @@
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/GameContainers/GamePos.h>
 
+#include <ActionsBase.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
 #include <DataSkillbar.h>
 #include <Helper.h>
 #include <Logger.h>
+#include <MathUtils.h>
 #include <Timer.h>
-#include <Types.h>
 
 class TriggerABC
 {

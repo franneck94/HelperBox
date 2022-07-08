@@ -10,7 +10,7 @@
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <DataSkillbar.h>
 #include <Helper.h>
 #include <HelperAgents.h>

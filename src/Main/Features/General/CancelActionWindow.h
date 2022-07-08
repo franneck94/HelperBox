@@ -6,9 +6,8 @@
 
 #include <Base/HelperBoxWindow.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <DataPlayer.h>
-#include <Types.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>

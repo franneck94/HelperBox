@@ -1,5 +1,5 @@
 add_subdirectory(Utils)
-add_subdirectory(Types)
+add_subdirectory(Actions)
 add_subdirectory(Data)
 add_subdirectory(Helper)
 add_subdirectory(Main)

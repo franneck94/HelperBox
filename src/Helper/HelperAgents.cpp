@@ -16,11 +16,11 @@
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
 #include <DataPlayer.h>
 #include <DataSkill.h>
 #include <Helper.h>
 #include <HelperMaps.h>
-#include <Types.h>
 
 #include "HelperAgents.h"
 

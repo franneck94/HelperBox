@@ -7,16 +7,17 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include <ActionsBase.h>
+#include <ActionsMove.h>
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperAgents.h>
 #include <HelperItems.h>
 #include <HelperUw.h>
-#include <Move.h>
-#include <Types.h>
 
 #include "UwHelperBase.h"
 
@@ -80,7 +81,7 @@ public:
 
     const char *Name() const override
     {
-        return "UwEmo";
+        return "";
     }
 
     void Initialize() override

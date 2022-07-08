@@ -3,7 +3,7 @@
 #include <GWCA/Managers/StoCMgr.h>
 #include <GWCA/Packets/StoC.h>
 
-#include <Types.h>
+#include <ActionTypes.h>
 
 bool ExplorableLoadCallback(GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet);
 

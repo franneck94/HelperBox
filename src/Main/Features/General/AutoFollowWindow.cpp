@@ -8,14 +8,13 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/AgentMgr.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
 #include <MathUtils.h>
-#include <Types.h>
 
 #include <imgui.h>
 

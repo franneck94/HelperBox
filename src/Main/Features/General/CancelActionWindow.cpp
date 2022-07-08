@@ -9,10 +9,9 @@
 
 #include <Base/HelperBox.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Types.h>
 
 #include "CancelActionWindow.h"
 

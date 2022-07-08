@@ -6,15 +6,14 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
+#include <ActionsMove.h>
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <HelperCallbacks.h>
 #include <HelperUw.h>
-#include <Move.h>
-#include <Types.h>
 
 #include "UwHelperBase.h"
 

@@ -11,6 +11,7 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
@@ -21,7 +22,6 @@
 #include <HelperUw.h>
 #include <MathUtils.h>
 #include <Timer.h>
-#include <Types.h>
 
 #include <fmt/format.h>
 

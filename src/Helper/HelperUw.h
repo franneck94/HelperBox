@@ -3,12 +3,12 @@
 #include <array>
 #include <cstdint>
 
+#include <ActionsBase.h>
+#include <ActionsMove.h>
 #include <ActionsUw.h>
 #include <DataPlayer.h>
 #include <Logger.h>
 #include <MathUtils.h>
-#include <Move.h>
-#include <Types.h>
 
 bool UwHelperActivationConditions();
 

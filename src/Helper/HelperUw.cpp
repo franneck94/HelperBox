@@ -9,12 +9,12 @@
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
 #include <DataPlayer.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
-#include <Types.h>
 
 #include "HelperUw.h"
 

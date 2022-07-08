@@ -4,10 +4,9 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <Base/HelperBoxWindow.h>
 #include <DataPlayer.h>
-#include <Types.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
