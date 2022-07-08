@@ -125,12 +125,12 @@ void UwRanger::Draw(IDirect3DDevice9 *)
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
+    if (!IsRangerTerra(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("UwRanger", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
         auto_target.Draw(ImVec2(width, 35.0F));

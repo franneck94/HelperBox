@@ -121,6 +121,14 @@ bool IsDhuumBitch(const DataPlayer &player_data)
             player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
+bool IsUwMesmer(const DataPlayer &player_data)
+{
+    return (player_data.primary == GW::Constants::Profession::Mesmer &&
+            (player_data.secondary == GW::Constants::Profession::Ranger ||
+             player_data.secondary == GW::Constants::Profession::Elementalist ||
+             player_data.secondary == GW::Constants::Profession::Assassin));
+}
+
 bool IsSpiker(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Mesmer &&

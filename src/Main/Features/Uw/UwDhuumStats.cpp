@@ -142,9 +142,9 @@ void UwDhuumStats::Draw(IDirect3DDevice9 *)
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(170.0F, 175.0F), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(150.0F, 175.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("UwDhuumStats", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
         const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);

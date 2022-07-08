@@ -57,7 +57,7 @@ public:
 
     const char *Name() const override
     {
-        return "DbWindow";
+        return "UwDhuumBitch";
     }
 
     void Initialize() override

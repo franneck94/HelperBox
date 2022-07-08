@@ -80,7 +80,7 @@ public:
 
     const char *Name() const override
     {
-        return "EmoWindow";
+        return "UwEmo";
     }
 
     void Initialize() override

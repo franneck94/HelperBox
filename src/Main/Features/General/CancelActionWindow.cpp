@@ -27,7 +27,7 @@ void CancelActionWindow::Draw(IDirect3DDevice9 *)
 
     ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("CancelActionWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoDecoration))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoDecoration))
     {
         const auto width = ImGui::GetWindowWidth();
         if (ImGui::Button("Cancel Action", ImVec2(width, 35.0F)))

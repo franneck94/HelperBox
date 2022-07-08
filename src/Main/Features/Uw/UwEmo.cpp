@@ -68,16 +68,15 @@ void UwEmo::Draw(IDirect3DDevice9 *)
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("UwEmo", nullptr, GetWinFlags()))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
         emo_routinme.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
             DrawMovingButtons(moves, move_ongoing, move_idx);
     }
-
     ImGui::End();
 
 #ifdef _DEBUG
@@ -123,8 +122,11 @@ void UwEmo::UpdateUwEntry()
         move_ongoing = false;
     }
 
-    if (TankIsFullteamLT())
+    if (load_cb_triggered && !TankIsSoloLT())
+    {
+        Log::Warning("No Solo LT found. Deactivate auto move.");
         load_cb_triggered = false;
+    }
 
     if (load_cb_triggered)
     {

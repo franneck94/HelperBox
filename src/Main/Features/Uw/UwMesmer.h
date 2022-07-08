@@ -29,7 +29,7 @@ public:
 
     const char *Name() const override
     {
-        return "MainteamWindow";
+        return "UwMesmer";
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;

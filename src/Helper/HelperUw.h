@@ -22,6 +22,8 @@ bool IsEmo(const DataPlayer &player_data);
 
 bool IsDhuumBitch(const DataPlayer &player_data);
 
+bool IsUwMesmer(const DataPlayer &player_data);
+
 bool IsSpiker(const DataPlayer &player_data);
 
 bool IsLT(const DataPlayer &player_data);

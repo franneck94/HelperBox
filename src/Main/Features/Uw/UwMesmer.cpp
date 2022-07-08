@@ -89,12 +89,12 @@ void UwMesmer::Draw(IDirect3DDevice9 *)
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsSpiker(player_data) && !IsLT(player_data))
+    if (!IsUwMesmer(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("UwMesmer", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
 

@@ -55,7 +55,7 @@ void UwDhuumBitch::Draw(IDirect3DDevice9 *)
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("UwDhuumBitch", nullptr, GetWinFlags()))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
         db_routinme.Draw();
         DrawMovingButtons(moves, move_ongoing, move_idx);

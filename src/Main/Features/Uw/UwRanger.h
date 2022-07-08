@@ -37,7 +37,7 @@ public:
 
     const char *Name() const override
     {
-        return "TerraWindow";
+        return "UwRanger";
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
