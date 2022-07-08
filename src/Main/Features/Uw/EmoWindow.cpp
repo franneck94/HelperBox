@@ -58,31 +58,11 @@ constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : player_data({}), skillbar({}), pumping(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data),
+    : UwHelperWindowABC(), skillbar({}), pumping(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data),
       tank_bonding(&player_data, &skillbar)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
-
-    GW::StoC::RegisterPacketCallback(&SendChat_Entry,
-                                     GAME_SMSG_CHAT_MESSAGE_LOCAL,
-                                     [this](GW::HookStatus *status, GW::Packet::StoC::PacketBase *packet) -> void {
-                                         lt_is_ready = OnChatMessageLtIsReady(status, packet, TriggerRole::LT);
-                                     });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
-        &MapLoaded_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-            load_cb_triggered = ExplorableLoadCallback(status, packet);
-            num_finished_objectives = 0U;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
-        &ObjectiveDone_Entry,
-        [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
-            ++num_finished_objectives;
-            Log::Info("Finished Objective : %u, Num objectives: %u", packet->objective_id, num_finished_objectives);
-        });
 };
 
 void EmoWindow::Draw(IDirect3DDevice9 *)
@@ -119,9 +99,11 @@ void EmoWindow::UpdateUw()
         move_ongoing = true;
     }
 
-    if (lt_is_ready && !move_ongoing &&
+    const auto is_hm_trigger_move =
         (moves[move_idx]->name == "Talk Lab Reaper" || moves[move_idx]->name == "Go Wastes 1" ||
-         moves[move_idx]->name == "Go To Dhuum 1"))
+         moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go Keeper 3" ||
+         moves[move_idx]->name == "Go Keeper 4/5" || moves[move_idx]->name == "Go Lab 1");
+    if (lt_is_ready && !move_ongoing && is_hm_trigger_move)
     {
         moves[move_idx]->Execute();
         move_ongoing = true;

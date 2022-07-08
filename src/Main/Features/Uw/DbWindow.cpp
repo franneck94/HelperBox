@@ -43,37 +43,10 @@ static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
 }; // namespace
 
-DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skillbar, agents_data)
+DbWindow::DbWindow() : UwHelperWindowABC(), skillbar({}), damage(&player_data, &skillbar, agents_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
-
-    GW::StoC::RegisterPacketCallback(&SendChat_Entry,
-                                     GAME_SMSG_CHAT_MESSAGE_LOCAL,
-                                     [this](GW::HookStatus *status, GW::Packet::StoC::PacketBase *packet) -> void {
-                                         lt_is_ready = OnChatMessageLtIsReady(status, packet, TriggerRole::LT);
-                                     });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
-        &MapLoaded_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-            load_cb_triggered = ExplorableLoadCallback(status, packet);
-            num_finished_objectives = 0U;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-        &GenericValue_Entry,
-        [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
-            if (move_ongoing && player_data.SkillStoppedCallback(packet))
-                interrupted = true;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
-        &ObjectiveDone_Entry,
-        [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
-            ++num_finished_objectives;
-            Log::Info("Finished Objective : %u, Num objectives: %u", packet->objective_id, num_finished_objectives);
-        });
 };
 
 void DbWindow::Draw(IDirect3DDevice9 *)
@@ -106,8 +79,8 @@ void DbWindow::UpdateUw()
         move_ongoing = true;
     }
 
-    if (lt_is_ready && !move_ongoing &&
-        (moves[move_idx]->name == "Talk Lab" || moves[move_idx]->name == "Go To Dhuum 1"))
+    const auto is_hm_trigger_move = (moves[move_idx]->name == "Talk Lab" || moves[move_idx]->name == "Go To Dhuum 1");
+    if (lt_is_ready && !move_ongoing && is_hm_trigger_move)
     {
         moves[move_idx]->Execute();
         move_ongoing = true;

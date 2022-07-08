@@ -16,6 +16,8 @@
 #include <PlayerData.h>
 #include <Types.h>
 
+#include "UwHelperWindowBase.h"
+
 #include <SimpleIni.h>
 #include <imgui.h>
 
@@ -41,7 +43,7 @@ public:
     const AgentLivingData *agents_data = nullptr;
 };
 
-class DbWindow : public HelperBoxWindow
+class DbWindow : public HelperBoxWindow, public UwHelperWindowABC
 {
 public:
     DbWindow();
@@ -98,18 +100,8 @@ private:
     // Settings
     bool show_debug_map = true;
 
-    PlayerData player_data;
-    const AgentLivingData *agents_data = nullptr;
     bool first_frame = false;
     DbSkillbarData skillbar;
-
-    GW::HookEntry ObjectiveDone_Entry;
-    GW::HookEntry MapLoaded_Entry;
-    bool load_cb_triggered = false;
-    uint32_t num_finished_objectives = 0U;
-    GW::HookEntry GenericValue_Entry;
-    bool interrupted = false;
-    GW::HookEntry SendChat_Entry;
 
     Damage damage;
 

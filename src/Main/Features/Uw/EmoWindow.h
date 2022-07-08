@@ -18,6 +18,8 @@
 #include <PlayerData.h>
 #include <Types.h>
 
+#include "UwHelperWindowBase.h"
+
 #include <SimpleIni.h>
 #include <imgui.h>
 
@@ -72,7 +74,7 @@ public:
     void Update() override;
 };
 
-class EmoWindow : public HelperBoxWindow
+class EmoWindow : public HelperBoxWindow, public UwHelperWindowABC
 {
 public:
     EmoWindow();
@@ -147,8 +149,6 @@ private:
     void UpdateUw();
     void UpdateUwEntry();
 
-    const AgentLivingData *agents_data = nullptr;
-    PlayerData player_data;
     bool first_frame = false;
     EmoSkillbarData skillbar;
 
@@ -156,12 +156,6 @@ private:
     bool show_debug_map = true;
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
-
-    GW::HookEntry ObjectiveDone_Entry;
-    GW::HookEntry MapLoaded_Entry;
-    bool load_cb_triggered = false;
-    uint32_t num_finished_objectives = 0U;
-    GW::HookEntry SendChat_Entry;
 
     Pumping pumping;
     TankBonding tank_bonding;
