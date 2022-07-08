@@ -4,7 +4,6 @@
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
-#include <GWCA/Context/CharContext.h>
 #include <GWCA/Context/GameContext.h>
 #include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/Array.h>
@@ -629,16 +628,6 @@ bool EmoRoutine::DropBondsLT() const
     return false;
 }
 
-static float GetProgressValue()
-{
-    const auto c = GW::CharContext::instance();
-
-    if (!c || !c->progress_bar)
-        return 0.0F;
-
-    return c->progress_bar->progress;
-}
-
 RoutineState EmoRoutine::Routine()
 {
     static bool used_canthas = false;
@@ -710,7 +699,7 @@ RoutineState EmoRoutine::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight && (DhuumFightDone(livings_data->npcs) || DhuumFightDone(livings_data->neutrals)))
+    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;
@@ -719,13 +708,6 @@ RoutineState EmoRoutine::Routine()
 
     if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
-
-    static auto t = clock();
-    if (TIMER_DIFF(t) > 500)
-    {
-        Log::Info("Progress: %f\n", GetProgressValue());
-        t = clock();
-    }
 
     // 100 morale value is 0% in game
     const auto current_morale = GW::GameContext::instance()->world->morale;

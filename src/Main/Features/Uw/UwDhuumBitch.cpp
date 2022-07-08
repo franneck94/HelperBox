@@ -317,7 +317,7 @@ RoutineState DbRoutine::Routine()
     if (!is_in_dhuum_fight && dhuum_fight_ongoing)
         dhuum_fight_ongoing = false;
 
-    if (!is_in_dhuum_fight && (DhuumFightDone(livings_data->npcs) || DhuumFightDone(livings_data->neutrals)))
+    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;

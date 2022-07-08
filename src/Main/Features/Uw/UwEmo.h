@@ -81,7 +81,7 @@ public:
 
     const char *Name() const override
     {
-        return "";
+        return "UwEmo";
     }
 
     void Initialize() override

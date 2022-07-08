@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <GWCA/Constants/Maps.h>
+#include <GWCA/Context/CharContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
@@ -429,23 +430,38 @@ bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *liv
     return result_ids_rect.size() == 0;
 }
 
-bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs)
+float GetProgressValue()
 {
-    constexpr static auto DHUUM_SPIDER_IDS = std::array<uint32_t, 3>{1390, 1391, 1392};
+    const auto c = GW::CharContext::instance();
 
-    for (const auto npc : npcs)
-    {
-        if (!npc)
-            continue;
+    if (!c || !c->progress_bar)
+        return 0.0F;
 
-        for (const auto id : DHUUM_SPIDER_IDS)
-        {
-            if (npc->player_number == id)
-                return true;
-        }
-    }
+    return c->progress_bar->progress;
+}
 
-    return false;
+bool DhuumFightDone(uint32_t dhuum_id)
+{
+    const auto progress = GetProgressValue();
+
+    if (progress < 0.99F)
+        return false;
+
+    if (!dhuum_id)
+        return false;
+
+    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
+    if (!dhuum_agent)
+        return false;
+
+    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    if (!dhuum_living)
+        return false;
+
+    if (dhuum_living->hp >= 0.25F)
+        return false;
+
+    return true;
 }
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role)
