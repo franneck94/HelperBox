@@ -459,3 +459,14 @@ uint32_t GetUwTriggerRoleId(const TriggerRole role)
 
     return trigger_id;
 }
+
+bool LtIsBonded()
+{
+    const auto lt_id = GetTankId();
+
+    const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, lt_id);
+    const auto has_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, lt_id);
+    const auto has_ballth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, lt_id);
+
+    return (has_prot && has_life && has_ballth);
+}

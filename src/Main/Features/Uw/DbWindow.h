@@ -103,7 +103,7 @@ private:
     bool first_frame = false;
     DbSkillbarData skillbar;
 
-    DbRoutine damage;
+    DbRoutine db_routinme;
 
     std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };

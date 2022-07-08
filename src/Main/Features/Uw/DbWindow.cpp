@@ -43,7 +43,7 @@ static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
 }; // namespace
 
-DbWindow::DbWindow() : UwHelperWindowABC(), skillbar({}), damage(&player_data, &skillbar, agents_data)
+DbWindow::DbWindow() : UwHelperWindowABC(), skillbar({}), db_routinme(&player_data, &skillbar, agents_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -57,7 +57,7 @@ void DbWindow::Draw(IDirect3DDevice9 *)
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("DbWindow", nullptr, GetWinFlags()))
     {
-        damage.Draw();
+        db_routinme.Draw();
         DrawMovingButtons(moves, move_ongoing, move_idx);
     }
     ImGui::End();
@@ -113,12 +113,12 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
     {
         move_idx = 0;
         move_ongoing = false;
-        damage.action_state = ActionState::INACTIVE;
+        db_routinme.action_state = ActionState::INACTIVE;
         return;
     }
     player_data.Update();
     agents_data = &_agents_data;
-    damage.agents_data = agents_data;
+    db_routinme.agents_data = agents_data;
 
     if (!IsDhuumBitch(player_data))
         return;
@@ -133,7 +133,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
         return;
     skillbar.Update();
 
-    damage_action_state = &damage.action_state;
+    damage_action_state = &db_routinme.action_state;
 
     if (IsUw())
     {
@@ -141,7 +141,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
         UpdateUw();
     }
 
-    damage.Update();
+    db_routinme.Update();
 }
 
 DbRoutine::DbRoutine(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a)

@@ -100,3 +100,5 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
 bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs);
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role);
+
+bool LtIsBonded();
