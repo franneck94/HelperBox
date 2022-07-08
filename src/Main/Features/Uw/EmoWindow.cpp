@@ -58,8 +58,7 @@ constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : UwHelperWindowABC(), skillbar({}), pumping(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data),
-      tank_bonding(&player_data, &skillbar)
+    : UwHelperWindowABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -74,7 +73,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 
     if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
     {
-        pumping.Draw();
+        emo_routinme.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
             DrawMovingButtons(moves, move_ongoing, move_idx);
@@ -115,26 +114,27 @@ void EmoWindow::UpdateUw()
 
 void EmoWindow::UpdateUwEntry()
 {
-    static auto timer = clock();
     static auto triggered_tank_bonds_at_start = false;
     static auto triggered_move_start = false;
-
-    if (TankIsFullteamLT())
-        load_cb_triggered = false;
 
     if (load_cb_triggered)
     {
         move_idx = 0;
         num_finished_objectives = 0U;
         move_ongoing = false;
-        tank_bonding.action_state = ActionState::ACTIVE;
+    }
+
+    if (TankIsFullteamLT())
+        load_cb_triggered = false;
+
+    if (load_cb_triggered)
+    {
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
-        timer = clock();
         return;
     }
 
-    if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
+    if (triggered_tank_bonds_at_start && LtIsBonded())
     {
         moves[0]->Execute();
         triggered_tank_bonds_at_start = false;
@@ -145,8 +145,8 @@ void EmoWindow::UpdateUwEntry()
 
     if (triggered_move_start && move_idx == 1)
     {
-        pumping.action_state = ActionState::ACTIVE;
-        timer = 0;
+        emo_routinme.action_state = ActionState::ACTIVE;
+        return;
     }
 }
 
@@ -156,12 +156,11 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
     {
         move_idx = 0;
         move_ongoing = false;
-        tank_bonding.action_state = ActionState::INACTIVE;
         return;
     }
     player_data.Update();
     agents_data = &_agents_data;
-    pumping.agents_data = agents_data;
+    emo_routinme.agents_data = agents_data;
 
     if (!IsEmo(player_data))
         return;
@@ -176,7 +175,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
         return;
     skillbar.Update();
 
-    emo_casting_action_state = &pumping.action_state;
+    emo_casting_action_state = &emo_routinme.action_state;
 
     if (IsUw())
     {
@@ -184,8 +183,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
         UpdateUw();
     }
 
-    tank_bonding.Update();
-    pumping.Update();
+    emo_routinme.Update();
 }
 
 EmoRoutine::EmoRoutine(PlayerData *p,
@@ -224,7 +222,7 @@ bool EmoRoutine::RoutineWhenInRangeBondLT() const
         return false;
 
     const auto lt_living = lt_agent->GetAsAgentLiving();
-    if (!lt_living)
+    if (!lt_living || lt_living->GetIsDead())
         return false;
 
     if (lt_living->GetIsMoving() || player_data->living->GetIsMoving())
@@ -357,6 +355,9 @@ bool EmoRoutine::RoutineCanthaGuards() const
         auto droppped_smth = false;
         for (auto living : filtered_canthas)
         {
+            if (!living || living->GetIsDead())
+                continue;
+
             if (DropBondsOnLiving(living))
                 droppped_smth = true;
         }
@@ -368,7 +369,7 @@ bool EmoRoutine::RoutineCanthaGuards() const
     return false;
 }
 
-bool EmoRoutine::RoutineLT() const
+bool EmoRoutine::RoutineLtAtFusePulls() const
 {
     static auto last_time_sb_ms = clock();
     static auto casted_fuse_once = false;
@@ -381,7 +382,7 @@ bool EmoRoutine::RoutineLT() const
 
     const auto target_living = player_data->target->GetAsAgentLiving();
     if (!target_living || target_living->GetIsMoving() || player_data->living->GetIsMoving() ||
-        target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+        target_living->GetIsDead() || target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
     {
         casted_fuse_once = false;
         return false;
@@ -425,6 +426,10 @@ bool EmoRoutine::RoutineDbAtDhuum() const
     if (dist > GW::Constants::Range::Spellcast)
         return false;
 
+    const auto living = db_agent->GetAsAgentLiving();
+    if (!living || living->GetIsDead())
+        return false;
+
     if (CastBondIfNotAvailable(skillbar->balth, db_agent->agent_id, player_data))
         return true;
 
@@ -444,7 +449,7 @@ bool EmoRoutine::RoutineTurtle() const
         return false;
 
     const auto turtle_living = turtle_agent->GetAsAgentLiving();
-    if (!turtle_living)
+    if (!turtle_living || turtle_living->GetIsDead())
         return false;
 
     const auto dist = GW::GetDistance(player_data->pos, turtle_agent->pos);
@@ -491,7 +496,7 @@ bool EmoRoutine::RoutineGDW() const
         return false;
 
     const auto living = agent->GetAsAgentLiving();
-    if (!living || living->GetIsMoving())
+    if (!living || living->GetIsMoving() || living->GetIsDead())
         return false;
 
     const auto dist = GW::GetDistance(GW::GamePos{-16410.75F, 17294.47F, 0}, agent->pos);
@@ -516,7 +521,7 @@ bool EmoRoutine::RoutineTurtleGDW() const
         return false;
 
     const auto living = agent->GetAsAgentLiving();
-    if (!living || living->GetIsMoving())
+    if (!living || living->GetIsMoving() || living->GetIsDead())
         return false;
 
     const auto dist = GW::GetDistance(GW::GamePos{-16105.50F, 17284.84F, 0}, agent->pos);
@@ -544,7 +549,7 @@ bool EmoRoutine::RoutineDbBeforeDhuum() const
     if (dist > 2100.0F)
         return false;
 
-    if (living->hp > 0.75F)
+    if (living->hp > 0.75F || living->GetIsDead())
         return false;
 
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player_data))
@@ -582,11 +587,11 @@ bool EmoRoutine::RoutineKeepPlayerAlive() const
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-        if (!living)
+        if (!living || living->GetIsDead())
             continue;
 
         const auto dist = GW::GetDistance(player_data->pos, agent->pos);
-        if (dist > 450.0F)
+        if (dist > 600.0F)
             continue;
 
         if (living->hp > 0.50F)
@@ -633,6 +638,9 @@ RoutineState EmoRoutine::Routine()
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
+    if (IsAtSpawn(player_data->pos) && BondLtAtStartRoutine())
+        return RoutineState::ACTIVE;
+
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
 
@@ -657,11 +665,15 @@ RoutineState EmoRoutine::Routine()
     if ((IsInBasement(player_data->pos) || IsInVale(player_data->pos)) && RoutineEscortSpirits())
         return RoutineState::FINISHED;
 
-    if (IsAtFusePulls(player_data->pos) && RoutineLT())
+    if (IsAtFusePulls(player_data->pos) && RoutineLtAtFusePulls())
         return RoutineState::FINISHED;
 
-    if (IsAtValeSpirits(player_data->pos) && GW::PartyMgr::GetPartySize() < 6 && !used_canthas &&
-        UseInventoryItem(CANTHA_STONE_ID, 1, 5))
+    // Make sure to only pop canthas if there is enough time until dhuum fight
+    constexpr auto eight_mins_in_ms = 8LL * 60LL * 1000LL;
+    const auto stone_should_be_used =
+        (!used_canthas && GW::Map::GetInstanceTime() < eight_mins_in_ms && GW::PartyMgr::GetPartySize() < 6);
+
+    if (IsAtValeSpirits(player_data->pos) && stone_should_be_used && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
     {
         used_canthas = true;
         return RoutineState::FINISHED;
@@ -696,6 +708,7 @@ RoutineState EmoRoutine::Routine()
     if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
 
+    // 100 morale value is 0% in game
     const auto current_morale = GW::GameContext::instance()->world->morale;
     if (current_morale <= 90 && UseInventoryItem(COOKIE_ID, 1, 5))
         return RoutineState::FINISHED;
@@ -778,50 +791,29 @@ void EmoRoutine::Update()
         (void)Routine();
 }
 
-RoutineState TankBonding::Routine()
+bool EmoRoutine::BondLtAtStartRoutine() const
 {
-    if (!player_data || !player_data->id || !player_data->CanCast())
-        return RoutineState::ACTIVE;
-
     auto target_id = GetTankId();
     if (!target_id)
-        return RoutineState::FINISHED;
+        return false;
     player_data->ChangeTarget(target_id);
 
     auto target = player_data->target;
     if (!target)
-        return RoutineState::FINISHED;
+        return false;
 
     const auto is_alive_ally = IsAliveAlly(target);
     if (!is_alive_ally)
-        return RoutineState::FINISHED;
+        return false;
 
     if (CastBondIfNotAvailable(skillbar->balth, target_id, player_data))
-        return RoutineState::ACTIVE;
+        return true;
 
     if (CastBondIfNotAvailable(skillbar->prot, target_id, player_data))
-        return RoutineState::ACTIVE;
+        return true;
 
     if (CastBondIfNotAvailable(skillbar->life, target_id, player_data))
-        return RoutineState::ACTIVE;
+        return true;
 
-    return RoutineState::FINISHED;
-}
-
-void TankBonding::Update()
-{
-    if (GW::PartyMgr::GetIsPartyDefeated())
-        action_state = ActionState::INACTIVE;
-
-    if (action_state == ActionState::ACTIVE)
-    {
-        StateOnHold(*emo_casting_action_state);
-        const auto routine_state = Routine();
-
-        if (routine_state == RoutineState::FINISHED)
-        {
-            action_state = ActionState::INACTIVE;
-            StateOnActive(*emo_casting_action_state);
-        }
-    }
+    return false;
 }

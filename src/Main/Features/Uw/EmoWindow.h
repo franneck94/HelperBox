@@ -34,10 +34,11 @@ public:
 private:
     bool PauseRoutine() override;
 
-    bool RoutineWhenInRangeBondLT() const;
-    bool RoutineDbBeforeDhuum() const;
+    bool BondLtAtStartRoutine() const;
     bool RoutineSelfBonds() const;
-    bool RoutineLT() const;
+    bool RoutineDbBeforeDhuum() const;
+    bool RoutineWhenInRangeBondLT() const;
+    bool RoutineLtAtFusePulls() const;
     bool RoutineCanthaGuards() const;
     bool RoutineEscortSpirits() const;
     bool DropBondsLT() const;
@@ -63,15 +64,6 @@ public:
 private:
     std::vector<PlayerMapping> party_members{};
     bool party_data_valid = false;
-};
-
-class TankBonding : public EmoActionABC
-{
-public:
-    TankBonding(PlayerData *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s){};
-
-    RoutineState Routine() override;
-    void Update() override;
 };
 
 class EmoWindow : public HelperBoxWindow, public UwHelperWindowABC
@@ -157,8 +149,7 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
 
-    EmoRoutine pumping;
-    TankBonding tank_bonding;
+    EmoRoutine emo_routinme;
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
