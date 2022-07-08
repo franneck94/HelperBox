@@ -188,8 +188,12 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
     pumping.Update();
 }
 
-Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a)
-    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), slot_idx(_slot_idx), agents_data(a)
+EmoRoutine::EmoRoutine(PlayerData *p,
+                       EmoSkillbarData *s,
+                       uint32_t *_bag_idx,
+                       uint32_t *_slot_idx,
+                       const AgentLivingData *a)
+    : EmoActionABC(p, "EmoRoutine", s), bag_idx(_bag_idx), slot_idx(_slot_idx), agents_data(a)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
         &Summon_AgentAdd_Entry,
@@ -207,7 +211,7 @@ Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t
         });
 }
 
-bool Pumping::RoutineWhenInRangeBondLT() const
+bool EmoRoutine::RoutineWhenInRangeBondLT() const
 {
     if (!lt_agent)
         return false;
@@ -238,7 +242,7 @@ bool Pumping::RoutineWhenInRangeBondLT() const
     return false;
 }
 
-bool Pumping::RoutineSelfBonds() const
+bool EmoRoutine::RoutineSelfBonds() const
 {
     const auto found_ether = player_data->HasEffect(GW::Constants::SkillID::Ether_Renewal);
     const auto found_sb = player_data->HasEffect(GW::Constants::SkillID::Spirit_Bond);
@@ -266,7 +270,7 @@ bool Pumping::RoutineSelfBonds() const
     return false;
 }
 
-bool Pumping::RoutineEscortSpirits() const
+bool EmoRoutine::RoutineEscortSpirits() const
 {
     if (!agents_data || agents_data->npcs.size() == 0)
         return false;
@@ -297,7 +301,7 @@ bool Pumping::RoutineEscortSpirits() const
     return false;
 }
 
-bool Pumping::RoutineCanthaGuards() const
+bool EmoRoutine::RoutineCanthaGuards() const
 {
     static auto last_gdw_idx = 0;
 
@@ -364,7 +368,7 @@ bool Pumping::RoutineCanthaGuards() const
     return false;
 }
 
-bool Pumping::RoutineLT() const
+bool EmoRoutine::RoutineLT() const
 {
     static auto last_time_sb_ms = clock();
     static auto casted_fuse_once = false;
@@ -412,7 +416,7 @@ bool Pumping::RoutineLT() const
     return false;
 }
 
-bool Pumping::RoutineDbAtDhuum() const
+bool EmoRoutine::RoutineDbAtDhuum() const
 {
     if (!db_agent)
         return false;
@@ -430,7 +434,7 @@ bool Pumping::RoutineDbAtDhuum() const
     return false;
 }
 
-bool Pumping::RoutineTurtle() const
+bool EmoRoutine::RoutineTurtle() const
 {
     if (!found_turtle || !turtle_id)
         return false;
@@ -465,12 +469,12 @@ bool Pumping::RoutineTurtle() const
     return false;
 }
 
-bool Pumping::RoutineWisdom() const
+bool EmoRoutine::RoutineWisdom() const
 {
     return (RoutineState::FINISHED == skillbar->wisdom.Cast(player_data->energy));
 }
 
-bool Pumping::RoutineGDW() const
+bool EmoRoutine::RoutineGDW() const
 {
     static auto last_idx = uint32_t{0};
 
@@ -500,7 +504,7 @@ bool Pumping::RoutineGDW() const
     return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, living->agent_id));
 }
 
-bool Pumping::RoutineTurtleGDW() const
+bool EmoRoutine::RoutineTurtleGDW() const
 {
     static auto last_idx = uint32_t{0};
 
@@ -525,7 +529,7 @@ bool Pumping::RoutineTurtleGDW() const
     return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, living->agent_id));
 }
 
-bool Pumping::RoutineDbBeforeDhuum() const
+bool EmoRoutine::RoutineDbBeforeDhuum() const
 {
     static auto last_time_sb_ms = clock();
 
@@ -560,7 +564,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
     return false;
 }
 
-bool Pumping::RoutineKeepPlayerAlive() const
+bool EmoRoutine::RoutineKeepPlayerAlive() const
 {
     if (player_data->living->GetIsMoving())
         return false;
@@ -599,7 +603,7 @@ bool Pumping::RoutineKeepPlayerAlive() const
     return false;
 }
 
-bool Pumping::DropBondsLT() const
+bool EmoRoutine::DropBondsLT() const
 {
     if (!lt_agent || !lt_agent->agent_id)
         return false;
@@ -618,7 +622,7 @@ bool Pumping::DropBondsLT() const
     return false;
 }
 
-RoutineState Pumping::Routine()
+RoutineState EmoRoutine::Routine()
 {
     static bool used_canthas = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
@@ -718,7 +722,7 @@ RoutineState Pumping::Routine()
     return RoutineState::FINISHED;
 }
 
-bool Pumping::PauseRoutine()
+bool EmoRoutine::PauseRoutine()
 {
     if (player_data->living->GetIsMoving())
         return true;
@@ -733,7 +737,7 @@ bool Pumping::PauseRoutine()
     return false;
 }
 
-void Pumping::Update()
+void EmoRoutine::Update()
 {
     static auto paused = false;
 

@@ -21,10 +21,10 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class Damage : public DbActionABC
+class DbRoutine : public DbActionABC
 {
 public:
-    Damage(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a);
+    DbRoutine(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -103,7 +103,7 @@ private:
     bool first_frame = false;
     DbSkillbarData skillbar;
 
-    Damage damage;
+    DbRoutine damage;
 
     std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };

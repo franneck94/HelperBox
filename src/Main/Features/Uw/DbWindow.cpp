@@ -144,11 +144,12 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
     damage.Update();
 }
 
-Damage::Damage(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a) : DbActionABC(p, "Damage", s), agents_data(a)
+DbRoutine::DbRoutine(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a)
+    : DbActionABC(p, "DbRoutine", s), agents_data(a)
 {
 }
 
-bool Damage::CastPiOnTarget() const
+bool DbRoutine::CastPiOnTarget() const
 {
     if (!player_data->target)
         return false;
@@ -167,7 +168,7 @@ bool Damage::CastPiOnTarget() const
     return false;
 }
 
-bool Damage::RoutineKillSkele() const
+bool DbRoutine::RoutineKillSkele() const
 {
     if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) || CastPiOnTarget())
         return true;
@@ -175,7 +176,7 @@ bool Damage::RoutineKillSkele() const
     return false;
 }
 
-bool Damage::RoutineKillEnemiesStandard() const
+bool DbRoutine::RoutineKillEnemiesStandard() const
 {
     const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
 
@@ -189,7 +190,7 @@ bool Damage::RoutineKillEnemiesStandard() const
     return false;
 }
 
-bool Damage::RoutineValeSpirits() const
+bool DbRoutine::RoutineValeSpirits() const
 {
     const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_eoe = player_data->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
@@ -211,7 +212,7 @@ bool Damage::RoutineValeSpirits() const
     return false;
 }
 
-bool Damage::RoutineDhuumRecharge() const
+bool DbRoutine::RoutineDhuumRecharge() const
 {
     static auto qz_timer = clock();
 
@@ -233,7 +234,7 @@ bool Damage::RoutineDhuumRecharge() const
     return false;
 }
 
-bool Damage::RoutineDhuumDamage() const
+bool DbRoutine::RoutineDhuumDamage() const
 {
     const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_winnow = player_data->HasEffect(GW::Constants::SkillID::Winnowing);
@@ -251,7 +252,7 @@ bool Damage::RoutineDhuumDamage() const
     return false;
 }
 
-RoutineState Damage::Routine()
+RoutineState DbRoutine::Routine()
 {
     static auto dhuum_fight_ongoing = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
@@ -350,7 +351,7 @@ RoutineState Damage::Routine()
     return RoutineState::FINISHED;
 }
 
-bool Damage::PauseRoutine()
+bool DbRoutine::PauseRoutine()
 {
     if (player_data->living->GetIsMoving())
         return true;
@@ -364,7 +365,7 @@ bool Damage::PauseRoutine()
     return false;
 }
 
-void Damage::Update()
+void DbRoutine::Update()
 {
     static auto paused = false;
 

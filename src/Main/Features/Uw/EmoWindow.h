@@ -23,10 +23,10 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class Pumping : public EmoActionABC
+class EmoRoutine : public EmoActionABC
 {
 public:
-    Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
+    EmoRoutine(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -157,7 +157,7 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
 
-    Pumping pumping;
+    EmoRoutine pumping;
     TankBonding tank_bonding;
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
