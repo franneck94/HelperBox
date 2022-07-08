@@ -18,7 +18,7 @@
 #include <Move.h>
 #include <Types.h>
 
-#include "UwHelperWindowBase.h"
+#include "UwHelperBase.h"
 
 #include <SimpleIni.h>
 #include <imgui.h>
@@ -66,15 +66,15 @@ private:
     bool party_data_valid = false;
 };
 
-class EmoWindow : public HelperBoxWindow, public UwHelperWindowABC
+class UwEmo : public HelperBoxWindow, public UwHelperABC
 {
 public:
-    EmoWindow();
-    ~EmoWindow(){};
+    UwEmo();
+    ~UwEmo(){};
 
-    static EmoWindow &Instance()
+    static UwEmo &Instance()
     {
-        static EmoWindow instance;
+        static UwEmo instance;
         return instance;
     }
 

@@ -5,11 +5,11 @@
 #include <Features/General/AutoFollowWindow.h>
 #include <Features/General/CancelActionWindow.h>
 #include <Features/General/ChatCommands.h>
-#include <Features/Uw/DbWindow.h>
-#include <Features/Uw/DhuumStatsWindow.h>
-#include <Features/Uw/EmoWindow.h>
-#include <Features/Uw/MainteamWindow.h>
-#include <Features/Uw/TerraWindow.h>
+#include <Features/Uw/UwDhuumBitch.h>
+#include <Features/Uw/UwDhuumStats.h>
+#include <Features/Uw/UwEmo.h>
+#include <Features/Uw/UwMesmer.h>
+#include <Features/Uw/UwRanger.h>
 
 #include <SimpleIni.h>
 
@@ -22,12 +22,12 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     SettingsWindow::Instance().sep = optional_modules.size();
 
     optional_modules.push_back(&ChatCommands::Instance());
-    optional_modules.push_back(&EmoWindow::Instance());
-    optional_modules.push_back(&DbWindow::Instance());
-    optional_modules.push_back(&MainteamWindow::Instance());
-    optional_modules.push_back(&TerraWindow::Instance());
+    optional_modules.push_back(&UwEmo::Instance());
+    optional_modules.push_back(&UwDhuumBitch::Instance());
+    optional_modules.push_back(&UwMesmer::Instance());
+    optional_modules.push_back(&UwRanger::Instance());
     // optional_modules.push_back(&AutoFollowWindow::Instance());
-    optional_modules.push_back(&DhuumStatsWindow::Instance());
+    optional_modules.push_back(&UwDhuumStats::Instance());
     // optional_modules.push_back(&CancelActionWindow::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
 

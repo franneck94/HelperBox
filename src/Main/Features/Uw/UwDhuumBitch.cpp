@@ -34,7 +34,7 @@
 #include <imgui.h>
 #include <implot.h>
 
-#include "DbWindow.h"
+#include "UwDhuumBitch.h"
 
 namespace
 {
@@ -43,19 +43,19 @@ static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
 }; // namespace
 
-DbWindow::DbWindow() : UwHelperWindowABC(), skillbar({}), db_routinme(&player_data, &skillbar, livings_data)
+UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routinme(&player_data, &skillbar, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
 };
 
-void DbWindow::Draw(IDirect3DDevice9 *)
+void UwDhuumBitch::Draw(IDirect3DDevice9 *)
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsDhuumBitch(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("DbWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin("UwDhuumBitch", nullptr, GetWinFlags()))
     {
         db_routinme.Draw();
         DrawMovingButtons(moves, move_ongoing, move_idx);
@@ -68,7 +68,7 @@ void DbWindow::Draw(IDirect3DDevice9 *)
 #endif
 }
 
-void DbWindow::UpdateUw()
+void UwDhuumBitch::UpdateUw()
 {
     UpdateUwEntry();
     MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
@@ -90,7 +90,7 @@ void DbWindow::UpdateUw()
         lt_is_ready = false;
 }
 
-void DbWindow::UpdateUwEntry()
+void UwDhuumBitch::UpdateUwEntry()
 {
     if (TankIsFullteamLT())
         load_cb_triggered = false;
@@ -107,7 +107,7 @@ void DbWindow::UpdateUwEntry()
     }
 }
 
-void DbWindow::Update(float, const AgentLivingData &_livings_data)
+void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {

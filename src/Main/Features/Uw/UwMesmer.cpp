@@ -25,7 +25,7 @@
 
 #include <fmt/format.h>
 
-#include "MainteamWindow.h"
+#include "UwMesmer.h"
 
 namespace
 {
@@ -39,9 +39,7 @@ static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Blad
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
-void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
-                                        const ImVec4 color,
-                                        std::string_view label)
+void UwMesmer::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label)
 {
     auto idx = uint32_t{0};
 
@@ -84,7 +82,7 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
     }
 }
 
-void MainteamWindow::Draw(IDirect3DDevice9 *)
+void UwMesmer::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
         return;
@@ -96,7 +94,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin("UwMesmer", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
 
@@ -126,7 +124,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float, const AgentLivingData &_livings_data)
+void UwMesmer::Update(float, const AgentLivingData &_livings_data)
 {
     filtered_livings.clear();
     aatxe_livings.clear();

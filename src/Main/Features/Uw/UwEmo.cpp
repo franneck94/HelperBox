@@ -33,7 +33,7 @@
 #include <Timer.h>
 #include <Types.h>
 
-#include "EmoWindow.h"
+#include "UwEmo.h"
 
 namespace
 {
@@ -57,21 +57,20 @@ constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
-EmoWindow::EmoWindow()
-    : UwHelperWindowABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
+UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
 };
 
-void EmoWindow::Draw(IDirect3DDevice9 *)
+void UwEmo::Draw(IDirect3DDevice9 *)
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin("UwEmo", nullptr, GetWinFlags()))
     {
         emo_routinme.Draw();
 
@@ -87,7 +86,7 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
 #endif
 }
 
-void EmoWindow::UpdateUw()
+void UwEmo::UpdateUw()
 {
     UpdateUwEntry();
     MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
@@ -112,7 +111,7 @@ void EmoWindow::UpdateUw()
         lt_is_ready = false;
 }
 
-void EmoWindow::UpdateUwEntry()
+void UwEmo::UpdateUwEntry()
 {
     static auto triggered_tank_bonds_at_start = false;
     static auto triggered_move_start = false;
@@ -150,7 +149,7 @@ void EmoWindow::UpdateUwEntry()
     }
 }
 
-void EmoWindow::Update(float, const AgentLivingData &_livings_data)
+void UwEmo::Update(float, const AgentLivingData &_livings_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {

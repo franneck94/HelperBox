@@ -17,23 +17,21 @@
 class AutoTargetAction : public ActionABC
 {
 public:
-    AutoTargetAction(DataPlayer *p) : ActionABC(p, "Auto Target")
-    {
-    }
+    AutoTargetAction(DataPlayer *p) : ActionABC(p, "Auto Target"){};
 
     RoutineState Routine() override;
     void Update() override;
 };
 
-class TerraWindow : public HelperBoxWindow
+class UwRanger : public HelperBoxWindow
 {
 public:
-    TerraWindow() : player_data({}), filtered_livings({}), auto_target(&player_data), last_casted_times_ms({}){};
-    ~TerraWindow(){};
+    UwRanger() : player_data({}), filtered_livings({}), auto_target(&player_data), last_casted_times_ms({}){};
+    ~UwRanger(){};
 
-    static TerraWindow &Instance()
+    static UwRanger &Instance()
     {
-        static TerraWindow instance;
+        static UwRanger instance;
         return instance;
     }
 

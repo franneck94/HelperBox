@@ -10,10 +10,10 @@
 #include <DataPlayer.h>
 #include <Types.h>
 
-class UwHelperWindowABC
+class UwHelperABC
 {
 public:
-    UwHelperWindowABC() : player_data({})
+    UwHelperABC() : player_data({})
     {
         GW::StoC::RegisterPacketCallback(&SendChat_Entry,
                                          GAME_SMSG_CHAT_MESSAGE_LOCAL,
@@ -39,7 +39,10 @@ public:
             &Interrupted_Entry,
             [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
                 if (player_data.SkillStoppedCallback(packet))
+                {
+                    Log::Info("Player interrupted skill");
                     interrupted = true;
+                }
             });
     };
 

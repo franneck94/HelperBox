@@ -26,13 +26,33 @@
 #include <MathUtils.h>
 #include <Types.h>
 
-#include "DhuumStatsWindow.h"
+#include "UwDhuumStats.h"
 
-void DhuumStatsWindow::SkillPacketCallback(const uint32_t value_id,
-                                           const uint32_t caster_id,
-                                           const uint32_t target_id,
-                                           const uint32_t value,
-                                           const bool no_target)
+namespace
+{
+constexpr static auto TIME_WINDOW_DMG_S = long{180L};
+constexpr static auto TIME_WINDOW_DMG_MS = (TIME_WINDOW_DMG_S * 1000L);
+constexpr static auto TIME_WINDOW_REST_S = long{20L};
+constexpr static auto TIME_WINDOW_REST_MS = (TIME_WINDOW_REST_S * 1000L);
+
+constexpr static auto REST_SKILL_ID = uint32_t{3087};
+constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
+
+constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{780U},  // 1 ?
+                                                                uint32_t{760U},  // 2 ?
+                                                                uint32_t{740U},  // 3 ?
+                                                                uint32_t{730U},  // 4
+                                                                uint32_t{710U},  // 5
+                                                                uint32_t{680U},  // 6 ?
+                                                                uint32_t{660U},  // 7 ?
+                                                                uint32_t{640U}}; // 8 ?
+};                                                                               // namespace
+
+void UwDhuumStats::SkillPacketCallback(const uint32_t value_id,
+                                       const uint32_t caster_id,
+                                       const uint32_t target_id,
+                                       const uint32_t value,
+                                       const bool no_target)
 {
     uint32_t agent_id = caster_id;
     const uint32_t activated_skill_id = value;
@@ -61,10 +81,10 @@ void DhuumStatsWindow::SkillPacketCallback(const uint32_t value_id,
     }
 }
 
-void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
-                                            const uint32_t caster_id,
-                                            const uint32_t target_id,
-                                            const float value)
+void UwDhuumStats::DamagePacketCallback(const uint32_t type,
+                                        const uint32_t caster_id,
+                                        const uint32_t target_id,
+                                        const float value)
 {
     if (!dhuum_id || target_id != dhuum_id || value >= 0 || !caster_id)
         return;
@@ -114,7 +134,7 @@ static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
     snprintf(buf, bufsize, "%02d:%02llu.%04llu", mins, secs, time.count() / 10 % 100);
 }
 
-void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
+void UwDhuumStats::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
         return;
@@ -124,7 +144,7 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
 
     ImGui::SetNextWindowSize(ImVec2(170.0F, 175.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("DhuumStatsWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin("UwDhuumStats", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
         const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
@@ -155,7 +175,7 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void DhuumStatsWindow::ResetData()
+void UwDhuumStats::ResetData()
 {
     dhuum_fight_active = true;
     dhuum_fight_start_time_ms = clock();
@@ -171,7 +191,7 @@ void DhuumStatsWindow::ResetData()
     damages.clear();
 }
 
-void DhuumStatsWindow::RemoveOldData()
+void UwDhuumStats::RemoveOldData()
 {
     const auto remove_rest_it = std::remove_if(rests.begin(), rests.end(), [=](const auto t) {
         return std::abs(TIMER_DIFF(t)) > TIME_WINDOW_REST_MS;
@@ -184,7 +204,7 @@ void DhuumStatsWindow::RemoveOldData()
     damages.erase(remove_dmg_it, damages.end());
 }
 
-void DhuumStatsWindow::UpdateRestData()
+void UwDhuumStats::UpdateRestData()
 {
     const auto current_time_ms = clock();
 
@@ -215,7 +235,7 @@ void DhuumStatsWindow::UpdateRestData()
         eta_rest_s = eta_rest_s;
 }
 
-void DhuumStatsWindow::UpdateDamageData()
+void UwDhuumStats::UpdateDamageData()
 {
     const auto current_time_ms = clock();
 
@@ -240,7 +260,7 @@ void DhuumStatsWindow::UpdateDamageData()
         eta_damage_s = 0.0F;
 }
 
-void DhuumStatsWindow::Update(float, const AgentLivingData &)
+void UwDhuumStats::Update(float, const AgentLivingData &)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;

@@ -16,7 +16,7 @@
 #include <Move.h>
 #include <Types.h>
 
-#include "UwHelperWindowBase.h"
+#include "UwHelperBase.h"
 
 #include <SimpleIni.h>
 #include <imgui.h>
@@ -43,15 +43,15 @@ public:
     const AgentLivingData *livings_data = nullptr;
 };
 
-class DbWindow : public HelperBoxWindow, public UwHelperWindowABC
+class UwDhuumBitch : public HelperBoxWindow, public UwHelperABC
 {
 public:
-    DbWindow();
-    ~DbWindow(){};
+    UwDhuumBitch();
+    ~UwDhuumBitch(){};
 
-    static DbWindow &Instance()
+    static UwDhuumBitch &Instance()
     {
-        static DbWindow instance;
+        static UwDhuumBitch instance;
         return instance;
     }
 

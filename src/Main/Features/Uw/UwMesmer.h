@@ -15,16 +15,15 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class MainteamWindow : public HelperBoxWindow
+class UwMesmer : public HelperBoxWindow
 {
 public:
-    MainteamWindow()
-        : player_data({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
-    ~MainteamWindow(){};
+    UwMesmer() : player_data({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
+    ~UwMesmer(){};
 
-    static MainteamWindow &Instance()
+    static UwMesmer &Instance()
     {
-        static MainteamWindow instance;
+        static UwMesmer instance;
         return instance;
     }
 
