@@ -5,9 +5,9 @@
 #include <GWCA/Managers/UIMgr.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <AgentData.h>
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
+#include <DataLivings.h>
 #include <Timer.h>
 
 class ChatCommands : public HelperBoxModule
@@ -24,7 +24,7 @@ private:
         clock_t skill_timer = clock();
         void Update();
     } skill_to_use;
-    const AgentLivingData *agents_data = nullptr;
+    const AgentLivingData *livings_data = nullptr;
 
 public:
     static ChatCommands &Instance()

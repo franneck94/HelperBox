@@ -4,10 +4,10 @@
 #include <cstdint>
 
 #include <ActionsUw.h>
+#include <DataPlayer.h>
 #include <Logger.h>
 #include <MathUtils.h>
 #include <Move.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 bool UwHelperActivationConditions();
@@ -18,17 +18,17 @@ uint32_t GetEmoId();
 
 uint32_t GetDhuumBitchId();
 
-bool IsEmo(const PlayerData &player_data);
+bool IsEmo(const DataPlayer &player_data);
 
-bool IsDhuumBitch(const PlayerData &player_data);
+bool IsDhuumBitch(const DataPlayer &player_data);
 
-bool IsSpiker(const PlayerData &player_data);
+bool IsSpiker(const DataPlayer &player_data);
 
-bool IsLT(const PlayerData &player_data);
+bool IsLT(const DataPlayer &player_data);
 
-bool IsRangerTerra(const PlayerData &player_data);
+bool IsRangerTerra(const DataPlayer &player_data);
 
-bool IsMesmerTerra(const PlayerData &player_data);
+bool IsMesmerTerra(const DataPlayer &player_data);
 
 bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
 
@@ -36,13 +36,13 @@ bool TankIsFullteamLT();
 
 bool TankIsSoloLT();
 
-bool TargetIsReaper(PlayerData &player_data);
+bool TargetIsReaper(DataPlayer &player_data);
 
-bool TargetReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs);
+bool TargetReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs);
 
-bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs);
+bool TalkReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs);
 
-bool TargetClosestKeeper(PlayerData &player_data, const std::vector<GW::AgentLiving *> enemies);
+bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> enemies);
 
 bool AcceptChamber();
 
@@ -57,7 +57,7 @@ bool TakePits();
 bool TakePlanes();
 
 template <uint32_t N>
-void UpdateUwInfo(const PlayerData &player_data,
+void UpdateUwInfo(const DataPlayer &player_data,
                   const std::array<MoveABC *, N> &moves,
                   uint32_t &move_idx,
                   const bool first_call,
@@ -95,7 +95,7 @@ bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, cons
 
 bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
 
-bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos);
+bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *livings_data, const GW::GamePos &next_pos);
 
 bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs);
 

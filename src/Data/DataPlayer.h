@@ -10,12 +10,12 @@
 #include <GWCA/Managers/StoCMgr.h>
 #include <GWCA/Packets/StoC.h>
 
-#include <SkillbarData.h>
+#include <DataSkillbar.h>
 
-class PlayerData
+class DataPlayer
 {
 public:
-    PlayerData(const uint32_t agent_id = UINT32_MAX) : id(agent_id), pos(GW::GamePos{0.0F, 0.0F, 0}){};
+    DataPlayer(const uint32_t agent_id = UINT32_MAX) : id(agent_id), pos(GW::GamePos{0.0F, 0.0F, 0}){};
 
     bool ValidateData(std::function<bool()> cb_fn) const;
     void Update();
@@ -26,8 +26,8 @@ public:
     bool HasBuff(const GW::Constants::SkillID buff_skill_id) const;
     bool HasEffect(const GW::Constants::SkillID effect_skill_id) const;
 
-    bool CastEffectIfNotAvailable(const SkillData &skill_data);
-    bool SpamEffect(const SkillData &skill_data);
+    bool CastEffectIfNotAvailable(const DataSkill &skill_data);
+    bool CastEffect(const DataSkill &skill_data);
 
     void ChangeTarget(const uint32_t target_id);
 

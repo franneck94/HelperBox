@@ -5,10 +5,10 @@
 
 #include <GWCA/Managers/GameThreadMgr.h>
 
-#include <AgentData.h>
 #include <Base/HelperBoxModule.h>
 #include <Base/HelperBoxUIElement.h>
-#include <PlayerData.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 
 #include <SimpleIni.h>
 
@@ -80,7 +80,7 @@ public:
 
     bool right_mouse_down = false;
 
-    AgentLivingData agents_data = {};
+    AgentLivingData livings_data = {};
 
 private:
     std::vector<HelperBoxModule *> modules;

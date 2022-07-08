@@ -8,7 +8,7 @@
 
 #include <Types.h>
 
-struct SkillData
+struct DataSkill
 {
 public:
     const uint32_t id;
@@ -16,7 +16,7 @@ public:
     uint8_t energy_cost;
     uint32_t recharge;
 
-    SkillData(const GW::Constants::SkillID id_, const uint32_t idx_);
+    DataSkill(const GW::Constants::SkillID id_, const uint32_t idx_);
 
     void Update(const GW::SkillbarSkill *const skillbar_skills);
 

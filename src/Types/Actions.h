@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <string_view>
 
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
+#include <DataSkillbarUw.h>
 #include <GuiConstants.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
-#include <SkillbarDataUw.h>
 #include <Types.h>
 
 class ActionABC
@@ -16,7 +16,7 @@ public:
 
     static bool HasWaitedLongEnough();
 
-    ActionABC(PlayerData *p, std::string_view t) : player_data(p), text(t){};
+    ActionABC(DataPlayer *p, std::string_view t) : player_data(p), text(t){};
     virtual ~ActionABC(){};
 
     void Draw(const ImVec2 button_size = DEFAULT_BUTTON_SIZE);
@@ -32,7 +32,7 @@ public:
         return !PauseRoutine();
     }
 
-    PlayerData *player_data;
+    DataPlayer *player_data;
     std::string_view text;
 
     ActionState action_state = ActionState::INACTIVE;

@@ -7,7 +7,7 @@
 #include <Base/HelperBoxWindow.h>
 
 #include <Actions.h>
-#include <PlayerData.h>
+#include <DataPlayer.h>
 #include <Types.h>
 
 #include <SimpleIni.h>

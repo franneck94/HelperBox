@@ -5,9 +5,9 @@
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/SkillbarMgr.h>
 
-#include "SkillData.h"
+#include "DataSkill.h"
 
-SkillData::SkillData(const GW::Constants::SkillID id_, const uint32_t idx_)
+DataSkill::DataSkill(const GW::Constants::SkillID id_, const uint32_t idx_)
     : id(static_cast<uint32_t>(id_)), idx(idx_), energy_cost(0U), recharge(UINT32_MAX)
 {
     const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(id);
@@ -17,19 +17,19 @@ SkillData::SkillData(const GW::Constants::SkillID id_, const uint32_t idx_)
         energy_cost = skill_data->energy_cost;
 }
 
-void SkillData::Update(const GW::SkillbarSkill *const skillbar_skills)
+void DataSkill::Update(const GW::SkillbarSkill *const skillbar_skills)
 {
     if (!skillbar_skills)
         return;
     recharge = skillbar_skills[idx].GetRecharge();
 }
 
-bool SkillData::CanBeCasted(const uint32_t current_energy) const
+bool DataSkill::CanBeCasted(const uint32_t current_energy) const
 {
     return SkillFound() && (current_energy > energy_cost && recharge == 0);
 }
 
-RoutineState SkillData::Cast(const uint32_t current_energy, const uint32_t target_id) const
+RoutineState DataSkill::Cast(const uint32_t current_energy, const uint32_t target_id) const
 {
     if (!CanBeCasted(current_energy))
         return RoutineState::ACTIVE;
@@ -42,7 +42,7 @@ RoutineState SkillData::Cast(const uint32_t current_energy, const uint32_t targe
     return RoutineState::FINISHED;
 }
 
-bool SkillData::SkillFound() const
+bool DataSkill::SkillFound() const
 {
     return idx != static_cast<uint32_t>(-1);
 }

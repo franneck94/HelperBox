@@ -21,6 +21,8 @@
 
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
@@ -28,8 +30,6 @@
 #include <HelperUwPos.h>
 #include <Logger.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
 #include <Timer.h>
 #include <Types.h>
 
@@ -58,7 +58,7 @@ constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
 EmoWindow::EmoWindow()
-    : UwHelperWindowABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data)
+    : UwHelperWindowABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -82,15 +82,15 @@ void EmoWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 
 #ifdef _DEBUG
-    if (IsUw() && show_debug_map && agents_data)
-        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "EmoMap");
+    if (IsUw() && show_debug_map && livings_data)
+        DrawMap(player_data.pos, livings_data->enemies, moves[move_idx]->pos, "EmoMap");
 #endif
 }
 
 void EmoWindow::UpdateUw()
 {
     UpdateUwEntry();
-    MoveABC::UpdatedUwMoves(player_data, agents_data, moves, move_idx, move_ongoing);
+    MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
 
     if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
     {
@@ -150,7 +150,7 @@ void EmoWindow::UpdateUwEntry()
     }
 }
 
-void EmoWindow::Update(float, const AgentLivingData &_agents_data)
+void EmoWindow::Update(float, const AgentLivingData &_livings_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {
@@ -159,8 +159,8 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
         return;
     }
     player_data.Update();
-    agents_data = &_agents_data;
-    emo_routinme.agents_data = agents_data;
+    livings_data = &_livings_data;
+    emo_routinme.livings_data = livings_data;
 
     if (!IsEmo(player_data))
         return;
@@ -186,12 +186,12 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
     emo_routinme.Update();
 }
 
-EmoRoutine::EmoRoutine(PlayerData *p,
+EmoRoutine::EmoRoutine(DataPlayer *p,
                        EmoSkillbarData *s,
                        uint32_t *_bag_idx,
                        uint32_t *_slot_idx,
                        const AgentLivingData *a)
-    : EmoActionABC(p, "EmoRoutine", s), bag_idx(_bag_idx), slot_idx(_slot_idx), agents_data(a)
+    : EmoActionABC(p, "EmoRoutine", s), bag_idx(_bag_idx), slot_idx(_slot_idx), livings_data(a)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
         &Summon_AgentAdd_Entry,
@@ -258,11 +258,11 @@ bool EmoRoutine::RoutineSelfBonds() const
             return true;
     }
 
-    if (found_ether && (player_data->hp_perc < 0.85F || !found_sb) && player_data->SpamEffect(skillbar->sb))
+    if (found_ether && (player_data->hp_perc < 0.85F || !found_sb) && player_data->CastEffect(skillbar->sb))
         return true;
 
     if (found_ether && (player_data->energy_perc < 0.85F || !found_burning) &&
-        player_data->SpamEffect(skillbar->burning))
+        player_data->CastEffect(skillbar->burning))
         return true;
 
     return false;
@@ -270,11 +270,11 @@ bool EmoRoutine::RoutineSelfBonds() const
 
 bool EmoRoutine::RoutineEscortSpirits() const
 {
-    if (!agents_data || agents_data->npcs.size() == 0)
+    if (!livings_data || livings_data->npcs.size() == 0)
         return false;
 
     auto spirits_livings = std::vector<GW::AgentLiving *>{};
-    FilterByIdsAndDistances(player_data->pos, agents_data->npcs, spirits_livings, ESCORT_IDS);
+    FilterByIdsAndDistances(player_data->pos, livings_data->npcs, spirits_livings, ESCORT_IDS);
 
     if (spirits_livings.size() == 0)
         return false;
@@ -306,15 +306,15 @@ bool EmoRoutine::RoutineCanthaGuards() const
     if (!player_data->CanCast())
         return false;
 
-    if (!agents_data)
+    if (!livings_data)
         return true;
 
     const auto filtered_enemies =
-        FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+        FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Earshot);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterByIdsAndDistances(player_data->pos,
-                            agents_data->npcs,
+                            livings_data->npcs,
                             filtered_canthas,
                             CANTHA_IDS,
                             GW::Constants::Range::Spellcast);
@@ -698,7 +698,7 @@ RoutineState EmoRoutine::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight && (DhuumFightDone(agents_data->npcs) || DhuumFightDone(agents_data->neutrals)))
+    if (!is_in_dhuum_fight && (DhuumFightDone(livings_data->npcs) || DhuumFightDone(livings_data->neutrals)))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;

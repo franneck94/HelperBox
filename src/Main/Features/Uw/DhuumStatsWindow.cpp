@@ -18,12 +18,12 @@
 #include <Base/HelperBox.h>
 
 #include <ActionsUw.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 #include "DhuumStatsWindow.h"

@@ -9,11 +9,11 @@
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <DataPlayer.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 #include "HelperUw.h"
@@ -108,26 +108,26 @@ uint32_t GetDhuumBitchId()
     return 0;
 }
 
-bool IsEmo(const PlayerData &player_data)
+bool IsEmo(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Elementalist &&
             player_data.secondary == GW::Constants::Profession::Monk);
 }
 
-bool IsDhuumBitch(const PlayerData &player_data)
+bool IsDhuumBitch(const DataPlayer &player_data)
 {
     return ((player_data.primary == GW::Constants::Profession::Ritualist ||
              player_data.primary == GW::Constants::Profession::Dervish) &&
             player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
-bool IsSpiker(const PlayerData &player_data)
+bool IsSpiker(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Mesmer &&
             player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
-bool IsLT(const PlayerData &player_data)
+bool IsLT(const DataPlayer &player_data)
 {
     if (player_data.primary == GW::Constants::Profession::Mesmer &&
         player_data.secondary == GW::Constants::Profession::Assassin)
@@ -148,13 +148,13 @@ bool IsLT(const PlayerData &player_data)
             player_data.secondary == GW::Constants::Profession::Elementalist);
 }
 
-bool IsRangerTerra(const PlayerData &player_data)
+bool IsRangerTerra(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Ranger &&
             player_data.secondary == GW::Constants::Profession::Assassin);
 }
 
-bool IsMesmerTerra(const PlayerData &player_data)
+bool IsMesmerTerra(const DataPlayer &player_data)
 {
     if (player_data.primary != GW::Constants::Profession::Mesmer ||
         player_data.secondary != GW::Constants::Profession::Elementalist)
@@ -250,7 +250,7 @@ bool TankIsSoloLT()
     return false;
 }
 
-bool TargetIsReaper(PlayerData &player_data)
+bool TargetIsReaper(DataPlayer &player_data)
 {
     if (!player_data.target)
         return false;
@@ -262,12 +262,12 @@ bool TargetIsReaper(PlayerData &player_data)
     return true;
 }
 
-bool TargetReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
+bool TargetReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
     return TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers) != 0U;
 }
 
-bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
+bool TalkReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
     const auto id = TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers);
     if (!id)
@@ -282,7 +282,7 @@ bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &n
     return true;
 }
 
-bool TargetClosestKeeper(PlayerData &player_data, const std::vector<GW::AgentLiving *> enemies)
+bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> enemies)
 {
     return TargetClosestEnemyById(player_data, enemies, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
@@ -361,15 +361,15 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
     return false;
 }
 
-bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos)
+bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *livings_data, const GW::GamePos &next_pos)
 {
-    if (!agents_data)
+    if (!livings_data)
         return true;
 
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 
-    const auto livings = FilterAgentsByRange(agents_data->enemies, player_data, GW::Constants::Range::Earshot);
+    const auto livings = FilterAgentsByRange(livings_data->enemies, player_data, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
 
     if (player_data.pos.x == next_pos.x && player_data.pos.y == next_pos.y)
@@ -378,7 +378,7 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
         return false;
 
     const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
-    const auto filtered_livings = GetEnemiesInGameRectangle(rect, agents_data->enemies);
+    const auto filtered_livings = GetEnemiesInGameRectangle(rect, livings_data->enemies);
 
     const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
 
@@ -390,7 +390,7 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
     else if (move_pos_is_right_at_spirits1) // ignore spirits here
     {
         const auto player_pos = player_data.pos;
-        auto enemies = agents_data->enemies;
+        auto enemies = livings_data->enemies;
         if (enemies.size() == 0)
             return true;
 

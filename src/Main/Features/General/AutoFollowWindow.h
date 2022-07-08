@@ -6,7 +6,7 @@
 
 #include <Actions.h>
 #include <Base/HelperBoxWindow.h>
-#include <PlayerData.h>
+#include <DataPlayer.h>
 #include <Types.h>
 
 #include <SimpleIni.h>
@@ -15,7 +15,7 @@
 class AutoFollowAction : public ActionABC
 {
 public:
-    AutoFollowAction(PlayerData *p) : ActionABC(p, "Follow")
+    AutoFollowAction(DataPlayer *p) : ActionABC(p, "Follow")
     {
     }
 
@@ -44,6 +44,6 @@ public:
     void Update(float delta, const AgentLivingData &) override;
 
 private:
-    PlayerData player_data;
+    DataPlayer player_data;
     AutoFollowAction auto_follow;
 };

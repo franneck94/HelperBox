@@ -13,13 +13,13 @@
 
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
 #include <GuiUtils.h>
 #include <HelperAgents.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
 #include <Timer.h>
 #include <Types.h>
 
@@ -162,7 +162,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void TerraWindow::Update(float, const AgentLivingData &agents_data)
+void TerraWindow::Update(float, const AgentLivingData &livings_data)
 {
     filtered_livings.clear();
     behemoth_livings.clear();
@@ -183,8 +183,8 @@ void TerraWindow::Update(float, const AgentLivingData &agents_data)
     auto_target.Update();
 
     const auto &pos = player_data.pos;
-    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, T2_IDS, 800.0F);
-    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, GENERAL_IDS, 1500.0F);
+    FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, T2_IDS, 800.0F);
+    FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, GENERAL_IDS, 1500.0F);
     FilterByIdAndDistance(pos, filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
     FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
     FilterByIdAndDistance(pos, filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);

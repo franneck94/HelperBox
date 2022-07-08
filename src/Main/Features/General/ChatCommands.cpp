@@ -19,7 +19,7 @@ void ChatCommands::Initialize()
     GW::Chat::CreateCommand(L"dhuum", ChatCommands::CmdDhuumUseSkill);
 }
 
-void ChatCommands::Update(float, const AgentLivingData &_agents_data)
+void ChatCommands::Update(float, const AgentLivingData &_livings_data)
 {
     if (!IsMapReady())
     {
@@ -27,7 +27,7 @@ void ChatCommands::Update(float, const AgentLivingData &_agents_data)
         return;
     }
 
-    agents_data = &_agents_data;
+    livings_data = &_livings_data;
     skill_to_use.Update();
 }
 
@@ -110,7 +110,7 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
         return;
 
     auto &skill_to_use = Instance().skill_to_use;
-    // const auto agents_data = Instance().agents_data;
+    // const auto livings_data = Instance().livings_data;
     skill_to_use.slot = 0;
 
     if (argc < 2)
@@ -124,7 +124,7 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
     // const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
     // if (!is_in_dhuum_fight)
     //     return;
-    // if (agents_data && DhuumFightDone(agents_data->npcs))
+    // if (livings_data && DhuumFightDone(livings_data->npcs))
     //     return;
 
     skill_to_use.slot = 1;

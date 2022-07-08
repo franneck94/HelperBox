@@ -7,9 +7,9 @@
 #include <GWCA/GameEntities/Agent.h>
 
 #include <ActionsUw.h>
-#include <AgentData.h>
 #include <Base/HelperBoxWindow.h>
-#include <PlayerData.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 #include <Types.h>
 
 #include <SimpleIni.h>
@@ -39,8 +39,8 @@ public:
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
-    PlayerData player_data;
-    const AgentLivingData *agents_data = nullptr;
+    DataPlayer player_data;
+    const AgentLivingData *livings_data = nullptr;
 
     std::vector<GW::AgentLiving *> filtered_livings;
     std::vector<GW::AgentLiving *> aatxe_livings;

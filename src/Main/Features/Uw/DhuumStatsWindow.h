@@ -12,8 +12,8 @@
 
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
+#include <DataPlayer.h>
 #include <HelperCallbacks.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 #include <SimpleIni.h>
@@ -97,7 +97,7 @@ public:
     void Update(float delta, const AgentLivingData &) override;
 
 private:
-    PlayerData player_data;
+    DataPlayer player_data;
 
     GW::HookEntry SkillCasted_Entry;
     GW::HookEntry Damage_Entry;

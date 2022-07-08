@@ -10,11 +10,11 @@
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/GameContainers/GamePos.h>
 
-#include <AgentData.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
 #include <Helper.h>
 #include <Logger.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
 #include <Timer.h>
 #include <Types.h>
 
@@ -56,13 +56,13 @@ public:
         Log::Info("Waiting...");
     };
 
-    virtual bool UpdateMoveState(const PlayerData &player_data,
-                                 const AgentLivingData *agents_data,
+    virtual bool UpdateMoveState(const DataPlayer &player_data,
+                                 const AgentLivingData *livings_data,
                                  bool &move_ongoing) = 0;
 
     template <uint32_t N>
-    static void UpdatedUwMoves(const PlayerData &player_data,
-                               const AgentLivingData *agents_data,
+    static void UpdatedUwMoves(const DataPlayer &player_data,
+                               const AgentLivingData *livings_data,
                                std::array<MoveABC *, N> &moves,
                                uint32_t &move_idx,
                                bool &move_ongoing)
@@ -76,7 +76,7 @@ public:
         if (move_idx >= moves.size() - 1U)
             return;
 
-        const auto can_be_finished = moves[move_idx]->UpdateMoveState(player_data, agents_data, move_ongoing);
+        const auto can_be_finished = moves[move_idx]->UpdateMoveState(player_data, livings_data, move_ongoing);
 
         const auto is_moving = player_data.living->GetIsMoving();
         const auto reached_pos = GamePosCompare(player_data.pos, moves[move_idx]->pos, 0.001F);
@@ -131,7 +131,7 @@ public:
     }
 
     template <uint32_t N>
-    static uint32_t GetFirstCloseMove(const PlayerData &player_data, const std::array<MoveABC *, N> &moves)
+    static uint32_t GetFirstCloseMove(const DataPlayer &player_data, const std::array<MoveABC *, N> &moves)
     {
         auto idx = 0U;
         for (const auto move : moves)
@@ -170,8 +170,8 @@ public:
                    std::optional<std::function<bool()>> _cb_fn = std::nullopt)
         : MoveABC(_x, _y, _name, _is_proceeding_move, _cb_fn){};
 
-    bool UpdateMoveState(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
+    bool UpdateMoveState(const DataPlayer &player_data,
+                         const AgentLivingData *livings_data,
                          bool &move_ongoing) override;
 };
 
@@ -205,8 +205,8 @@ public:
                  std::optional<std::function<bool()>> _cb_fn = std::nullopt)
         : MoveABC(_x, _y, _name, _is_proceeding_move, _cb_fn){};
 
-    bool UpdateMoveState(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
+    bool UpdateMoveState(const DataPlayer &player_data,
+                         const AgentLivingData *livings_data,
                          bool &move_ongoing) override;
 };
 
@@ -237,18 +237,18 @@ public:
                       const float _y,
                       const std::string &_name,
                       const bool _is_proceeding_move,
-                      const SkillData *_skill_cb,
+                      const DataSkill *_skill_cb,
                       std::optional<std::function<bool()>> _cb_fn = std::nullopt)
         : MoveABC(_x, _y, _name, _is_proceeding_move, _cb_fn), skill_cb(_skill_cb)
     {
         is_casting_action = true;
     };
 
-    bool UpdateMoveState(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
+    bool UpdateMoveState(const DataPlayer &player_data,
+                         const AgentLivingData *livings_data,
                          bool &move_ongoing) override;
 
-    const SkillData *skill_cb = nullptr;
+    const DataSkill *skill_cb = nullptr;
 };
 
 class Move_CastSkillAndContinue : public Move_CastSkillABC
@@ -257,7 +257,7 @@ public:
     Move_CastSkillAndContinue(const float _x,
                               const float _y,
                               const std::string &_name,
-                              const SkillData *_skill_cb,
+                              const DataSkill *_skill_cb,
                               std::optional<std::function<bool()>> _cb_fn = std::nullopt)
         : Move_CastSkillABC(_x, _y, _name, true, _skill_cb, _cb_fn){};
 };
@@ -268,7 +268,7 @@ public:
     Move_CastSkillAndStop(const float _x,
                           const float _y,
                           const std::string &_name,
-                          const SkillData *_skill_cb,
+                          const DataSkill *_skill_cb,
                           std::optional<std::function<bool()>> _cb_fn = std::nullopt)
         : Move_CastSkillABC(_x, _y, _name, false, _skill_cb, _cb_fn){};
 };
@@ -287,8 +287,8 @@ public:
         is_distance_based = true;
     };
 
-    bool UpdateMoveState(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
+    bool UpdateMoveState(const DataPlayer &player_data,
+                         const AgentLivingData *livings_data,
                          bool &move_ongoing) override;
 
     void NoTriggerMessage() const override
@@ -338,8 +338,8 @@ public:
         is_distance_based = true;
     };
 
-    bool UpdateMoveState(const PlayerData &player_data,
-                         const AgentLivingData *agents_data,
+    bool UpdateMoveState(const DataPlayer &player_data,
+                         const AgentLivingData *livings_data,
                          bool &move_ongoing) override;
 
     void NoTriggerMessage() const override

@@ -14,13 +14,13 @@
 
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <Logger.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 #include <fmt/format.h>
@@ -126,7 +126,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float, const AgentLivingData &_agents_data)
+void MainteamWindow::Update(float, const AgentLivingData &_livings_data)
 {
     filtered_livings.clear();
     aatxe_livings.clear();
@@ -144,8 +144,8 @@ void MainteamWindow::Update(float, const AgentLivingData &_agents_data)
         return;
 
     const auto &pos = player_data.pos;
-    agents_data = &_agents_data;
-    FilterByIdsAndDistances(pos, _agents_data.enemies, filtered_livings, IDS, 1600.0F);
+    livings_data = &_livings_data;
+    FilterByIdsAndDistances(pos, _livings_data.enemies, filtered_livings, IDS, 1600.0F);
     FilterByIdAndDistance(pos, filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
     FilterByIdAndDistance(pos, filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
     FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);

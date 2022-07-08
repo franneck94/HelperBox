@@ -7,7 +7,7 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <PlayerData.h>
+#include <DataPlayer.h>
 #include <Types.h>
 
 class UwHelperWindowABC
@@ -43,8 +43,8 @@ public:
             });
     };
 
-    PlayerData player_data;
-    const AgentLivingData *agents_data = nullptr;
+    DataPlayer player_data;
+    const AgentLivingData *livings_data = nullptr;
 
     GW::HookEntry ObjectiveDone_Entry;
     GW::HookEntry MapLoaded_Entry;

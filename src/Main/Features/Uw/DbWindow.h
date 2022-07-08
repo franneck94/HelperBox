@@ -7,13 +7,13 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <Actions.h>
-#include <AgentData.h>
 #include <Base/HelperBoxWindow.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <HelperCallbacks.h>
 #include <HelperUw.h>
 #include <Move.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 #include "UwHelperWindowBase.h"
@@ -24,7 +24,7 @@
 class DbRoutine : public DbActionABC
 {
 public:
-    DbRoutine(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a);
+    DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -40,7 +40,7 @@ private:
     bool RoutineDhuumDamage() const;
 
 public:
-    const AgentLivingData *agents_data = nullptr;
+    const AgentLivingData *livings_data = nullptr;
 };
 
 class DbWindow : public HelperBoxWindow, public UwHelperWindowABC
@@ -105,8 +105,8 @@ private:
 
     DbRoutine db_routinme;
 
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, livings_data->npcs); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, livings_data->npcs); };
     std::function<bool()> cast_sq = [&]() {
         skillbar.sq.Cast(player_data.energy);
         return true;

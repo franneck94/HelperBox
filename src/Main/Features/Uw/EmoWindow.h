@@ -8,14 +8,14 @@
 #include <GWCA/Utilities/Hook.h>
 
 #include <ActionsUw.h>
-#include <AgentData.h>
 #include <Base/HelperBoxWindow.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperItems.h>
 #include <HelperUw.h>
 #include <Move.h>
-#include <PlayerData.h>
 #include <Types.h>
 
 #include "UwHelperWindowBase.h"
@@ -26,7 +26,7 @@
 class EmoRoutine : public EmoActionABC
 {
 public:
-    EmoRoutine(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
+    EmoRoutine(DataPlayer *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -59,7 +59,7 @@ private:
 public:
     const GW::Agent *lt_agent = nullptr;
     const GW::Agent *db_agent = nullptr;
-    const AgentLivingData *agents_data = nullptr;
+    const AgentLivingData *livings_data = nullptr;
 
 private:
     std::vector<PlayerMapping> party_members{};
@@ -153,8 +153,8 @@ private:
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, livings_data->npcs); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, livings_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     static inline const auto KEEPER3_TRIGGER = GW::GamePos{-2655.90F, 13362.98F, 0};

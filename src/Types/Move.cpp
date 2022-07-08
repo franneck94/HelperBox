@@ -5,13 +5,13 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 
-#include <AgentData.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <Logger.h>
-#include <PlayerData.h>
 #include <Timer.h>
 
 #include <fmt/format.h>
@@ -41,7 +41,7 @@ void MoveABC::Execute() const
         cb_fn.value()();
 }
 
-bool Move_CastSkillABC::UpdateMoveState(const PlayerData &player_data, const AgentLivingData *, bool &move_ongoing)
+bool Move_CastSkillABC::UpdateMoveState(const DataPlayer &player_data, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
 
@@ -88,14 +88,14 @@ bool Move_CastSkillABC::UpdateMoveState(const PlayerData &player_data, const Age
     return true;
 }
 
-bool Move_WaitABC::UpdateMoveState(const PlayerData &player_data,
-                                   const AgentLivingData *agents_data,
+bool Move_WaitABC::UpdateMoveState(const DataPlayer &player_data,
+                                   const AgentLivingData *livings_data,
                                    bool &move_ongoing)
 {
     move_ongoing = true;
 
     static auto canceled_move = false;
-    const auto aggro_free = CheckForAggroFree(player_data, agents_data, pos);
+    const auto aggro_free = CheckForAggroFree(player_data, livings_data, pos);
     if (aggro_free)
     {
         canceled_move = false;
@@ -113,7 +113,7 @@ bool Move_WaitABC::UpdateMoveState(const PlayerData &player_data,
     return false;
 }
 
-bool Move_DistanceABC::UpdateMoveState(const PlayerData &player_data, const AgentLivingData *, bool &move_ongoing)
+bool Move_DistanceABC::UpdateMoveState(const DataPlayer &player_data, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
 
@@ -132,13 +132,13 @@ bool Move_DistanceABC::UpdateMoveState(const PlayerData &player_data, const Agen
     return true;
 }
 
-bool Move_NoWaitABC::UpdateMoveState(const PlayerData &, const AgentLivingData *, bool &move_ongoing)
+bool Move_NoWaitABC::UpdateMoveState(const DataPlayer &, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
     return true;
 }
 
-bool Move_PositionABC::UpdateMoveState(const PlayerData &, const AgentLivingData *, bool &move_ongoing)
+bool Move_PositionABC::UpdateMoveState(const DataPlayer &, const AgentLivingData *, bool &move_ongoing)
 {
     move_ongoing = true;
 
