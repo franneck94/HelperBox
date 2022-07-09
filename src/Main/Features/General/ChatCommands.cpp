@@ -113,7 +113,10 @@ void ChatCommands::UseSkill::Update()
     if (!me_living)
         return;
 
-    const auto current_energy = (me_living->energy * me_living->max_energy);
+    if (!slot)
+        return;
+
+    const auto current_energy = static_cast<uint32_t>((me_living->energy * me_living->max_energy));
     CastSelectedSkill(current_energy, skillbar);
 }
 
@@ -134,7 +137,6 @@ void ChatCommands::DhuumUseSkill::Update()
     if (!me_living)
         return;
 
-    // START DHUUM LOGIC
     const auto progress_perc = GetProgressValue();
 
     if (progress_perc < 0.99F)
@@ -169,9 +171,11 @@ void ChatCommands::DhuumUseSkill::Update()
             slot = 5;
         }
     }
-    // END DHUUM LOGIC
 
-    const auto current_energy = (me_living->energy * me_living->max_energy);
+    if (!slot)
+        return;
+
+    const auto current_energy = static_cast<uint32_t>((me_living->energy * me_living->max_energy));
     CastSelectedSkill(current_energy, skillbar);
 }
 
