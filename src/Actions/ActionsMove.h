@@ -147,6 +147,26 @@ public:
         return 0U;
     }
 
+    static void LtMoveTrigger(bool &ready,
+                              bool &ongoing,
+                              const bool trigger_take,
+                              const bool trigger_move,
+                              const bool is_moving,
+                              const MoveABC *move)
+    {
+        if (ready && !ongoing && trigger_move || trigger_take)
+        {
+            move->Execute();
+            ongoing = true;
+            if (trigger_take)
+                ready = false;
+            else if (trigger_move && is_moving)
+                ready = false;
+        }
+        else if (ready && ongoing)
+            ready = false;
+    }
+
 private:
     float x = 0.0F;
     float y = 0.0F;

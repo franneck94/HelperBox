@@ -102,18 +102,14 @@ void UwEmo::UpdateUw()
         (moves[move_idx]->name == "Go Wastes 1" || moves[move_idx]->name == "Go To Dhuum 1" ||
          moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
          moves[move_idx]->name == "Go Lab 1");
+    const auto is_moving = player_data.living->GetIsMoving();
 
-    if (lt_is_ready && !move_ongoing && is_hm_trigger_move || is_hm_trigger_take)
-    {
-        moves[move_idx]->Execute();
-        move_ongoing = true;
-        if (is_hm_trigger_take)
-            lt_is_ready = false;
-        else if (is_hm_trigger_move && player_data.living->GetIsMoving())
-            lt_is_ready = false;
-    }
-    else if (lt_is_ready && move_ongoing)
-        lt_is_ready = false;
+    Move_PositionABC::LtMoveTrigger(lt_is_ready,
+                                    move_ongoing,
+                                    is_hm_trigger_take,
+                                    is_hm_trigger_move,
+                                    is_moving,
+                                    moves[move_idx]);
 }
 
 void UwEmo::UpdateUwEntry()
