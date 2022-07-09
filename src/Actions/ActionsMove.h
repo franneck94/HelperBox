@@ -154,9 +154,10 @@ public:
                               const bool is_moving,
                               const MoveABC *move)
     {
-        if (ready && !ongoing && (trigger_move || trigger_take))
+        if (ready && (trigger_move || trigger_take))
         {
             move->Execute();
+            Log::Info("Starting action %s", move->name.data());
             if (trigger_take)
             {
                 ready = false;
@@ -169,6 +170,8 @@ public:
             }
         }
         else if (ready && ongoing)
+            ready = false;
+        else if (ready && !trigger_move && !trigger_take)
             ready = false;
     }
 
