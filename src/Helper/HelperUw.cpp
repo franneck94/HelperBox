@@ -383,6 +383,9 @@ bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *liv
 
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+    const auto filter_ids_full = std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                    GW::Constants::ModelID::UW::SkeletonOfDhuum2,
+                                                    GW::Constants::ModelID::UW::BladedAatxe};
 
     const auto livings = FilterAgentsByRange(livings_data->enemies, player_data, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
@@ -395,37 +398,11 @@ bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *liv
     const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
     const auto filtered_livings = GetEnemiesInGameRectangle(rect, livings_data->enemies);
 
-    const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
-
     auto result_ids_rect = std::set<uint32_t>{};
-    if (IsAtFilterSkelePos(player_data.pos, next_pos)) // ignore skeles here
-    {
-        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
-    }
-    else if (move_pos_is_right_at_spirits1) // ignore spirits here
-    {
-        const auto player_pos = player_data.pos;
-        auto enemies = livings_data->enemies;
-        if (enemies.size() == 0)
-            return true;
-
-        std::sort(enemies.begin(), enemies.end(), [&player_pos](const auto a1, const auto a2) {
-            const auto sqrd1 = GW::GetDistance(player_pos, a1->pos);
-            const auto sqrd2 = GW::GetDistance(player_pos, a2->pos);
-            return sqrd1 < sqrd2;
-        });
-
-        const auto dist = GW::GetDistance(player_pos, enemies[0]->pos);
-        return dist > 3000.0F;
-    }
-    else if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 400.0F)
-    {
-        result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{GW::Constants::ModelID::UW::BladedAatxe});
-    }
+    if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 400.0F) // At fuse pull 2
+        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids_full);
     else
-    {
-        result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
-    }
+        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
 
     return result_ids_rect.size() == 0;
 }
