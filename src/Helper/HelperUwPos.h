@@ -8,7 +8,7 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
-bool IsAtSpawn(const GW::GamePos &player_pos);
+bool IsAtSpawn(const GW::GamePos &player_pos, const float range = 500.0F);
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos);
 

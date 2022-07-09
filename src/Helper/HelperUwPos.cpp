@@ -18,9 +18,9 @@ bool IsUwEntryOutpost()
     return IsEndGameEntryOutpost();
 }
 
-bool IsAtSpawn(const GW::GamePos &player_pos)
+bool IsAtSpawn(const GW::GamePos &player_pos, const float range)
 {
-    return IsNearToGamePos(player_pos, GW::GamePos{1248.00F, 6965.51F, 0}, 500.0F);
+    return IsNearToGamePos(player_pos, GW::GamePos{1248.00F, 6965.51F, 0}, range);
 }
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos)
