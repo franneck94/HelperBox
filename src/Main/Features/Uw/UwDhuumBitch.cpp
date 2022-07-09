@@ -76,11 +76,13 @@ void UwDhuumBitch::UpdateUw()
     if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
     {
         moves[move_idx]->Execute();
-        move_ongoing = true;
+        if (player_data.living->GetIsMoving())
+            move_ongoing = true;
     }
 
-    const auto is_hm_trigger_take = moves[move_idx]->name == "Talk Lab Reaper";
-    const auto is_hm_trigger_move = moves[move_idx]->name == "Go To Dhuum 1";
+    const auto is_hm_trigger_take = (moves[move_idx]->name == "Talk Lab" || moves[move_idx]->name == "Take Planes");
+    const auto is_hm_trigger_move =
+        (moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go To Dhuum 6");
     const auto is_moving = player_data.living->GetIsMoving();
 
     Move_PositionABC::LtMoveTrigger(lt_is_ready,

@@ -99,9 +99,10 @@ void UwEmo::UpdateUw()
 
     const auto is_hm_trigger_take = moves[move_idx]->name == "Talk Lab Reaper";
     const auto is_hm_trigger_move =
-        (moves[move_idx]->name == "Go Wastes 1" || moves[move_idx]->name == "Go To Dhuum 1" ||
-         moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
-         moves[move_idx]->name == "Go Lab 1");
+        (moves[move_idx]->name == "Go To Wastes 1" || moves[move_idx]->name == "Go Wastes 2" ||
+         moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go Keeper 3" ||
+         moves[move_idx]->name == "Go Keeper 4/5" || moves[move_idx]->name == "Go Lab 1" ||
+         moves[move_idx]->name == "Go To Dhuum 6");
     const auto is_moving = player_data.living->GetIsMoving();
 
     Move_PositionABC::LtMoveTrigger(lt_is_ready,
@@ -280,16 +281,18 @@ bool EmoRoutine::RoutineEscortSpirits() const
         if (!spirit)
             continue;
 
-        if (spirit->hp > 0.80F)
+        if (spirit->hp > 0.90F)
             continue;
 
         const auto dist = GW::GetDistance(player_data->pos, spirit->pos);
-        const auto is_far_away = dist > 3000.0F;
+        const auto is_far_away = dist > 2000.0F;
 
         if (spirit->hp < 0.60F || is_far_away)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
-        else if (player_data->hp_perc > 0.50F)
+        else if (player_data->hp_perc > 0.30F)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
+        else
+            return (RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, spirit->agent_id));
     }
 
     return false;
