@@ -17,14 +17,27 @@ public:
     ~ChatCommands(){};
 
 private:
-    struct SkillToUse
+    struct BaseUseSkill
     {
         uint32_t slot = 0; // 1-8 range
-        float skill_usage_delay = 0.f;
+        float skill_usage_delay = 0.0F;
         clock_t skill_timer = clock();
-        void Update();
-    } skill_to_use;
-    const AgentLivingData *livings_data = nullptr;
+
+        virtual void Update() = 0;
+        void CastSelectedSkill(const uint32_t current_energy, const GW::Skillbar *skillbar);
+    };
+
+    struct UseSkill : public BaseUseSkill
+    {
+        void Update() override;
+    };
+    UseSkill useskill;
+
+    struct DhuumUseSkill : public BaseUseSkill
+    {
+        void Update() override;
+    };
+    DhuumUseSkill dhuum_useskill;
 
 public:
     static ChatCommands &Instance()
@@ -47,4 +60,5 @@ public:
 
     static void CmdHB(const wchar_t *message, int argc, LPWSTR *argv);
     static void CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv);
+    static void CmdUseSkill(const wchar_t *, int argc, LPWSTR *argv);
 };
