@@ -441,3 +441,19 @@ bool DropBondsOnLiving(const GW::AgentLiving *living)
 
     return dropped_smth;
 }
+
+const GW::AgentLiving *GetPlayerAsLiving()
+{
+    const auto me = GW::Agents::GetPlayer();
+    if (!me)
+        return nullptr;
+    return me->GetAsAgentLiving();
+}
+
+const GW::AgentLiving *GetTargetAsLiving()
+{
+    const auto me = GW::Agents::GetTarget();
+    if (!me)
+        return nullptr;
+    return me->GetAsAgentLiving();
+}
