@@ -197,7 +197,7 @@ private:
         new Move_WaitAndContinue{-6511.41F, 12447.65F, "Go Keeper 2"},
         new Move_PositionAndContinue{-3881.71F, 11280.04F, "Go Keeper 3", KEEPER3_TRIGGER, 300.0F, TriggerRole::LT},
         new Move_PositionAndContinue{-1502.45F, 9737.64F, "Go Keeper 4/5", KEEPER4_TRIGGER, 500.0F, TriggerRole::LT},
-        new Move_PositionAndContinue{-266.03F, 9304.26F, "Go Lab 1", KEEPER6_TRIGGER, 200.0F, TriggerRole::LT},
+        new Move_PositionAndContinue{-266.03F, 9304.26F, "Go Lab 1", KEEPER6_TRIGGER, 400.0F, TriggerRole::LT},
         new Move_NoWaitAndStop{1207.05F, 7732.16F, "Go Keeper 6"},
         new Move_NoWaitAndContinue{1543.75F, 10709.27F, "Go To Wastes 1"},
         new Move_NoWaitAndContinue{2532.49F, 10349.75F, "Go To Wastes 2"},
