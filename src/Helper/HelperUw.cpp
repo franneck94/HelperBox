@@ -385,7 +385,8 @@ bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *liv
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
     const auto filter_ids_full = std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
                                                     GW::Constants::ModelID::UW::SkeletonOfDhuum2,
-                                                    GW::Constants::ModelID::UW::BladedAatxe};
+                                                    GW::Constants::ModelID::UW::BladedAatxe,
+                                                    GW::Constants::ModelID::UW::GraspingDarkness};
 
     const auto livings = FilterAgentsByRange(livings_data->enemies, player_data, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
@@ -399,7 +400,7 @@ bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *liv
     const auto filtered_livings = GetEnemiesInGameRectangle(rect, livings_data->enemies);
 
     auto result_ids_rect = std::set<uint32_t>{};
-    if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 400.0F) // At fuse pull 2
+    if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 2500.0F) // At fuse pull 2
         result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids_full);
     else
         result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
