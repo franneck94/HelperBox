@@ -79,11 +79,6 @@ void UwDhuumStats::SkillPacketCallback(const uint32_t value_id,
         ++num_casted_rest;
         rests.push_back(clock());
     }
-
-    if (REST_SKILL_ID == activated_skill_id)
-        ++num_casted_rest_player;
-    else if (REST_SKILL_REAPER_ID == activated_skill_id)
-        ++num_casted_rest_reaper;
 }
 
 void UwDhuumStats::DamagePacketCallback(const uint32_t type,
@@ -158,7 +153,7 @@ void UwDhuumStats::Draw(IDirect3DDevice9 *)
         const auto timer_ms = TIMER_DIFF(dhuum_fight_start_time_ms);
         ImGui::Text("Timer: %4.0f", static_cast<float>(timer_ms) / 1000.0F);
         ImGui::Separator();
-        ImGui::Text("Num Rests: %u, %u, %u", num_casted_rest, num_casted_rest_player, num_casted_rest_reaper);
+        ImGui::Text("Num Rests: %u", num_casted_rest);
         ImGui::Text("Rests (per s): %0.2f", rests_per_s);
         ImGui::Text("ETA Rest (s): %2.0f", num_casted_rest > 0 && is_in_dhuum_fight ? eta_rest_s : 0.0F);
         ImGui::Separator();
@@ -228,7 +223,15 @@ void UwDhuumStats::UpdateRestData()
     if (party_size >= 1 && party_size <= 8)
         needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
 
-    const auto progress_perc = GetProgressValue();
+    progress_perc = GetProgressValue();
+#ifdef _DEBUG
+    auto last_num_rests = 0U;
+    if (last_num_rests + 20 == num_casted_rest)
+    {
+        Log::Info("Rest Info: %u, %0.2f", num_casted_rest, progress_perc);
+        last_num_rests = num_casted_rest;
+    }
+#endif
     auto still_needed_rest = needed_num_rest - num_casted_rest;
     if (still_needed_rest == 0 && progress_perc <= 0.99F)
         still_needed_rest = 5;

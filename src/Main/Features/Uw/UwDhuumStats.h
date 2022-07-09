@@ -92,8 +92,7 @@ private:
     bool dhuum_fight_active = false;
 
     uint32_t num_casted_rest = 0U;
-    uint32_t num_casted_rest_player = 0U;
-    uint32_t num_casted_rest_reaper = 0U;
+    float progress_perc = 0.0F;
     float rests_per_s = 0.0F;
     float eta_rest_s = 0.0F;
     std::vector<long> rests;
