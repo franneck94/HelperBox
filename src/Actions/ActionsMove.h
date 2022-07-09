@@ -154,14 +154,19 @@ public:
                               const bool is_moving,
                               const MoveABC *move)
     {
-        if (ready && !ongoing && trigger_move || trigger_take)
+        if (ready && !ongoing && (trigger_move || trigger_take))
         {
             move->Execute();
-            ongoing = true;
             if (trigger_take)
+            {
                 ready = false;
+                ongoing = true;
+            }
             else if (trigger_move && is_moving)
+            {
                 ready = false;
+                ongoing = true;
+            }
         }
         else if (ready && ongoing)
             ready = false;
