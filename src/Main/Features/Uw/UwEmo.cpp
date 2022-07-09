@@ -93,27 +93,32 @@ void UwEmo::UpdateUw()
     if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
     {
         moves[move_idx]->Execute();
-        move_ongoing = true;
+        if (player_data.living->GetIsMoving())
+            move_ongoing = true;
     }
 
+    const auto is_hm_trigger_take = moves[move_idx]->name == "Talk Lab Reaper";
     const auto is_hm_trigger_move =
-        (moves[move_idx]->name == "Talk Lab Reaper" || moves[move_idx]->name == "Go Wastes 1" ||
-         moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go Keeper 3" ||
-         moves[move_idx]->name == "Go Keeper 4/5" || moves[move_idx]->name == "Go Lab 1");
-    if (lt_is_ready && !move_ongoing && is_hm_trigger_move)
+        (moves[move_idx]->name == "Go Wastes 1" || moves[move_idx]->name == "Go To Dhuum 1" ||
+         moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
+         moves[move_idx]->name == "Go Lab 1");
+
+    if (lt_is_ready && !move_ongoing && is_hm_trigger_move || is_hm_trigger_take)
     {
         moves[move_idx]->Execute();
         move_ongoing = true;
-        lt_is_ready = false;
+        if (is_hm_trigger_take)
+            lt_is_ready = false;
+        else if (is_hm_trigger_move && player_data.living->GetIsMoving())
+            lt_is_ready = false;
     }
-    if (move_ongoing)
+    else if (lt_is_ready && move_ongoing)
         lt_is_ready = false;
 }
 
 void UwEmo::UpdateUwEntry()
 {
     static auto triggered_tank_bonds_at_start = false;
-    static auto triggered_move_start = false;
 
     if (load_cb_triggered)
     {
@@ -132,6 +137,7 @@ void UwEmo::UpdateUwEntry()
     {
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
+        emo_routinme.action_state = ActionState::ACTIVE;
         return;
     }
 
@@ -139,14 +145,7 @@ void UwEmo::UpdateUwEntry()
     {
         moves[0]->Execute();
         triggered_tank_bonds_at_start = false;
-        triggered_move_start = true;
         move_ongoing = true;
-        return;
-    }
-
-    if (triggered_move_start && move_idx == 1)
-    {
-        emo_routinme.action_state = ActionState::ACTIVE;
         return;
     }
 }
@@ -639,7 +638,7 @@ RoutineState EmoRoutine::Routine()
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (IsAtSpawn(player_data->pos) && BondLtAtStartRoutine())
+    if (IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
         return RoutineState::ACTIVE;
 
     if (RoutineSelfBonds())
