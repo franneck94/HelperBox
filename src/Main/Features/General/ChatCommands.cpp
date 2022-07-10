@@ -75,7 +75,9 @@ void ChatCommands::CmdHB(const wchar_t *, int argc, LPWSTR *argv)
     }
 }
 
-void ChatCommands::BaseUseSkill::CastSelectedSkill(const uint32_t current_energy, const GW::Skillbar *skillbar)
+void ChatCommands::BaseUseSkill::CastSelectedSkill(const uint32_t current_energy,
+                                                   const GW::Skillbar *skillbar,
+                                                   const uint32_t target_id)
 {
     const auto lslot = slot - 1;
     const auto &skill = skillbar->skills[lslot];
@@ -88,7 +90,10 @@ void ChatCommands::BaseUseSkill::CastSelectedSkill(const uint32_t current_energy
         (skilldata->adrenaline == 0) || (skilldata->adrenaline > 0 && skill.adrenaline_a >= skilldata->adrenaline);
     if (skill.GetRecharge() == 0 && enough_energy && enough_adrenaline)
     {
-        GW::SkillbarMgr::UseSkill(lslot);
+        if (target_id)
+            GW::SkillbarMgr::UseSkill(lslot, target_id);
+        else
+            GW::SkillbarMgr::UseSkill(lslot, GW::Agents::GetTargetId());
         skill_usage_delay = skilldata->activation + skilldata->aftercast;
         skill_timer = clock();
     }
@@ -139,6 +144,7 @@ void ChatCommands::DhuumUseSkill::Update()
 
     const auto progress_perc = GetProgressValue();
 
+    auto target_id = uint32_t{0};
     if (progress_perc < 0.99F)
         slot = 1;
     else // Rest done
@@ -163,12 +169,12 @@ void ChatCommands::DhuumUseSkill::Update()
         }
         if (target->player_number != static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
         {
-            GW::GameThread::Enqueue([this, target]() { GW::Agents::ChangeTarget(target->agent_id); });
             slot = 1;
         }
-        if (target->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
+        else if (target->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
         {
             slot = 5;
+            target_id = target->agent_id;
         }
     }
 
@@ -176,7 +182,7 @@ void ChatCommands::DhuumUseSkill::Update()
         return;
 
     const auto current_energy = static_cast<uint32_t>((me_living->energy * me_living->max_energy));
-    CastSelectedSkill(current_energy, skillbar);
+    CastSelectedSkill(current_energy, skillbar, target_id);
 }
 
 void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)

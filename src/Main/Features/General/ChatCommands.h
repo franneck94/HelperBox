@@ -24,7 +24,9 @@ private:
         clock_t skill_timer = clock();
 
         virtual void Update() = 0;
-        void CastSelectedSkill(const uint32_t current_energy, const GW::Skillbar *skillbar);
+        void CastSelectedSkill(const uint32_t current_energy,
+                               const GW::Skillbar *skillbar,
+                               const uint32_t target_id = 0);
     };
 
     struct UseSkill : public BaseUseSkill
