@@ -11,21 +11,21 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
 #include <GuiUtils.h>
 #include <HelperAgents.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
 #include <Timer.h>
-#include <Types.h>
 
 #include <fmt/format.h>
 
-#include "TerraWindow.h"
+#include "UwRanger.h"
 
 namespace
 {
@@ -64,7 +64,7 @@ RoutineState AutoTargetAction::Routine()
     return RoutineState::NONE;
 }
 
-void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label)
+void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label)
 {
     auto idx = uint32_t{0};
 
@@ -118,19 +118,19 @@ void TerraWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, con
     }
 }
 
-void TerraWindow::Draw(IDirect3DDevice9 *)
+void UwRanger::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
         return;
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
+    if (!IsRangerTerra(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("TerraWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
         auto_target.Draw(ImVec2(width, 35.0F));
@@ -162,7 +162,7 @@ void TerraWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void TerraWindow::Update(float, const AgentLivingData &agents_data)
+void UwRanger::Update(float, const AgentLivingData &livings_data)
 {
     filtered_livings.clear();
     behemoth_livings.clear();
@@ -183,8 +183,8 @@ void TerraWindow::Update(float, const AgentLivingData &agents_data)
     auto_target.Update();
 
     const auto &pos = player_data.pos;
-    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, T2_IDS, 800.0F);
-    FilterByIdsAndDistances(pos, agents_data.enemies, filtered_livings, GENERAL_IDS, 1500.0F);
+    FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, T2_IDS, 800.0F);
+    FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, GENERAL_IDS, 1500.0F);
     FilterByIdAndDistance(pos, filtered_livings, behemoth_livings, GW::Constants::ModelID::UW::ObsidianBehemoth);
     FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);
     FilterByIdAndDistance(pos, filtered_livings, skele_livings, GW::Constants::ModelID::UW::SkeletonOfDhuum1);

@@ -16,8 +16,11 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
@@ -25,16 +28,13 @@
 #include <HelperUwPos.h>
 #include <Logger.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
 #include <Timer.h>
-#include <Types.h>
 
 #include <fmt/format.h>
 #include <imgui.h>
 #include <implot.h>
 
-#include "DbWindow.h"
+#include "UwDhuumBitch.h"
 
 namespace
 {
@@ -43,81 +43,57 @@ static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
 }; // namespace
 
-DbWindow::DbWindow() : player_data({}), skillbar({}), damage(&player_data, &skillbar, agents_data)
+UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routinme(&player_data, &skillbar, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
-
-    GW::StoC::RegisterPacketCallback(&SendChat_Entry,
-                                     GAME_SMSG_CHAT_MESSAGE_LOCAL,
-                                     [this](GW::HookStatus *status, GW::Packet::StoC::PacketBase *packet) -> void {
-                                         lt_is_ready = OnChatMessageLtIsReady(status, packet, TriggerRole::LT);
-                                     });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
-        &MapLoaded_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-            load_cb_triggered = ExplorableLoadCallback(status, packet);
-            num_finished_objectives = 0U;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-        &GenericValue_Entry,
-        [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
-            if (move_ongoing && player_data.SkillStoppedCallback(packet))
-                interrupted = true;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
-        &ObjectiveDone_Entry,
-        [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
-            ++num_finished_objectives;
-            Log::Info("Finished Objective : %u, Num objectives: %u", packet->objective_id, num_finished_objectives);
-        });
 };
 
-void DbWindow::Draw(IDirect3DDevice9 *)
+void UwDhuumBitch::Draw(IDirect3DDevice9 *)
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsDhuumBitch(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("DbWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
-        damage.Draw();
+        db_routinme.Draw();
         DrawMovingButtons(moves, move_ongoing, move_idx);
     }
     ImGui::End();
 
 #ifdef _DEBUG
-    if (IsUw() && show_debug_map && agents_data)
-        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "DbMap");
+    if (IsUw() && show_debug_map && livings_data)
+        DrawMap(player_data.pos, livings_data->enemies, moves[move_idx]->pos, "DbMap");
 #endif
 }
 
-void DbWindow::UpdateUw()
+void UwDhuumBitch::UpdateUw()
 {
     UpdateUwEntry();
-    MoveABC::UpdatedUwMoves(player_data, agents_data, moves, move_idx, move_ongoing);
+    MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
 
     if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
     {
         moves[move_idx]->Execute();
-        move_ongoing = true;
+        if (player_data.living->GetIsMoving())
+            move_ongoing = true;
     }
 
-    if (lt_is_ready && !move_ongoing &&
-        (moves[move_idx]->name == "Talk Lab" || moves[move_idx]->name == "Go To Dhuum 1"))
-    {
-        moves[move_idx]->Execute();
-        move_ongoing = true;
-        lt_is_ready = false;
-    }
-    if (move_ongoing)
-        lt_is_ready = false;
+    const auto is_hm_trigger_take = (moves[move_idx]->name == "Talk Lab" || moves[move_idx]->name == "Take Planes");
+    const auto is_hm_trigger_move =
+        (moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go To Dhuum 6");
+    const auto is_moving = player_data.living->GetIsMoving();
+
+    Move_PositionABC::LtMoveTrigger(lt_is_ready,
+                                    move_ongoing,
+                                    is_hm_trigger_take,
+                                    is_hm_trigger_move,
+                                    is_moving,
+                                    moves[move_idx]);
 }
 
-void DbWindow::UpdateUwEntry()
+void UwDhuumBitch::UpdateUwEntry()
 {
     if (TankIsFullteamLT())
         load_cb_triggered = false;
@@ -134,18 +110,18 @@ void DbWindow::UpdateUwEntry()
     }
 }
 
-void DbWindow::Update(float, const AgentLivingData &_agents_data)
+void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {
         move_idx = 0;
         move_ongoing = false;
-        damage.action_state = ActionState::INACTIVE;
+        db_routinme.action_state = ActionState::INACTIVE;
         return;
     }
     player_data.Update();
-    agents_data = &_agents_data;
-    damage.agents_data = agents_data;
+    livings_data = &_livings_data;
+    db_routinme.livings_data = livings_data;
 
     if (!IsDhuumBitch(player_data))
         return;
@@ -160,7 +136,7 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
         return;
     skillbar.Update();
 
-    damage_action_state = &damage.action_state;
+    damage_action_state = &db_routinme.action_state;
 
     if (IsUw())
     {
@@ -168,14 +144,15 @@ void DbWindow::Update(float, const AgentLivingData &_agents_data)
         UpdateUw();
     }
 
-    damage.Update();
+    db_routinme.Update();
 }
 
-Damage::Damage(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a) : DbActionABC(p, "Damage", s), agents_data(a)
+DbRoutine::DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a)
+    : DbActionABC(p, "DbRoutine", s), livings_data(a)
 {
 }
 
-bool Damage::CastPiOnTarget() const
+bool DbRoutine::CastPiOnTarget() const
 {
     if (!player_data->target)
         return false;
@@ -194,7 +171,7 @@ bool Damage::CastPiOnTarget() const
     return false;
 }
 
-bool Damage::RoutineKillSkele() const
+bool DbRoutine::RoutineKillSkele() const
 {
     if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) || CastPiOnTarget())
         return true;
@@ -202,7 +179,7 @@ bool Damage::RoutineKillSkele() const
     return false;
 }
 
-bool Damage::RoutineKillEnemiesStandard() const
+bool DbRoutine::RoutineKillEnemiesStandard() const
 {
     const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
 
@@ -216,7 +193,7 @@ bool Damage::RoutineKillEnemiesStandard() const
     return false;
 }
 
-bool Damage::RoutineValeSpirits() const
+bool DbRoutine::RoutineValeSpirits() const
 {
     const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_eoe = player_data->HasEffect(GW::Constants::SkillID::Edge_of_Extinction);
@@ -238,7 +215,7 @@ bool Damage::RoutineValeSpirits() const
     return false;
 }
 
-bool Damage::RoutineDhuumRecharge() const
+bool DbRoutine::RoutineDhuumRecharge() const
 {
     static auto qz_timer = clock();
 
@@ -260,7 +237,7 @@ bool Damage::RoutineDhuumRecharge() const
     return false;
 }
 
-bool Damage::RoutineDhuumDamage() const
+bool DbRoutine::RoutineDhuumDamage() const
 {
     const auto found_honor = player_data->HasEffect(GW::Constants::SkillID::Ebon_Battle_Standard_of_Honor);
     const auto found_winnow = player_data->HasEffect(GW::Constants::SkillID::Winnowing);
@@ -278,7 +255,7 @@ bool Damage::RoutineDhuumDamage() const
     return false;
 }
 
-RoutineState Damage::Routine()
+RoutineState DbRoutine::Routine()
 {
     static auto dhuum_fight_ongoing = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
@@ -286,7 +263,7 @@ RoutineState Damage::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (!player_data->CanCast() || !agents_data)
+    if (!player_data->CanCast() || !livings_data)
         return RoutineState::ACTIVE;
 
     if (!ActionABC::HasWaitedLongEnough())
@@ -298,12 +275,12 @@ RoutineState Damage::Routine()
     if (IsAtChamberSkele(player_data->pos) || IsAtBasementSkele(player_data->pos) ||
         IsRightAtValeHouse(player_data->pos))
     {
-        const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+        const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Earshot);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-            TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, GW::Constants::Range::Earshot);
+            TargetAndAttackEnemyInAggro(*player_data, livings_data->enemies, GW::Constants::Range::Earshot);
 
         if (RoutineKillSkele())
             return RoutineState::FINISHED;
@@ -312,7 +289,7 @@ RoutineState Damage::Routine()
     // If mindblades were not stucked by LT, or back patrol aggro
     if (IsAtFusePulls(player_data->pos) || InBackPatrolArea(player_data->pos))
     {
-        const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+        const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Earshot);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
         RoutineKillEnemiesStandard();
@@ -320,12 +297,12 @@ RoutineState Damage::Routine()
 
     if (IsAtValeSpirits(player_data->pos))
     {
-        const auto enemies = FilterAgentsByRange(agents_data->enemies, *player_data, 1700.0F);
+        const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 1800.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-            TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, 1700.0F);
+            TargetAndAttackEnemyInAggro(*player_data, livings_data->enemies, 1800.0F);
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
@@ -343,7 +320,7 @@ RoutineState Damage::Routine()
     if (!is_in_dhuum_fight && dhuum_fight_ongoing)
         dhuum_fight_ongoing = false;
 
-    if (!is_in_dhuum_fight && DhuumFightDone(agents_data->npcs))
+    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;
@@ -372,12 +349,12 @@ RoutineState Damage::Routine()
         return RoutineState::FINISHED;
 
     if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-        TargetAndAttackEnemyInAggro(*player_data, agents_data->enemies, GW::Constants::Range::Earshot);
+        TargetAndAttackEnemyInAggro(*player_data, livings_data->enemies, GW::Constants::Range::Earshot);
 
     return RoutineState::FINISHED;
 }
 
-bool Damage::PauseRoutine()
+bool DbRoutine::PauseRoutine()
 {
     if (player_data->living->GetIsMoving())
         return true;
@@ -391,7 +368,7 @@ bool Damage::PauseRoutine()
     return false;
 }
 
-void Damage::Update()
+void DbRoutine::Update()
 {
     static auto paused = false;
 

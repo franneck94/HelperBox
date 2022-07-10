@@ -8,14 +8,13 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/AgentMgr.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <Types.h>
 
 #include <imgui.h>
 
@@ -55,7 +54,7 @@ void AutoFollowWindow::Draw(IDirect3DDevice9 *)
 
     ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("AutoFollowWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoDecoration))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoDecoration))
     {
         const auto width = ImGui::GetWindowWidth();
         auto_follow.Draw(ImVec2(width, 35.0F));

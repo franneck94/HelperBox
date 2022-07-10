@@ -49,9 +49,9 @@ void HelperBoxUIElement::RegisterSettingsContent()
 
 void HelperBoxUIElement::DrawSizeAndPositionSettings()
 {
-    ImVec2 pos(0, 0);
-    ImVec2 size(100.0f, 100.0f);
-    ImGuiWindow *window = ImGui::FindWindowByName(Name());
+    auto pos = ImVec2(0.0F, 0.0F);
+    auto size = ImVec2(100.0F, 100.0F);
+    auto window = ImGui::FindWindowByName(Name());
     if (window)
     {
         pos = window->Pos;
@@ -123,7 +123,7 @@ bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *)
     auto img_size = 0.0F;
 
     const auto text_x = pos.x + img_size + ImGui::GetStyle().ItemSpacing.x;
-    bool clicked = ImGui::Button("", ImVec2(width, ImGui::GetTextLineHeightWithSpacing()));
+    const auto clicked = ImGui::Button("", ImVec2(width, ImGui::GetTextLineHeightWithSpacing()));
 
     ImGui::GetWindowDrawList()->AddText(ImVec2(text_x, pos.y + ImGui::GetStyle().ItemSpacing.y / 2),
                                         ImColor(ImGui::GetStyle().Colors[ImGuiCol_Text]),

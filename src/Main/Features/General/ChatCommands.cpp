@@ -1,11 +1,14 @@
+#include <cstdlib>
 #include <string>
 
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
+#include <GWCA/Managers/GameThreadMgr.h>
 
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxWindow.h>
 #include <Base/MainWindow.h>
+#include <HelperAgents.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
 #include <Logger.h>
@@ -16,19 +19,21 @@ void ChatCommands::Initialize()
 {
     HelperBoxModule::Initialize();
     GW::Chat::CreateCommand(L"hb", ChatCommands::CmdHB);
+    GW::Chat::CreateCommand(L"use", ChatCommands::CmdUseSkill);
     GW::Chat::CreateCommand(L"dhuum", ChatCommands::CmdDhuumUseSkill);
 }
 
-void ChatCommands::Update(float, const AgentLivingData &_agents_data)
+void ChatCommands::Update(float, const AgentLivingData &)
 {
     if (!IsMapReady())
     {
-        skill_to_use.slot = 0;
+        useskill.slot = 0;
+        dhuum_useskill.slot = 0;
         return;
     }
 
-    agents_data = &_agents_data;
-    skill_to_use.Update();
+    useskill.Update();
+    dhuum_useskill.Update();
 }
 
 void ChatCommands::CmdHB(const wchar_t *, int argc, LPWSTR *argv)
@@ -70,9 +75,33 @@ void ChatCommands::CmdHB(const wchar_t *, int argc, LPWSTR *argv)
     }
 }
 
-void ChatCommands::SkillToUse::Update()
+void ChatCommands::BaseUseSkill::CastSelectedSkill(const uint32_t current_energy,
+                                                   const GW::Skillbar *skillbar,
+                                                   const uint32_t target_id)
 {
-    if (!slot)
+    const auto lslot = slot - 1;
+    const auto &skill = skillbar->skills[lslot];
+    const auto skilldata = GW::SkillbarMgr::GetSkillConstantData(skill.skill_id);
+    if (!skilldata)
+        return;
+
+    const auto enough_energy = current_energy > skilldata->energy_cost;
+    const auto enough_adrenaline =
+        (skilldata->adrenaline == 0) || (skilldata->adrenaline > 0 && skill.adrenaline_a >= skilldata->adrenaline);
+    if (skill.GetRecharge() == 0 && enough_energy && enough_adrenaline)
+    {
+        if (target_id)
+            GW::SkillbarMgr::UseSkill(lslot, target_id);
+        else
+            GW::SkillbarMgr::UseSkill(lslot, GW::Agents::GetTargetId());
+        skill_usage_delay = skilldata->activation + skilldata->aftercast;
+        skill_timer = clock();
+    }
+}
+
+void ChatCommands::UseSkill::Update()
+{
+    if (slot == 0)
         return;
     if ((clock() - skill_timer) / 1000.0f < skill_usage_delay)
         return;
@@ -89,29 +118,76 @@ void ChatCommands::SkillToUse::Update()
     if (!me_living)
         return;
 
-    uint32_t lslot = slot - 1;
-    const auto &skill = skillbar->skills[lslot];
-    const GW::Skill &skilldata = *GW::SkillbarMgr::GetSkillConstantData(skill.skill_id);
+    if (!slot)
+        return;
 
-    const auto enough_energy = (me_living->energy * me_living->max_energy) > skilldata.energy_cost;
-    const auto enough_adrenaline =
-        (skilldata.adrenaline == 0) || (skilldata.adrenaline > 0 && skill.adrenaline_a >= skilldata.adrenaline);
-    if (skill.GetRecharge() == 0 && enough_energy && enough_adrenaline)
+    const auto current_energy = static_cast<uint32_t>(me_living->energy * me_living->max_energy);
+    CastSelectedSkill(current_energy, skillbar);
+}
+
+void ChatCommands::DhuumUseSkill::Update()
+{
+    if (slot == 0)
+        return;
+    if ((clock() - skill_timer) / 1000.0f < skill_usage_delay)
+        return;
+    const auto skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
+    if (!skillbar || !skillbar->IsValid())
     {
-        GW::SkillbarMgr::UseSkill(lslot);
-        skill_usage_delay = skilldata.activation + skilldata.aftercast;
-        skill_timer = clock();
+        slot = 0;
+        return;
     }
+
+    const auto me_living = GetPlayerAsLiving();
+    if (!me_living)
+        return;
+
+    const auto progress_perc = GetProgressValue();
+    auto target_id = uint32_t{0};
+    if (progress_perc < 1.0F)
+    {
+        slot = 1;
+    }
+    else // Rest done
+    {
+        const auto dhuum_agent = GetDhuumAgent();
+        if (!dhuum_agent)
+        {
+            slot = 0;
+            return;
+        }
+        const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+        const auto target = GetTargetAsLiving();
+        if (!dhuum_living || dhuum_living->allegiance != GW::Constants::Allegiance::Enemy || !target ||
+            target->player_number != static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
+        {
+            slot = 0;
+            return;
+        }
+
+        slot = 5;
+        target_id = target->agent_id;
+
+        if (!me_living->GetIsAttacking())
+            AttackAgent(target);
+    }
+
+    if (!slot)
+        return;
+
+    const auto current_energy = static_cast<uint32_t>((me_living->energy * me_living->max_energy));
+    CastSelectedSkill(current_energy, skillbar, target_id);
 }
 
 void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 {
-    if (!IsMapReady())
+    if (!IsMapReady() && IsExplorable())
         return;
 
-    auto &skill_to_use = Instance().skill_to_use;
-    // const auto agents_data = Instance().agents_data;
-    skill_to_use.slot = 0;
+    auto &dhuum_useskill = Instance().dhuum_useskill;
+
+    dhuum_useskill.skill_usage_delay = 0.0F;
+    dhuum_useskill.slot = 0;
 
     if (argc < 2)
         return;
@@ -119,14 +195,26 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
     if (arg1 != L"start")
         return;
 
-    // auto dhuum_id = uint32_t{0};
-    // auto dhuum_hp = float{1.0F};
-    // const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    // if (!is_in_dhuum_fight)
-    //     return;
-    // if (agents_data && DhuumFightDone(agents_data->npcs))
-    //     return;
+    dhuum_useskill.slot = static_cast<uint32_t>(-1);
+}
 
-    skill_to_use.slot = 1;
-    skill_to_use.skill_usage_delay = 0.0F;
+void ChatCommands::CmdUseSkill(const wchar_t *, int argc, LPWSTR *argv)
+{
+    if (!IsMapReady() && IsExplorable())
+        return;
+
+    auto &useskill = Instance().useskill;
+
+    useskill.skill_usage_delay = 0.0F;
+    useskill.slot = 0;
+
+    if (argc < 2)
+        return;
+
+    const auto arg1 = std::wstring{argv[1]};
+    const auto arg1_int = _wtoi(arg1.data());
+    if (arg1_int == 0 || arg1_int < 1 || arg1_int > 8)
+        return;
+
+    useskill.slot = arg1_int;
 }

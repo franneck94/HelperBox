@@ -10,14 +10,14 @@
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
+#include <DataSkillbar.h>
 #include <Helper.h>
 #include <HelperAgents.h>
-#include <SkillbarData.h>
 
-#include "PlayerData.h"
+#include "DataPlayer.h"
 
-bool PlayerData::ValidateData(std::function<bool()> cb_fn) const
+bool DataPlayer::ValidateData(std::function<bool()> cb_fn) const
 {
     if (!cb_fn())
         return false;
@@ -31,7 +31,7 @@ bool PlayerData::ValidateData(std::function<bool()> cb_fn) const
     return true;
 }
 
-void PlayerData::Update()
+void DataPlayer::Update()
 {
     const auto me_agent = GW::Agents::GetPlayer();
     const auto me_living = GW::Agents::GetPlayerAsAgentLiving();
@@ -60,7 +60,7 @@ void PlayerData::Update()
     secondary = static_cast<GW::Constants::Profession>(living->secondary);
 }
 
-bool PlayerData::CanCast() const
+bool DataPlayer::CanCast() const
 {
     if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() || living->GetIsMoving())
         return false;
@@ -68,7 +68,7 @@ bool PlayerData::CanCast() const
     return true;
 }
 
-bool PlayerData::CanAttack() const
+bool DataPlayer::CanAttack() const
 {
     if (living->GetIsDead() || living->GetIsKnockedDown() || living->GetIsCasting() || living->GetIsMoving())
         return false;
@@ -76,7 +76,7 @@ bool PlayerData::CanAttack() const
     return true;
 }
 
-bool PlayerData::HasBuff(const GW::Constants::SkillID buff_skill_id) const
+bool DataPlayer::HasBuff(const GW::Constants::SkillID buff_skill_id) const
 {
     const auto me_buffs = GW::Effects::GetPlayerBuffs();
     if (!me_buffs || !me_buffs->valid())
@@ -97,7 +97,7 @@ bool PlayerData::HasBuff(const GW::Constants::SkillID buff_skill_id) const
     return false;
 }
 
-bool PlayerData::HasEffect(const GW::Constants::SkillID effect_skill_id) const
+bool DataPlayer::HasEffect(const GW::Constants::SkillID effect_skill_id) const
 {
     const auto me_effects = GW::Effects::GetPlayerEffectsArray();
     if (!me_effects)
@@ -118,7 +118,7 @@ bool PlayerData::HasEffect(const GW::Constants::SkillID effect_skill_id) const
     return false;
 }
 
-bool PlayerData::CastEffectIfNotAvailable(const SkillData &skill_data)
+bool DataPlayer::CastEffectIfNotAvailable(const DataSkill &skill_data)
 {
     const auto has_bond = HasEffect(static_cast<GW::Constants::SkillID>(skill_data.id));
     const auto bond_avail = skill_data.CanBeCasted(energy);
@@ -132,7 +132,7 @@ bool PlayerData::CastEffectIfNotAvailable(const SkillData &skill_data)
     return false;
 }
 
-bool PlayerData::SpamEffect(const SkillData &skill_data)
+bool DataPlayer::CastEffect(const DataSkill &skill_data)
 {
     if (skill_data.CanBeCasted(energy))
     {
@@ -143,7 +143,7 @@ bool PlayerData::SpamEffect(const SkillData &skill_data)
     return false;
 }
 
-void PlayerData::ChangeTarget(const uint32_t target_id)
+void DataPlayer::ChangeTarget(const uint32_t target_id)
 {
     if (!GW::Agents::GetAgentByID(target_id))
         return;
@@ -155,7 +155,7 @@ void PlayerData::ChangeTarget(const uint32_t target_id)
 }
 
 
-bool PlayerData::SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet)
+bool DataPlayer::SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet)
 {
     const auto value_id = packet->Value_id;
     const auto caster_id = packet->agent_id;

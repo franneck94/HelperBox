@@ -34,13 +34,13 @@ GW::GamePos MovePointAlongVector(const GW::GamePos &pos1, const GW::GamePos &pos
 GameRectangle::GameRectangle(const GW::GamePos &p1, const GW::GamePos &p2, const float offset)
 {
     const auto adj_p1 = MovePointAlongVector(p1, p2, offset * 0.00F); // Behind player_pos
-    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.15F); // In front of Target
+    const auto adj_p2 = MovePointAlongVector(p2, p1, offset * 1.20F); // In front of Target
 
     const auto delta_x = adj_p1.x - adj_p2.x;
     const auto delta_y = adj_p1.y - adj_p2.y;
     const auto dist = GW::GetDistance(adj_p1, adj_p2);
 
-    const auto half_offset = offset * 0.99F; // To the side
+    const auto half_offset = offset * 1.05F; // To the side
 
     v1 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * half_offset, adj_p1.y + (delta_x / dist) * half_offset, 0};
     v2 = GW::GamePos{adj_p1.x + ((-delta_y) / dist) * (-half_offset), adj_p1.y + (delta_x / dist) * (-half_offset), 0};
@@ -63,9 +63,9 @@ bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
                                     const GW::GamePos &v2,
                                     const GW::GamePos &v3)
 {
-    const auto b1 = Sign(pt, v1, v2) < 0.0f;
-    const auto b2 = Sign(pt, v2, v3) < 0.0f;
-    const auto b3 = Sign(pt, v3, v1) < 0.0f;
+    const auto b1 = Sign(pt, v1, v2) < 0.0F;
+    const auto b2 = Sign(pt, v2, v3) < 0.0F;
+    const auto b3 = Sign(pt, v3, v1) < 0.0F;
 
     return ((b1 == b2) && (b2 == b3));
 }

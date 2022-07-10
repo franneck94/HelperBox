@@ -17,25 +17,36 @@
 
 #include <Base/HelperBox.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <Types.h>
 
-#include "DhuumStatsWindow.h"
+#include "UwDhuumStats.h"
 
-void DhuumStatsWindow::SkillPacketCallback(const uint32_t value_id,
-                                           const uint32_t caster_id,
-                                           const uint32_t target_id,
-                                           const uint32_t value,
-                                           const bool no_target)
+namespace
 {
-    uint32_t agent_id = caster_id;
-    const uint32_t activated_skill_id = value;
+constexpr static auto TIME_WINDOW_DMG_S = long{180L};
+constexpr static auto TIME_WINDOW_DMG_MS = (TIME_WINDOW_DMG_S * 1000L);
+constexpr static auto TIME_WINDOW_REST_S = long{20L};
+constexpr static auto TIME_WINDOW_REST_MS = (TIME_WINDOW_REST_S * 1000L);
+
+constexpr static auto REST_SKILL_ID = uint32_t{3087};
+constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
+} // namespace
+
+void UwDhuumStats::SkillPacketCallback(const uint32_t value_id,
+                                       const uint32_t caster_id,
+                                       const uint32_t target_id,
+                                       const uint32_t value,
+                                       const bool no_target)
+{
+    auto agent_id = caster_id;
+    const auto activated_skill_id = value;
 
     // ignore non-skill packets
     switch (value_id)
@@ -61,10 +72,10 @@ void DhuumStatsWindow::SkillPacketCallback(const uint32_t value_id,
     }
 }
 
-void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
-                                            const uint32_t caster_id,
-                                            const uint32_t target_id,
-                                            const float value)
+void UwDhuumStats::DamagePacketCallback(const uint32_t type,
+                                        const uint32_t caster_id,
+                                        const uint32_t target_id,
+                                        const float value)
 {
     if (!dhuum_id || target_id != dhuum_id || value >= 0 || !caster_id)
         return;
@@ -108,13 +119,14 @@ void DhuumStatsWindow::DamagePacketCallback(const uint32_t type,
 
 static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
 {
-    auto time = std::chrono::milliseconds(duration);
-    auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
-    auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
-    snprintf(buf, bufsize, "%02d:%02llu.%04llu", mins, secs, time.count() / 10 % 100);
+    const auto time = std::chrono::milliseconds(duration);
+    const auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
+    const auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
+    const auto hrs = std::chrono::duration_cast<std::chrono::hours>(time).count() % 60;
+    snprintf(buf, bufsize, "%02d:%02d:%02llu", hrs, mins, secs);
 }
 
-void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
+void UwDhuumStats::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
         return;
@@ -122,9 +134,9 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(170.0F, 175.0F), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(150.0F, 175.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("DhuumStatsWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
         const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
@@ -142,11 +154,12 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
         ImGui::Separator();
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
-            static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000LL, eta_damage_s * 1000LL));
-        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F)
+            static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
+        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F &&
+            !DhuumFightDone(dhuum_id))
         {
-            char buffer[32];
-            FormatTime(finished_ms, 32, buffer);
+            char buffer[16];
+            FormatTime(finished_ms, 16, buffer);
             ImGui::Text("Finished: %s", buffer);
         }
         else
@@ -155,9 +168,8 @@ void DhuumStatsWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void DhuumStatsWindow::ResetData()
+void UwDhuumStats::ResetData()
 {
-    dhuum_fight_active = true;
     dhuum_fight_start_time_ms = clock();
 
     num_casted_rest = 0U;
@@ -171,7 +183,7 @@ void DhuumStatsWindow::ResetData()
     damages.clear();
 }
 
-void DhuumStatsWindow::RemoveOldData()
+void UwDhuumStats::RemoveOldData()
 {
     const auto remove_rest_it = std::remove_if(rests.begin(), rests.end(), [=](const auto t) {
         return std::abs(TIMER_DIFF(t)) > TIME_WINDOW_REST_MS;
@@ -184,7 +196,7 @@ void DhuumStatsWindow::RemoveOldData()
     damages.erase(remove_dmg_it, damages.end());
 }
 
-void DhuumStatsWindow::UpdateRestData()
+void UwDhuumStats::UpdateRestData()
 {
     const auto current_time_ms = clock();
 
@@ -198,27 +210,18 @@ void DhuumStatsWindow::UpdateRestData()
     else
         rests_per_s = 0.0F;
 
-    const auto party_size = GW::PartyMgr::GetPartySize();
-    auto needed_num_rest = NEEDED_NUM_REST[0];
-    if (party_size >= 1 && party_size <= 8)
-        needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
-
-    auto still_needed_rest = needed_num_rest - num_casted_rest;
-    if (still_needed_rest == 0 && eta_damage_s == 0.0F)
-    {
-        const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-
-        if (is_in_dhuum_fight)
-            still_needed_rest = 5;
-    }
-
-    if (still_needed_rest > 0 && rests_per_s > 0.0F)
+    progress_perc = GetProgressValue();
+    const auto total_num_rests = num_casted_rest / (progress_perc + FLT_EPSILON);
+    const auto still_needed_rest = total_num_rests - num_casted_rest;
+    if (progress_perc < 0.999F && still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
+    else if (still_needed_rest == 0 || progress_perc >= 1.0F)
+        eta_rest_s = 0.0F;
     else
         eta_rest_s = eta_rest_s;
 }
 
-void DhuumStatsWindow::UpdateDamageData()
+void UwDhuumStats::UpdateDamageData()
 {
     const auto current_time_ms = clock();
 
@@ -243,7 +246,7 @@ void DhuumStatsWindow::UpdateDamageData()
         eta_damage_s = 0.0F;
 }
 
-void DhuumStatsWindow::Update(float, const AgentLivingData &)
+void UwDhuumStats::Update(float, const AgentLivingData &)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;

@@ -4,17 +4,18 @@
 #include <vector>
 
 #include <GWCA/Constants/Maps.h>
+#include <GWCA/Context/CharContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/MapMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
+#include <DataPlayer.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUwPos.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <Types.h>
 
 #include "HelperUw.h"
 
@@ -108,26 +109,34 @@ uint32_t GetDhuumBitchId()
     return 0;
 }
 
-bool IsEmo(const PlayerData &player_data)
+bool IsEmo(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Elementalist &&
             player_data.secondary == GW::Constants::Profession::Monk);
 }
 
-bool IsDhuumBitch(const PlayerData &player_data)
+bool IsDhuumBitch(const DataPlayer &player_data)
 {
     return ((player_data.primary == GW::Constants::Profession::Ritualist ||
              player_data.primary == GW::Constants::Profession::Dervish) &&
             player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
-bool IsSpiker(const PlayerData &player_data)
+bool IsUwMesmer(const DataPlayer &player_data)
+{
+    return (player_data.primary == GW::Constants::Profession::Mesmer &&
+            (player_data.secondary == GW::Constants::Profession::Ranger ||
+             player_data.secondary == GW::Constants::Profession::Elementalist ||
+             player_data.secondary == GW::Constants::Profession::Assassin));
+}
+
+bool IsSpiker(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Mesmer &&
             player_data.secondary == GW::Constants::Profession::Ranger);
 }
 
-bool IsLT(const PlayerData &player_data)
+bool IsLT(const DataPlayer &player_data)
 {
     if (player_data.primary == GW::Constants::Profession::Mesmer &&
         player_data.secondary == GW::Constants::Profession::Assassin)
@@ -148,13 +157,13 @@ bool IsLT(const PlayerData &player_data)
             player_data.secondary == GW::Constants::Profession::Elementalist);
 }
 
-bool IsRangerTerra(const PlayerData &player_data)
+bool IsRangerTerra(const DataPlayer &player_data)
 {
     return (player_data.primary == GW::Constants::Profession::Ranger &&
             player_data.secondary == GW::Constants::Profession::Assassin);
 }
 
-bool IsMesmerTerra(const PlayerData &player_data)
+bool IsMesmerTerra(const DataPlayer &player_data)
 {
     if (player_data.primary != GW::Constants::Profession::Mesmer ||
         player_data.secondary != GW::Constants::Profession::Elementalist)
@@ -163,11 +172,8 @@ bool IsMesmerTerra(const PlayerData &player_data)
     return !IsLT(player_data);
 }
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
+const GW::Agent *GetDhuumAgent()
 {
-    if (!IsUw())
-        return false;
-
     const auto agents_array = GW::Agents::GetAgentArray();
     const GW::Agent *dhuum_agent = nullptr;
 
@@ -177,7 +183,7 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-        if (!living || living->allegiance != GW::Constants::Allegiance::Enemy)
+        if (!living)
             continue;
 
         if (living->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
@@ -187,6 +193,15 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
         }
     }
 
+    return dhuum_agent;
+}
+
+bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
+{
+    if (!IsUw())
+        return false;
+
+    const auto dhuum_agent = GetDhuumAgent();
     if (!dhuum_agent)
         return false;
 
@@ -194,10 +209,11 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
     if (!dhuum_living)
         return false;
 
+    if (dhuum_id)
+        *dhuum_id = dhuum_living->agent_id;
+
     if (dhuum_living->allegiance == GW::Constants::Allegiance::Enemy)
     {
-        if (dhuum_id)
-            *dhuum_id = dhuum_living->agent_id;
         if (dhuum_hp)
             *dhuum_hp = dhuum_living->hp;
         if (dhuum_max_hp)
@@ -250,7 +266,7 @@ bool TankIsSoloLT()
     return false;
 }
 
-bool TargetIsReaper(PlayerData &player_data)
+bool TargetIsReaper(DataPlayer &player_data)
 {
     if (!player_data.target)
         return false;
@@ -262,12 +278,12 @@ bool TargetIsReaper(PlayerData &player_data)
     return true;
 }
 
-bool TargetReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
+bool TargetReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
     return TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers) != 0U;
 }
 
-bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &npcs)
+bool TalkReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs)
 {
     const auto id = TargetClosestNpcById(player_data, npcs, GW::Constants::ModelID::UW::Reapers);
     if (!id)
@@ -282,7 +298,7 @@ bool TalkReaper(PlayerData &player_data, const std::vector<GW::AgentLiving *> &n
     return true;
 }
 
-bool TargetClosestKeeper(PlayerData &player_data, const std::vector<GW::AgentLiving *> enemies)
+bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> enemies)
 {
     return TargetClosestEnemyById(player_data, enemies, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
@@ -361,15 +377,19 @@ bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
     return false;
 }
 
-bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *agents_data, const GW::GamePos &next_pos)
+bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *livings_data, const GW::GamePos &next_pos)
 {
-    if (!agents_data)
+    if (!livings_data)
         return true;
 
     const auto filter_ids =
         std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1, GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+    const auto filter_ids_full = std::set<uint32_t>{GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                    GW::Constants::ModelID::UW::SkeletonOfDhuum2,
+                                                    GW::Constants::ModelID::UW::BladedAatxe,
+                                                    GW::Constants::ModelID::UW::GraspingDarkness};
 
-    const auto livings = FilterAgentsByRange(agents_data->enemies, player_data, GW::Constants::Range::Earshot);
+    const auto livings = FilterAgentsByRange(livings_data->enemies, player_data, GW::Constants::Range::Earshot);
     const auto result_ids_Aggro = FilterAgentIDS(livings, filter_ids);
 
     if (player_data.pos.x == next_pos.x && player_data.pos.y == next_pos.y)
@@ -378,58 +398,43 @@ bool CheckForAggroFree(const PlayerData &player_data, const AgentLivingData *age
         return false;
 
     const auto rect = GameRectangle(player_data.pos, next_pos, GW::Constants::Range::Spellcast);
-    const auto filtered_livings = GetEnemiesInGameRectangle(rect, agents_data->enemies);
-
-    const auto move_pos_is_right_at_spirits1 = GW::GetDistance(next_pos, GW::GamePos{-13760.19F, 358.15F, 0}) < 1280.0F;
+    const auto filtered_livings = GetEnemiesInGameRectangle(rect, livings_data->enemies);
 
     auto result_ids_rect = std::set<uint32_t>{};
-    if (IsAtFilterSkelePos(player_data.pos, next_pos)) // ignore skeles here
-    {
-        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
-    }
-    else if (move_pos_is_right_at_spirits1) // ignore spirits here
-    {
-        const auto player_pos = player_data.pos;
-        auto enemies = agents_data->enemies;
-        if (enemies.size() == 0)
-            return true;
-
-        std::sort(enemies.begin(), enemies.end(), [&player_pos](const auto a1, const auto a2) {
-            const auto sqrd1 = GW::GetDistance(player_pos, a1->pos);
-            const auto sqrd2 = GW::GetDistance(player_pos, a2->pos);
-            return sqrd1 < sqrd2;
-        });
-
-        const auto dist = GW::GetDistance(player_pos, enemies[0]->pos);
-        return dist > 3000.0F;
-    }
-    else if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 400.0F)
-    {
-        result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{GW::Constants::ModelID::UW::BladedAatxe});
-    }
+    if (GW::GetDistance(GW::GamePos{-7887.61F, 4279.11F, 0}, player_data.pos) < 2500.0F) // At fuse pull 2
+        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids_full);
     else
-    {
-        result_ids_rect = FilterAgentIDS(filtered_livings, std::set<uint32_t>{});
-    }
+        result_ids_rect = FilterAgentIDS(filtered_livings, filter_ids);
 
     return result_ids_rect.size() == 0;
 }
 
-bool DhuumFightDone(const std::vector<GW::AgentLiving *> &npcs)
+float GetProgressValue()
 {
-    constexpr static auto DHUUM_SPIDER_IDS = std::array<uint32_t, 3>{1390, 1391, 1392};
+    const auto c = GW::CharContext::instance();
 
-    for (const auto npc : npcs)
-    {
-        if (!npc)
-            continue;
+    if (!c || !c->progress_bar)
+        return 0.0F;
 
-        for (const auto id : DHUUM_SPIDER_IDS)
-        {
-            if (npc->player_number == id)
-                return true;
-        }
-    }
+    return c->progress_bar->progress;
+}
+
+bool DhuumFightDone(uint32_t dhuum_id)
+{
+    if (!dhuum_id)
+        return false;
+
+    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
+    if (!dhuum_agent)
+        return false;
+
+    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    if (!dhuum_living)
+        return false;
+
+    const auto progress = GetProgressValue();
+    if (dhuum_living->allegiance != GW::Constants::Allegiance::Enemy && progress > 0.99F)
+        return true;
 
     return false;
 }
@@ -458,4 +463,15 @@ uint32_t GetUwTriggerRoleId(const TriggerRole role)
     }
 
     return trigger_id;
+}
+
+bool LtIsBonded()
+{
+    const auto lt_id = GetTankId();
+
+    const auto has_prot = AgentHasBuff(GW::Constants::SkillID::Protective_Bond, lt_id);
+    const auto has_life = AgentHasBuff(GW::Constants::SkillID::Life_Bond, lt_id);
+    const auto has_ballth = AgentHasBuff(GW::Constants::SkillID::Balthazars_Spirit, lt_id);
+
+    return (has_prot && has_life && has_ballth);
 }

@@ -1,8 +1,12 @@
 #include "stdafx.h"
 
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+
 void PathGetExeFullPath(wchar_t *path, size_t length)
 {
-    DWORD result = GetModuleFileNameW(NULL, path, length);
+    const auto result = GetModuleFileNameW(NULL, path, length);
     if (result >= length)
         path[0] = 0;
 }
@@ -11,7 +15,7 @@ void PathGetProgramDirectory(wchar_t *path, size_t length)
 {
     PathGetExeFullPath(path, length);
 
-    wchar_t *filename = PathFindFileNameW(path);
+    const auto filename = PathFindFileNameW(path);
     if (filename != path)
         filename[0] = 0;
 }
@@ -20,7 +24,7 @@ bool PathCompose(wchar_t *dest, size_t length, const wchar_t *left, const wchar_
 {
     assert(MAX_PATH <= length);
 
-    size_t left_size = (wcslen(left) + 2) * sizeof(wchar_t);
+    const auto left_size = (wcslen(left) + 2) * sizeof(wchar_t);
     if (length < left_size)
     {
         fprintf(stderr, "Left string too long for the destination buffer\n");

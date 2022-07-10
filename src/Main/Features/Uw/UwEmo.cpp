@@ -19,8 +19,11 @@
 #include <GWCA/Managers/PartyMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
+#include <DataSkillbar.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
@@ -28,12 +31,9 @@
 #include <HelperUwPos.h>
 #include <Logger.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <SkillbarData.h>
 #include <Timer.h>
-#include <Types.h>
 
-#include "EmoWindow.h"
+#include "UwEmo.h"
 
 namespace
 {
@@ -57,129 +57,108 @@ constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
-EmoWindow::EmoWindow()
-    : player_data({}), skillbar({}), pumping(&player_data, &skillbar, &bag_idx, &slot_idx, agents_data),
-      tank_bonding(&player_data, &skillbar)
+UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
-
-    GW::StoC::RegisterPacketCallback(&SendChat_Entry,
-                                     GAME_SMSG_CHAT_MESSAGE_LOCAL,
-                                     [this](GW::HookStatus *status, GW::Packet::StoC::PacketBase *packet) -> void {
-                                         lt_is_ready = OnChatMessageLtIsReady(status, packet, TriggerRole::LT);
-                                     });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(
-        &MapLoaded_Entry,
-        [this](GW::HookStatus *status, GW::Packet::StoC::MapLoaded *packet) -> void {
-            load_cb_triggered = ExplorableLoadCallback(status, packet);
-            num_finished_objectives = 0U;
-        });
-
-    GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
-        &ObjectiveDone_Entry,
-        [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
-            ++num_finished_objectives;
-            Log::Info("Finished Objective : %u, Num objectives: %u", packet->objective_id, num_finished_objectives);
-        });
 };
 
-void EmoWindow::Draw(IDirect3DDevice9 *)
+void UwEmo::Draw(IDirect3DDevice9 *)
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
         return;
 
-    ImGui::SetNextWindowSize(ImVec2(110.0F, 330.0F), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("EmoWindow", nullptr, GetWinFlags()))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
-        pumping.Draw();
+        emo_routinme.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
             DrawMovingButtons(moves, move_ongoing, move_idx);
     }
-
     ImGui::End();
 
 #ifdef _DEBUG
-    if (IsUw() && show_debug_map && agents_data)
-        DrawMap(player_data.pos, agents_data->enemies, moves[move_idx]->pos, "EmoMap");
+    if (IsUw() && show_debug_map && livings_data)
+        DrawMap(player_data.pos, livings_data->enemies, moves[move_idx]->pos, "EmoMap");
 #endif
 }
 
-void EmoWindow::UpdateUw()
+void UwEmo::UpdateUw()
 {
     UpdateUwEntry();
-    MoveABC::UpdatedUwMoves(player_data, agents_data, moves, move_idx, move_ongoing);
+    MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
 
     if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
     {
         moves[move_idx]->Execute();
-        move_ongoing = true;
+        if (player_data.living->GetIsMoving())
+            move_ongoing = true;
     }
 
-    if (lt_is_ready && !move_ongoing &&
-        (moves[move_idx]->name == "Talk Lab Reaper" || moves[move_idx]->name == "Go Wastes 1" ||
-         moves[move_idx]->name == "Go To Dhuum 1"))
-    {
-        moves[move_idx]->Execute();
-        move_ongoing = true;
-        lt_is_ready = false;
-    }
-    if (move_ongoing)
-        lt_is_ready = false;
+    const auto is_hm_trigger_take = moves[move_idx]->name == "Talk Lab Reaper";
+    const auto is_hm_trigger_move =
+        (moves[move_idx]->name == "Go To Wastes 1" || moves[move_idx]->name == "Go Wastes 2" ||
+         moves[move_idx]->name == "Go To Wastes 5" || moves[move_idx]->name == "Go To Dhuum 1" ||
+         moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
+         moves[move_idx]->name == "Go Lab 1" || moves[move_idx]->name == "Go To Dhuum 6" ||
+         moves[move_idx]->name == "Go Spirits 2");
+    const auto is_moving = player_data.living->GetIsMoving();
+
+    Move_PositionABC::LtMoveTrigger(lt_is_ready,
+                                    move_ongoing,
+                                    is_hm_trigger_take,
+                                    is_hm_trigger_move,
+                                    is_moving,
+                                    moves[move_idx]);
 }
 
-void EmoWindow::UpdateUwEntry()
+void UwEmo::UpdateUwEntry()
 {
-    static auto timer = clock();
     static auto triggered_tank_bonds_at_start = false;
-    static auto triggered_move_start = false;
-
-    if (TankIsFullteamLT())
-        load_cb_triggered = false;
 
     if (load_cb_triggered)
     {
         move_idx = 0;
         num_finished_objectives = 0U;
         move_ongoing = false;
-        tank_bonding.action_state = ActionState::ACTIVE;
+    }
+
+    if (load_cb_triggered && !TankIsSoloLT())
+    {
+        Log::Warning("No Solo LT found. Deactivate auto move.");
+        load_cb_triggered = false;
+    }
+
+    if (load_cb_triggered)
+    {
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
-        timer = clock();
+        emo_routinme.action_state = ActionState::ACTIVE;
         return;
     }
 
-    if (triggered_tank_bonds_at_start && tank_bonding.action_state == ActionState::INACTIVE)
+    if (triggered_tank_bonds_at_start && LtIsBonded())
     {
         moves[0]->Execute();
         triggered_tank_bonds_at_start = false;
-        triggered_move_start = true;
         move_ongoing = true;
         return;
     }
-
-    if (triggered_move_start && move_idx == 1)
-    {
-        pumping.action_state = ActionState::ACTIVE;
-        timer = 0;
-    }
 }
 
-void EmoWindow::Update(float, const AgentLivingData &_agents_data)
+void UwEmo::Update(float, const AgentLivingData &_livings_data)
 {
     if (!player_data.ValidateData(UwHelperActivationConditions))
     {
         move_idx = 0;
         move_ongoing = false;
-        tank_bonding.action_state = ActionState::INACTIVE;
         return;
     }
     player_data.Update();
-    agents_data = &_agents_data;
-    pumping.agents_data = agents_data;
+    livings_data = &_livings_data;
+    emo_routinme.livings_data = livings_data;
 
     if (!IsEmo(player_data))
         return;
@@ -194,7 +173,7 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
         return;
     skillbar.Update();
 
-    emo_casting_action_state = &pumping.action_state;
+    emo_casting_action_state = &emo_routinme.action_state;
 
     if (IsUw())
     {
@@ -202,12 +181,15 @@ void EmoWindow::Update(float, const AgentLivingData &_agents_data)
         UpdateUw();
     }
 
-    tank_bonding.Update();
-    pumping.Update();
+    emo_routinme.Update();
 }
 
-Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a)
-    : EmoActionABC(p, "Pumping", s), bag_idx(_bag_idx), slot_idx(_slot_idx), agents_data(a)
+EmoRoutine::EmoRoutine(DataPlayer *p,
+                       EmoSkillbarData *s,
+                       uint32_t *_bag_idx,
+                       uint32_t *_slot_idx,
+                       const AgentLivingData *a)
+    : EmoActionABC(p, "EmoRoutine", s), bag_idx(_bag_idx), slot_idx(_slot_idx), livings_data(a)
 {
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::AgentAdd>(
         &Summon_AgentAdd_Entry,
@@ -225,7 +207,7 @@ Pumping::Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t
         });
 }
 
-bool Pumping::RoutineWhenInRangeBondLT() const
+bool EmoRoutine::RoutineWhenInRangeBondLT() const
 {
     if (!lt_agent)
         return false;
@@ -238,7 +220,7 @@ bool Pumping::RoutineWhenInRangeBondLT() const
         return false;
 
     const auto lt_living = lt_agent->GetAsAgentLiving();
-    if (!lt_living)
+    if (!lt_living || lt_living->GetIsDead())
         return false;
 
     if (lt_living->GetIsMoving() || player_data->living->GetIsMoving())
@@ -256,7 +238,7 @@ bool Pumping::RoutineWhenInRangeBondLT() const
     return false;
 }
 
-bool Pumping::RoutineSelfBonds() const
+bool EmoRoutine::RoutineSelfBonds() const
 {
     const auto found_ether = player_data->HasEffect(GW::Constants::SkillID::Ether_Renewal);
     const auto found_sb = player_data->HasEffect(GW::Constants::SkillID::Spirit_Bond);
@@ -274,23 +256,23 @@ bool Pumping::RoutineSelfBonds() const
             return true;
     }
 
-    if (found_ether && (player_data->hp_perc < 0.85F || !found_sb) && player_data->SpamEffect(skillbar->sb))
+    if (found_ether && (player_data->hp_perc < 0.85F || !found_sb) && player_data->CastEffect(skillbar->sb))
         return true;
 
     if (found_ether && (player_data->energy_perc < 0.85F || !found_burning) &&
-        player_data->SpamEffect(skillbar->burning))
+        player_data->CastEffect(skillbar->burning))
         return true;
 
     return false;
 }
 
-bool Pumping::RoutineEscortSpirits() const
+bool EmoRoutine::RoutineEscortSpirits() const
 {
-    if (!agents_data || agents_data->npcs.size() == 0)
+    if (!livings_data || livings_data->npcs.size() == 0)
         return false;
 
     auto spirits_livings = std::vector<GW::AgentLiving *>{};
-    FilterByIdsAndDistances(player_data->pos, agents_data->npcs, spirits_livings, ESCORT_IDS);
+    FilterByIdsAndDistances(player_data->pos, livings_data->npcs, spirits_livings, ESCORT_IDS);
 
     if (spirits_livings.size() == 0)
         return false;
@@ -300,37 +282,39 @@ bool Pumping::RoutineEscortSpirits() const
         if (!spirit)
             continue;
 
-        if (spirit->hp > 0.80F)
+        if (spirit->hp > 0.90F)
             continue;
 
         const auto dist = GW::GetDistance(player_data->pos, spirit->pos);
-        const auto is_far_away = dist > 3000.0F;
+        const auto is_far_away = dist > 2000.0F;
 
         if (spirit->hp < 0.60F || is_far_away)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
-        else if (player_data->hp_perc > 0.50F)
+        else if (player_data->hp_perc > 0.30F)
             return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, spirit->agent_id));
+        else
+            return (RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, spirit->agent_id));
     }
 
     return false;
 }
 
-bool Pumping::RoutineCanthaGuards() const
+bool EmoRoutine::RoutineCanthaGuards() const
 {
     static auto last_gdw_idx = 0;
 
     if (!player_data->CanCast())
         return false;
 
-    if (!agents_data)
+    if (!livings_data)
         return true;
 
     const auto filtered_enemies =
-        FilterAgentsByRange(agents_data->enemies, *player_data, GW::Constants::Range::Earshot);
+        FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Earshot);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterByIdsAndDistances(player_data->pos,
-                            agents_data->npcs,
+                            livings_data->npcs,
                             filtered_canthas,
                             CANTHA_IDS,
                             GW::Constants::Range::Spellcast);
@@ -345,11 +329,10 @@ bool Pumping::RoutineCanthaGuards() const
             if (!cantha || cantha->GetIsDead())
                 continue;
 
-            if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player_data))
-                return true;
-
             if (cantha->hp < 0.70F && player_data->hp_perc > 0.50F)
                 return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, cantha->agent_id));
+            else if (cantha->hp < 0.70F && player_data->hp_perc < 0.50F)
+                return (RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, cantha->agent_id));
 
             if (!cantha->GetIsWeaponSpelled())
                 return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, cantha->agent_id));
@@ -371,6 +354,9 @@ bool Pumping::RoutineCanthaGuards() const
         auto droppped_smth = false;
         for (auto living : filtered_canthas)
         {
+            if (!living || living->GetIsDead())
+                continue;
+
             if (DropBondsOnLiving(living))
                 droppped_smth = true;
         }
@@ -382,7 +368,7 @@ bool Pumping::RoutineCanthaGuards() const
     return false;
 }
 
-bool Pumping::RoutineLT() const
+bool EmoRoutine::RoutineLtAtFusePulls() const
 {
     static auto last_time_sb_ms = clock();
     static auto casted_fuse_once = false;
@@ -395,7 +381,7 @@ bool Pumping::RoutineLT() const
 
     const auto target_living = player_data->target->GetAsAgentLiving();
     if (!target_living || target_living->GetIsMoving() || player_data->living->GetIsMoving() ||
-        target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+        target_living->GetIsDead() || target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
     {
         casted_fuse_once = false;
         return false;
@@ -430,13 +416,17 @@ bool Pumping::RoutineLT() const
     return false;
 }
 
-bool Pumping::RoutineDbAtDhuum() const
+bool EmoRoutine::RoutineDbAtDhuum() const
 {
     if (!db_agent)
         return false;
 
     const auto dist = GW::GetDistance(player_data->pos, db_agent->pos);
     if (dist > GW::Constants::Range::Spellcast)
+        return false;
+
+    const auto living = db_agent->GetAsAgentLiving();
+    if (!living || living->GetIsDead())
         return false;
 
     if (CastBondIfNotAvailable(skillbar->balth, db_agent->agent_id, player_data))
@@ -448,7 +438,7 @@ bool Pumping::RoutineDbAtDhuum() const
     return false;
 }
 
-bool Pumping::RoutineTurtle() const
+bool EmoRoutine::RoutineTurtle() const
 {
     if (!found_turtle || !turtle_id)
         return false;
@@ -458,7 +448,7 @@ bool Pumping::RoutineTurtle() const
         return false;
 
     const auto turtle_living = turtle_agent->GetAsAgentLiving();
-    if (!turtle_living)
+    if (!turtle_living || turtle_living->GetIsDead())
         return false;
 
     const auto dist = GW::GetDistance(player_data->pos, turtle_agent->pos);
@@ -483,12 +473,12 @@ bool Pumping::RoutineTurtle() const
     return false;
 }
 
-bool Pumping::RoutineWisdom() const
+bool EmoRoutine::RoutineWisdom() const
 {
     return (RoutineState::FINISHED == skillbar->wisdom.Cast(player_data->energy));
 }
 
-bool Pumping::RoutineGDW() const
+bool EmoRoutine::RoutineGDW() const
 {
     static auto last_idx = uint32_t{0};
 
@@ -505,7 +495,7 @@ bool Pumping::RoutineGDW() const
         return false;
 
     const auto living = agent->GetAsAgentLiving();
-    if (!living || living->GetIsMoving())
+    if (!living || living->GetIsMoving() || living->GetIsDead())
         return false;
 
     const auto dist = GW::GetDistance(GW::GamePos{-16410.75F, 17294.47F, 0}, agent->pos);
@@ -518,7 +508,7 @@ bool Pumping::RoutineGDW() const
     return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, living->agent_id));
 }
 
-bool Pumping::RoutineTurtleGDW() const
+bool EmoRoutine::RoutineTurtleGDW() const
 {
     static auto last_idx = uint32_t{0};
 
@@ -530,7 +520,7 @@ bool Pumping::RoutineTurtleGDW() const
         return false;
 
     const auto living = agent->GetAsAgentLiving();
-    if (!living || living->GetIsMoving())
+    if (!living || living->GetIsMoving() || living->GetIsDead())
         return false;
 
     const auto dist = GW::GetDistance(GW::GamePos{-16105.50F, 17284.84F, 0}, agent->pos);
@@ -543,7 +533,7 @@ bool Pumping::RoutineTurtleGDW() const
     return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, living->agent_id));
 }
 
-bool Pumping::RoutineDbBeforeDhuum() const
+bool EmoRoutine::RoutineDbBeforeDhuum() const
 {
     static auto last_time_sb_ms = clock();
 
@@ -558,7 +548,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
     if (dist > 2100.0F)
         return false;
 
-    if (living->hp > 0.75F)
+    if (living->hp > 0.75F || living->GetIsDead())
         return false;
 
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player_data))
@@ -578,7 +568,7 @@ bool Pumping::RoutineDbBeforeDhuum() const
     return false;
 }
 
-bool Pumping::RoutineKeepPlayerAlive() const
+bool EmoRoutine::RoutineKeepPlayerAlive() const
 {
     if (player_data->living->GetIsMoving())
         return false;
@@ -596,11 +586,11 @@ bool Pumping::RoutineKeepPlayerAlive() const
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-        if (!living)
+        if (!living || living->GetIsDead())
             continue;
 
         const auto dist = GW::GetDistance(player_data->pos, agent->pos);
-        if (dist > 450.0F)
+        if (dist > 600.0F)
             continue;
 
         if (living->hp > 0.50F)
@@ -617,7 +607,7 @@ bool Pumping::RoutineKeepPlayerAlive() const
     return false;
 }
 
-bool Pumping::DropBondsLT() const
+bool EmoRoutine::DropBondsLT() const
 {
     if (!lt_agent || !lt_agent->agent_id)
         return false;
@@ -636,7 +626,7 @@ bool Pumping::DropBondsLT() const
     return false;
 }
 
-RoutineState Pumping::Routine()
+RoutineState EmoRoutine::Routine()
 {
     static bool used_canthas = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
@@ -645,6 +635,9 @@ RoutineState Pumping::Routine()
         return RoutineState::ACTIVE;
 
     if (!ActionABC::HasWaitedLongEnough())
+        return RoutineState::ACTIVE;
+
+    if (IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
         return RoutineState::ACTIVE;
 
     if (RoutineSelfBonds())
@@ -671,11 +664,15 @@ RoutineState Pumping::Routine()
     if ((IsInBasement(player_data->pos) || IsInVale(player_data->pos)) && RoutineEscortSpirits())
         return RoutineState::FINISHED;
 
-    if (IsAtFusePulls(player_data->pos) && RoutineLT())
+    if (IsAtFusePulls(player_data->pos) && RoutineLtAtFusePulls())
         return RoutineState::FINISHED;
 
-    if (IsAtValeSpirits(player_data->pos) && GW::PartyMgr::GetPartySize() < 6 && !used_canthas &&
-        UseInventoryItem(CANTHA_STONE_ID, 1, 5))
+    // Make sure to only pop canthas if there is enough time until dhuum fight
+    constexpr auto eight_mins_in_ms = 8LL * 60LL * 1000LL + 30LL * 1000LL;
+    const auto stone_should_be_used =
+        (!used_canthas && GW::Map::GetInstanceTime() < eight_mins_in_ms && GW::PartyMgr::GetPartySize() < 6);
+
+    if (IsAtValeSpirits(player_data->pos) && stone_should_be_used && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
     {
         used_canthas = true;
         return RoutineState::FINISHED;
@@ -700,7 +697,7 @@ RoutineState Pumping::Routine()
     auto dhuum_hp = float{1.0F};
     const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
 
-    if (!is_in_dhuum_fight && (DhuumFightDone(agents_data->npcs) || DhuumFightDone(agents_data->neutrals)))
+    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
     {
         action_state = ActionState::INACTIVE;
         move_ongoing = false;
@@ -710,6 +707,7 @@ RoutineState Pumping::Routine()
     if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
 
+    // 100 morale value is 0% in game
     const auto current_morale = GW::GameContext::instance()->world->morale;
     if (current_morale <= 90 && UseInventoryItem(COOKIE_ID, 1, 5))
         return RoutineState::FINISHED;
@@ -736,7 +734,7 @@ RoutineState Pumping::Routine()
     return RoutineState::FINISHED;
 }
 
-bool Pumping::PauseRoutine()
+bool EmoRoutine::PauseRoutine()
 {
     if (player_data->living->GetIsMoving())
         return true;
@@ -751,7 +749,7 @@ bool Pumping::PauseRoutine()
     return false;
 }
 
-void Pumping::Update()
+void EmoRoutine::Update()
 {
     static auto paused = false;
 
@@ -792,50 +790,29 @@ void Pumping::Update()
         (void)Routine();
 }
 
-RoutineState TankBonding::Routine()
+bool EmoRoutine::BondLtAtStartRoutine() const
 {
-    if (!player_data || !player_data->id || !player_data->CanCast())
-        return RoutineState::ACTIVE;
-
     auto target_id = GetTankId();
     if (!target_id)
-        return RoutineState::FINISHED;
+        return false;
     player_data->ChangeTarget(target_id);
 
     auto target = player_data->target;
     if (!target)
-        return RoutineState::FINISHED;
+        return false;
 
     const auto is_alive_ally = IsAliveAlly(target);
     if (!is_alive_ally)
-        return RoutineState::FINISHED;
+        return false;
 
     if (CastBondIfNotAvailable(skillbar->balth, target_id, player_data))
-        return RoutineState::ACTIVE;
+        return true;
 
     if (CastBondIfNotAvailable(skillbar->prot, target_id, player_data))
-        return RoutineState::ACTIVE;
+        return true;
 
     if (CastBondIfNotAvailable(skillbar->life, target_id, player_data))
-        return RoutineState::ACTIVE;
+        return true;
 
-    return RoutineState::FINISHED;
-}
-
-void TankBonding::Update()
-{
-    if (GW::PartyMgr::GetIsPartyDefeated())
-        action_state = ActionState::INACTIVE;
-
-    if (action_state == ActionState::ACTIVE)
-    {
-        StateOnHold(*emo_casting_action_state);
-        const auto routine_state = Routine();
-
-        if (routine_state == RoutineState::FINISHED)
-        {
-            action_state = ActionState::INACTIVE;
-            StateOnActive(*emo_casting_action_state);
-        }
-    }
+    return false;
 }

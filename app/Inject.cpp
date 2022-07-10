@@ -37,7 +37,7 @@ struct InjectProcess
 
 static bool FindTopMostProcess(std::vector<InjectProcess> &processes, size_t *TopMostIndex)
 {
-    HWND hWndIt = GetTopWindow(nullptr);
+    auto hWndIt = GetTopWindow(nullptr);
     if (hWndIt == nullptr)
     {
         fprintf(stderr, "GetTopWindow failed (%lu)\n", GetLastError());
@@ -191,7 +191,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
             continue;
         }
 
-        size_t charname_len = wcsnlen(charname, _countof(charname));
+        auto charname_len = wcsnlen(charname, _countof(charname));
         std::wstring charname2(charname, charname + charname_len);
 
         inject_processes.emplace_back(injected, std::move(process), std::wstring(charname2));
@@ -220,7 +220,7 @@ InjectReply InjectWindow::AskInjectProcess(Process *target_process)
 
     for (size_t i = 0; i < inject_processes.size(); i++)
     {
-        InjectProcess *process = &inject_processes[i];
+        auto process = &inject_processes[i];
 
         wchar_t buffer[128];
         wcsncpy(buffer, process->m_Charname.c_str(), _countof(buffer));
@@ -369,14 +369,14 @@ void InjectWindow::OnCommand(HWND hWnd, LONG ControlId, LONG NotificationCode)
 
 static LPVOID GetLoadLibrary()
 {
-    HMODULE Kernel32 = GetModuleHandleW(L"Kernel32.dll");
+    auto Kernel32 = GetModuleHandleW(L"Kernel32.dll");
     if (Kernel32 == nullptr)
     {
         fprintf(stderr, "GetModuleHandleW failed (%lu)\n", GetLastError());
         return nullptr;
     }
 
-    LPVOID pLoadLibraryW = GetProcAddress(Kernel32, "LoadLibraryW");
+    auto pLoadLibraryW = GetProcAddress(Kernel32, "LoadLibraryW");
     if (pLoadLibraryW == nullptr)
     {
         fprintf(stderr, "GetProcAddress failed (%lu)\n", GetLastError());
@@ -390,19 +390,19 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
 {
     *lpExitCode = 0;
 
-    HANDLE ProcessHandle = process->GetHandle();
+    auto ProcessHandle = process->GetHandle();
     if (ProcessHandle == nullptr)
     {
         fprintf(stderr, "Can't inject a dll in a process which is not open\n");
         return FALSE;
     }
 
-    LPVOID pLoadLibraryW = GetLoadLibrary();
+    auto pLoadLibraryW = GetLoadLibrary();
     if (pLoadLibraryW == nullptr)
         return FALSE;
 
-    size_t ImagePathLength = wcslen(ImagePath);
-    size_t ImagePathSize = (ImagePathLength * 2) + 2;
+    auto ImagePathLength = wcslen(ImagePath);
+    auto ImagePathSize = (ImagePathLength * 2) + 2;
 
     LPVOID ImagePathAddress =
         VirtualAllocEx(ProcessHandle, nullptr, ImagePathSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -414,7 +414,7 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
     }
 
     SIZE_T BytesWritten;
-    BOOL Success = WriteProcessMemory(ProcessHandle, ImagePathAddress, ImagePath, ImagePathSize, &BytesWritten);
+    auto Success = WriteProcessMemory(ProcessHandle, ImagePathAddress, ImagePath, ImagePathSize, &BytesWritten);
 
     if (!Success || (ImagePathSize != BytesWritten))
     {
@@ -424,14 +424,14 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
     }
 
     DWORD ThreadId;
-    HANDLE hThread = CreateRemoteThreadEx(ProcessHandle,
-                                          nullptr,
-                                          0,
-                                          reinterpret_cast<LPTHREAD_START_ROUTINE>(pLoadLibraryW),
-                                          ImagePathAddress,
-                                          0,
-                                          nullptr,
-                                          &ThreadId);
+    auto hThread = CreateRemoteThreadEx(ProcessHandle,
+                                        nullptr,
+                                        0,
+                                        reinterpret_cast<LPTHREAD_START_ROUTINE>(pLoadLibraryW),
+                                        ImagePathAddress,
+                                        0,
+                                        nullptr,
+                                        &ThreadId);
 
     if (hThread == nullptr)
     {
@@ -439,7 +439,7 @@ bool InjectRemoteThread(Process *process, LPCWSTR ImagePath, LPDWORD lpExitCode)
         return FALSE;
     }
 
-    DWORD Reason = WaitForSingleObject(hThread, INFINITE);
+    auto Reason = WaitForSingleObject(hThread, INFINITE);
     if (Reason != WAIT_OBJECT_0)
     {
         fprintf(stderr, "WaitForSingleObject failed {reason: %lu, error: %lu}\n", Reason, GetLastError());

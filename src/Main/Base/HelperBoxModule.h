@@ -6,8 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include <AgentData.h>
-#include <PlayerData.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 
 #include <SimpleIni.h>
 

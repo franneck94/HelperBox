@@ -33,7 +33,7 @@ void SettingsWindow::Draw(IDirect3DDevice9 *)
         DrawSettingsSection(HelperBoxSettings::Instance().SettingsName());
 
         const auto &optional_modules = HelperBoxSettings::Instance().GetOptionalModules();
-        for (unsigned i = 0; i < optional_modules.size(); ++i)
+        for (size_t i = 0; i < optional_modules.size(); ++i)
         {
             if (i == sep)
                 ImGui::Text("Components:");

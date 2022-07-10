@@ -4,14 +4,14 @@
 #include <cstdint>
 #include <string_view>
 
-#include <Actions.h>
-#include <PlayerData.h>
-#include <SkillbarDataUw.h>
+#include <ActionsBase.h>
+#include <DataPlayer.h>
+#include <DataSkillbarUw.h>
 
 class EmoActionABC : public ActionABC
 {
 public:
-    EmoActionABC(PlayerData *p, std::string_view t, EmoSkillbarData *s) : ActionABC(p, t), skillbar(s){};
+    EmoActionABC(DataPlayer *p, std::string_view t, EmoSkillbarData *s) : ActionABC(p, t), skillbar(s){};
     virtual ~EmoActionABC(){};
 
     EmoSkillbarData *skillbar = nullptr;
@@ -20,7 +20,7 @@ public:
 class MesmerActionABC : public ActionABC
 {
 public:
-    MesmerActionABC(PlayerData *p, std::string_view t, MesmerSkillbarData *s) : ActionABC(p, t), skillbar(s){};
+    MesmerActionABC(DataPlayer *p, std::string_view t, MesmerSkillbarData *s) : ActionABC(p, t), skillbar(s){};
     virtual ~MesmerActionABC(){};
 
     MesmerSkillbarData *skillbar = nullptr;
@@ -29,7 +29,7 @@ public:
 class DbActionABC : public ActionABC
 {
 public:
-    DbActionABC(PlayerData *p, std::string_view t, DbSkillbarData *s) : ActionABC(p, t), skillbar(s){};
+    DbActionABC(DataPlayer *p, std::string_view t, DbSkillbarData *s) : ActionABC(p, t), skillbar(s){};
     virtual ~DbActionABC(){};
 
     DbSkillbarData *skillbar = nullptr;

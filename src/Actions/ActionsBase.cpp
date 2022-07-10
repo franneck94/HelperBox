@@ -1,19 +1,19 @@
-#include <set>
-#include <vector>
-
-#include <GWCA/Managers/ChatMgr.h>
-#include <GWCA/Managers/CtoSMgr.h>
-#include <GWCA/Managers/GameThreadMgr.h>
-#include <GWCA/Managers/ItemMgr.h>
-#include <GWCA/Managers/PartyMgr.h>
-#include <GWCA/Packets/StoC.h>
+#include <cstdint>
+#include <map>
 
 #include <GuiUtils.h>
 #include <HelperMaps.h>
-#include <HelperUw.h>
 #include <Timer.h>
 
-#include "Actions.h"
+#include "ActionsBase.h"
+
+namespace
+{
+static auto COLOR_MAPPING = std::map<uint32_t, ImVec4>{{static_cast<uint32_t>(ActionState::INACTIVE), INACTIVE_COLOR},
+                                                       {static_cast<uint32_t>(ActionState::ACTIVE), ACTIVE_COLOR},
+                                                       {static_cast<uint32_t>(ActionState::ON_HOLD), ON_HOLD_COLOR}};
+
+};
 
 void ActionABC::Draw(const ImVec2 button_size)
 {

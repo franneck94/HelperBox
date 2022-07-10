@@ -44,7 +44,7 @@ public:
 private:
     ImGuiStyle DefaultTheme();
 
-    float font_global_scale = 1.0;
+    float font_global_scale = 1.0F;
     ImGuiStyle ini_style;
     bool layout_dirty = false;
 

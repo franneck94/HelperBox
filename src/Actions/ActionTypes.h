@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 enum class ActionState
 {
     INACTIVE = 0,
@@ -23,12 +21,6 @@ enum class RoutineState
 };
 
 void ResetState(RoutineState &state);
-
-struct PlayerMapping
-{
-    uint32_t id;
-    uint32_t party_idx;
-};
 
 enum class TriggerRole
 {

@@ -12,20 +12,20 @@
 #include <GWCA/GameEntities/Player.h>
 #include <GWCA/Managers/PartyMgr.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <Logger.h>
 #include <MathUtils.h>
-#include <PlayerData.h>
-#include <Types.h>
 
 #include <fmt/format.h>
 
-#include "MainteamWindow.h"
+#include "UwMesmer.h"
 
 namespace
 {
@@ -39,9 +39,7 @@ static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Blad
                                                 GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
-void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
-                                        const ImVec4 color,
-                                        std::string_view label)
+void UwMesmer::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label)
 {
     auto idx = uint32_t{0};
 
@@ -84,19 +82,19 @@ void MainteamWindow::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
     }
 }
 
-void MainteamWindow::Draw(IDirect3DDevice9 *)
+void UwMesmer::Draw(IDirect3DDevice9 *)
 {
     if (!visible)
         return;
 
     if (!UwHelperActivationConditions())
         return;
-    if (!IsSpiker(player_data) && !IsLT(player_data))
+    if (!IsUwMesmer(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("MainteamWindow", nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
         const auto width = ImGui::GetWindowWidth();
 
@@ -126,7 +124,7 @@ void MainteamWindow::Draw(IDirect3DDevice9 *)
     ImGui::End();
 }
 
-void MainteamWindow::Update(float, const AgentLivingData &_agents_data)
+void UwMesmer::Update(float, const AgentLivingData &_livings_data)
 {
     filtered_livings.clear();
     aatxe_livings.clear();
@@ -144,8 +142,8 @@ void MainteamWindow::Update(float, const AgentLivingData &_agents_data)
         return;
 
     const auto &pos = player_data.pos;
-    agents_data = &_agents_data;
-    FilterByIdsAndDistances(pos, _agents_data.enemies, filtered_livings, IDS, 1600.0F);
+    livings_data = &_livings_data;
+    FilterByIdsAndDistances(pos, _livings_data.enemies, filtered_livings, IDS, 1600.0F);
     FilterByIdAndDistance(pos, filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
     FilterByIdAndDistance(pos, filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);
     FilterByIdAndDistance(pos, filtered_livings, dryder_livings, GW::Constants::ModelID::UW::TerrorwebDryder);

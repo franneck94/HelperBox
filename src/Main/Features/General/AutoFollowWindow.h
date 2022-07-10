@@ -4,10 +4,9 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
 #include <Base/HelperBoxWindow.h>
-#include <PlayerData.h>
-#include <Types.h>
+#include <DataPlayer.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
@@ -15,7 +14,7 @@
 class AutoFollowAction : public ActionABC
 {
 public:
-    AutoFollowAction(PlayerData *p) : ActionABC(p, "Follow")
+    AutoFollowAction(DataPlayer *p) : ActionABC(p, "Follow")
     {
     }
 
@@ -44,6 +43,6 @@ public:
     void Update(float delta, const AgentLivingData &) override;
 
 private:
-    PlayerData player_data;
+    DataPlayer player_data;
     AutoFollowAction auto_follow;
 };

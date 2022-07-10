@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 void PathGetExeFullPath(wchar_t *path, size_t length);
 
 void PathGetProgramDirectory(wchar_t *path, size_t length);

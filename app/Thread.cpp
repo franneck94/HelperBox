@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include <cassert>
+#include <cstdint>
+#include <cstdio>
+
 #include "Thread.h"
 
 #pragma pack(push, 8)

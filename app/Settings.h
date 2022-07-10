@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 struct Settings
 {
     uint32_t pid;

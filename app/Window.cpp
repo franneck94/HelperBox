@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include <cstdint>
+#include <cstdio>
+
 #include "Window.h"
 
 #define IDI_ICON1 101
@@ -10,13 +13,13 @@ LRESULT CALLBACK Window::MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
     if (uMsg == WM_CREATE)
     {
-        LPCREATESTRUCTW param = reinterpret_cast<LPCREATESTRUCTW>(lParam);
+        auto param = reinterpret_cast<LPCREATESTRUCTW>(lParam);
         window = static_cast<Window *>(param->lpCreateParams);
         SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG>(window));
     }
     else
     {
-        LONG_PTR ud = GetWindowLongPtrW(hWnd, GWLP_USERDATA);
+        auto ud = GetWindowLongPtrW(hWnd, GWLP_USERDATA);
         window = reinterpret_cast<Window *>(ud);
     }
 
@@ -66,7 +69,7 @@ bool Window::Create()
 
     if (!RegisterClassW(&wc))
     {
-        DWORD LastError = GetLastError();
+        auto LastError = GetLastError();
         if (LastError != ERROR_CLASS_ALREADY_EXISTS)
         {
             fprintf(stderr, "RegisterClassW failed (%lu)\n", LastError);
@@ -108,7 +111,7 @@ bool Window::WaitMessages()
     MSG msg;
     for (;;)
     {
-        DWORD dwRet = MsgWaitForMultipleObjects(1, &m_hEvent, FALSE, INFINITE, QS_ALLINPUT);
+        auto dwRet = MsgWaitForMultipleObjects(1, &m_hEvent, FALSE, INFINITE, QS_ALLINPUT);
 
         if (dwRet == WAIT_OBJECT_0)
             break;
@@ -133,7 +136,7 @@ bool Window::PollMessages(uint32_t TimeoutMs)
 {
     MSG msg;
 
-    DWORD dwRet = MsgWaitForMultipleObjects(1, &m_hEvent, FALSE, TimeoutMs, QS_ALLINPUT);
+    auto dwRet = MsgWaitForMultipleObjects(1, &m_hEvent, FALSE, TimeoutMs, QS_ALLINPUT);
 
     if (dwRet == WAIT_OBJECT_0 || dwRet == WAIT_TIMEOUT)
         return true;
@@ -173,7 +176,7 @@ void Window::SignalStop()
 
 bool Window::ShouldClose()
 {
-    DWORD dwReason = WaitForSingleObject(m_hEvent, 0);
+    auto dwReason = WaitForSingleObject(m_hEvent, 0);
 
     if (dwReason == WAIT_TIMEOUT)
         return false;

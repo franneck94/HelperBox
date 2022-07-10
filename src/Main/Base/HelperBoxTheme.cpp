@@ -22,12 +22,12 @@ HelperBoxTheme::HelperBoxTheme()
 ImGuiStyle HelperBoxTheme::DefaultTheme()
 {
     ImGuiStyle style = ImGuiStyle();
-    style.WindowRounding = 6.0f;
-    style.FrameRounding = 2.0f;
-    style.ScrollbarSize = 16.0f;
-    style.ScrollbarRounding = 4.0f;
-    style.GrabMinSize = 17.0f;
-    style.GrabRounding = 2.0f;
+    style.WindowRounding = 6.0F;
+    style.FrameRounding = 2.0F;
+    style.ScrollbarSize = 16.0F;
+    style.ScrollbarRounding = 4.0F;
+    style.GrabMinSize = 17.0F;
+    style.GrabRounding = 2.0F;
 
     return style;
 }
@@ -55,8 +55,8 @@ void HelperBoxTheme::LoadSettings(CSimpleIni *ini)
 
 void HelperBoxTheme::SaveUILayout()
 {
-    CSimpleIni *ini = GetLayoutIni();
-    const char *window_ini_section = "Windows";
+    auto ini = GetLayoutIni();
+    auto window_ini_section = "Windows";
     ImVector<ImGuiWindow *> &windows = ImGui::GetCurrentContext()->Windows;
 
     for (ImGuiWindow *window : windows)
@@ -83,7 +83,7 @@ CSimpleIni *HelperBoxTheme::GetLayoutIni()
         windows_ini = new CSimpleIni(false, false, false);
 
     windows_ini->Reset();
-    std::wstring filename = GetPath(WindowPositionsFilename);
+    auto filename = GetPath(WindowPositionsFilename);
 
     if (std::filesystem::exists(filename.c_str()))
         windows_ini->LoadFile(filename.c_str());
@@ -95,16 +95,16 @@ void HelperBoxTheme::LoadUILayout()
 {
     ImGui::GetStyle() = ini_style;
     ImGui::GetIO().FontGlobalScale = font_global_scale;
-    CSimpleIni *ini = GetLayoutIni();
-    ImVector<ImGuiWindow *> &windows = ImGui::GetCurrentContext()->Windows;
-    const char *window_ini_section = "Windows";
+    auto ini = GetLayoutIni();
+    auto &windows = ImGui::GetCurrentContext()->Windows;
+    auto window_ini_section = "Windows";
 
     for (ImGuiWindow *window : windows)
     {
         if (!window)
             continue;
-        ImVec2 pos = window->Pos;
-        ImVec2 size = window->Size;
+        auto pos = window->Pos;
+        auto size = window->Size;
         char key[128];
         snprintf(key, 128, "_%s_X", window->Name);
         pos.x = static_cast<float>(ini->GetDoubleValue(window_ini_section, key, pos.x));
@@ -116,7 +116,7 @@ void HelperBoxTheme::LoadUILayout()
         size.y = static_cast<float>(ini->GetDoubleValue(window_ini_section, key, size.y));
         snprintf(key, 128, "_%s_Collapsed", window->Name);
 
-        bool collapsed = ini->GetBoolValue(window_ini_section, key, false);
+        auto collapsed = ini->GetBoolValue(window_ini_section, key, false);
         ImGui::SetWindowPos(window, pos);
         ImGui::SetWindowSize(window, size);
         ImGui::SetWindowCollapsed(window, collapsed);

@@ -1,36 +1,43 @@
 #pragma once
 
 #include <cstdint>
-#include <string_view>
+#include <map>
 #include <vector>
 
 #include <GWCA/GameEntities/Agent.h>
 
-#include <ActionsUw.h>
-#include <AgentData.h>
+#include <ActionsBase.h>
 #include <Base/HelperBoxWindow.h>
-#include <PlayerData.h>
-#include <Types.h>
+#include <DataPlayer.h>
+#include <Timer.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class MainteamWindow : public HelperBoxWindow
+class AutoTargetAction : public ActionABC
 {
 public:
-    MainteamWindow()
-        : player_data({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
-    ~MainteamWindow(){};
+    AutoTargetAction(DataPlayer *p) : ActionABC(p, "Auto Target"){};
 
-    static MainteamWindow &Instance()
+    RoutineState Routine() override;
+    void Update() override;
+};
+
+class UwRanger : public HelperBoxWindow
+{
+public:
+    UwRanger() : player_data({}), filtered_livings({}), auto_target(&player_data), last_casted_times_ms({}){};
+    ~UwRanger(){};
+
+    static UwRanger &Instance()
     {
-        static MainteamWindow instance;
+        static UwRanger instance;
         return instance;
     }
 
     const char *Name() const override
     {
-        return "MainteamWindow";
+        return "UwRanger";
     }
 
     void Draw(IDirect3DDevice9 *pDevice) override;
@@ -39,14 +46,14 @@ public:
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
 
-    PlayerData player_data;
-    const AgentLivingData *agents_data = nullptr;
+    DataPlayer player_data;
+    std::map<uint32_t, clock_t> last_casted_times_ms;
 
     std::vector<GW::AgentLiving *> filtered_livings;
-    std::vector<GW::AgentLiving *> aatxe_livings;
+    std::vector<GW::AgentLiving *> behemoth_livings;
     std::vector<GW::AgentLiving *> dryder_livings;
-    std::vector<GW::AgentLiving *> nightmare_livings;
     std::vector<GW::AgentLiving *> skele_livings;
     std::vector<GW::AgentLiving *> horseman_livings;
-    std::vector<GW::AgentLiving *> keeper_livings;
+
+    AutoTargetAction auto_target;
 };

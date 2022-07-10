@@ -7,24 +7,27 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include <ActionsBase.h>
+#include <ActionsMove.h>
 #include <ActionsUw.h>
-#include <AgentData.h>
 #include <Base/HelperBoxWindow.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <Helper.h>
+#include <HelperAgents.h>
 #include <HelperItems.h>
 #include <HelperUw.h>
-#include <Move.h>
-#include <PlayerData.h>
-#include <Types.h>
+
+#include "UwHelperBase.h"
 
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class Pumping : public EmoActionABC
+class EmoRoutine : public EmoActionABC
 {
 public:
-    Pumping(PlayerData *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
+    EmoRoutine(DataPlayer *p, EmoSkillbarData *s, uint32_t *_bag_idx, uint32_t *_slot_idx, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -32,10 +35,11 @@ public:
 private:
     bool PauseRoutine() override;
 
-    bool RoutineWhenInRangeBondLT() const;
-    bool RoutineDbBeforeDhuum() const;
+    bool BondLtAtStartRoutine() const;
     bool RoutineSelfBonds() const;
-    bool RoutineLT() const;
+    bool RoutineDbBeforeDhuum() const;
+    bool RoutineWhenInRangeBondLT() const;
+    bool RoutineLtAtFusePulls() const;
     bool RoutineCanthaGuards() const;
     bool RoutineEscortSpirits() const;
     bool DropBondsLT() const;
@@ -56,37 +60,28 @@ private:
 public:
     const GW::Agent *lt_agent = nullptr;
     const GW::Agent *db_agent = nullptr;
-    const AgentLivingData *agents_data = nullptr;
+    const AgentLivingData *livings_data = nullptr;
 
 private:
     std::vector<PlayerMapping> party_members{};
     bool party_data_valid = false;
 };
 
-class TankBonding : public EmoActionABC
+class UwEmo : public HelperBoxWindow, public UwHelperABC
 {
 public:
-    TankBonding(PlayerData *p, EmoSkillbarData *s) : EmoActionABC(p, "Tank Bonds", s){};
+    UwEmo();
+    ~UwEmo(){};
 
-    RoutineState Routine() override;
-    void Update() override;
-};
-
-class EmoWindow : public HelperBoxWindow
-{
-public:
-    EmoWindow();
-    ~EmoWindow(){};
-
-    static EmoWindow &Instance()
+    static UwEmo &Instance()
     {
-        static EmoWindow instance;
+        static UwEmo instance;
         return instance;
     }
 
     const char *Name() const override
     {
-        return "EmoWindow";
+        return "UwEmo";
     }
 
     void Initialize() override
@@ -147,8 +142,6 @@ private:
     void UpdateUw();
     void UpdateUwEntry();
 
-    const AgentLivingData *agents_data = nullptr;
-    PlayerData player_data;
     bool first_frame = false;
     EmoSkillbarData skillbar;
 
@@ -157,19 +150,12 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
 
-    GW::HookEntry ObjectiveDone_Entry;
-    GW::HookEntry MapLoaded_Entry;
-    bool load_cb_triggered = false;
-    uint32_t num_finished_objectives = 0U;
-    GW::HookEntry SendChat_Entry;
-
-    Pumping pumping;
-    TankBonding tank_bonding;
+    EmoRoutine emo_routinme;
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, livings_data->npcs); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, livings_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
     static inline const auto KEEPER3_TRIGGER = GW::GamePos{-2655.90F, 13362.98F, 0};
@@ -211,7 +197,7 @@ private:
         new Move_WaitAndContinue{-6511.41F, 12447.65F, "Go Keeper 2"},
         new Move_PositionAndContinue{-3881.71F, 11280.04F, "Go Keeper 3", KEEPER3_TRIGGER, 300.0F, TriggerRole::LT},
         new Move_PositionAndContinue{-1502.45F, 9737.64F, "Go Keeper 4/5", KEEPER4_TRIGGER, 500.0F, TriggerRole::LT},
-        new Move_PositionAndContinue{-266.03F, 9304.26F, "Go Lab 1", KEEPER6_TRIGGER, 200.0F, TriggerRole::LT},
+        new Move_PositionAndContinue{-266.03F, 9304.26F, "Go Lab 1", KEEPER6_TRIGGER, 400.0F, TriggerRole::LT},
         new Move_NoWaitAndStop{1207.05F, 7732.16F, "Go Keeper 6"},
         new Move_NoWaitAndContinue{1543.75F, 10709.27F, "Go To Wastes 1"},
         new Move_NoWaitAndContinue{2532.49F, 10349.75F, "Go To Wastes 2"},
@@ -221,7 +207,7 @@ private:
         new Move_NoWaitAndStop{6633.37F, 15385.31F, "Go Wastes 1"},
         new Move_NoWaitAndContinue{6054.83F, 18997.46F, "Go Wastes 2"},
         new Move_WaitAndContinue{4968.64F, 16555.77F, "Go Wastes 3"},
-        new Move_NoWaitAndStop{2152.55F, 16893.93F, "Go Wastes 4"},
+        new Move_WaitAndStop{2152.55F, 16893.93F, "Go Wastes 4"},
         new Move_NoWaitAndContinue{8685.21F, 6344.59F, "Go Pits Start"},
         new Move_NoWaitAndContinue{12566.49F, 7812.503F, "Go Pits 1"},
         new Move_NoWaitAndStop{11958.36F, 6281.43F, "Go Pits 2"},

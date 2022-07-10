@@ -10,35 +10,17 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
+#include <DataPlayer.h>
 #include <HelperCallbacks.h>
-#include <PlayerData.h>
-#include <Types.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class DhuumStatsWindow : public HelperBoxWindow
+class UwDhuumStats : public HelperBoxWindow
 {
-public:
-    constexpr static auto TIME_WINDOW_DMG_S = long{180L};
-    constexpr static auto TIME_WINDOW_DMG_MS = (TIME_WINDOW_DMG_S * 1000L);
-    constexpr static auto TIME_WINDOW_REST_S = long{20L};
-    constexpr static auto TIME_WINDOW_REST_MS = (TIME_WINDOW_REST_S * 1000L);
-
-    constexpr static auto REST_SKILL_ID = uint32_t{3087};
-    constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
-
-    constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{780U},  // 1 ?
-                                                                    uint32_t{760U},  // 2 ?
-                                                                    uint32_t{740U},  // 3 ?
-                                                                    uint32_t{730U},  // 4
-                                                                    uint32_t{710U},  // 5
-                                                                    uint32_t{680U},  // 6 ?
-                                                                    uint32_t{660U},  // 7 ?
-                                                                    uint32_t{640U}}; // 8 ?
-
 private:
     void SkillPacketCallback(const uint32_t value_id,
                              const uint32_t caster_id,
@@ -56,7 +38,7 @@ private:
     void UpdateDamageData();
 
 public:
-    DhuumStatsWindow() : player_data({}), rests({}), damages({})
+    UwDhuumStats() : player_data({}), rests({}), damages({})
     {
         /* Skill on self or party player_data */
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
@@ -80,11 +62,11 @@ public:
                 DamagePacketCallback(type, caster_id, target_id, value);
             });
     };
-    ~DhuumStatsWindow(){};
+    ~UwDhuumStats(){};
 
-    static DhuumStatsWindow &Instance()
+    static UwDhuumStats &Instance()
     {
-        static DhuumStatsWindow instance;
+        static UwDhuumStats instance;
         return instance;
     }
 
@@ -97,7 +79,7 @@ public:
     void Update(float delta, const AgentLivingData &) override;
 
 private:
-    PlayerData player_data;
+    DataPlayer player_data;
 
     GW::HookEntry SkillCasted_Entry;
     GW::HookEntry Damage_Entry;
@@ -110,6 +92,7 @@ private:
     bool dhuum_fight_active = false;
 
     uint32_t num_casted_rest = 0U;
+    float progress_perc = 0.0F;
     float rests_per_s = 0.0F;
     float eta_rest_s = 0.0F;
     std::vector<long> rests;

@@ -8,12 +8,11 @@
 #include <GWCA/GameEntities/Camera.h>
 #include <GWCA/Managers/CameraMgr.h>
 
-#include <Actions.h>
+#include <ActionsBase.h>
+#include <ActionsMove.h>
 #include <GuiConstants.h>
 #include <Helper.h>
 #include <MathUtils.h>
-#include <Move.h>
-#include <Types.h>
 
 #include <fmt/format.h>
 #include <imgui.h>

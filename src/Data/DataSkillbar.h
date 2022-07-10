@@ -14,9 +14,8 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include <DataSkill.h>
 #include <HelperCallbacks.h>
-#include <SkillData.h>
-#include <Types.h>
 
 template <uint32_t N>
 class SkillbarDataABC
@@ -107,5 +106,5 @@ public:
 protected:
     bool reset = false;
     GW::HookEntry MapLoaded_Entry;
-    std::array<SkillData *, N> skills;
+    std::array<DataSkill *, N> skills;
 };

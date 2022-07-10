@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#include <cassert>
+
 #include "Process.h"
 
 ProcessModule::ProcessModule(ProcessModule &&other) : base(other.base), size(other.size), name(std::move(other.name))
@@ -107,7 +109,7 @@ bool Process::GetName(std::wstring &name)
         DWORD size = process_path.size();
         if (!QueryFullProcessImageNameW(m_hProcess, 0, &process_path[0], &size))
         {
-            DWORD error = GetLastError();
+            auto error = GetLastError();
             if (error != ERROR_INSUFFICIENT_BUFFER)
             {
                 fprintf(stderr, "QueryFullProcessImageNameW failed: %lu\n", error);
@@ -160,7 +162,7 @@ bool Process::GetModule(ProcessModule *module, const wchar_t *module_name)
         return false;
     }
 
-    for (HMODULE hModule : handles)
+    for (auto hModule : handles)
     {
         wchar_t name[512];
         if (!GetModuleBaseNameW(m_hProcess, hModule, name, _countof(name)))
@@ -204,7 +206,7 @@ bool Process::GetModules(std::vector<ProcessModule> &modules)
         return false;
     }
 
-    for (HMODULE hModule : handles)
+    for (auto hModule : handles)
     {
         wchar_t name[512];
         if (!GetModuleBaseNameW(m_hProcess, hModule, name, sizeof(name)))
@@ -243,7 +245,7 @@ bool GetProcesses(std::vector<Process> &processes, const wchar_t *name, DWORD ri
     std::vector<DWORD> pids(1024);
     for (;;)
     {
-        DWORD size = pids.size() * sizeof(DWORD);
+        auto size = pids.size() * sizeof(DWORD);
         DWORD bytes;
         if (!EnumProcesses(pids.data(), size, &bytes))
         {
@@ -264,7 +266,7 @@ bool GetProcesses(std::vector<Process> &processes, const wchar_t *name, DWORD ri
         }
     }
 
-    for (DWORD pid : pids)
+    for (auto pid : pids)
     {
         Process proc(pid, rights);
         std::wstring pname;

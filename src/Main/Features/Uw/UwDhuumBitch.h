@@ -6,23 +6,24 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include <Actions.h>
-#include <AgentData.h>
+#include <ActionsBase.h>
+#include <ActionsMove.h>
 #include <Base/HelperBoxWindow.h>
+#include <DataLivings.h>
+#include <DataPlayer.h>
 #include <GuiUtils.h>
 #include <HelperCallbacks.h>
 #include <HelperUw.h>
-#include <Move.h>
-#include <PlayerData.h>
-#include <Types.h>
+
+#include "UwHelperBase.h"
 
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class Damage : public DbActionABC
+class DbRoutine : public DbActionABC
 {
 public:
-    Damage(PlayerData *p, DbSkillbarData *s, const AgentLivingData *a);
+    DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a);
 
     RoutineState Routine() override;
     void Update() override;
@@ -38,24 +39,24 @@ private:
     bool RoutineDhuumDamage() const;
 
 public:
-    const AgentLivingData *agents_data = nullptr;
+    const AgentLivingData *livings_data = nullptr;
 };
 
-class DbWindow : public HelperBoxWindow
+class UwDhuumBitch : public HelperBoxWindow, public UwHelperABC
 {
 public:
-    DbWindow();
-    ~DbWindow(){};
+    UwDhuumBitch();
+    ~UwDhuumBitch(){};
 
-    static DbWindow &Instance()
+    static UwDhuumBitch &Instance()
     {
-        static DbWindow instance;
+        static UwDhuumBitch instance;
         return instance;
     }
 
     const char *Name() const override
     {
-        return "DbWindow";
+        return "UwDhuumBitch";
     }
 
     void Initialize() override
@@ -98,23 +99,13 @@ private:
     // Settings
     bool show_debug_map = true;
 
-    PlayerData player_data;
-    const AgentLivingData *agents_data = nullptr;
     bool first_frame = false;
     DbSkillbarData skillbar;
 
-    GW::HookEntry ObjectiveDone_Entry;
-    GW::HookEntry MapLoaded_Entry;
-    bool load_cb_triggered = false;
-    uint32_t num_finished_objectives = 0U;
-    GW::HookEntry GenericValue_Entry;
-    bool interrupted = false;
-    GW::HookEntry SendChat_Entry;
+    DbRoutine db_routinme;
 
-    Damage damage;
-
-    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, agents_data->npcs); };
-    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, agents_data->npcs); };
+    std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, livings_data->npcs); };
+    std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, livings_data->npcs); };
     std::function<bool()> cast_sq = [&]() {
         skillbar.sq.Cast(player_data.energy);
         return true;
@@ -170,14 +161,14 @@ private:
         new Move_NoWaitAndStop{8685.21F, 6344.59F, "Go Pits Reaper", target_reaper_fn},
         new Move_NoWaitAndContinue{8685.21F, 6344.59F, "Talk Pits", talk_reaper_fn},
         new Move_NoWaitAndStop{8685.21F, 6344.59F, "Take Pits", [&]() { return TakePits(); }},
-        new Move_NoWaitAndContinue{11368.55F, -17974.64F, "Go Planes Start"},
         new Move_NoWaitAndContinue{11368.55F, -17974.64F, "Go Planes Reaper", target_reaper_fn},
-        new Move_NoWaitAndContinue{11368.55F, -17974.64F, "Talk Planes", talk_reaper_fn},
-        new Move_NoWaitAndStop{11368.55F, -17974.64F, "Take Planes", [&]() { return TakePlanes(); }},
+        new Move_NoWaitAndStop{11368.55F, -17974.64F, "Talk Planes", talk_reaper_fn},
+        new Move_NoWaitAndContinue{11368.55F, -17974.64F, "Take Planes", [&]() { return TakePlanes(); }},
         new Move_NoWaitAndContinue{9120.00F, -18432.003F, "Go Planes 1"},
         new Move_CastSkillAndContinue{9120.00F, -18432.003F, "Cast Winnow 2", &skillbar.winnow},
+        new Move_NoWaitAndContinue{9120.00F, -18432.003F, "Waiting"},
         new Move_CastSkillAndContinue{9120.00F, -18432.003F, "Cast EoE 6", &skillbar.eoe},
-        new Move_NoWaitAndStop{9120.00F, -18432.003F, "Finish Planes"},
+        new Move_NoWaitAndStop{11368.55F, -17974.64F, "Finish Planes"},
         new Move_NoWaitAndContinue{-235.05F, 18496.461F, "Go To Dhuum 1"},
         new Move_NoWaitAndContinue{-2537.51F, 19139.91F, "Go To Dhuum 2"},
         new Move_NoWaitAndContinue{-6202.59F, 18704.91F, "Go To Dhuum 3"},
