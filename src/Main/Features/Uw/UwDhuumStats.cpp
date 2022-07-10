@@ -122,7 +122,8 @@ static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
     const auto time = std::chrono::milliseconds(duration);
     const auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
     const auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
-    snprintf(buf, bufsize, "%02d:%02llu.%04llu", mins, secs, time.count() / 10 % 100);
+    const auto hrs = std::chrono::duration_cast<std::chrono::hours>(time).count() % 60;
+    snprintf(buf, bufsize, "%02d:%02d:%02llu", hrs, mins, secs);
 }
 
 void UwDhuumStats::Draw(IDirect3DDevice9 *)
@@ -154,10 +155,11 @@ void UwDhuumStats::Draw(IDirect3DDevice9 *)
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
             static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
-        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F)
+        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F &&
+            !DhuumFightDone(dhuum_id))
         {
-            char buffer[32];
-            FormatTime(finished_ms, 32, buffer);
+            char buffer[16];
+            FormatTime(finished_ms, 16, buffer);
             ImGui::Text("Finished: %s", buffer);
         }
         else
@@ -168,7 +170,6 @@ void UwDhuumStats::Draw(IDirect3DDevice9 *)
 
 void UwDhuumStats::ResetData()
 {
-    dhuum_fight_active = true;
     dhuum_fight_start_time_ms = clock();
 
     num_casted_rest = 0U;
@@ -210,7 +211,8 @@ void UwDhuumStats::UpdateRestData()
         rests_per_s = 0.0F;
 
     progress_perc = GetProgressValue();
-    const auto still_needed_rest = num_casted_rest / (progress_perc + FLT_EPSILON);
+    const auto total_num_rests = num_casted_rest / (progress_perc + FLT_EPSILON);
+    const auto still_needed_rest = total_num_rests - num_casted_rest;
     if (progress_perc < 0.999F && still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
     else if (still_needed_rest == 0 || progress_perc >= 1.0F)

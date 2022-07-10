@@ -100,9 +100,10 @@ void UwEmo::UpdateUw()
     const auto is_hm_trigger_take = moves[move_idx]->name == "Talk Lab Reaper";
     const auto is_hm_trigger_move =
         (moves[move_idx]->name == "Go To Wastes 1" || moves[move_idx]->name == "Go Wastes 2" ||
-         moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go Keeper 3" ||
-         moves[move_idx]->name == "Go Keeper 4/5" || moves[move_idx]->name == "Go Lab 1" ||
-         moves[move_idx]->name == "Go To Dhuum 6");
+         moves[move_idx]->name == "Go To Wastes 5" || moves[move_idx]->name == "Go To Dhuum 1" ||
+         moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
+         moves[move_idx]->name == "Go Lab 1" || moves[move_idx]->name == "Go To Dhuum 6" ||
+         moves[move_idx]->name == "Go Spirits 2");
     const auto is_moving = player_data.living->GetIsMoving();
 
     Move_PositionABC::LtMoveTrigger(lt_is_ready,
@@ -328,11 +329,10 @@ bool EmoRoutine::RoutineCanthaGuards() const
             if (!cantha || cantha->GetIsDead())
                 continue;
 
-            if (cantha->hp < 0.90F && CastBondIfNotAvailable(skillbar->prot, cantha->agent_id, player_data))
-                return true;
-
             if (cantha->hp < 0.70F && player_data->hp_perc > 0.50F)
                 return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, cantha->agent_id));
+            else if (cantha->hp < 0.70F && player_data->hp_perc < 0.50F)
+                return (RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, cantha->agent_id));
 
             if (!cantha->GetIsWeaponSpelled())
                 return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, cantha->agent_id));
@@ -668,7 +668,7 @@ RoutineState EmoRoutine::Routine()
         return RoutineState::FINISHED;
 
     // Make sure to only pop canthas if there is enough time until dhuum fight
-    constexpr auto eight_mins_in_ms = 8LL * 60LL * 1000LL;
+    constexpr auto eight_mins_in_ms = 8LL * 60LL * 1000LL + 30LL * 1000LL;
     const auto stone_should_be_used =
         (!used_canthas && GW::Map::GetInstanceTime() < eight_mins_in_ms && GW::PartyMgr::GetPartySize() < 6);
 

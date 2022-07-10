@@ -207,7 +207,7 @@ private:
         new Move_NoWaitAndStop{6633.37F, 15385.31F, "Go Wastes 1"},
         new Move_NoWaitAndContinue{6054.83F, 18997.46F, "Go Wastes 2"},
         new Move_WaitAndContinue{4968.64F, 16555.77F, "Go Wastes 3"},
-        new Move_NoWaitAndStop{2152.55F, 16893.93F, "Go Wastes 4"},
+        new Move_WaitAndStop{2152.55F, 16893.93F, "Go Wastes 4"},
         new Move_NoWaitAndContinue{8685.21F, 6344.59F, "Go Pits Start"},
         new Move_NoWaitAndContinue{12566.49F, 7812.503F, "Go Pits 1"},
         new Move_NoWaitAndStop{11958.36F, 6281.43F, "Go Pits 2"},

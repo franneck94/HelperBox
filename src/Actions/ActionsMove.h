@@ -3,6 +3,7 @@
 #include <functional>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <string>
 
 #include <GWCA/Constants/Constants.h>
@@ -135,7 +136,9 @@ public:
     static uint32_t GetFirstCloseMove(const DataPlayer &player_data, const std::array<MoveABC *, N> &moves)
     {
         auto idx = 0U;
-        for (const auto move : moves)
+
+        auto reversed_moves = std::ranges::reverse_view{moves};
+        for (const auto move : reversed_moves)
         {
             const auto dist_to_move = GW::GetDistance(player_data.pos, move->pos);
             if (dist_to_move < GW::Constants::Range::Spellcast)

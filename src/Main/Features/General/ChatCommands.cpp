@@ -121,7 +121,7 @@ void ChatCommands::UseSkill::Update()
     if (!slot)
         return;
 
-    const auto current_energy = static_cast<uint32_t>((me_living->energy * me_living->max_energy));
+    const auto current_energy = static_cast<uint32_t>(me_living->energy * me_living->max_energy);
     CastSelectedSkill(current_energy, skillbar);
 }
 
@@ -143,10 +143,11 @@ void ChatCommands::DhuumUseSkill::Update()
         return;
 
     const auto progress_perc = GetProgressValue();
-
     auto target_id = uint32_t{0};
-    if (progress_perc < 0.99F)
+    if (progress_perc < 1.0F)
+    {
         slot = 1;
+    }
     else // Rest done
     {
         const auto dhuum_agent = GetDhuumAgent();
@@ -155,33 +156,20 @@ void ChatCommands::DhuumUseSkill::Update()
             slot = 0;
             return;
         }
-        const auto dhuum_fight_done = DhuumFightDone(dhuum_agent->agent_id);
-        if (dhuum_fight_done)
-        {
-            slot = 0;
-            return;
-        }
+        const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
         const auto target = GetTargetAsLiving();
-        if (!target)
+        if (!dhuum_living || dhuum_living->allegiance != GW::Constants::Allegiance::Enemy || !target ||
+            target->player_number != static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
         {
             slot = 0;
             return;
         }
-        if (target->player_number != static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
-        {
-            slot = 1;
-        }
-        else if (target->player_number == static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
-        {
-            slot = 5;
-            target_id = target->agent_id;
 
-            if (!me_living->GetIsAttacking())
-                AttackAgent(target);
+        slot = 5;
+        target_id = target->agent_id;
 
-            if (DhuumFightDone(target_id))
-                slot = 0;
-        }
+        if (!me_living->GetIsAttacking())
+            AttackAgent(target);
     }
 
     if (!slot)

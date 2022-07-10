@@ -89,7 +89,7 @@ bool OnChatMessageLtIsReady(GW::HookStatus *, GW::Packet::StoC::PacketBase *pack
     {
     case GAME_SMSG_CHAT_MESSAGE_LOCAL:
     {
-        auto p = (GW::Packet::StoC::MessageLocal *)packet;
+        const auto p = static_cast<GW::Packet::StoC::MessageLocal *>(packet);
         channel = p->channel;
         player_number = p->player_number;
         message = GetMessageCore();
