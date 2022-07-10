@@ -63,9 +63,9 @@ bool GameRectangle::PointInTriangle(const GW::GamePos &pt,
                                     const GW::GamePos &v2,
                                     const GW::GamePos &v3)
 {
-    const auto b1 = Sign(pt, v1, v2) < 0.0f;
-    const auto b2 = Sign(pt, v2, v3) < 0.0f;
-    const auto b3 = Sign(pt, v3, v1) < 0.0f;
+    const auto b1 = Sign(pt, v1, v2) < 0.0F;
+    const auto b2 = Sign(pt, v2, v3) < 0.0F;
+    const auto b3 = Sign(pt, v3, v1) < 0.0F;
 
     return ((b1 == b2) && (b2 == b3));
 }

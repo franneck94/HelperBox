@@ -21,17 +21,20 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 {
     SettingsWindow::Instance().sep = optional_modules.size();
 
+    //General
     optional_modules.push_back(&ChatCommands::Instance());
+    optional_modules.push_back(&SettingsWindow::Instance());
+    // optional_modules.push_back(&AutoFollowWindow::Instance());
+    // optional_modules.push_back(&CancelActionWindow::Instance());
+
+    // UW
     optional_modules.push_back(&UwEmo::Instance());
     optional_modules.push_back(&UwDhuumBitch::Instance());
     optional_modules.push_back(&UwMesmer::Instance());
     optional_modules.push_back(&UwRanger::Instance());
-    // optional_modules.push_back(&AutoFollowWindow::Instance());
     optional_modules.push_back(&UwDhuumStats::Instance());
-    // optional_modules.push_back(&CancelActionWindow::Instance());
-    optional_modules.push_back(&SettingsWindow::Instance());
 
-    for (HelperBoxModule *module : optional_modules)
+    for (auto module : optional_modules)
     {
         module->Initialize();
         module->LoadSettings(ini);
@@ -65,5 +68,5 @@ void HelperBoxSettings::SaveSettings(CSimpleIni *ini)
 
 void HelperBoxSettings::Draw(IDirect3DDevice9 *)
 {
-    ImGui::GetStyle().WindowBorderSize = (move_all ? 1.0f : 0.0f);
+    ImGui::GetStyle().WindowBorderSize = (move_all ? 1.0F : 0.0F);
 }

@@ -30,9 +30,7 @@ void CancelActionWindow::Draw(IDirect3DDevice9 *)
     {
         const auto width = ImGui::GetWindowWidth();
         if (ImGui::Button("Cancel Action", ImVec2(width, 35.0F)))
-        {
             CancelMovement();
-        }
     }
     ImGui::End();
 }

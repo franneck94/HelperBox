@@ -155,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_MOUSEWHEEL:
         if (!skip_mouse_capture)
-            io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0f : -1.0f;
+            io.MouseWheel += GET_WHEEL_DELTA_WPARAM(wParam) > 0 ? +1.0F : -1.0F;
         break;
     case WM_MOUSEMOVE:
         if (!skip_mouse_capture)
@@ -268,7 +268,7 @@ void HelperBox::Initialize()
     core_modules.push_back(&HelperBoxSettings::Instance());
     core_modules.push_back(&MainWindow::Instance());
 
-    for (HelperBoxModule *module : core_modules)
+    for (auto module : core_modules)
     {
         module->LoadSettings(inifile);
         module->Initialize();
@@ -292,13 +292,13 @@ void HelperBox::OpenSettingsFile()
 
 void HelperBox::LoadModuleSettings()
 {
-    for (HelperBoxModule *module : modules)
+    for (auto module : modules)
         module->LoadSettings(inifile);
 }
 
 void HelperBox::SaveSettings()
 {
-    for (HelperBoxModule *module : modules)
+    for (auto module : modules)
         module->SaveSettings(inifile);
 
     if (inifile)
@@ -318,7 +318,7 @@ void HelperBox::SaveSettings()
 
 void HelperBox::FlashWindow()
 {
-    FLASHWINFO flashInfo = {0};
+    auto flashInfo = FLASHWINFO{0};
     flashInfo.cbSize = sizeof(FLASHWINFO);
     flashInfo.hwnd = GW::MemoryMgr::GetGWWindowHandle();
     flashInfo.dwFlags = FLASHW_TIMER | FLASHW_TRAY | FLASHW_TIMERNOFG;
@@ -336,7 +336,7 @@ void HelperBox::Terminate()
 
     GW::GameThread::RemoveGameThreadCallback(&Update_Entry);
 
-    for (HelperBoxModule *module : modules)
+    for (auto module : modules)
         module->Terminate();
 }
 
@@ -371,7 +371,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
             ImGui_ImplDX9_Init(device);
             ImGui_ImplWin32_Init(GW::MemoryMgr().GetGWWindowHandle());
 
-            ImGuiIO &io = ImGui::GetIO();
+            auto &io = ImGui::GetIO();
             io.MouseDrawCursor = false;
             io.IniFilename = HelperBox::Instance().imgui_inifile.c_str();
 
@@ -383,13 +383,8 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
 
         const auto world_map_showing = GW::UI::GetIsWorldMapShowing();
 
-        if (GW::PreGameContext::instance())
-            return;
-
-        if (GW::Map::GetIsInCinematic())
-            return;
-
-        if (IsIconic(GW::MemoryMgr::GetGWWindowHandle()))
+        if (GW::PreGameContext::instance() || GW::Map::GetIsInCinematic() ||
+            IsIconic(GW::MemoryMgr::GetGWWindowHandle()))
             return;
 
         ImGui_ImplDX9_NewFrame();
@@ -400,7 +395,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
         ImGui::GetIO().KeysDown[VK_SHIFT] = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
         ImGui::GetIO().KeysDown[VK_MENU] = (GetKeyState(VK_MENU) & 0x8000) != 0;
 
-        for (HelperBoxUIElement *uielement : HelperBox::Instance().uielements)
+        for (auto uielement : HelperBox::Instance().uielements)
         {
             if (world_map_showing)
                 continue;
@@ -423,7 +418,7 @@ void HelperBox::Update(GW::HookStatus *)
     if (last_tick_count == 0)
         last_tick_count = GetTickCount();
 
-    HelperBox &helper_box = HelperBox::Instance();
+    auto &helper_box = HelperBox::Instance();
     if (!tb_initialized)
         HelperBox::Instance().Initialize();
 
@@ -435,7 +430,7 @@ void HelperBox::Update(GW::HookStatus *)
 
         HelperBox::Instance().livings_data.Update();
 
-        for (HelperBoxModule *module : helper_box.modules)
+        for (auto module : helper_box.modules)
             module->Update(delta_f, HelperBox::Instance().livings_data);
 
         last_tick_count = tick;

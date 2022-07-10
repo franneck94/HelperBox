@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 class Thread
 {
 public:

@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include <cstdint>
+#include <cstdio>
+
 #include "Window.h"
 
 #define IDI_ICON1 101

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <cstdint>
+#include <cstdio>
 
 #include "Settings.h"
 
@@ -28,7 +29,7 @@ void ParseCommandLine()
                 fprintf(stderr, "'/pid' must be followed by a process id\n");
             }
 
-            auto pid = _wtoi(argv[i]);
+            const auto pid = _wtoi(argv[i]);
             if (pid < 0)
             {
                 fprintf(stderr, "Process id must be a positive integer");
