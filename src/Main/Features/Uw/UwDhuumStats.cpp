@@ -210,10 +210,10 @@ void UwDhuumStats::UpdateRestData()
         rests_per_s = 0.0F;
 
     progress_perc = GetProgressValue();
-    const auto still_needed_rest = num_casted_rest / progress_perc;
+    const auto still_needed_rest = num_casted_rest / (progress_perc + FLT_EPSILON);
     if (progress_perc < 0.999F && still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
-    else if (still_needed_rest == 0)
+    else if (still_needed_rest == 0 || progress_perc >= 1.0F)
         eta_rest_s = 0.0F;
     else
         eta_rest_s = eta_rest_s;

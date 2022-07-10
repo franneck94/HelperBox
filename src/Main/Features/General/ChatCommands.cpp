@@ -175,6 +175,12 @@ void ChatCommands::DhuumUseSkill::Update()
         {
             slot = 5;
             target_id = target->agent_id;
+
+            if (!me_living->GetIsAttacking())
+                AttackAgent(target);
+
+            if (DhuumFightDone(target_id))
+                slot = 0;
         }
     }
 

@@ -420,11 +420,6 @@ float GetProgressValue()
 
 bool DhuumFightDone(uint32_t dhuum_id)
 {
-    const auto progress = GetProgressValue();
-
-    if (progress < 0.99F)
-        return false;
-
     if (!dhuum_id)
         return false;
 
@@ -436,10 +431,11 @@ bool DhuumFightDone(uint32_t dhuum_id)
     if (!dhuum_living)
         return false;
 
-    if (dhuum_living->hp >= 0.25F)
-        return false;
+    const auto progress = GetProgressValue();
+    if (dhuum_living->allegiance != GW::Constants::Allegiance::Enemy && progress > 0.99F)
+        return true;
 
-    return true;
+    return false;
 }
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role)
