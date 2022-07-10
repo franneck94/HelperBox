@@ -37,16 +37,7 @@ constexpr static auto TIME_WINDOW_REST_MS = (TIME_WINDOW_REST_S * 1000L);
 
 constexpr static auto REST_SKILL_ID = uint32_t{3087};
 constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
-
-constexpr static auto NEEDED_NUM_REST = std::array<uint32_t, 8>{uint32_t{780U},  // 1 ?
-                                                                uint32_t{760U},  // 2 ?
-                                                                uint32_t{740U},  // 3 ?
-                                                                uint32_t{730U},  // 4
-                                                                uint32_t{710U},  // 5
-                                                                uint32_t{680U},  // 6 ?
-                                                                uint32_t{660U},  // 7 ?
-                                                                uint32_t{640U}}; // 8 ?
-};                                                                               // namespace
+} // namespace
 
 void UwDhuumStats::SkillPacketCallback(const uint32_t value_id,
                                        const uint32_t caster_id,
@@ -54,8 +45,8 @@ void UwDhuumStats::SkillPacketCallback(const uint32_t value_id,
                                        const uint32_t value,
                                        const bool no_target)
 {
-    uint32_t agent_id = caster_id;
-    const uint32_t activated_skill_id = value;
+    auto agent_id = caster_id;
+    const auto activated_skill_id = value;
 
     // ignore non-skill packets
     switch (value_id)
@@ -128,9 +119,9 @@ void UwDhuumStats::DamagePacketCallback(const uint32_t type,
 
 static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
 {
-    auto time = std::chrono::milliseconds(duration);
-    auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
-    auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
+    const auto time = std::chrono::milliseconds(duration);
+    const auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
+    const auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
     snprintf(buf, bufsize, "%02d:%02llu.%04llu", mins, secs, time.count() / 10 % 100);
 }
 
@@ -218,25 +209,9 @@ void UwDhuumStats::UpdateRestData()
     else
         rests_per_s = 0.0F;
 
-    const auto party_size = GW::PartyMgr::GetPartySize();
-    auto needed_num_rest = NEEDED_NUM_REST[0];
-    if (party_size >= 1 && party_size <= 8)
-        needed_num_rest = NEEDED_NUM_REST[party_size - 1U];
-
     progress_perc = GetProgressValue();
-#ifdef _DEBUG
-    auto last_num_rests = 0U;
-    if (last_num_rests + 20 == num_casted_rest)
-    {
-        Log::Info("Rest Info: %u, %0.2f", num_casted_rest, progress_perc);
-        last_num_rests = num_casted_rest;
-    }
-#endif
-    auto still_needed_rest = needed_num_rest - num_casted_rest;
-    if (still_needed_rest == 0 && progress_perc <= 0.99F)
-        still_needed_rest = 5;
-
-    if (still_needed_rest > 0 && rests_per_s > 0.0F)
+    const auto still_needed_rest = num_casted_rest / progress_perc;
+    if (progress_perc < 0.999F && still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
     else if (still_needed_rest == 0)
         eta_rest_s = 0.0F;
