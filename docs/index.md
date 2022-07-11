@@ -5,7 +5,7 @@ This software is based on the GWCA API and has some utilities for (low-man) UWSC
 If you want to use ToolBox++ in parallel, you have to start Toolbox **before** starting this HelperBox.  
 You *may* need to launch the HelperBox.exe as admin.  
 
-Note: Thw UW Helper Windows are only displayed in Embark Beach and in the Underworld.
+Note: The UW Helper Windows are only displayed in Embark Beach and the Underworld.
 
 ## Features
 
@@ -25,6 +25,7 @@ Note: Thw UW Helper Windows are only displayed in Embark Beach and in the Underw
 
 For a detailed description:
 
+- Chat Commands see [here](./ChatCommands.md)
 - For EMO see [here](./Uw/Emo.md)
 - For Mesmer see [here](./Uw/Mesmer.md)
 - For Ranger see [here](./Uw/Ranger.md)
