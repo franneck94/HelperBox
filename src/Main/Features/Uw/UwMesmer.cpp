@@ -16,12 +16,13 @@
 #include <ActionsUw.h>
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
+#include <HelperItems.h>
 #include <HelperUw.h>
 #include <Logger.h>
-#include <MathUtils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include <fmt/format.h>
 
@@ -133,6 +134,8 @@ void UwMesmer::Update(float, const AgentLivingData &_livings_data)
     skele_livings.clear();
     horseman_livings.clear();
     keeper_livings.clear();
+
+    const auto sets = GetWeaponSets();
 
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;

@@ -1,7 +1,6 @@
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 #include <Base/SettingsWindow.h>
-#include <Defines.h>
 #include <Features/General/AutoFollowWindow.h>
 #include <Features/General/ChatCommands.h>
 #include <Features/Uw/UwDhuumBitch.h>
@@ -9,6 +8,7 @@
 #include <Features/Uw/UwEmo.h>
 #include <Features/Uw/UwMesmer.h>
 #include <Features/Uw/UwRanger.h>
+#include <Utils.h>
 
 #include <SimpleIni.h>
 

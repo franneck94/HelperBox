@@ -17,8 +17,8 @@
 #include <DataSkillbar.h>
 #include <Helper.h>
 #include <Logger.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsMath.h>
 
 class TriggerABC
 {

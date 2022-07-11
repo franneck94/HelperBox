@@ -5,7 +5,7 @@
 
 #include <Logger.h>
 
-#include "Path.h"
+#include "Utils.h"
 
 std::filesystem::path GetSettingsFolderPath()
 {

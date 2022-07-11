@@ -21,14 +21,14 @@
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
 #include <DataSkillbar.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <Logger.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include <fmt/format.h>
 #include <imgui.h>

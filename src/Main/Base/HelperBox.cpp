@@ -20,7 +20,7 @@
 #include <Base/HelperBoxTheme.h>
 #include <Base/MainWindow.h>
 #include <Logger.h>
-#include <Path.h>
+#include <Utils.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>

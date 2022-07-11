@@ -5,7 +5,9 @@
 
 #include <ActionTypes.h>
 #include <DataPlayer.h>
-#include <GuiConstants.h>
+#include <UtilsGui.h>
+
+#include <imgui.h>
 
 class ActionABC
 {
@@ -17,7 +19,7 @@ public:
     ActionABC(DataPlayer *p, std::string_view t) : player_data(p), text(t){};
     virtual ~ActionABC(){};
 
-    void Draw(const ImVec2 button_size = DEFAULT_BUTTON_SIZE);
+    void Draw(const ImVec2 button_size = ImVec2(100.0, 50.0));
     virtual RoutineState Routine() = 0;
     virtual void Update() = 0;
 

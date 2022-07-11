@@ -11,9 +11,9 @@
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
-#include <GuiUtils.h>
 #include <HelperCallbacks.h>
 #include <HelperUw.h>
+#include <UtilsGui.h>
 
 #include "UwHelperBase.h"
 

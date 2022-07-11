@@ -1,18 +1,22 @@
 #include <cstdint>
 
 #include <GWCA/Constants/Constants.h>
+#include <GWCA/Constants/ItemIDs.h>
+#include <GWCA/Context/ItemContext.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Item.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/CtoSMgr.h>
+#include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Managers/ItemMgr.h>
+#include <GWCA/Managers/UIMgr.h>
 #include <GWCA/Packets/Opcodes.h>
 
 #include <Helper.h>
 
 #include "HelperItems.h"
 
-bool IsEquippable(const GW::Item *item)
+bool IsWeapon(const GW::Item *item)
 {
     if (!item)
         return false;
@@ -20,29 +24,59 @@ bool IsEquippable(const GW::Item *item)
     switch (static_cast<GW::Constants::ItemType>(item->type))
     {
     case GW::Constants::ItemType::Axe:
-    case GW::Constants::ItemType::Boots:
-    case GW::Constants::ItemType::Bow:
-    case GW::Constants::ItemType::Chestpiece:
-    case GW::Constants::ItemType::Offhand:
-    case GW::Constants::ItemType::Gloves:
-    case GW::Constants::ItemType::Hammer:
-    case GW::Constants::ItemType::Headpiece:
-    case GW::Constants::ItemType::Leggings:
-    case GW::Constants::ItemType::Wand:
-    case GW::Constants::ItemType::Shield:
-    case GW::Constants::ItemType::Staff:
     case GW::Constants::ItemType::Sword:
-    case GW::Constants::ItemType::Daggers:
+    case GW::Constants::ItemType::Shield:
     case GW::Constants::ItemType::Scythe:
+    case GW::Constants::ItemType::Bow:
+    case GW::Constants::ItemType::Wand:
+    case GW::Constants::ItemType::Staff:
+    case GW::Constants::ItemType::Offhand:
+    case GW::Constants::ItemType::Daggers:
+    case GW::Constants::ItemType::Hammer:
     case GW::Constants::ItemType::Spear:
-    case GW::Constants::ItemType::Costume_Headpiece:
-    case GW::Constants::ItemType::Costume:
-        break;
+        return true;
     default:
         return false;
+    }
+}
+
+bool IsArmor(const GW::Item *item)
+{
+    if (!item)
+        return false;
+
+    switch (static_cast<GW::Constants::ItemType>(item->type))
+    {
+    case GW::Constants::ItemType::Headpiece:
+    case GW::Constants::ItemType::Chestpiece:
+    case GW::Constants::ItemType::Leggings:
+    case GW::Constants::ItemType::Boots:
+    case GW::Constants::ItemType::Gloves:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool IsSalvagable(const GW::Item *item)
+{
+    if (IsWeapon(item) || IsArmor(item))
+        return true;
+
+    switch (static_cast<GW::Constants::ItemType>(item->type))
+    {
+    case GW::Constants::ItemType::Salvage:
+        return true;
+    default:
         break;
     }
-    return true;
+
+    return false;
+}
+
+bool IsEquippable(const GW::Item *item)
+{
+    return (IsWeapon(item) || IsArmor(item));
 }
 
 GW::Item *GetBagItem(const uint32_t bag_idx, const uint32_t slot_idx)
@@ -85,12 +119,6 @@ bool EquipItem(const uint32_t bag_idx, const uint32_t slot_idx)
     const auto p = GW::Agents::GetCharacter();
     if (!p || p->GetIsDead() || p->GetIsKnockedDown() || p->GetIsCasting())
         return false;
-
-    if (p->skill)
-    {
-        CancelMovement();
-        return false;
-    }
 
     if (p->GetIsIdle() || p->GetIsMoving())
     {
@@ -168,4 +196,50 @@ bool UseInventoryItem(const uint32_t item_id, const size_t from_bag, const size_
     }
 
     return false;
+}
+
+GW::WeapondSet* GetWeaponSets()
+{
+    const auto *c = GW::ItemContext::instance();
+
+    if (!c || !c->inventory)
+        return nullptr;
+
+    return c->inventory->weapon_sets;
+}
+
+bool UseWeaponSlot(const uint32_t slot_idx)
+{
+    auto action = GW::UI::ControlAction::ControlAction_ActivateWeaponSet1;
+
+    switch (slot_idx)
+    {
+    case 0:
+    {
+        action = GW::UI::ControlAction::ControlAction_ActivateWeaponSet1;
+        break;
+    }
+    case 1:
+    {
+        action = GW::UI::ControlAction::ControlAction_ActivateWeaponSet2;
+        break;
+    }
+    case 2:
+    {
+        action = GW::UI::ControlAction::ControlAction_ActivateWeaponSet3;
+        break;
+    }
+    case 3:
+    {
+        action = GW::UI::ControlAction::ControlAction_ActivateWeaponSet4;
+        break;
+    }
+    default:
+    {
+        return false;
+    }
+    }
+
+    GW::GameThread::Enqueue([&]() { GW::UI::Keypress(action); });
+    return true;
 }

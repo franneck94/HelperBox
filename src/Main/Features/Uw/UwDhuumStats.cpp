@@ -20,11 +20,11 @@
 #include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <DataPlayer.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
-#include <MathUtils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include "UwDhuumStats.h"
 

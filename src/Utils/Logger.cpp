@@ -3,8 +3,8 @@
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Utilities/Debug.h>
 
-#include <Defines.h>
 #include <Logger.h>
+#include <Utils.h>
 
 namespace
 {

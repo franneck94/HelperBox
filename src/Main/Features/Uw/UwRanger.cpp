@@ -16,12 +16,12 @@
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
 #include <DataSkillbar.h>
-#include <GuiUtils.h>
 #include <HelperAgents.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include <fmt/format.h>
 

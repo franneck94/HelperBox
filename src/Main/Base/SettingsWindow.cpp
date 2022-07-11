@@ -3,8 +3,8 @@
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxSettings.h>
 #include <Base/MainWindow.h>
-#include <Defines.h>
 #include <Features/General/ChatCommands.h>
+#include <Utils.h>
 
 #include <imgui.h>
 

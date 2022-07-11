@@ -3,7 +3,7 @@
 #include <GWCA/Managers/MapMgr.h>
 
 #include <HelperMaps.h>
-#include <MathUtils.h>
+#include <UtilsMath.h>
 
 #include "HelperUwPos.h"
 
@@ -117,7 +117,7 @@ bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range)
 
 bool IsGoingToDhuum(const GW::GamePos &player_pos)
 {
-    return IsNearToGamePos(player_pos, GW::GamePos{-9567.56F, 17288.916F, 0}, 100.0F);
+    return IsNearToGamePos(player_pos, GW::GamePos{-9567.56F, 17288.916F, 0}, 1500.0F);
 }
 
 bool IsAtFilterSkelePos(const GW::GamePos &player_pos, const GW::GamePos &next_pos)

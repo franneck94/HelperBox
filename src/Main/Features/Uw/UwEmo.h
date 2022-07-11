@@ -13,11 +13,11 @@
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperItems.h>
 #include <HelperUw.h>
+#include <UtilsGui.h>
 
 #include "UwHelperBase.h"
 
@@ -40,8 +40,9 @@ private:
     bool RoutineDbBeforeDhuum() const;
     bool RoutineWhenInRangeBondLT() const;
     bool RoutineLtAtFusePulls() const;
-    bool RoutineCanthaGuards() const;
     bool RoutineEscortSpirits() const;
+    bool RoutineCanthaGuards() const;
+    bool RoutineDbAtSpirits() const;
     bool DropBondsLT() const;
     bool RoutineTurtle() const;
     bool RoutineDbAtDhuum() const;

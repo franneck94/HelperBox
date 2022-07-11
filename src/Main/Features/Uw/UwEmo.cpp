@@ -24,14 +24,14 @@
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
 #include <DataSkillbar.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <Logger.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include "UwEmo.h"
 
@@ -55,6 +55,8 @@ constexpr static auto ESCORT_IDS = std::array<uint32_t, 6>{GW::Constants::ModelI
                                                            GW::Constants::ModelID::UW::Escort6};
 constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
+
+constexpr auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL + 30LL * 1000LL;
 }; // namespace
 
 UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
@@ -337,33 +339,19 @@ bool EmoRoutine::RoutineCanthaGuards() const
             if (!cantha->GetIsWeaponSpelled())
                 return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, cantha->agent_id));
         }
-
-        if (db_agent && db_agent->agent_id)
-        {
-            const auto dist = GW::GetDistance(db_agent->pos, player_data->pos);
-            if (dist < GW::Constants::Range::Spellcast)
-                return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, db_agent->agent_id));
-        }
     }
-    else // Done at vale, drop buffs
-    {
-        auto buffs = GW::Effects::GetPlayerBuffs();
-        if (!buffs || !buffs->valid() || buffs->size() == 0)
-            return false;
 
-        auto droppped_smth = false;
-        for (auto living : filtered_canthas)
-        {
-            if (!living || living->GetIsDead())
-                continue;
+    return false;
+}
 
-            if (DropBondsOnLiving(living))
-                droppped_smth = true;
-        }
+bool EmoRoutine::RoutineDbAtSpirits() const
+{
+    if (!db_agent || !db_agent->agent_id)
+        return false;
 
-        if (droppped_smth)
-            return true;
-    }
+    const auto dist = GW::GetDistance(db_agent->pos, player_data->pos);
+    if (dist < GW::Constants::Range::Spellcast)
+        return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, db_agent->agent_id));
 
     return false;
 }
@@ -668,9 +656,8 @@ RoutineState EmoRoutine::Routine()
         return RoutineState::FINISHED;
 
     // Make sure to only pop canthas if there is enough time until dhuum fight
-    constexpr auto eight_mins_in_ms = 8LL * 60LL * 1000LL + 30LL * 1000LL;
     const auto stone_should_be_used =
-        (!used_canthas && GW::Map::GetInstanceTime() < eight_mins_in_ms && GW::PartyMgr::GetPartySize() < 6);
+        (!used_canthas && GW::Map::GetInstanceTime() < EIGHT_MINS_IN_MS && GW::PartyMgr::GetPartySize() < 6);
 
     if (IsAtValeSpirits(player_data->pos) && stone_should_be_used && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
     {
@@ -679,6 +666,9 @@ RoutineState EmoRoutine::Routine()
     }
 
     if (IsAtValeSpirits(player_data->pos) && RoutineCanthaGuards())
+        return RoutineState::FINISHED;
+
+    if (IsAtValeSpirits(player_data->pos) && RoutineDbAtSpirits())
         return RoutineState::FINISHED;
 
     if (IsGoingToDhuum(player_data->pos) && DropBondsLT())
