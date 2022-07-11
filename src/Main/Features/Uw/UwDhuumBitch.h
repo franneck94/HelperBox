@@ -23,7 +23,8 @@
 class DbRoutine : public DbActionABC
 {
 public:
-    DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a);
+    DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a)
+        : DbActionABC(p, "DbRoutine", s), livings_data(a){};
 
     RoutineState Routine() override;
     void Update() override;
@@ -102,7 +103,7 @@ private:
     bool first_frame = false;
     DbSkillbarData skillbar;
 
-    DbRoutine db_routinme;
+    DbRoutine db_routine;
 
     std::function<bool()> target_reaper_fn = [&]() { return TargetReaper(player_data, livings_data->npcs); };
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, livings_data->npcs); };

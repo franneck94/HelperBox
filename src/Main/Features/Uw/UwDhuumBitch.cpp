@@ -46,7 +46,7 @@ static auto lt_is_ready = false;
 constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
-UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routinme(&player_data, &skillbar, livings_data)
+UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -60,7 +60,7 @@ void UwDhuumBitch::Draw(IDirect3DDevice9 *)
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
     if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
-        db_routinme.Draw();
+        db_routine.Draw();
         DrawMovingButtons(moves, move_ongoing, move_idx);
     }
     ImGui::End();
@@ -119,12 +119,12 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
     {
         move_idx = 0;
         move_ongoing = false;
-        db_routinme.action_state = ActionState::INACTIVE;
+        db_routine.action_state = ActionState::INACTIVE;
         return;
     }
     player_data.Update();
     livings_data = &_livings_data;
-    db_routinme.livings_data = livings_data;
+    db_routine.livings_data = livings_data;
 
     if (!IsDhuumBitch(player_data))
         return;
@@ -139,7 +139,7 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
         return;
     skillbar.Update();
 
-    damage_action_state = &db_routinme.action_state;
+    damage_action_state = &db_routine.action_state;
 
     if (IsUw())
     {
@@ -147,12 +147,7 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
         UpdateUw();
     }
 
-    db_routinme.Update();
-}
-
-DbRoutine::DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a)
-    : DbActionABC(p, "DbRoutine", s), livings_data(a)
-{
+    db_routine.Update();
 }
 
 bool DbRoutine::CastPiOnTarget() const
