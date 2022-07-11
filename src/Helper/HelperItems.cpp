@@ -281,7 +281,7 @@ std::pair<GW::WeapondSet *, uint32_t> GetFirstMeleeWeaponSet()
 
 bool WeaponSetIsMelee(const GW::WeapondSet &weapon_set)
 {
-    if (!weapon_set.weapond && !weapon_set.offhand)
+    if (!weapon_set.weapond)
         return false;
 
     return IsMeleeWeapon(weapon_set.weapond);
@@ -289,7 +289,7 @@ bool WeaponSetIsMelee(const GW::WeapondSet &weapon_set)
 
 bool WeaponSetIsRange(const GW::WeapondSet &weapon_set)
 {
-    if (!weapon_set.weapond && !weapon_set.offhand)
+    if (!weapon_set.weapond)
         return false;
 
     return IsRangeWeapon(weapon_set.weapond);
@@ -334,37 +334,31 @@ bool UseWeaponSlot(const uint32_t slot_idx)
 bool SwapToMeleeSet()
 {
     const auto active_set = GetActiveWeaponSet();
-    if (!WeaponSetIsMelee(*active_set))
+    if (WeaponSetIsMelee(*active_set))
+        return true;
+
+    const auto new_set = GetFirstMeleeWeaponSet();
+    if (new_set.first && new_set.second)
     {
-        const auto new_set = GetFirstMeleeWeaponSet();
-
-        if (new_set.first && new_set.second)
-        {
-            UseWeaponSlot(new_set.second);
-            return true;
-        }
-
-        return false;
+        UseWeaponSlot(new_set.second);
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 bool SwapToRangeSet()
 {
     const auto active_set = GetActiveWeaponSet();
-    if (!WeaponSetIsRange(*active_set))
+    if (WeaponSetIsRange(*active_set))
+        return true;
+
+    const auto new_set = GetFirstRangeWeaponSet();
+    if (new_set.first)
     {
-        const auto new_set = GetFirstRangeWeaponSet();
-
-        if (new_set.first)
-        {
-            UseWeaponSlot(new_set.second);
-            return true;
-        }
-
-        return false;
+        UseWeaponSlot(new_set.second);
+        return true;
     }
 
-    return true;
+    return false;
 }
