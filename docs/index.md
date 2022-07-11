@@ -25,7 +25,7 @@ Note: Thw UW Helper Windows are only displayed in Embark Beach and in the Underw
 
 For a detailed description:
 
-- For EMO see [here](./Emo.md)
-- For Mesmer see [here](./Mesmer.md)
-- For Ranger see [here](./Ranger.md)
-- For DB see [here](./Db.md)
+- For EMO see [here](./Uw/Emo.md)
+- For Mesmer see [here](./Uw/Mesmer.md)
+- For Ranger see [here](./Uw/Ranger.md)
+- For DB see [here](./Uw/Db.md)
