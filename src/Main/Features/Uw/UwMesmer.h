@@ -15,10 +15,49 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
+class LtRoutine : public MesmerActionABC
+{
+public:
+    LtRoutine(DataPlayer *p, MesmerSkillbarData *s, const AgentLivingData *a)
+        : MesmerActionABC(p, "LtRoutine", s), livings_data(a){};
+
+    RoutineState Routine() override;
+    void Update() override;
+
+
+private:
+    bool ReadyForSpike() const;
+    bool RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies_in_range) const;
+    bool RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies_in_range, const auto include_graspings);
+    bool CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
+                              uint32_t &last_skill,
+                              uint32_t &last_id,
+                              const bool use_empathy);
+
+public:
+    const AgentLivingData *livings_data = nullptr;
+
+private:
+    uint32_t last_nightmare_id = 0U;
+    uint32_t last_nightmare_skill = 0U;
+    uint32_t last_aatxe_id = 0U;
+    uint32_t last_aatxe_skill = 0U;
+    uint32_t last_dryder_id = 0U;
+    uint32_t last_dryder_skill = 0U;
+    uint32_t last_graspings_id = 0U;
+    uint32_t last_graspings_skill = 0U;
+};
+
 class UwMesmer : public HelperBoxWindow
 {
 public:
-    UwMesmer() : player_data({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}){};
+    UwMesmer()
+        : player_data({}), filtered_livings({}), aatxe_livings({}), dryder_livings({}), skele_livings({}), skillbar({}),
+          lt_routine(&player_data, &skillbar, livings_data)
+    {
+        if (skillbar.ValidateData())
+            skillbar.Load();
+    };
     ~UwMesmer(){};
 
     static UwMesmer &Instance()
@@ -48,4 +87,7 @@ private:
     std::vector<GW::AgentLiving *> skele_livings;
     std::vector<GW::AgentLiving *> horseman_livings;
     std::vector<GW::AgentLiving *> keeper_livings;
+
+    MesmerSkillbarData skillbar;
+    LtRoutine lt_routine;
 };
