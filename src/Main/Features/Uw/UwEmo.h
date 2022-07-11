@@ -179,7 +179,7 @@ private:
         new Move_DistanceAndContinue{-5183.64F, 8876.31F, "Go Basement 1", 2000.0F},
         new Move_DistanceAndContinue{-6241.24F, 7945.73F, "Go Basement 2", 2000.0F},
         new Move_DistanceAndContinue{-8798.22F, 5643.86F, "Go Basement 3", 4000.0F},
-        new Move_DistanceAndContinue{-7887.61F, 4279.11F, "Go Fuse 2", 3400.0F},
+        new Move_DistanceAndContinue{-8049.28F, 4259.61F, "Go Fuse 2", 3400.0F},
         new Move_DistanceAndContinue{-7289.94F, 3283.81F, "Go Vale Door", 3400.0F, swap_to_high_armor_fn},
         new Move_DistanceAndContinue{-7846.65F, 2234.26F, "Go Vale Bridge", 3400.0F},
         new Move_WaitAndContinue{-8764.08F, 2156.60F, "Go Vale Entry"},
