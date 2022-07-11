@@ -25,6 +25,7 @@ public:
 
     bool HasBuff(const GW::Constants::SkillID buff_skill_id) const;
     bool HasEffect(const GW::Constants::SkillID effect_skill_id) const;
+    float GetRemainingEffectDuration(const GW::Constants::SkillID effect_skill_id) const;
 
     bool CastEffectIfNotAvailable(const DataSkill &skill_data);
     bool CastEffect(const DataSkill &skill_data);

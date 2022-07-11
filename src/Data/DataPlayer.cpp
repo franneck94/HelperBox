@@ -8,6 +8,7 @@
 #include <GWCA/GameEntities/Skill.h>
 #include <GWCA/Managers/EffectMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
+#include <GWCA/Managers/MemoryMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
 #include <ActionsBase.h>
@@ -116,6 +117,37 @@ bool DataPlayer::HasEffect(const GW::Constants::SkillID effect_skill_id) const
     }
 
     return false;
+}
+
+static DWORD GetTimeElapsed(const DWORD timestamp)
+{
+    return GW::MemoryMgr::GetSkillTimer() - timestamp;
+}
+
+static float GetTimeRemaining(const float duration, const DWORD timestamp)
+{
+    return (float)(duration * 1000.f) - (float)GetTimeElapsed(timestamp);
+}
+
+float DataPlayer::GetRemainingEffectDuration(const GW::Constants::SkillID effect_skill_id) const
+{
+    const auto me_effects = GW::Effects::GetPlayerEffectsArray();
+    if (!me_effects)
+        return false;
+
+    for (const auto &effect : me_effects->effects)
+    {
+        const auto agent_id = effect.agent_id;
+        const auto skill_id = effect.skill_id;
+
+        if (agent_id == id || agent_id == 0)
+        {
+            if (skill_id == static_cast<uint32_t>(effect_skill_id))
+                return GetTimeRemaining(effect.duration, effect.timestamp);
+        }
+    }
+
+    return 0.0F;
 }
 
 bool DataPlayer::CastEffectIfNotAvailable(const DataSkill &skill_data)
