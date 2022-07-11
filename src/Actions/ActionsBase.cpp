@@ -28,12 +28,12 @@ void ActionABC::Draw(const ImVec2 button_size)
     DrawButton(action_state, color, text, button_size);
 }
 
-bool ActionABC::HasWaitedLongEnough()
+bool ActionABC::HasWaitedLongEnough(const long timer_threshold_ms)
 {
     static auto timer_last_cast_ms = clock();
 
     const auto last_cast_diff_ms = TIMER_DIFF(timer_last_cast_ms);
-    if (last_cast_diff_ms < TIMER_THRESHOLD_MS)
+    if (last_cast_diff_ms < timer_threshold_ms)
         return false;
 
     timer_last_cast_ms = clock();

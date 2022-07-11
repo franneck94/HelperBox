@@ -12,9 +12,9 @@
 class ActionABC
 {
 public:
-    constexpr static auto TIMER_THRESHOLD_MS = uint32_t{200U};
+    constexpr static auto TIMER_THRESHOLD_MS = long{200U};
 
-    static bool HasWaitedLongEnough();
+    static bool HasWaitedLongEnough(const long timer_threshold_ms = TIMER_THRESHOLD_MS);
 
     ActionABC(DataPlayer *p, std::string_view t) : player_data(p), text(t){};
     virtual ~ActionABC(){};
