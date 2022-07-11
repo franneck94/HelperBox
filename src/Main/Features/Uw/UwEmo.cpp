@@ -56,7 +56,8 @@ constexpr static auto ESCORT_IDS = std::array<uint32_t, 6>{GW::Constants::ModelI
 constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
 
-constexpr auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL + 30LL * 1000LL;
+constexpr auto SEVEN_MINS_IN_MS = 7LL * 60LL * 1000LL;
+constexpr auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL;
 }; // namespace
 
 UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
@@ -657,7 +658,9 @@ RoutineState EmoRoutine::Routine()
 
     // Make sure to only pop canthas if there is enough time until dhuum fight
     const auto stone_should_be_used =
-        (!used_canthas && GW::Map::GetInstanceTime() < EIGHT_MINS_IN_MS && GW::PartyMgr::GetPartySize() < 6);
+        !used_canthas && ((GW::PartyMgr::GetPartySize() <= 4) ||
+                          (GW::PartyMgr::GetPartySize() == 5 && GW::Map::GetInstanceTime() < EIGHT_MINS_IN_MS) ||
+                          (GW::PartyMgr::GetPartySize() == 6 && GW::Map::GetInstanceTime() < SEVEN_MINS_IN_MS));
 
     if (IsAtValeSpirits(player_data->pos) && stone_should_be_used && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
     {
@@ -697,7 +700,6 @@ RoutineState EmoRoutine::Routine()
     if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
 
-    // 100 morale value is 0% in game
     const auto current_morale = GW::GameContext::instance()->world->morale;
     if (current_morale <= 90 && UseInventoryItem(COOKIE_ID, 1, 5))
         return RoutineState::FINISHED;
