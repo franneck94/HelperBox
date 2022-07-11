@@ -23,6 +23,16 @@ bool IsAtSpawn(const GW::GamePos &player_pos, const float range)
     return IsNearToGamePos(player_pos, GW::GamePos{1248.00F, 6965.51F, 0}, range);
 }
 
+bool IsAtChamberSpike(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-790.53F, 9529.63F, 0}, 400.0F);
+}
+
+bool IsAtChamberMonuSpike(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-4049.11F, 13631.00F, 0}, 400.0F);
+}
+
 bool IsAtChamberSkele(const GW::GamePos &player_pos)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{-2726.856F, 10239.48F, 0}, 2500.0F);
