@@ -35,8 +35,11 @@ uint32_t GetTankId()
 {
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
-    if (!success || party_members.size() < 2)
+    if (!success)
         return 0;
+
+    if (party_members.size() == 1)
+        return party_members[0].id;
 
     auto tank_idx = uint32_t{0};
     switch (GW::Map::GetMapID())
