@@ -30,6 +30,6 @@ plugins:
 nav:
   - "Index": index.md
   - "UW EMO": Uw/Emo.md
-  - "UW Mesmer": Uw/Mainteam.md
-  - "UW Ranger": Uw/Terra.md
+  - "UW Mesmer": Uw/Mesmer.md
+  - "UW Ranger": Uw/Ranger.md
   - "UW DB": Uw/Db.md
