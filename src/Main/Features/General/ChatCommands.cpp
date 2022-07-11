@@ -192,7 +192,7 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
     if (argc < 2)
         return;
     const auto arg1 = std::wstring{argv[1]};
-    if (arg1 != L"start")
+    if (arg1 != L"start" || arg1 == L"end" || arg1 == L"stop")
         return;
 
     dhuum_useskill.slot = static_cast<uint32_t>(-1);
