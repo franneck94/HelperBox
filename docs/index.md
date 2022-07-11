@@ -16,8 +16,8 @@ Note: The UW Helper Windows are only displayed in Embark Beach and the Underworl
 - Emo Helper
     - Elementalist/Monk
 - Dhuum and Vale Bitch Helper
-  - Ritualist/Ranger
-  - Dervish/Ranger
+    - Ritualist/Ranger
+    - Dervish/Ranger
 - Mesmer Helper
     - Mesmer/Assassin
     - Mesmer/Elementalist

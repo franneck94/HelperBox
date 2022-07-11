@@ -138,7 +138,6 @@ void UwDhuumStats::Draw(IDirect3DDevice9 *)
 
     if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
-        const auto width = ImGui::GetWindowWidth();
         const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
@@ -198,8 +197,6 @@ void UwDhuumStats::RemoveOldData()
 
 void UwDhuumStats::UpdateRestData()
 {
-    const auto current_time_ms = clock();
-
     rests_per_s = 0.0F;
     auto idx_rests = uint32_t{0};
     for (const auto time : rests)
@@ -223,8 +220,6 @@ void UwDhuumStats::UpdateRestData()
 
 void UwDhuumStats::UpdateDamageData()
 {
-    const auto current_time_ms = clock();
-
     damage_per_s = 0.0F;
     auto idx_dmg = uint32_t{0};
     for (const auto [time, dmg] : damages)
