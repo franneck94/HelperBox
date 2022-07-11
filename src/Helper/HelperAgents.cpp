@@ -345,6 +345,19 @@ uint32_t GetPartyIdxByID(const uint32_t id)
     return idx;
 }
 
+std::vector<GW::AgentLiving *> FilterById(const std::vector<GW::AgentLiving *> &livings, const uint32_t id)
+{
+    auto res = std::vector<GW::AgentLiving *>{};
+
+    for (auto living : livings)
+    {
+        if (living->player_number == id)
+            res.push_back(living);
+    }
+
+    return res;
+}
+
 void FilterByIdAndDistance(const GW::GamePos &player_pos,
                            const std::vector<GW::AgentLiving *> &livings,
                            std::vector<GW::AgentLiving *> &filtered_livings,
