@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include <GWCA/Managers/ChatMgr.h>
 
 namespace Log

@@ -1,3 +1,7 @@
+add_library(Stdafx STATIC "stdafx.h" "stdafx.cpp")
+target_precompile_headers(Stdafx PUBLIC "stdafx.h")
+target_link_libraries(Stdafx PUBLIC impl gwca)
+
 add_subdirectory(Utils)
 add_subdirectory(Actions)
 add_subdirectory(Data)
@@ -11,6 +15,7 @@ add_library(HelperBoxDll SHARED ${DLL_SOURCES})
 target_compile_definitions(HelperBoxDll PRIVATE "_USRDLL")
 target_compile_options(HelperBoxDll PRIVATE /ZI)
 target_link_libraries(HelperBoxDll PRIVATE
+    Stdafx
     UtilsDll
     TypesDll
     DataDll
