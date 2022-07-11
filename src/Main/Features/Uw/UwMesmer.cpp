@@ -135,8 +135,6 @@ void UwMesmer::Update(float, const AgentLivingData &_livings_data)
     horseman_livings.clear();
     keeper_livings.clear();
 
-    const auto sets = GetWeaponSets();
-
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
     player_data.Update();

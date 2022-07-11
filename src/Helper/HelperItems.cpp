@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <utility>
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/ItemIDs.h>
@@ -21,18 +22,52 @@ bool IsWeapon(const GW::Item *item)
     if (!item)
         return false;
 
+    return IsMeleeWeapon(item) || IsOffhandWeapon(item) || IsRangeWeapon(item);
+}
+
+bool IsMeleeWeapon(const GW::Item *item)
+{
+    if (!item)
+        return false;
+
     switch (static_cast<GW::Constants::ItemType>(item->type))
     {
     case GW::Constants::ItemType::Axe:
     case GW::Constants::ItemType::Sword:
-    case GW::Constants::ItemType::Shield:
     case GW::Constants::ItemType::Scythe:
+    case GW::Constants::ItemType::Daggers:
+    case GW::Constants::ItemType::Hammer:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool IsOffhandWeapon(const GW::Item *item)
+{
+    if (!item)
+        return false;
+
+    switch (static_cast<GW::Constants::ItemType>(item->type))
+    {
+    case GW::Constants::ItemType::Shield:
+    case GW::Constants::ItemType::Offhand:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool IsRangeWeapon(const GW::Item *item)
+{
+    if (!item)
+        return false;
+
+    switch (static_cast<GW::Constants::ItemType>(item->type))
+    {
     case GW::Constants::ItemType::Bow:
     case GW::Constants::ItemType::Wand:
     case GW::Constants::ItemType::Staff:
-    case GW::Constants::ItemType::Offhand:
-    case GW::Constants::ItemType::Daggers:
-    case GW::Constants::ItemType::Hammer:
     case GW::Constants::ItemType::Spear:
         return true;
     default:
@@ -198,7 +233,7 @@ bool UseInventoryItem(const uint32_t item_id, const size_t from_bag, const size_
     return false;
 }
 
-GW::WeapondSet* GetWeaponSets()
+GW::WeapondSet *GetWeaponSets()
 {
     const auto *c = GW::ItemContext::instance();
 
@@ -206,6 +241,58 @@ GW::WeapondSet* GetWeaponSets()
         return nullptr;
 
     return c->inventory->weapon_sets;
+}
+
+GW::WeapondSet *GetActiveWeaponSet()
+{
+    const auto *c = GW::ItemContext::instance();
+
+    if (!c || !c->inventory)
+        return nullptr;
+
+    return &c->inventory->weapon_sets[c->inventory->active_weapon_set];
+}
+
+std::pair<GW::WeapondSet *, uint32_t> GetFirstRangeWeaponSet()
+{
+    const auto sets = GetWeaponSets();
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        if (WeaponSetIsRange(sets[i]))
+            return std::make_pair(&sets[i], i);
+    }
+
+    return std::make_pair(nullptr, 0);
+}
+
+std::pair<GW::WeapondSet *, uint32_t> GetFirstMeleeWeaponSet()
+{
+    const auto sets = GetWeaponSets();
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        if (WeaponSetIsMelee(sets[i]))
+            return std::make_pair(&sets[i], i);
+    }
+
+    return std::make_pair(nullptr, 0);
+}
+
+bool WeaponSetIsMelee(const GW::WeapondSet &weapon_set)
+{
+    if (!weapon_set.weapond && !weapon_set.offhand)
+        return false;
+
+    return IsMeleeWeapon(weapon_set.weapond);
+}
+
+bool WeaponSetIsRange(const GW::WeapondSet &weapon_set)
+{
+    if (!weapon_set.weapond && !weapon_set.offhand)
+        return false;
+
+    return IsRangeWeapon(weapon_set.weapond);
 }
 
 bool UseWeaponSlot(const uint32_t slot_idx)
@@ -241,5 +328,43 @@ bool UseWeaponSlot(const uint32_t slot_idx)
     }
 
     GW::GameThread::Enqueue([&]() { GW::UI::Keypress(action); });
+    return true;
+}
+
+bool SwapToMeleeSet()
+{
+    const auto active_set = GetActiveWeaponSet();
+    if (!WeaponSetIsMelee(*active_set))
+    {
+        const auto new_set = GetFirstMeleeWeaponSet();
+
+        if (new_set.first && new_set.second)
+        {
+            UseWeaponSlot(new_set.second);
+            return true;
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
+bool SwapToRangeSet()
+{
+    const auto active_set = GetActiveWeaponSet();
+    if (!WeaponSetIsRange(*active_set))
+    {
+        const auto new_set = GetFirstRangeWeaponSet();
+
+        if (new_set.first)
+        {
+            UseWeaponSlot(new_set.second);
+            return true;
+        }
+
+        return false;
+    }
+
     return true;
 }
