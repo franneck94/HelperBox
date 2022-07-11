@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <string>
 
+#include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/WorldContext.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
@@ -9,11 +11,17 @@
 #include <Base/HelperBoxWindow.h>
 #include <Base/MainWindow.h>
 #include <HelperAgents.h>
+#include <HelperItems.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
 #include <Logger.h>
 
 #include "ChatCommands.h"
+
+namespace
+{
+constexpr static auto COOKIE_ID = uint32_t{28433};
+}; // namespace
 
 void ChatCommands::Initialize()
 {
@@ -147,6 +155,10 @@ void ChatCommands::DhuumUseSkill::Update()
     if (progress_perc < 1.0F)
     {
         slot = 1;
+
+        const auto current_morale = GW::GameContext::instance()->world->morale;
+        if (current_morale <= 80)
+            UseInventoryItem(COOKIE_ID, 1, 5);
     }
     else // Rest done
     {

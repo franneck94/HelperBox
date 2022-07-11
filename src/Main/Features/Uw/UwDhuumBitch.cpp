@@ -6,6 +6,7 @@
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
 #include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
@@ -23,6 +24,7 @@
 #include <DataSkillbar.h>
 #include <Helper.h>
 #include <HelperAgents.h>
+#include <HelperItems.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <Logger.h>
@@ -41,6 +43,7 @@ namespace
 static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
+constexpr static auto COOKIE_ID = uint32_t{28433};
 }; // namespace
 
 UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routinme(&player_data, &skillbar, livings_data)
@@ -202,8 +205,10 @@ bool DbRoutine::RoutineValeSpirits() const
     if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) ||
-        RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
+    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy))
+        return true;
+
+    if (player_data->energy >= 20U && RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
         return true;
 
     if (!found_eoe && player_data->energy >= 30U && RoutineState::FINISHED == skillbar->eoe.Cast(player_data->energy))
@@ -297,6 +302,8 @@ RoutineState DbRoutine::Routine()
 
     if (IsAtValeSpirits(player_data->pos))
     {
+        SwapToMeleeSet();
+
         const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 1800.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
@@ -306,6 +313,10 @@ RoutineState DbRoutine::Routine()
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
+    }
+    else
+    {
+        SwapToRangeSet();
     }
 
     if (!is_in_dhuum_room)
@@ -329,6 +340,10 @@ RoutineState DbRoutine::Routine()
     if (!is_in_dhuum_fight || !dhuum_id)
         return RoutineState::FINISHED;
     dhuum_fight_ongoing = true;
+
+    const auto current_morale = GW::GameContext::instance()->world->morale;
+    if (current_morale <= 80 && UseInventoryItem(COOKIE_ID, 1, 5))
+        return RoutineState::FINISHED;
 
     const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
     if (!dhuum_agent)
