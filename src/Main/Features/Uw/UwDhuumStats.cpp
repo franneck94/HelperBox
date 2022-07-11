@@ -198,10 +198,8 @@ void UwDhuumStats::RemoveOldData()
 void UwDhuumStats::UpdateRestData()
 {
     rests_per_s = 0.0F;
-    auto idx_rests = uint32_t{0};
-    for (const auto time : rests)
-        ++idx_rests;
 
+    const auto idx_rests = rests.size();
     if (idx_rests > 0)
         rests_per_s = static_cast<float>(idx_rests) / static_cast<float>(TIME_WINDOW_REST_S);
     else
@@ -210,7 +208,7 @@ void UwDhuumStats::UpdateRestData()
     progress_perc = GetProgressValue();
     const auto total_num_rests = num_casted_rest / (progress_perc + FLT_EPSILON);
     const auto still_needed_rest = total_num_rests - num_casted_rest;
-    if (progress_perc < 0.999F && still_needed_rest > 0 && rests_per_s > 0.0F)
+    if (progress_perc < 1.0F && still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
     else if (still_needed_rest == 0 || progress_perc >= 1.0F)
         eta_rest_s = 0.0F;
@@ -221,12 +219,9 @@ void UwDhuumStats::UpdateRestData()
 void UwDhuumStats::UpdateDamageData()
 {
     damage_per_s = 0.0F;
-    auto idx_dmg = uint32_t{0};
+    const auto idx_dmg = damages.size();
     for (const auto [time, dmg] : damages)
-    {
         damage_per_s += dmg;
-        ++idx_dmg;
-    }
 
     if (idx_dmg > 0)
         damage_per_s /= static_cast<float>(TIME_WINDOW_DMG_S);
