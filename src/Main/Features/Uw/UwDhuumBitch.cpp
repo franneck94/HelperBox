@@ -44,6 +44,11 @@ static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
 constexpr static auto COOKIE_ID = uint32_t{28433};
+
+constexpr static auto VAMPIRISMUS_AGENT_ID = uint32_t{5723};
+constexpr static auto SOS1_AGENT_ID = uint32_t{4229};
+constexpr static auto SOS2_AGENT_ID = uint32_t{4230};
+constexpr static auto SOS3_AGENT_ID = uint32_t{4231};
 }; // namespace
 
 UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
@@ -171,7 +176,12 @@ bool DbRoutine::CastPiOnTarget() const
 
 bool DbRoutine::RoutineKillSkele() const
 {
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) || CastPiOnTarget())
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
+        return true;
+
+    if (CastPiOnTarget())
         return true;
 
     return false;
@@ -184,8 +194,16 @@ bool DbRoutine::RoutineKillEnemiesStandard() const
     if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) ||
-        RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
+        return true;
+
+    if (!FoundSpirit(livings_data->spirits, VAMPIRISMUS_AGENT_ID) &&
+        (RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy)))
+        return true;
+
+    if (CastPiOnTarget())
         return true;
 
     return false;
@@ -200,10 +218,13 @@ bool DbRoutine::RoutineValeSpirits() const
     if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy))
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
         return true;
 
-    if (player_data->energy >= 20U && RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
+    if (!FoundSpirit(livings_data->spirits, VAMPIRISMUS_AGENT_ID) &&
+        (RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy)))
         return true;
 
     if (!found_eoe && player_data->energy >= 30U && RoutineState::FINISHED == skillbar->eoe.Cast(player_data->energy))
@@ -249,7 +270,9 @@ bool DbRoutine::RoutineDhuumDamage() const
     if (!found_winnow && RoutineState::FINISHED == skillbar->winnow.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy))
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
         return true;
 
     return false;
