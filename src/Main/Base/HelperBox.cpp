@@ -399,7 +399,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
         {
             if (world_map_showing)
                 continue;
-            uielement->Draw(device);
+            uielement->Draw();
         }
 
         ImGui::EndFrame();

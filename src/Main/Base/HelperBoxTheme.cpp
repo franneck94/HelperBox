@@ -131,7 +131,7 @@ void HelperBoxTheme::SaveSettings(CSimpleIni *ini)
     SaveUILayout();
 }
 
-void HelperBoxTheme::Draw(IDirect3DDevice9 *)
+void HelperBoxTheme::Draw()
 {
     if (layout_dirty)
         LoadUILayout();

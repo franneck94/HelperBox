@@ -57,7 +57,7 @@ UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routine(&player_d
         skillbar.Load();
 };
 
-void UwDhuumBitch::Draw(IDirect3DDevice9 *)
+void UwDhuumBitch::Draw()
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsDhuumBitch(player_data))
         return;

@@ -29,7 +29,7 @@ public:
 
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
-    void Draw(IDirect3DDevice9 *) override;
+    void Draw() override;
 
     const std::vector<HelperBoxModule *> &GetOptionalModules() const
     {

@@ -299,7 +299,7 @@ void UwMesmer::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const 
     }
 }
 
-void UwMesmer::Draw(IDirect3DDevice9 *)
+void UwMesmer::Draw()
 {
     if (!visible)
         return;

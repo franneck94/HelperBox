@@ -31,7 +31,7 @@ public:
     void Terminate() override;
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
-    void Draw(IDirect3DDevice9 *device) override;
+    void Draw() override;
     void ShowVisibleRadio() override{};
 
     void SaveUILayout();

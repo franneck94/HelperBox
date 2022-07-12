@@ -18,8 +18,6 @@
 #include <windowsx.h>
 
 #include <d3d9.h>
-#include <d3dx9math.h>
-#include <d3dx9tex.h>
 
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>

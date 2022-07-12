@@ -64,7 +64,7 @@ void HelperBoxSettings::SaveSettings(CSimpleIni *ini)
     ini->SetBoolValue(Name(), VAR_NAME(use_cancel), use_cancel);
 }
 
-void HelperBoxSettings::Draw(IDirect3DDevice9 *)
+void HelperBoxSettings::Draw()
 {
     ImGui::GetStyle().WindowBorderSize = (move_all ? 1.0F : 0.0F);
 }

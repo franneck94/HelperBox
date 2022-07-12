@@ -10,7 +10,7 @@
 
 #include "SettingsWindow.h"
 
-void SettingsWindow::Draw(IDirect3DDevice9 *)
+void SettingsWindow::Draw()
 {
     static auto last_instance_type = GW::Constants::InstanceType::Loading;
     auto instance_type = GW::Map::GetInstanceType();

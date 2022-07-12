@@ -126,7 +126,7 @@ static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
     snprintf(buf, bufsize, "%02d:%02d:%02llu", hrs, mins, secs);
 }
 
-void UwDhuumStats::Draw(IDirect3DDevice9 *)
+void UwDhuumStats::Draw()
 {
     if (!visible)
         return;

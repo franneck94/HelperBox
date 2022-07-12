@@ -39,7 +39,7 @@ public:
         return "AutoFollowWindow";
     }
 
-    void Draw(IDirect3DDevice9 *pDevice) override;
+    void Draw() override;
     void Update(float delta, const AgentLivingData &) override;
 
 private:

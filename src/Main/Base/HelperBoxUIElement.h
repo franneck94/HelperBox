@@ -7,7 +7,7 @@ class HelperBoxUIElement : public HelperBoxModule
     friend class HelperBoxSettings;
 
 public:
-    virtual void Draw(IDirect3DDevice9 *){};
+    virtual void Draw(){};
     virtual const char *UIName() const;
 
     virtual void Initialize() override;
@@ -15,7 +15,7 @@ public:
 
     virtual void LoadSettings(CSimpleIni *ini) override;
     virtual void SaveSettings(CSimpleIni *ini) override;
-    virtual bool DrawTabButton(IDirect3DDevice9 *device);
+    virtual bool DrawTabButton();
 
     virtual void RegisterSettingsContent() override;
 

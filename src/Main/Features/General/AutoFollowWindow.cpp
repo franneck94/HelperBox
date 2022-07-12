@@ -44,7 +44,7 @@ RoutineState AutoFollowAction::Routine()
     return RoutineState::ACTIVE;
 }
 
-void AutoFollowWindow::Draw(IDirect3DDevice9 *)
+void AutoFollowWindow::Draw()
 {
     if (!visible)
         return;

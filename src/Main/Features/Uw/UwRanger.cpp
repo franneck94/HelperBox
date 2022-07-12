@@ -118,7 +118,7 @@ void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const 
     }
 }
 
-void UwRanger::Draw(IDirect3DDevice9 *)
+void UwRanger::Draw()
 {
     if (!visible)
         return;

@@ -113,7 +113,7 @@ void HelperBoxUIElement::ShowVisibleRadio()
     ImGui::PopID();
 }
 
-bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *)
+bool HelperBoxUIElement::DrawTabButton()
 {
     ImGui::PushStyleColor(ImGuiCol_Button, visible ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImVec4(0, 0, 0, 0));
     ImVec2 pos = ImGui::GetCursorScreenPos();

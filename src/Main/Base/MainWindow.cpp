@@ -35,7 +35,7 @@ void MainWindow::RefreshButtons()
     }
 }
 
-void MainWindow::Draw(IDirect3DDevice9 *device)
+void MainWindow::Draw()
 {
     if (!visible)
         return;
@@ -57,7 +57,7 @@ void MainWindow::Draw(IDirect3DDevice9 *device)
 
             drawn = true;
             auto &ui_module = modules_to_draw[i].second;
-            ui_module->DrawTabButton(device);
+            ui_module->DrawTabButton();
             ImGui::PopID();
         }
     }

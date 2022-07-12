@@ -66,7 +66,7 @@ UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillb
         skillbar.Load();
 };
 
-void UwEmo::Draw(IDirect3DDevice9 *)
+void UwEmo::Draw()
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
         return;
