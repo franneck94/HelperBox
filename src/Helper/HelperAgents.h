@@ -70,6 +70,10 @@ void SortByDistance(const DataPlayer &player_data, std::vector<GW::AgentLiving *
 
 std::pair<GW::Agent *, float> GetClosestEnemy(const DataPlayer *player_data);
 
+uint32_t GetClosestToPosition(const GW::GamePos &pos,
+                              const std::vector<GW::AgentLiving *> &livings,
+                              const uint32_t target_id);
+
 uint32_t GetClosestById(const DataPlayer &player_data,
                         const std::vector<GW::AgentLiving *> &livings,
                         const uint32_t id);
@@ -122,3 +126,5 @@ const GW::AgentLiving *GetTargetAsLiving();
 GW::Player *GetPlayerByName(const wchar_t *_name);
 
 std::wstring GetPlayerName(uint32_t player_number);
+
+bool FoundSpirit(const std::vector<GW::AgentLiving *> &spirits, const uint32_t spirit_id);
