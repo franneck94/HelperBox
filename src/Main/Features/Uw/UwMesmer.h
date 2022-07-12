@@ -27,9 +27,11 @@ public:
 
 private:
     bool ReadyForSpike() const;
-    bool RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies_in_range) const;
-    bool RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies_in_range, const auto include_graspings);
+    bool ShouldRecastEnch(const GW::Constants::SkillID ench_id, const bool need_ench) const;
+    bool RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies) const;
+    bool RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies, const auto include_graspings);
     bool CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
+                              const std::vector<GW::AgentLiving *> &filtered_enemies,
                               uint32_t &last_skill,
                               uint32_t &last_id,
                               const bool use_empathy);

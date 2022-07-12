@@ -44,12 +44,14 @@ static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::Blad
 } // namespace
 
 bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
+                                     const std::vector<GW::AgentLiving *> &filtered_enemies,
                                      uint32_t &last_skill,
                                      uint32_t &last_id,
                                      const bool use_empathy)
 {
-    if (enemies.end() ==
-        std::find_if(enemies.begin(), enemies.end(), [&](const auto &enemy) { return enemy->agent_id == last_id; }))
+    if (filtered_enemies.end() == std::find_if(filtered_enemies.begin(),
+                                               filtered_enemies.end(),
+                                               [&](const auto &enemy) { return enemy->agent_id == last_id; }))
     {
         last_skill = 0;
         last_id = 0;
@@ -59,9 +61,9 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemi
     if (use_empathy)
         ++max_num_skills;
 
-    for (size_t i = 0; i < enemies.size(); ++i)
+    for (size_t i = 0; i < filtered_enemies.size(); ++i)
     {
-        const auto &enemy = enemies[i];
+        const auto &enemy = filtered_enemies[i];
         const auto id = enemy->agent_id;
 
         if (last_skill == 0 && enemy->GetIsHexed())
@@ -72,6 +74,18 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemi
         {
             last_skill = 0;
             continue;
+        }
+
+        auto target_should_get_empathy = true;
+        const auto closest_id = GetClosestToPosition(enemy->pos, enemies, id);
+        if (closest_id)
+        {
+            const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
+            const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
+
+            const auto other_enemy_living = other_enemy->GetAsAgentLiving();
+            if (other_enemy_living && other_enemy_living->GetIsHexed() && dist < GW::Constants::Range::Area)
+                target_should_get_empathy = false;
         }
 
         if (last_skill == 0 && RoutineState::FINISHED == skillbar->worry.Cast(player_data->energy, id))
@@ -91,10 +105,14 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemi
             return true;
         }
         else if (use_empathy && last_skill == 2 &&
-                 RoutineState::FINISHED == skillbar->empathy.Cast(player_data->energy, id))
+                 (!target_should_get_empathy ||
+                  RoutineState::FINISHED == skillbar->empathy.Cast(player_data->energy, id)))
         {
-            if (!player_data->target || (player_data->target && player_data->target->agent_id != id))
-                player_data->ChangeTarget(id);
+            if (target_should_get_empathy)
+            {
+                if (!player_data->target || (player_data->target && player_data->target->agent_id != id))
+                    player_data->ChangeTarget(id);
+            }
             ++last_skill;
             last_id = id;
             return true;
@@ -104,58 +122,64 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemi
     return false;
 }
 
-bool LtRoutine::RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies_in_range) const
+bool LtRoutine::ShouldRecastEnch(const GW::Constants::SkillID ench_id, const bool need_ench) const
 {
-    const auto nightmares = FilterById(enemies_in_range, GW::Constants::ModelID::UW::DyingNightmare);
-    const auto dryders = FilterById(enemies_in_range, GW::Constants::ModelID::UW::TerrorwebDryder);
+    const auto found = player_data->HasEffect(ench_id);
+    const auto duration_s = player_data->GetRemainingEffectDuration(ench_id) / 1000.0F;
+    const auto data = GW::SkillbarMgr::GetSkillConstantData((uint32_t)ench_id);
+    const auto trigger_time_s = data ? data->activation + data->aftercast : 3.0F;
 
-    const auto found_obsi = player_data->HasEffect(GW::Constants::SkillID::Obsidian_Flesh);
-    const auto found_stoneflesh = player_data->HasEffect(GW::Constants::SkillID::Stoneflesh_Aura);
-    const auto found_visage = player_data->HasEffect(GW::Constants::SkillID::Sympathetic_Visage);
-    const auto found_mantra = player_data->HasEffect(GW::Constants::SkillID::Mantra_of_Resolve);
-
-    const auto obsi_duration_s =
-        player_data->GetRemainingEffectDuration(GW::Constants::SkillID::Obsidian_Flesh) / 1000.0F;
-    const auto stoneflesh_duration_s =
-        player_data->GetRemainingEffectDuration(GW::Constants::SkillID::Stoneflesh_Aura) / 1000.0F;
-    const auto visage_duration_s =
-        player_data->GetRemainingEffectDuration(GW::Constants::SkillID::Sympathetic_Visage) / 1000.0F;
-    const auto mantra_duration_s =
-        player_data->GetRemainingEffectDuration(GW::Constants::SkillID::Mantra_of_Resolve) / 1000.0F;
-
-    if ((!found_obsi || obsi_duration_s < 3.0F) && (nightmares.size() || dryders.size()) &&
-        (RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy)))
-        return true;
-
-    if ((!found_stoneflesh || stoneflesh_duration_s < 3.0F) && enemies_in_range.size() &&
-        (RoutineState::FINISHED == skillbar->stoneflesh.Cast(player_data->energy)))
-        return true;
-
-    if ((!found_visage || visage_duration_s < 3.0F) && enemies_in_range.size() &&
-        (RoutineState::FINISHED == skillbar->visage.Cast(player_data->energy)))
-        return true;
-
-    if ((!found_mantra || mantra_duration_s < 3.0F) && enemies_in_range.size() &&
-        (RoutineState::FINISHED == skillbar->mantra_of_resolve.Cast(player_data->energy)))
+    if ((!found || duration_s < trigger_time_s) && need_ench)
         return true;
 
     return false;
 }
 
-bool LtRoutine::RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies_in_range, const auto include_graspings)
+bool LtRoutine::RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies) const
 {
-    const auto nightmares = FilterById(enemies_in_range, GW::Constants::ModelID::UW::DyingNightmare);
-    const auto aatxes = FilterById(enemies_in_range, GW::Constants::ModelID::UW::BladedAatxe);
-    const auto dryders = FilterById(enemies_in_range, GW::Constants::ModelID::UW::TerrorwebDryder);
-    const auto graspings = FilterById(enemies_in_range, GW::Constants::ModelID::UW::GraspingDarkness);
+    const auto nightmares = FilterById(enemies, GW::Constants::ModelID::UW::DyingNightmare);
+    const auto dryders = FilterById(enemies, GW::Constants::ModelID::UW::TerrorwebDryder);
+    const auto aatxes = FilterById(enemies, GW::Constants::ModelID::UW::BladedAatxe);
+    const auto graspings = FilterById(enemies, GW::Constants::ModelID::UW::GraspingDarkness);
 
-    if (CastHexesOnEnemyType(nightmares, last_nightmare_skill, last_nightmare_id, true))
+    const auto need_obsi = (nightmares.size() || dryders.size());
+    const auto need_stoneflesh = (aatxes.size() || graspings.size());
+    const auto need_mantra = (aatxes.size() || graspings.size());
+    const auto need_visage = (aatxes.size() || graspings.size());
+
+    if (ShouldRecastEnch(GW::Constants::SkillID::Obsidian_Flesh, need_obsi) &&
+        (RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy)))
         return true;
-    if (CastHexesOnEnemyType(dryders, last_dryder_skill, last_dryder_id, false))
+
+    if (ShouldRecastEnch(GW::Constants::SkillID::Stoneflesh_Aura, need_stoneflesh) &&
+        (RoutineState::FINISHED == skillbar->stoneflesh.Cast(player_data->energy)))
         return true;
-    if (CastHexesOnEnemyType(aatxes, last_aatxe_skill, last_aatxe_id, false))
+
+    if (ShouldRecastEnch(GW::Constants::SkillID::Mantra_of_Resolve, need_mantra) &&
+        (RoutineState::FINISHED == skillbar->mantra_of_resolve.Cast(player_data->energy)))
         return true;
-    if (include_graspings && CastHexesOnEnemyType(graspings, last_graspings_skill, last_graspings_id, false))
+
+    if (ShouldRecastEnch(GW::Constants::SkillID::Sympathetic_Visage, need_visage) &&
+        (RoutineState::FINISHED == skillbar->visage.Cast(player_data->energy)))
+        return true;
+
+    return false;
+}
+
+bool LtRoutine::RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies, const auto include_graspings)
+{
+    const auto nightmares = FilterById(enemies, GW::Constants::ModelID::UW::DyingNightmare);
+    const auto aatxes = FilterById(enemies, GW::Constants::ModelID::UW::BladedAatxe);
+    const auto dryders = FilterById(enemies, GW::Constants::ModelID::UW::TerrorwebDryder);
+    const auto graspings = FilterById(enemies, GW::Constants::ModelID::UW::GraspingDarkness);
+
+    if (CastHexesOnEnemyType(enemies, nightmares, last_nightmare_skill, last_nightmare_id, true))
+        return true;
+    if (CastHexesOnEnemyType(enemies, dryders, last_dryder_skill, last_dryder_id, false))
+        return true;
+    if (CastHexesOnEnemyType(enemies, aatxes, last_aatxe_skill, last_aatxe_id, false))
+        return true;
+    if (include_graspings && CastHexesOnEnemyType(enemies, graspings, last_graspings_skill, last_graspings_id, false))
         return true;
 
     return false;
