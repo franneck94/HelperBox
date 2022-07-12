@@ -24,7 +24,6 @@ public:
     RoutineState Routine() override;
     void Update() override;
 
-
 private:
     bool ReadyForSpike() const;
     bool ShouldRecastEnch(const GW::Constants::SkillID ench_id, const bool need_ench) const;

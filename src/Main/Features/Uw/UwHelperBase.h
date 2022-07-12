@@ -30,20 +30,7 @@ public:
 
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::ObjectiveDone>(
             &ObjectiveDone_Entry,
-            [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *packet) {
-                ++num_finished_objectives;
-                Log::Info("Finished Objective : %u, Num objectives: %u", packet->objective_id, num_finished_objectives);
-            });
-
-        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-            &Interrupted_Entry,
-            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
-                if (player_data.SkillStoppedCallback(packet))
-                {
-                    Log::Info("Player interrupted skill");
-                    interrupted = true;
-                }
-            });
+            [this](GW::HookStatus *, GW::Packet::StoC::ObjectiveDone *) { ++num_finished_objectives; });
     };
 
     DataPlayer player_data;
@@ -55,6 +42,4 @@ public:
     uint32_t num_finished_objectives = 0U;
     GW::HookEntry SendChat_Entry;
     bool lt_is_ready = false;
-    GW::HookEntry Interrupted_Entry;
-    bool interrupted = false;
 };

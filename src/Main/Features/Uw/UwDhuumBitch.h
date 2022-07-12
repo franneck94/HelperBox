@@ -6,6 +6,7 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include "UwHelperBase.h"
 #include <ActionsBase.h>
 #include <ActionsMove.h>
 #include <Base/HelperBoxWindow.h>
@@ -14,8 +15,6 @@
 #include <HelperCallbacks.h>
 #include <HelperUw.h>
 #include <UtilsGui.h>
-
-#include "UwHelperBase.h"
 
 #include <SimpleIni.h>
 #include <imgui.h>

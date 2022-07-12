@@ -35,12 +35,12 @@ namespace
 {
 static constexpr auto MAX_TABLE_LENGTH = 6U;
 
-static const auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::BladedAatxe,
-                                                GW::Constants::ModelID::UW::DyingNightmare,
-                                                GW::Constants::ModelID::UW::TerrorwebDryder,
-                                                GW::Constants::ModelID::UW::FourHorseman,
-                                                GW::Constants::ModelID::UW::SkeletonOfDhuum1,
-                                                GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+static constexpr auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::BladedAatxe,
+                                                    GW::Constants::ModelID::UW::DyingNightmare,
+                                                    GW::Constants::ModelID::UW::TerrorwebDryder,
+                                                    GW::Constants::ModelID::UW::FourHorseman,
+                                                    GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                    GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
 bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,

@@ -43,8 +43,8 @@ namespace
 static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
-constexpr static auto COOKIE_ID = uint32_t{28433};
 
+constexpr static auto COOKIE_ID = uint32_t{28433};
 constexpr static auto VAMPIRISMUS_AGENT_ID = uint32_t{5723};
 constexpr static auto SOS1_AGENT_ID = uint32_t{4229};
 constexpr static auto SOS2_AGENT_ID = uint32_t{4230};

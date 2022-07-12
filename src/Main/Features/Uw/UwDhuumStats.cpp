@@ -34,7 +34,6 @@ constexpr static auto TIME_WINDOW_DMG_S = long{180L};
 constexpr static auto TIME_WINDOW_DMG_MS = (TIME_WINDOW_DMG_S * 1000L);
 constexpr static auto TIME_WINDOW_REST_S = long{20L};
 constexpr static auto TIME_WINDOW_REST_MS = (TIME_WINDOW_REST_S * 1000L);
-
 constexpr static auto REST_SKILL_ID = uint32_t{3087};
 constexpr static auto REST_SKILL_REAPER_ID = uint32_t{3079U};
 } // namespace

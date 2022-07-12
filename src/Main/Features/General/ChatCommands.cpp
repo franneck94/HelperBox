@@ -126,9 +126,6 @@ void ChatCommands::UseSkill::Update()
     if (!me_living)
         return;
 
-    if (!slot)
-        return;
-
     const auto current_energy = static_cast<uint32_t>(me_living->energy * me_living->max_energy);
     CastSelectedSkill(current_energy, skillbar);
 }

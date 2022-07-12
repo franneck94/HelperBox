@@ -55,9 +55,8 @@ constexpr static auto ESCORT_IDS = std::array<uint32_t, 6>{GW::Constants::ModelI
                                                            GW::Constants::ModelID::UW::Escort6};
 constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
-
-constexpr auto SEVEN_MINS_IN_MS = 7LL * 60LL * 1000LL;
-constexpr auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL;
+constexpr static auto SEVEN_MINS_IN_MS = 7LL * 60LL * 1000LL;
+constexpr static auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL;
 }; // namespace
 
 UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
