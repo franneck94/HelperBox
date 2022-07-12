@@ -2,6 +2,8 @@
 
 #include <Base/HelperBoxModule.h>
 
+#include <d3d9.h>
+
 class HelperBoxUIElement : public HelperBoxModule
 {
     friend class HelperBoxSettings;

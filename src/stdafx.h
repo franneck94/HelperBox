@@ -17,8 +17,6 @@
 #include <strsafe.h>
 #include <windowsx.h>
 
-#include <d3d9.h>
-
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameContainers/List.h>
