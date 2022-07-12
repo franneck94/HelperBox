@@ -362,3 +362,114 @@ bool SwapToRangeSet()
 
     return false;
 }
+
+GW::ItemModifier *GetModifier(const GW::Item *const item, const uint32_t identifier)
+{
+    for (size_t i = 0; i < item->mod_struct_size; i++)
+    {
+        GW::ItemModifier *mod = &item->mod_struct[i];
+        if (mod->identifier() == identifier)
+            return mod;
+    }
+    return nullptr;
+}
+
+bool IsSparkly(const GW::Item *const item)
+{
+    return (item->interaction & 0x2000) == 0;
+}
+
+bool GetIsIdentified(const GW::Item *const item)
+{
+    return (item->interaction & 1) != 0;
+}
+
+bool IsStackable(const GW::Item *const item)
+{
+    return (item->interaction & 0x80000) != 0;
+}
+
+bool IsUsable(const GW::Item *const item)
+{
+    return (item->interaction & 0x1000000) != 0;
+}
+
+bool IsTradable(const GW::Item *const item)
+{
+    return (item->interaction & 0x100) == 0;
+}
+
+bool IsInscription(const GW::Item *const item)
+{
+    return (item->interaction & 0x25000000) == 0x25000000;
+}
+
+bool IsBlue(const GW::Item *const item)
+{
+    return item->single_item_name && item->single_item_name[0] == 0xA3F;
+}
+
+bool IsPurple(const GW::Item *const item)
+{
+    return (item->interaction & 0x400000) != 0;
+}
+
+bool IsGreen(const GW::Item *const item)
+{
+    return (item->interaction & 0x10) != 0;
+}
+
+bool IsGold(const GW::Item *const item)
+{
+    return (item->interaction & 0x20000) != 0;
+}
+
+uint32_t GetUses(const GW::Item *const item)
+{
+    GW::ItemModifier *mod = GetModifier(item, 0x2458);
+    return mod ? mod->arg2() : 0;
+}
+
+bool IsIdentificationKit(const GW::Item *const item)
+{
+    GW::ItemModifier *mod = GetModifier(item, 0x25E8);
+    return mod && mod->arg1() == 1;
+}
+
+bool IsLesserKit(const GW::Item *const item)
+{
+    GW::ItemModifier *mod = GetModifier(item, 0x25E8);
+    return mod && mod->arg1() == 3;
+}
+
+bool IsExpertSalvageKit(const GW::Item *const item)
+{
+    GW::ItemModifier *mod = GetModifier(item, 0x25E8);
+    return mod && mod->arg1() == 2;
+}
+
+bool IsPerfectSalvageKit(const GW::Item *const item)
+{
+    GW::ItemModifier *mod = GetModifier(item, 0x25E8);
+    return mod && mod->arg1() == 6;
+}
+
+bool IsRareMaterial(const GW::Item *const item)
+{
+    GW::ItemModifier *mod = GetModifier(item, 0x2508);
+    return mod && mod->arg1() > 11;
+}
+
+GW::Constants::Rarity GetRarity(const GW::Item *const item)
+{
+    if (IsGreen(item))
+        return GW::Constants::Rarity::Green;
+    if (IsGold(item))
+        return GW::Constants::Rarity::Gold;
+    if (IsPurple(item))
+        return GW::Constants::Rarity::Purple;
+    if (IsBlue(item))
+        return GW::Constants::Rarity::Blue;
+
+    return GW::Constants::Rarity::White;
+}

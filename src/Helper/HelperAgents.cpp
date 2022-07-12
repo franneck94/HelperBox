@@ -7,6 +7,7 @@
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
+#include <GWCA/Context/CharContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Party.h>
@@ -15,6 +16,7 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
+#include <GWCA/Managers/PlayerMgr.h>
 
 #include <ActionsBase.h>
 #include <DataPlayer.h>
@@ -469,4 +471,41 @@ const GW::AgentLiving *GetTargetAsLiving()
     if (!me)
         return nullptr;
     return me->GetAsAgentLiving();
+}
+
+GW::Player *GetPlayerByName(const wchar_t *_name)
+{
+    if (!_name)
+        return NULL;
+    GW::PlayerArray *players = GW::PlayerMgr::GetPlayerArray();
+    if (!players)
+        return nullptr;
+    for (GW::Player &player : *players)
+    {
+        if (!player.name)
+            continue;
+        if (_name == player.name)
+            return &player;
+    }
+    return nullptr;
+}
+
+std::wstring GetPlayerName(uint32_t player_number)
+{
+    GW::Player *player = nullptr;
+    if (!player_number)
+    {
+        player = GW::PlayerMgr::GetPlayerByID(GW::PlayerMgr::GetPlayerNumber());
+        if (!player || !player->name)
+        {
+            // Map not loaded; try to get from character context
+            auto c = GW::CharContext::instance();
+            return c ? c->player_name : L"";
+        }
+    }
+    else
+    {
+        player = GW::PlayerMgr::GetPlayerByID(player_number);
+    }
+    return player && player->name ? player->name : L"";
 }
