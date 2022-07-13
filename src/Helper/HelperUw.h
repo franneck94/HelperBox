@@ -2,6 +2,10 @@
 
 #include <array>
 #include <cstdint>
+#include <vector>
+
+#include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Agent.h>
 
 #include <ActionsBase.h>
 #include <ActionsMove.h>
@@ -34,7 +38,9 @@ bool IsMesmerTerra(const DataPlayer &player_data);
 
 const GW::Agent *GetDhuumAgent();
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
+bool IsInDhuumFight(const GW::GamePos &player_pos);
+
+void GetDhuumAgentData(const GW::Agent *dhuum_agent, float &dhuum_hp, uint32_t &dhuum_max_hp);
 
 bool TankIsFullteamLT();
 
@@ -84,8 +90,7 @@ void UpdateUwInfo(const DataPlayer &player_data,
 
     if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
     {
-        Log::Info("Ported!");
-        move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
+
         move_ongoing = false;
     }
     else if (port_detected && !next_move_oob)
@@ -97,7 +102,7 @@ void UpdateUwInfo(const DataPlayer &player_data,
 
 bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
 
-bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
+bool DhuumIsCastingJudgement(const GW::Agent *dhuum_agent);
 
 bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *livings_data, const GW::GamePos &next_pos);
 

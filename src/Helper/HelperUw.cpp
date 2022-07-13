@@ -199,32 +199,42 @@ const GW::Agent *GetDhuumAgent()
     return dhuum_agent;
 }
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
+bool IsInDhuumFight(const GW::GamePos &player_pos)
 {
     if (!IsUw())
         return false;
 
+    if (!IsInDhuumRoom(player_pos) && !IsInVale(player_pos)) // Vale for spirits respawn
+        return false;
+
+    const auto progress_perc = GetProgressValue();
     const auto dhuum_agent = GetDhuumAgent();
     if (!dhuum_agent)
+    {
+        if (progress_perc > 0.0F && progress_perc < 1.0F) // Dhuum dives
+            return true;
         return false;
+    }
 
     const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
     if (!dhuum_living)
-        return false;
-
-    if (dhuum_id)
-        *dhuum_id = dhuum_living->agent_id;
-
-    if (dhuum_living->allegiance == GW::Constants::Allegiance::Enemy)
     {
-        if (dhuum_hp)
-            *dhuum_hp = dhuum_living->hp;
-        if (dhuum_max_hp)
-            *dhuum_max_hp = dhuum_living->max_hp;
-        return true;
+        if (progress_perc > 0.0F && progress_perc < 1.0F) // Dhuum dives
+            return true;
+        return false;
     }
 
-    return false;
+    return (dhuum_living->hp <= 0.25F && dhuum_living->allegiance == GW::Constants::Allegiance::Enemy);
+}
+
+void GetDhuumAgentData(const GW::Agent *dhuum_agent, float &dhuum_hp, uint32_t &dhuum_max_hp)
+{
+    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    if (!dhuum_living)
+        return;
+
+    dhuum_hp = dhuum_living->hp;
+    dhuum_max_hp = dhuum_living->max_hp;
 }
 
 bool TankIsFullteamLT()
@@ -364,9 +374,8 @@ bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, cons
     return found_keeper;
 }
 
-bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
+bool DhuumIsCastingJudgement(const GW::Agent *dhuum_agent)
 {
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
     if (!dhuum_agent)
         return false;
 
@@ -424,6 +433,10 @@ float GetProgressValue()
 
 bool DhuumFightDone(uint32_t dhuum_id)
 {
+    const auto progress_perc = GetProgressValue();
+    if (progress_perc < 1.0F)
+        return false;
+
     if (!dhuum_id)
         return false;
 
@@ -435,11 +448,7 @@ bool DhuumFightDone(uint32_t dhuum_id)
     if (!dhuum_living)
         return false;
 
-    const auto progress = GetProgressValue();
-    if (dhuum_living->allegiance != GW::Constants::Allegiance::Enemy && progress > 0.99F)
-        return true;
-
-    return false;
+    return (dhuum_living->allegiance != GW::Constants::Allegiance::Enemy);
 }
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role)
