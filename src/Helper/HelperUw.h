@@ -67,7 +67,8 @@ bool TakePits();
 bool TakePlanes();
 
 template <uint32_t N>
-void UpdateUwInfo(const DataPlayer &player_data,
+void UpdateUwInfo(const std::map<std::string, uint32_t> &reaper_moves,
+                  const DataPlayer &player_data,
                   const std::array<MoveABC *, N> &moves,
                   uint32_t &move_idx,
                   const bool first_call,
@@ -99,17 +100,32 @@ void UpdateUwInfo(const DataPlayer &player_data,
         const auto ported_to_pits = GW::GetDistance(pits_reaper, player_data.pos) < 2000.0F;
         const auto ported_to_planes = GW::GetDistance(planes_reaper, player_data.pos) < 2000.0F;
         const auto ported_to_wastes = GW::GetDistance(wastes_reaper, player_data.pos) < 2000.0F;
-        const auto ported_to_unknown = !ported_to_lab && !ported_to_pits && !ported_to_planes && !ported_to_wastes;
 
-        if (ported_to_unknown)
-            Log::Info("Ported!");
-        else if (ported_to_pits)
+        if (ported_to_lab && reaper_moves.contains("Lab"))
+        {
+            Log::Info("Ported to Lab!");
+            move_idx = reaper_moves.at("Lab");
+        }
+        else if (ported_to_pits && reaper_moves.contains("Pits"))
+        {
             Log::Info("Ported to Pits!");
-        else if (ported_to_planes)
+            move_idx = reaper_moves.at("Pits");
+        }
+        else if (ported_to_planes && reaper_moves.contains("Planes"))
+        {
             Log::Info("Ported to Planes!");
-        else if (ported_to_wastes)
+            move_idx = reaper_moves.at("Planes");
+        }
+        else if (ported_to_wastes && reaper_moves.contains("Wastes"))
+        {
             Log::Info("Ported to Wastes!");
-        move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
+            move_idx = reaper_moves.at("Wastes");
+        }
+        else
+        {
+            Log::Info("Ported!");
+            move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
+        }
         move_ongoing = false;
     }
     else if (port_detected && !next_move_oob)
@@ -130,5 +146,7 @@ float GetProgressValue();
 bool DhuumFightDone(uint32_t dhuum_id);
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role);
+
+bool TargetTrigger(DataPlayer &player_data, const TriggerRole role);
 
 bool LtIsBonded();

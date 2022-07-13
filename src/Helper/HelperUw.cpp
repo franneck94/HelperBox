@@ -477,6 +477,18 @@ uint32_t GetUwTriggerRoleId(const TriggerRole role)
     return trigger_id;
 }
 
+bool TargetTrigger(DataPlayer &player_data, const TriggerRole role)
+{
+    const auto trigger_id = GetUwTriggerRoleId(role);
+
+    if (!trigger_id)
+        return false;
+
+    player_data.ChangeTarget(trigger_id);
+
+    return true;
+}
+
 bool LtIsBonded()
 {
     const auto lt_id = GetTankId();

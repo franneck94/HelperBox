@@ -57,6 +57,9 @@ constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
 constexpr static auto SEVEN_MINS_IN_MS = 7LL * 60LL * 1000LL;
 constexpr static auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL;
+
+const static auto reaper_moves =
+    std::map<std::string, uint32_t>{{"Lab", 31}, {"Pits", 45}, {"Planes", 48}, {"Wastes", 50}};
 }; // namespace
 
 UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
@@ -168,7 +171,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
 
     if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player_data, moves, move_idx, true, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, true, move_ongoing);
         first_frame = false;
     }
 
@@ -180,7 +183,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
 
     if (IsUw())
     {
-        UpdateUwInfo(player_data, moves, move_idx, false, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, false, move_ongoing);
         UpdateUw();
     }
 

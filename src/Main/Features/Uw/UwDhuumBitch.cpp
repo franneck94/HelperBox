@@ -49,6 +49,9 @@ constexpr static auto VAMPIRISMUS_AGENT_ID = uint32_t{5723};
 constexpr static auto SOS1_AGENT_ID = uint32_t{4229};
 constexpr static auto SOS2_AGENT_ID = uint32_t{4230};
 constexpr static auto SOS3_AGENT_ID = uint32_t{4231};
+
+const static auto reaper_moves =
+    std::map<std::string, uint32_t>{{"Lab", 0}, {"Pits", 42}, {"Planes", 49}, {"Wastes", 57}};
 }; // namespace
 
 UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
@@ -140,7 +143,7 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
 
     if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player_data, moves, move_idx, true, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, true, move_ongoing);
         first_frame = false;
     }
 
@@ -152,7 +155,7 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
 
     if (IsUw())
     {
-        UpdateUwInfo(player_data, moves, move_idx, false, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, false, move_ongoing);
         UpdateUw();
     }
 
