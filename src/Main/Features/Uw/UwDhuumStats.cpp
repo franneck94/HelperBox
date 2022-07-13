@@ -252,7 +252,8 @@ void UwDhuumStats::Update(float, const AgentLivingData &)
         ResetData();
 
     const auto dhuum_agent = GetDhuumAgent();
-    GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
+    if (dhuum_agent)
+        GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
 
     RemoveOldData();
     UpdateRestData();

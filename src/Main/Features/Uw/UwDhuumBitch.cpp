@@ -368,7 +368,7 @@ RoutineState DbRoutine::Routine()
     if (dhuum_hp < 0.20F)
         return RoutineState::FINISHED;
 
-    if (DhuumIsCastingJudgement(dhuum_agent) &&
+    if (dhuum_agent && DhuumIsCastingJudgement(dhuum_agent) &&
         (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_agent->agent_id)))
         return RoutineState::FINISHED;
 

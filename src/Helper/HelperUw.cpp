@@ -178,6 +178,9 @@ bool IsMesmerTerra(const DataPlayer &player_data)
 const GW::Agent *GetDhuumAgent()
 {
     const auto agents_array = GW::Agents::GetAgentArray();
+    if (!agents_array || !agents_array->valid())
+        return nullptr;
+
     const GW::Agent *dhuum_agent = nullptr;
 
     for (const auto agent : *agents_array)
@@ -208,27 +211,25 @@ bool IsInDhuumFight(const GW::GamePos &player_pos)
         return false;
 
     const auto progress_perc = GetProgressValue();
+    if (progress_perc > 0.0F && progress_perc < 1.0F) // Dhuum dives
+        return true;
+
     const auto dhuum_agent = GetDhuumAgent();
     if (!dhuum_agent)
-    {
-        if (progress_perc > 0.0F && progress_perc < 1.0F) // Dhuum dives
-            return true;
         return false;
-    }
 
     const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
     if (!dhuum_living)
-    {
-        if (progress_perc > 0.0F && progress_perc < 1.0F) // Dhuum dives
-            return true;
         return false;
-    }
 
     return (dhuum_living->hp <= 0.25F && dhuum_living->allegiance == GW::Constants::Allegiance::Enemy);
 }
 
 void GetDhuumAgentData(const GW::Agent *dhuum_agent, float &dhuum_hp, uint32_t &dhuum_max_hp)
 {
+    if (!dhuum_agent)
+        return;
+
     const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
     if (!dhuum_living)
         return;

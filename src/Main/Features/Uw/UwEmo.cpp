@@ -699,6 +699,9 @@ RoutineState EmoRoutine::Routine()
     if (RoutineKeepPlayerAlive())
         return RoutineState::FINISHED;
 
+    if (!skillbar->pi.SkillFound() && !skillbar->gdw.SkillFound())
+        return RoutineState::FINISHED;
+
     auto dhuum_hp = float{0.0F};
     auto dhuum_max_hp = uint32_t{0U};
     const auto dhuum_agent = GetDhuumAgent();
@@ -706,7 +709,7 @@ RoutineState EmoRoutine::Routine()
     if (dhuum_hp < 0.25F)
         return RoutineState::FINISHED;
 
-    if (DhuumIsCastingJudgement(dhuum_agent) &&
+    if (dhuum_agent && DhuumIsCastingJudgement(dhuum_agent) &&
         (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_agent->agent_id)))
         return RoutineState::FINISHED;
 
