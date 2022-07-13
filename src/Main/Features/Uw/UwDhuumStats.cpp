@@ -98,7 +98,9 @@ void UwDhuumStats::DamagePacketCallback(const uint32_t type,
         return;
 
     if (caster_living->allegiance != GW::Constants::Allegiance::Ally_NonAttackable &&
-        caster_living->allegiance != GW::Constants::Allegiance::Npc_Minipet)
+        caster_living->allegiance != GW::Constants::Allegiance::Npc_Minipet &&
+        caster_living->allegiance != GW::Constants::Allegiance::Minion &&
+        caster_living->allegiance != GW::Constants::Allegiance::Spirit_Pet)
         return;
 
     const auto target_agent = GW::Agents::GetAgentByID(target_id);
@@ -137,7 +139,7 @@ void UwDhuumStats::Draw()
 
     if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
-        const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
+        const auto is_in_dhuum_fight = IsInDhuumFight(player_data.pos);
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
         const auto timer_ms = TIMER_DIFF(dhuum_fight_start_time_ms);
@@ -153,7 +155,7 @@ void UwDhuumStats::Draw()
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
             static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
-        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 0.99F &&
+        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 1.0F &&
             !DhuumFightDone(dhuum_id))
         {
             char buffer[16];
@@ -243,11 +245,14 @@ void UwDhuumStats::Update(float, const AgentLivingData &)
 
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass);
     if (!is_in_dhuum_room)
+        return;
+
+    const auto is_in_dhuum_fight = IsInDhuumFight(player_data.pos);
+    if (!is_in_dhuum_fight)
         ResetData();
 
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp, &dhuum_max_hp);
-    if (!is_in_dhuum_fight || !dhuum_id)
-        return;
+    const auto dhuum_agent = GetDhuumAgent();
+    GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
 
     RemoveOldData();
     UpdateRestData();

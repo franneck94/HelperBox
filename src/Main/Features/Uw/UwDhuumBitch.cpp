@@ -104,7 +104,11 @@ void UwDhuumBitch::UpdateUw()
 void UwDhuumBitch::UpdateUwEntry()
 {
     if (TankIsFullteamLT())
+    {
         load_cb_triggered = false;
+        move_idx = 0;
+        move_ongoing = false;
+    }
 
     if (load_cb_triggered)
     {
@@ -280,7 +284,6 @@ bool DbRoutine::RoutineDhuumDamage() const
 
 RoutineState DbRoutine::Routine()
 {
-    static auto dhuum_fight_ongoing = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
 
     if (!IsUw())
@@ -340,42 +343,30 @@ RoutineState DbRoutine::Routine()
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
-    if (dhuum_fight_ongoing && RoutineDhuumRecharge())
+    const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
+    if (is_in_dhuum_fight && RoutineDhuumRecharge())
         return RoutineState::FINISHED;
 
-    auto dhuum_id = uint32_t{0};
-    auto dhuum_hp = float{1.0F};
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    if (!is_in_dhuum_fight && dhuum_fight_ongoing)
-        dhuum_fight_ongoing = false;
-
-    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
-    {
-        action_state = ActionState::INACTIVE;
-        move_ongoing = false;
-    }
-
-    if (!is_in_dhuum_fight || !dhuum_id)
+    const auto dhuum_agent = GetDhuumAgent();
+    if (!is_in_dhuum_fight || !dhuum_agent)
         return RoutineState::FINISHED;
-    dhuum_fight_ongoing = true;
 
     const auto current_morale = GW::GameContext::instance()->world->morale;
     if (current_morale <= 80 && UseInventoryItem(COOKIE_ID, 1, 5))
         return RoutineState::FINISHED;
 
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
-    if (!dhuum_agent)
-        return RoutineState::FINISHED;
     const auto dhuum_dist = GW::GetDistance(player_data->pos, dhuum_agent->pos);
-
-    if (dhuum_hp < 0.20F)
-        return RoutineState::FINISHED;
-
     if (dhuum_dist > GW::Constants::Range::Spellcast)
         return RoutineState::FINISHED;
 
-    if (DhuumIsCastingJudgement(dhuum_id) &&
-        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_id)))
+    auto dhuum_hp = float{0.0F};
+    auto dhuum_max_hp = uint32_t{0U};
+    GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
+    if (dhuum_hp < 0.20F)
+        return RoutineState::FINISHED;
+
+    if (DhuumIsCastingJudgement(dhuum_agent) &&
+        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_agent->agent_id)))
         return RoutineState::FINISHED;
 
     if (RoutineDhuumDamage())

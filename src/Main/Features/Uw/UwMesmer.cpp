@@ -43,6 +43,21 @@ static constexpr auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::
                                                     GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
+bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies, const GW::AgentLiving *enemy)
+{
+    const auto closest_id = GetClosestToPosition(enemy->pos, enemies, enemy->agent_id);
+    if (closest_id)
+    {
+        const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
+        const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
+
+        if (dist > GW::Constants::Range::Adjacent && enemy->hp > 0.70F)
+            return true;
+    }
+
+    return false;
+}
+
 bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
                                      const std::vector<GW::AgentLiving *> &filtered_enemies,
                                      uint32_t &last_skill,
@@ -76,19 +91,10 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemi
             continue;
         }
 
-        auto target_should_get_empathy = true;
-        const auto closest_id = GetClosestToPosition(enemy->pos, enemies, id);
-        if (closest_id)
-        {
-            const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
-            const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
+        const auto target_should_get_empathy = EnemyShouldGetEmpathy(enemies, enemy);
 
-            const auto other_enemy_living = other_enemy->GetAsAgentLiving();
-            if (other_enemy_living && other_enemy_living->GetIsHexed() && dist < GW::Constants::Range::Area)
-                target_should_get_empathy = false;
-        }
-
-        if (last_skill == 0 && RoutineState::FINISHED == skillbar->worry.Cast(player_data->energy, id))
+        if (last_skill == 0 && !enemy->GetIsHexed() &&
+            RoutineState::FINISHED == skillbar->worry.Cast(player_data->energy, id))
         {
             if (!player_data->target || (player_data->target && player_data->target->agent_id != id))
                 player_data->ChangeTarget(id);
@@ -122,17 +128,37 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemi
     return false;
 }
 
-bool LtRoutine::ShouldRecastEnch(const GW::Constants::SkillID ench_id, const bool need_ench) const
+bool LtRoutine::DoNeedEnchNow(const GW::Constants::SkillID ench_id) const
 {
     const auto found = player_data->HasEffect(ench_id);
-    const auto duration_s = player_data->GetRemainingEffectDuration(ench_id) / 1000.0F;
     const auto data = GW::SkillbarMgr::GetSkillConstantData((uint32_t)ench_id);
-    const auto trigger_time_s = data ? data->activation + data->aftercast : 3.0F;
 
-    if ((!found || duration_s < trigger_time_s) && need_ench)
+    const auto duration_s = player_data->GetRemainingEffectDuration(ench_id) / 1000.0F;
+    const auto trigger_time_s = data ? data->activation + data->aftercast : 1.0F;
+
+    if (!found || duration_s < trigger_time_s)
         return true;
 
     return false;
+}
+
+bool LtRoutine::DoNeedVisage(const std::vector<GW::AgentLiving *> &enemies,
+                             const std::vector<GW::AgentLiving *> &aatxes,
+                             const std::vector<GW::AgentLiving *> &graspings) const
+{
+    const auto closest_id = GetClosestToPosition(player_data->pos, enemies, 0);
+    const auto closest_enemy = GW::Agents::GetAgentByID(closest_id);
+    if (!closest_enemy)
+        return false;
+
+    const auto closest_enemy_living = closest_enemy->GetAsAgentLiving();
+    if (!closest_enemy_living)
+        return false;
+
+    const auto enemies_in_range = (aatxes.size() || graspings.size());
+    const auto spike_has_begun = closest_enemy_living->hp < 0.70F;
+
+    return (enemies_in_range && spike_has_begun);
 }
 
 bool LtRoutine::RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies) const
@@ -145,21 +171,21 @@ bool LtRoutine::RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies)
     const auto need_obsi = (nightmares.size() || dryders.size());
     const auto need_stoneflesh = (aatxes.size() || graspings.size());
     const auto need_mantra = (aatxes.size() || graspings.size());
-    const auto need_visage = (aatxes.size() || graspings.size());
+    const auto need_visage = DoNeedVisage(enemies, aatxes, graspings);
 
-    if (ShouldRecastEnch(GW::Constants::SkillID::Obsidian_Flesh, need_obsi) &&
+    if (need_obsi && DoNeedEnchNow(GW::Constants::SkillID::Obsidian_Flesh) &&
         (RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy)))
         return true;
 
-    if (ShouldRecastEnch(GW::Constants::SkillID::Stoneflesh_Aura, need_stoneflesh) &&
+    if (need_stoneflesh && DoNeedEnchNow(GW::Constants::SkillID::Stoneflesh_Aura) &&
         (RoutineState::FINISHED == skillbar->stoneflesh.Cast(player_data->energy)))
         return true;
 
-    if (ShouldRecastEnch(GW::Constants::SkillID::Mantra_of_Resolve, need_mantra) &&
+    if (need_mantra && DoNeedEnchNow(GW::Constants::SkillID::Mantra_of_Resolve) &&
         (RoutineState::FINISHED == skillbar->mantra_of_resolve.Cast(player_data->energy)))
         return true;
 
-    if (ShouldRecastEnch(GW::Constants::SkillID::Sympathetic_Visage, need_visage) &&
+    if (need_visage && DoNeedEnchNow(GW::Constants::SkillID::Sympathetic_Visage) &&
         (RoutineState::FINISHED == skillbar->visage.Cast(player_data->energy)))
         return true;
 
@@ -175,7 +201,7 @@ bool LtRoutine::RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies, 
 
     if (CastHexesOnEnemyType(enemies, nightmares, last_nightmare_skill, last_nightmare_id, true))
         return true;
-    if (CastHexesOnEnemyType(enemies, dryders, last_dryder_skill, last_dryder_id, false))
+    if (CastHexesOnEnemyType(enemies, dryders, last_dryder_skill, last_dryder_id, true))
         return true;
     if (CastHexesOnEnemyType(enemies, aatxes, last_aatxe_skill, last_aatxe_id, false))
         return true;
@@ -195,11 +221,10 @@ bool LtRoutine::ReadyForSpike() const
 
 RoutineState LtRoutine::Routine()
 {
-#ifdef _DEBUG
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (!ActionABC::HasWaitedLongEnough(500)) // ms
+    if (!ActionABC::HasWaitedLongEnough(200)) // ms
         return RoutineState::ACTIVE;
 
     const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Spellcast);
@@ -219,7 +244,6 @@ RoutineState LtRoutine::Routine()
         return RoutineState::ACTIVE;
     if (is_at_spike_pos && ReadyForSpike() && IsInVale(player_data->pos) && RoutineSpikeBall(enemies, true))
         return RoutineState::ACTIVE;
-#endif
 
     return RoutineState::FINISHED;
 }
@@ -340,12 +364,14 @@ void UwMesmer::Draw()
     }
     ImGui::End();
 
+#ifdef _DEBUG
     if (TankIsSoloLT())
     {
         if (ImGui::Begin("LtWindow", nullptr))
             lt_routine.Draw();
         ImGui::End();
     }
+#endif
 }
 
 void UwMesmer::Update(float, const AgentLivingData &_livings_data)

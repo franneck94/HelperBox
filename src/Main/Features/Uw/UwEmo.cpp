@@ -59,7 +59,7 @@ constexpr static auto SEVEN_MINS_IN_MS = 7LL * 60LL * 1000LL;
 constexpr static auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL;
 }; // namespace
 
-UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
+UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -74,7 +74,7 @@ void UwEmo::Draw()
 
     if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
-        emo_routinme.Draw();
+        emo_routine.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
             DrawMovingButtons(moves, move_ongoing, move_idx);
@@ -125,6 +125,7 @@ void UwEmo::UpdateUwEntry()
         move_idx = 0;
         num_finished_objectives = 0U;
         move_ongoing = false;
+        emo_routine.used_canthas = false;
     }
 
     if (load_cb_triggered && !TankIsSoloLT())
@@ -137,7 +138,7 @@ void UwEmo::UpdateUwEntry()
     {
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
-        emo_routinme.action_state = ActionState::ACTIVE;
+        emo_routine.action_state = ActionState::ACTIVE;
         return;
     }
 
@@ -160,7 +161,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
     }
     player_data.Update();
     livings_data = &_livings_data;
-    emo_routinme.livings_data = livings_data;
+    emo_routine.livings_data = livings_data;
 
     if (!IsEmo(player_data))
         return;
@@ -175,7 +176,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
         return;
     skillbar.Update();
 
-    emo_casting_action_state = &emo_routinme.action_state;
+    emo_casting_action_state = &emo_routine.action_state;
 
     if (IsUw())
     {
@@ -183,7 +184,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
         UpdateUw();
     }
 
-    emo_routinme.Update();
+    emo_routine.Update();
 }
 
 EmoRoutine::EmoRoutine(DataPlayer *p,
@@ -616,7 +617,6 @@ bool EmoRoutine::DropBondsLT() const
 
 RoutineState EmoRoutine::Routine()
 {
-    static bool used_canthas = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
 
     if (!player_data->CanCast())
@@ -625,22 +625,19 @@ RoutineState EmoRoutine::Routine()
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
+    if (IsUw() && IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
         return RoutineState::ACTIVE;
 
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
 
+    if (!IsUw())
+        return RoutineState::FINISHED;
+
     if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())
         return RoutineState::FINISHED;
 
-    if (!IsUw())
-    {
-        used_canthas = false;
-        return RoutineState::FINISHED;
-    }
-
-    if (IsAtSpawn(player_data->pos) && RoutineKeepPlayerAlive())
+    if (RoutineKeepPlayerAlive()) // TODO: Maybe only at spawn
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
@@ -685,18 +682,8 @@ RoutineState EmoRoutine::Routine()
     if (RoutineDbAtDhuum())
         return RoutineState::FINISHED;
 
-    auto dhuum_id = uint32_t{0};
-    auto dhuum_hp = float{1.0F};
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-
-    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
-    {
-        action_state = ActionState::INACTIVE;
-        move_ongoing = false;
-        used_canthas = false;
-    }
-
-    if (!is_in_dhuum_fight || !dhuum_id)
+    const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
+    if (!is_in_dhuum_fight)
         return RoutineState::FINISHED;
 
     const auto current_morale = GW::GameContext::instance()->world->morale;
@@ -706,14 +693,18 @@ RoutineState EmoRoutine::Routine()
     if (RoutineWisdom())
         return RoutineState::FINISHED;
 
-    if (dhuum_hp < 0.20F)
-        return RoutineState::FINISHED;
-
-    if (DhuumIsCastingJudgement(dhuum_id) &&
-        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_id)))
-        return RoutineState::FINISHED;
-
     if (RoutineKeepPlayerAlive())
+        return RoutineState::FINISHED;
+
+    auto dhuum_hp = float{0.0F};
+    auto dhuum_max_hp = uint32_t{0U};
+    const auto dhuum_agent = GetDhuumAgent();
+    GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
+    if (dhuum_hp < 0.25F)
+        return RoutineState::FINISHED;
+
+    if (DhuumIsCastingJudgement(dhuum_agent) &&
+        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_agent->agent_id)))
         return RoutineState::FINISHED;
 
     if (RoutineGDW())

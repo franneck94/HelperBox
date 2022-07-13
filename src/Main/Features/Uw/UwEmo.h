@@ -62,6 +62,7 @@ public:
     const GW::Agent *lt_agent = nullptr;
     const GW::Agent *db_agent = nullptr;
     const AgentLivingData *livings_data = nullptr;
+    bool used_canthas = false;
 
 private:
     std::vector<PlayerMapping> party_members{};
@@ -151,7 +152,7 @@ private:
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
 
-    EmoRoutine emo_routinme;
+    EmoRoutine emo_routine;
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };
