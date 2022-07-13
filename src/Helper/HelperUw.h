@@ -90,7 +90,26 @@ void UpdateUwInfo(const DataPlayer &player_data,
 
     if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
     {
+        const auto lab_reaper = GW::GamePos{-5751.45F, 12746.52F, 0};
+        const auto pits_reaper = GW::GamePos{8685.21F, 6344.59F, 0};
+        const auto planes_reaper = GW::GamePos{11368.55F, -17974.64F, 0};
+        const auto wastes_reaper = GW::GamePos{-235.05F, 18496.461F, 0};
 
+        const auto ported_to_lab = GW::GetDistance(lab_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_pits = GW::GetDistance(pits_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_planes = GW::GetDistance(planes_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_wastes = GW::GetDistance(wastes_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_unknown = !ported_to_lab && !ported_to_pits && !ported_to_planes && !ported_to_wastes;
+
+        if (ported_to_unknown)
+            Log::Info("Ported!");
+        else if (ported_to_pits)
+            Log::Info("Ported to Pits!");
+        else if (ported_to_planes)
+            Log::Info("Ported to Planes!");
+        else if (ported_to_wastes)
+            Log::Info("Ported to Wastes!");
+        move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
         move_ongoing = false;
     }
     else if (port_detected && !next_move_oob)
