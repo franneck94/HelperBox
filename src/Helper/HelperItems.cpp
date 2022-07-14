@@ -208,6 +208,9 @@ bool UseInventoryItem(const uint32_t item_id, const size_t from_bag, const size_
     if (!bags)
         return false;
 
+    if (to_bag < from_bag || !to_bag || !from_bag)
+        return false;
+
     for (size_t bagIndex = from_bag; bagIndex <= to_bag; bagIndex++)
     {
         auto bag = bags[bagIndex];

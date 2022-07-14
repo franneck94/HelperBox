@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <string>
 
-#include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/ItemContext.h>
 #include <GWCA/Context/WorldContext.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
@@ -153,9 +153,13 @@ void ChatCommands::DhuumUseSkill::Update()
     {
         slot = 1;
 
-        const auto current_morale = GW::GameContext::instance()->world->morale;
-        if (current_morale <= 80)
-            UseInventoryItem(COOKIE_ID, 1, 5);
+        const auto item_context = GW::ItemContext::instance();
+        const auto world_context = GW::WorldContext::instance();
+        if (world_context && item_context)
+        {
+            if (world_context->morale <= 80)
+                UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size());
+        }
     }
     else // Rest done
     {

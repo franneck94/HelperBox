@@ -4,7 +4,7 @@
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
-#include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/ItemContext.h>
 #include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
@@ -315,8 +315,7 @@ bool EmoRoutine::RoutineCanthaGuards() const
     if (!livings_data)
         return true;
 
-    const auto filtered_enemies =
-        FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Earshot);
+    const auto filtered_enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 2500.0F);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterByIdsAndDistances(player_data->pos,
@@ -661,16 +660,20 @@ RoutineState EmoRoutine::Routine()
                           (GW::PartyMgr::GetPartySize() == 5 && GW::Map::GetInstanceTime() < EIGHT_MINS_IN_MS) ||
                           (GW::PartyMgr::GetPartySize() == 6 && GW::Map::GetInstanceTime() < SEVEN_MINS_IN_MS));
 
-    if (IsAtValeSpirits(player_data->pos) && stone_should_be_used && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
+    const auto item_context = GW::ItemContext::instance();
+    const auto world_context = GW::WorldContext::instance();
+
+    if (item_context && IsAtValeSpirits(player_data->pos) && stone_should_be_used &&
+        UseInventoryItem(CANTHA_STONE_ID, 1, item_context->bags_array.size()))
     {
         used_canthas = true;
         return RoutineState::FINISHED;
     }
 
-    if (IsAtValeSpirits(player_data->pos) && RoutineCanthaGuards())
+    if (IsInVale(player_data->pos) && RoutineCanthaGuards())
         return RoutineState::FINISHED;
 
-    if (IsAtValeSpirits(player_data->pos) && RoutineDbAtSpirits())
+    if (IsInVale(player_data->pos) && RoutineDbAtSpirits())
         return RoutineState::FINISHED;
 
     if (IsGoingToDhuum(player_data->pos) && DropBondsLT())
@@ -689,9 +692,11 @@ RoutineState EmoRoutine::Routine()
     if (!is_in_dhuum_fight)
         return RoutineState::FINISHED;
 
-    const auto current_morale = GW::GameContext::instance()->world->morale;
-    if (current_morale <= 90 && UseInventoryItem(COOKIE_ID, 1, 5))
-        return RoutineState::FINISHED;
+    if (world_context && item_context)
+    {
+        if (world_context->morale <= 90 && UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size()))
+            return RoutineState::FINISHED;
+    }
 
     if (RoutineWisdom())
         return RoutineState::FINISHED;

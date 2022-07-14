@@ -5,7 +5,7 @@
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
-#include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/ItemContext.h>
 #include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
@@ -354,9 +354,13 @@ RoutineState DbRoutine::Routine()
     if (!is_in_dhuum_fight || !dhuum_agent)
         return RoutineState::FINISHED;
 
-    const auto current_morale = GW::GameContext::instance()->world->morale;
-    if (current_morale <= 80 && UseInventoryItem(COOKIE_ID, 1, 5))
-        return RoutineState::FINISHED;
+    const auto world_context = GW::WorldContext::instance();
+    const auto item_context = GW::ItemContext::instance();
+    if (world_context && item_context)
+    {
+        if (world_context->morale < 90 && UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size()))
+            return RoutineState::FINISHED;
+    }
 
     const auto dhuum_dist = GW::GetDistance(player_data->pos, dhuum_agent->pos);
     if (dhuum_dist > GW::Constants::Range::Spellcast)
