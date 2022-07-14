@@ -63,6 +63,7 @@ public:
     const GW::Agent *db_agent = nullptr;
     const AgentLivingData *livings_data = nullptr;
     bool used_canthas = false;
+    uint32_t num_finished_objectives = 0U;
 
 private:
     std::vector<PlayerMapping> party_members{};

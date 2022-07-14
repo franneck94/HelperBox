@@ -165,6 +165,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
     player_data.Update();
     livings_data = &_livings_data;
     emo_routine.livings_data = livings_data;
+    emo_routine.num_finished_objectives = num_finished_objectives;
 
     if (!IsEmo(player_data))
         return;
@@ -621,7 +622,7 @@ RoutineState EmoRoutine::Routine()
 {
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
     const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
-    const auto dhuum_Fight_done = DhuumFightDone();
+    const auto dhuum_Fight_done = DhuumFightDone(num_finished_objectives);
 
     if (IsUw() && dhuum_Fight_done)
     {

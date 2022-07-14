@@ -289,6 +289,7 @@ RoutineState LtRoutine::Routine()
             starting_active = false;
             gone_to_npc = false;
             took_quest = false;
+            action_state = ActionState::INACTIVE;
         }
     }
 

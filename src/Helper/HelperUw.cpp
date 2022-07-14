@@ -439,10 +439,10 @@ float GetProgressValue()
     return c->progress_bar->progress;
 }
 
-bool DhuumFightDone()
+bool DhuumFightDone(const uint32_t num_objectives)
 {
     const auto progress_perc = GetProgressValue();
-    return progress_perc < 0.0F || progress_perc > 1.0F;
+    return num_objectives > 10 || progress_perc < 0.0F || progress_perc > 1.0F;
 }
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role)

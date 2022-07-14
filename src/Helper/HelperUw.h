@@ -145,7 +145,7 @@ bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *liv
 
 float GetProgressValue();
 
-bool DhuumFightDone();
+bool DhuumFightDone(const uint32_t num_objectives);
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role);
 

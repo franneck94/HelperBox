@@ -40,6 +40,7 @@ private:
 
 public:
     const AgentLivingData *livings_data = nullptr;
+    uint32_t num_finished_objectives = 0U;
 };
 
 class UwDhuumBitch : public HelperBoxWindow, public UwHelperABC

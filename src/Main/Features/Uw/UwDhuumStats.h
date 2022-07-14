@@ -10,6 +10,7 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
+#include "UwHelperBase.h"
 #include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
@@ -19,7 +20,7 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class UwDhuumStats : public HelperBoxWindow
+class UwDhuumStats : public HelperBoxWindow, public UwHelperABC
 {
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -38,7 +39,7 @@ private:
     void UpdateDamageData();
 
 public:
-    UwDhuumStats() : player_data({}), rests({}), damages({})
+    UwDhuumStats() : UwHelperABC(), player_data({}), rests({}), damages({})
     {
         /* Skill on self or party player_data */
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
