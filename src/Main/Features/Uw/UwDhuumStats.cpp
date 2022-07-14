@@ -92,7 +92,6 @@ void UwDhuumStats::DamagePacketCallback(const uint32_t type,
     const auto caster_agent = GW::Agents::GetAgentByID(caster_id);
     if (!caster_agent)
         return;
-
     const auto caster_living = caster_agent->GetAsAgentLiving();
     if (!caster_living)
         return;
@@ -106,7 +105,6 @@ void UwDhuumStats::DamagePacketCallback(const uint32_t type,
     const auto target_agent = GW::Agents::GetAgentByID(target_id);
     if (!target_agent)
         return;
-
     const auto target_living = target_agent->GetAsAgentLiving();
     if (!target_living)
         return;
@@ -120,11 +118,14 @@ void UwDhuumStats::DamagePacketCallback(const uint32_t type,
 
 static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
 {
-    const auto time = std::chrono::milliseconds(duration);
-    const auto secs = std::chrono::duration_cast<std::chrono::seconds>(time).count() % 60;
-    const auto mins = std::chrono::duration_cast<std::chrono::minutes>(time).count() % 60;
-    const auto hrs = std::chrono::duration_cast<std::chrono::hours>(time).count() % 60;
-    snprintf(buf, bufsize, "%02d:%02d:%02llu", hrs, mins, secs);
+    const auto msecs = std::chrono::milliseconds(duration);
+    const auto secs = std::chrono::duration_cast<std::chrono::seconds>(msecs).count() % 60;
+    const auto mins = std::chrono::duration_cast<std::chrono::minutes>(msecs).count() % 60;
+    const auto hrs = std::chrono::duration_cast<std::chrono::hours>(msecs).count() % 60;
+    if (hrs)
+        snprintf(buf, bufsize, "%02d:%02d:%02llu", hrs, mins, secs);
+    else
+        snprintf(buf, bufsize, "%02d:%02llu", mins, secs);
 }
 
 void UwDhuumStats::Draw()
@@ -139,6 +140,8 @@ void UwDhuumStats::Draw()
 
     if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
+        static char buffer[16]{'\0'};
+
         const auto is_in_dhuum_fight = IsInDhuumFight(player_data.pos);
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
@@ -158,12 +161,16 @@ void UwDhuumStats::Draw()
         if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 1.0F &&
             !DhuumFightDone(dhuum_id))
         {
-            char buffer[16];
+            std::memset(buffer, '\0', sizeof(char) * 16);
             FormatTime(finished_ms, 16, buffer);
+            ImGui::Text("ETA: %s", buffer);
+        }
+        else if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && DhuumFightDone(dhuum_id))
+        {
             ImGui::Text("Finished: %s", buffer);
         }
         else
-            ImGui::Text("Finished: n/a");
+            ImGui::Text("ETA: n/a");
     }
     ImGui::End();
 }
@@ -209,7 +216,7 @@ void UwDhuumStats::UpdateRestData()
     progress_perc = GetProgressValue();
     const auto total_num_rests = num_casted_rest / (progress_perc + FLT_EPSILON);
     const auto still_needed_rest = total_num_rests - num_casted_rest;
-    if (progress_perc < 1.0F && still_needed_rest > 0 && rests_per_s > 0.0F)
+    if (progress_perc >= 0.0F && progress_perc < 1.0F && still_needed_rest > 0 && rests_per_s > 0.0F)
         eta_rest_s = still_needed_rest / rests_per_s;
     else if (still_needed_rest == 0 || progress_perc >= 1.0F)
         eta_rest_s = 0.0F;
@@ -254,6 +261,8 @@ void UwDhuumStats::Update(float, const AgentLivingData &)
     const auto dhuum_agent = GetDhuumAgent();
     if (dhuum_agent)
         GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
+    if (dhuum_agent)
+        dhuum_id = dhuum_agent->agent_id;
 
     RemoveOldData();
     UpdateRestData();

@@ -51,7 +51,7 @@ constexpr static auto SOS2_AGENT_ID = uint32_t{4230};
 constexpr static auto SOS3_AGENT_ID = uint32_t{4231};
 
 const static auto reaper_moves =
-    std::map<std::string, uint32_t>{{"Lab", 0}, {"Pits", 42}, {"Planes", 49}, {"Wastes", 57}};
+    std::map<std::string, uint32_t>{{"Lab", 0}, {"Pits", 43}, {"Planes", 50}, {"Wastes", 58}};
 }; // namespace
 
 UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)

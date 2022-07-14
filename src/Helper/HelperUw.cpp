@@ -211,7 +211,7 @@ bool IsInDhuumFight(const GW::GamePos &player_pos)
         return false;
 
     const auto progress_perc = GetProgressValue();
-    if (progress_perc > 0.0F && progress_perc < 1.0F) // Dhuum dives
+    if (progress_perc >= 0.0F && progress_perc <= 1.0F)
         return true;
 
     const auto dhuum_agent = GetDhuumAgent();
@@ -222,7 +222,7 @@ bool IsInDhuumFight(const GW::GamePos &player_pos)
     if (!dhuum_living)
         return false;
 
-    return (dhuum_living->hp <= 0.25F && dhuum_living->allegiance == GW::Constants::Allegiance::Enemy);
+    return dhuum_living->allegiance == GW::Constants::Allegiance::Enemy;
 }
 
 void GetDhuumAgentData(const GW::Agent *dhuum_agent, float &dhuum_hp, uint32_t &dhuum_max_hp)
@@ -435,7 +435,7 @@ float GetProgressValue()
 bool DhuumFightDone(uint32_t dhuum_id)
 {
     const auto progress_perc = GetProgressValue();
-    if (progress_perc < 1.0F)
+    if (progress_perc >= 0.0F && progress_perc < 1.0F)
         return false;
 
     if (!dhuum_id)
