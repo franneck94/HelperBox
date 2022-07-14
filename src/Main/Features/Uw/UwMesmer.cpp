@@ -341,7 +341,8 @@ void LtRoutine::Update()
         last_graspings_skill = 0U;
     }
 
-    if (IsAOnSpawnPlateau(player_data->pos) && !player_data->target && load_cb_triggered)
+    if (IsAOnSpawnPlateau(player_data->pos) && GW::PartyMgr::GetPartySize() <= 6 && !player_data->target &&
+        load_cb_triggered)
     {
         starting_active = true;
         action_state = ActionState::ACTIVE;

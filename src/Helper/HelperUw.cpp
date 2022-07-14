@@ -439,24 +439,10 @@ float GetProgressValue()
     return c->progress_bar->progress;
 }
 
-bool DhuumFightDone(uint32_t dhuum_id)
+bool DhuumFightDone()
 {
     const auto progress_perc = GetProgressValue();
-    if (progress_perc >= 0.0F && progress_perc < 1.0F)
-        return false;
-
-    if (!dhuum_id)
-        return false;
-
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
-    if (!dhuum_agent)
-        return false;
-
-    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
-    if (!dhuum_living)
-        return false;
-
-    return (dhuum_living->allegiance != GW::Constants::Allegiance::Enemy);
+    return progress_perc < 0.0F || progress_perc > 1.0F;
 }
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role)

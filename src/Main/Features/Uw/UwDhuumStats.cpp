@@ -159,13 +159,13 @@ void UwDhuumStats::Draw()
         const auto finished_ms =
             static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
         if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 1.0F &&
-            !DhuumFightDone(dhuum_id))
+            !DhuumFightDone())
         {
             std::memset(buffer, '\0', sizeof(char) * 16);
             FormatTime(finished_ms, 16, buffer);
             ImGui::Text("ETA: %s", buffer);
         }
-        else if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && DhuumFightDone(dhuum_id))
+        else if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && DhuumFightDone())
         {
             ImGui::Text("Finished: %s", buffer);
         }

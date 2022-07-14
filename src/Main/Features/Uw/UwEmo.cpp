@@ -620,6 +620,14 @@ bool EmoRoutine::DropBondsLT() const
 RoutineState EmoRoutine::Routine()
 {
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
+    const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
+    const auto dhuum_Fight_done = DhuumFightDone();
+
+    if (IsUw() && dhuum_Fight_done)
+    {
+        action_state = ActionState::INACTIVE;
+        return RoutineState::FINISHED;
+    }
 
     if (!player_data->CanCast())
         return RoutineState::ACTIVE;
@@ -688,7 +696,6 @@ RoutineState EmoRoutine::Routine()
     if (RoutineDbAtDhuum())
         return RoutineState::FINISHED;
 
-    const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
     if (!is_in_dhuum_fight)
         return RoutineState::FINISHED;
 
