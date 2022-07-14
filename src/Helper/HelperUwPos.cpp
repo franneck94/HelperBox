@@ -18,6 +18,11 @@ bool IsUwEntryOutpost()
     return IsEndGameEntryOutpost();
 }
 
+bool IsAOnSpawnPlateau(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{666.24F, 6836.26F, 0}, range);
+}
+
 bool IsAtSpawn(const GW::GamePos &player_pos, const float range)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{1248.00F, 6965.51F, 0}, range);
@@ -118,6 +123,11 @@ bool IsAtValeSpirits(const GW::GamePos &player_pos)
         return true;
 
     return false;
+}
+
+bool IsAtHeuchlerPattrick(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{2644.61F, -4983.74F, 0}, range);
 }
 
 bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range)

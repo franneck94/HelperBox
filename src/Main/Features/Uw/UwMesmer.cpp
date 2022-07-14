@@ -221,11 +221,76 @@ bool LtRoutine::ReadyForSpike() const
 
 RoutineState LtRoutine::Routine()
 {
+    static auto gone_to_npc = false;
+    static auto took_quest = false;
+
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    if (!ActionABC::HasWaitedLongEnough(200)) // ms
+    auto delay_ms = long{200L};
+    if (gone_to_npc)
+        delay_ms = long{500L};
+
+    if (!ActionABC::HasWaitedLongEnough(delay_ms)) // ms
         return RoutineState::ACTIVE;
+
+    if (starting_active)
+    {
+        constexpr auto spirit_id = uint32_t{2374};
+        const auto agent_id = GetClosestNpcbyId(*player_data, livings_data->npcs, spirit_id);
+        if (!agent_id)
+        {
+            starting_active = false;
+            gone_to_npc = false;
+            took_quest = false;
+            return RoutineState::FINISHED;
+        }
+
+        if (!player_data->target)
+        {
+            if (agent_id)
+            {
+                player_data->ChangeTarget(agent_id);
+                if (RoutineState::FINISHED == skillbar->ebon.Cast(player_data->energy, agent_id))
+                    return RoutineState::FINISHED;
+            }
+        }
+        else
+        {
+            if (!gone_to_npc)
+            {
+                const auto agent = GW::Agents::GetAgentByID(agent_id);
+                GW::Agents::GoNPC(agent, 0U);
+                gone_to_npc = true;
+                took_quest = false;
+                return RoutineState::ACTIVE;
+            }
+            if (gone_to_npc && !took_quest)
+            {
+                TakeChamber();
+                took_quest = true;
+                return RoutineState::ACTIVE;
+            }
+            TakeChamber();
+
+            if (skillbar->stoneflesh.CanBeCasted(player_data->energy) &&
+                RoutineState::FINISHED == skillbar->stoneflesh.Cast(player_data->energy))
+                return RoutineState::FINISHED;
+            if (skillbar->mantra_of_resolve.CanBeCasted(player_data->energy) &&
+                RoutineState::FINISHED == skillbar->mantra_of_resolve.Cast(player_data->energy))
+                return RoutineState::FINISHED;
+            if (skillbar->visage.CanBeCasted(player_data->energy) &&
+                RoutineState::FINISHED == skillbar->visage.Cast(player_data->energy))
+                return RoutineState::FINISHED;
+            if (skillbar->obsi.CanBeCasted(player_data->energy) &&
+                RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy))
+                return RoutineState::FINISHED;
+
+            starting_active = false;
+            gone_to_npc = false;
+            took_quest = false;
+        }
+    }
 
     const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Spellcast);
     const auto is_at_spike_pos =
@@ -274,6 +339,12 @@ void LtRoutine::Update()
         last_dryder_skill = 0U;
         last_graspings_id = 0U;
         last_graspings_skill = 0U;
+    }
+
+    if (IsAOnSpawnPlateau(player_data->pos) && !player_data->target && load_cb_triggered)
+    {
+        starting_active = true;
+        action_state = ActionState::ACTIVE;
     }
 
     if (action_state == ActionState::ACTIVE)
@@ -401,6 +472,8 @@ void UwMesmer::Update(float, const AgentLivingData &_livings_data)
     const auto &pos = player_data.pos;
     livings_data = &_livings_data;
     lt_routine.livings_data = livings_data;
+    lt_routine.load_cb_triggered = load_cb_triggered;
+
     FilterByIdsAndDistances(pos, _livings_data.enemies, filtered_livings, IDS, 1600.0F);
     FilterByIdAndDistance(pos, filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);
     FilterByIdAndDistance(pos, filtered_livings, nightmare_livings, GW::Constants::ModelID::UW::DyingNightmare);

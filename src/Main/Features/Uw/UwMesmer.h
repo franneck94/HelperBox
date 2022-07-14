@@ -6,6 +6,7 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
+#include "UwHelperBase.h"
 #include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
@@ -41,6 +42,7 @@ private:
 
 public:
     const AgentLivingData *livings_data = nullptr;
+    bool load_cb_triggered = false;
 
 private:
     uint32_t last_nightmare_id = 0U;
@@ -51,9 +53,11 @@ private:
     uint32_t last_dryder_skill = 0U;
     uint32_t last_graspings_id = 0U;
     uint32_t last_graspings_skill = 0U;
+
+    bool starting_active = false;
 };
 
-class UwMesmer : public HelperBoxWindow
+class UwMesmer : public HelperBoxWindow, public UwHelperABC
 {
 public:
     UwMesmer()
