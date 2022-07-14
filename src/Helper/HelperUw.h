@@ -54,6 +54,8 @@ bool TalkReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &n
 
 bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> enemies);
 
+bool TakeChamber();
+
 bool AcceptChamber();
 
 bool TakeRestore();

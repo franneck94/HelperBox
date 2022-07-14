@@ -317,6 +317,13 @@ bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiv
     return TargetClosestEnemyById(player_data, enemies, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
 
+bool TakeChamber()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Chamber);
+    GW::Agents::SendDialog(dialog);
+    return true;
+}
+
 bool AcceptChamber()
 {
     const auto dialog = QuestRewardDialog(GW::Constants::QuestID::UW::Chamber);
