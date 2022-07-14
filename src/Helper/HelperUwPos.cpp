@@ -125,6 +125,11 @@ bool IsAtValeSpirits(const GW::GamePos &player_pos)
     return false;
 }
 
+bool IsAtTakePull(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{6054.83F, 18997.46F, 0}, range);
+}
+
 bool IsAtHeuchlerPattrick(const GW::GamePos &player_pos, const float range)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{2644.61F, -4983.74F, 0}, range);

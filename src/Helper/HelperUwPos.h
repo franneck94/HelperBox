@@ -42,6 +42,8 @@ bool IsAtSpirits2(const GW::GamePos &player_pos);
 
 bool IsAtValeSpirits(const GW::GamePos &player_pos);
 
+bool IsAtTakePull(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Spellcast);
+
 bool IsAtHeuchlerPattrick(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Spirit);
 
 bool IsGoingToDhuum(const GW::GamePos &player_pos);

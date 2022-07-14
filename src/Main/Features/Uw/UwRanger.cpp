@@ -193,6 +193,12 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         died_just_now = false;
         send_message = true;
     }
+    else if (!send_message && died_just_now && IsAtTakePull(player_data.pos))
+    {
+        GW::Chat::SendChat('#', L"Oh, i did a take pull...");
+        died_just_now = false;
+        send_message = true;
+    }
 
     if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
         return;
