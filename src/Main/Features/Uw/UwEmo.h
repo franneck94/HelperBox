@@ -161,15 +161,16 @@ private:
     std::function<bool()> talk_reaper_fn = [&]() { return TalkReaper(player_data, livings_data->npcs); };
     std::function<bool()> take_uwg_fn = [&]() { return TakeUWG(); };
 
+    static inline const auto SKILLS_START_TRIGGER = GW::GamePos{-790.53F, 9529.63F, 0};
     static inline const auto KEEPER3_TRIGGER = GW::GamePos{-2655.90F, 13362.98F, 0};
     static inline const auto KEEPER4_TRIGGER = GW::GamePos{161.13F, 13122.947F, 0};
     static inline const auto KEEPER6_TRIGGER = GW::GamePos{3023.24F, 9980.01F, 0};
 
     uint32_t move_idx = 0;
     std::array<MoveABC *, 55> moves = {
-        new Move_WaitAndContinue{1248.00F, 6965.51F, "Go Spawn"},
-        new Move_WaitAndContinue{985.70F, 7325.54F, "Go Chamber 1", swap_to_high_armor_fn},
-        new Move_WaitAndContinue{-634.07F, 9071.42F, "Go Chamber 2"},
+        new Move_WaitAndContinue{1248.00F, 6965.51F, "Go Spawn", swap_to_high_armor_fn},
+        new Move_PositionAndContinue{985.70F, 7325.54F, "Go Chamber 1", SKILLS_START_TRIGGER, 180.0F, TriggerRole::LT},
+        new Move_WaitAndContinue{-634.07F, 9071.42F, "Go Chamber 2", swap_to_high_armor_fn},
         new Move_WaitAndContinue{-1522.58F, 10634.12F, "Go Lab 1"},
         new Move_WaitAndContinue{-2726.856F, 10239.48F, "Go Lab 2"}, // 5
         new Move_WaitAndContinue{-2828.35F, 10020.46F, "Go Lab 3"},

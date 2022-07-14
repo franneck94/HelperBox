@@ -9,6 +9,7 @@
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
 #include <GWCA/GameEntities/Player.h>
+#include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
 
 #include <ActionsBase.h>
@@ -19,6 +20,7 @@
 #include <HelperAgents.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <Utils.h>
 #include <UtilsGui.h>
 #include <UtilsMath.h>
@@ -164,6 +166,9 @@ void UwRanger::Draw()
 
 void UwRanger::Update(float, const AgentLivingData &livings_data)
 {
+    static auto died_just_now = false;
+    static auto send_message = false;
+
     filtered_livings.clear();
     behemoth_livings.clear();
     dryder_livings.clear();
@@ -171,11 +176,23 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
     horseman_livings.clear();
 
     if (IsLoading())
+    {
+        send_message = false;
+        died_just_now = false;
         last_casted_times_ms.clear();
+    }
 
     if (!player_data.ValidateData(UwHelperActivationConditions))
         return;
     player_data.Update();
+    if (!send_message && !died_just_now && player_data.dead)
+        died_just_now = true;
+    if (!send_message && died_just_now && IsAtHeuchlerPattrick(player_data.pos))
+    {
+        GW::Chat::SendChat('#', L"Oh my god, step bro im stuck. Can you help me?");
+        died_just_now = false;
+        send_message = true;
+    }
 
     if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
         return;
