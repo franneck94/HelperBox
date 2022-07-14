@@ -14,7 +14,7 @@ DataSkill::DataSkill(const GW::Constants::SkillID id_, const uint32_t idx_)
     if (!skill_data)
         energy_cost = 0U;
     else
-        energy_cost = skill_data->energy_cost;
+        energy_cost = skill_data->GetEnergyCost();
 }
 
 void DataSkill::Update(const GW::SkillbarSkill *const skillbar_skills)
