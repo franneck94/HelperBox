@@ -2,11 +2,11 @@
 
 The window will only be rendered if you are on an Rit/R or D/R.
 
-- Skill Routines:
-    - At Chamber and Basement Skele
-    - At Vale House
-    - At Vale Spirits Groups
-    - At Dhuum Fight
+- DB Routine:
+    - Kill Chamber and Basement Skele
+    - Kill Skeles at Vale House
+    - Kill Vale Spirits Groups
+    - Smart Skill Routine At Dhuum Fight
 
 - Move-To Feature:
     - Auto moving at instance load is only enabled for Solo LT tactics

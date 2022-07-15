@@ -4,7 +4,7 @@
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
-#include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/ItemContext.h>
 #include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameContainers/GamePos.h>
@@ -24,14 +24,14 @@
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
 #include <DataSkillbar.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <Logger.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include "UwEmo.h"
 
@@ -55,15 +55,20 @@ constexpr static auto ESCORT_IDS = std::array<uint32_t, 6>{GW::Constants::ModelI
                                                            GW::Constants::ModelID::UW::Escort6};
 constexpr static auto CANTHA_STONE_ID = uint32_t{30210};
 constexpr static auto COOKIE_ID = uint32_t{28433};
+constexpr static auto SEVEN_MINS_IN_MS = 7LL * 60LL * 1000LL;
+constexpr static auto EIGHT_MINS_IN_MS = 8LL * 60LL * 1000LL;
+
+const static auto reaper_moves =
+    std::map<std::string, uint32_t>{{"Lab", 31}, {"Pits", 45}, {"Planes", 48}, {"Wastes", 50}};
 }; // namespace
 
-UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routinme(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
+UwEmo::UwEmo() : UwMetadata(), skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
 };
 
-void UwEmo::Draw(IDirect3DDevice9 *)
+void UwEmo::Draw()
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
         return;
@@ -72,7 +77,7 @@ void UwEmo::Draw(IDirect3DDevice9 *)
 
     if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
-        emo_routinme.Draw();
+        emo_routine.Draw();
 
         if (IsUw() || IsUwEntryOutpost())
             DrawMovingButtons(moves, move_ongoing, move_idx);
@@ -123,6 +128,7 @@ void UwEmo::UpdateUwEntry()
         move_idx = 0;
         num_finished_objectives = 0U;
         move_ongoing = false;
+        emo_routine.used_canthas = false;
     }
 
     if (load_cb_triggered && !TankIsSoloLT())
@@ -135,7 +141,7 @@ void UwEmo::UpdateUwEntry()
     {
         load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
-        emo_routinme.action_state = ActionState::ACTIVE;
+        emo_routine.action_state = ActionState::ACTIVE;
         return;
     }
 
@@ -158,14 +164,15 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
     }
     player_data.Update();
     livings_data = &_livings_data;
-    emo_routinme.livings_data = livings_data;
+    emo_routine.livings_data = livings_data;
+    emo_routine.num_finished_objectives = num_finished_objectives;
 
     if (!IsEmo(player_data))
         return;
 
     if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player_data, moves, move_idx, true, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, true, move_ongoing);
         first_frame = false;
     }
 
@@ -173,15 +180,15 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
         return;
     skillbar.Update();
 
-    emo_casting_action_state = &emo_routinme.action_state;
+    emo_casting_action_state = &emo_routine.action_state;
 
     if (IsUw())
     {
-        UpdateUwInfo(player_data, moves, move_idx, false, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, false, move_ongoing);
         UpdateUw();
     }
 
-    emo_routinme.Update();
+    emo_routine.Update();
 }
 
 EmoRoutine::EmoRoutine(DataPlayer *p,
@@ -309,8 +316,7 @@ bool EmoRoutine::RoutineCanthaGuards() const
     if (!livings_data)
         return true;
 
-    const auto filtered_enemies =
-        FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Earshot);
+    const auto filtered_enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 2500.0F);
 
     auto filtered_canthas = std::vector<GW::AgentLiving *>{};
     FilterByIdsAndDistances(player_data->pos,
@@ -337,33 +343,19 @@ bool EmoRoutine::RoutineCanthaGuards() const
             if (!cantha->GetIsWeaponSpelled())
                 return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, cantha->agent_id));
         }
-
-        if (db_agent && db_agent->agent_id)
-        {
-            const auto dist = GW::GetDistance(db_agent->pos, player_data->pos);
-            if (dist < GW::Constants::Range::Spellcast)
-                return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, db_agent->agent_id));
-        }
     }
-    else // Done at vale, drop buffs
-    {
-        auto buffs = GW::Effects::GetPlayerBuffs();
-        if (!buffs || !buffs->valid() || buffs->size() == 0)
-            return false;
 
-        auto droppped_smth = false;
-        for (auto living : filtered_canthas)
-        {
-            if (!living || living->GetIsDead())
-                continue;
+    return false;
+}
 
-            if (DropBondsOnLiving(living))
-                droppped_smth = true;
-        }
+bool EmoRoutine::RoutineDbAtSpirits() const
+{
+    if (!db_agent || !db_agent->agent_id)
+        return false;
 
-        if (droppped_smth)
-            return true;
-    }
+    const auto dist = GW::GetDistance(db_agent->pos, player_data->pos);
+    if (dist < GW::Constants::Range::Spellcast)
+        return (RoutineState::FINISHED == skillbar->gdw.Cast(player_data->energy, db_agent->agent_id));
 
     return false;
 }
@@ -628,8 +620,15 @@ bool EmoRoutine::DropBondsLT() const
 
 RoutineState EmoRoutine::Routine()
 {
-    static bool used_canthas = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
+    const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
+    const auto dhuum_Fight_done = DhuumFightDone(num_finished_objectives);
+
+    if (IsUw() && dhuum_Fight_done)
+    {
+        action_state = ActionState::INACTIVE;
+        return RoutineState::FINISHED;
+    }
 
     if (!player_data->CanCast())
         return RoutineState::ACTIVE;
@@ -637,22 +636,19 @@ RoutineState EmoRoutine::Routine()
     if (!ActionABC::HasWaitedLongEnough())
         return RoutineState::ACTIVE;
 
-    if (IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
+    if (IsUw() && IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
         return RoutineState::ACTIVE;
 
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
 
+    if (!IsUw())
+        return RoutineState::FINISHED;
+
     if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())
         return RoutineState::FINISHED;
 
-    if (!IsUw())
-    {
-        used_canthas = false;
-        return RoutineState::FINISHED;
-    }
-
-    if (IsAtSpawn(player_data->pos) && RoutineKeepPlayerAlive())
+    if (RoutineKeepPlayerAlive()) // TODO: Maybe only at spawn
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
@@ -668,17 +664,25 @@ RoutineState EmoRoutine::Routine()
         return RoutineState::FINISHED;
 
     // Make sure to only pop canthas if there is enough time until dhuum fight
-    constexpr auto eight_mins_in_ms = 8LL * 60LL * 1000LL + 30LL * 1000LL;
     const auto stone_should_be_used =
-        (!used_canthas && GW::Map::GetInstanceTime() < eight_mins_in_ms && GW::PartyMgr::GetPartySize() < 6);
+        !used_canthas && ((GW::PartyMgr::GetPartySize() <= 4) ||
+                          (GW::PartyMgr::GetPartySize() == 5 && GW::Map::GetInstanceTime() < EIGHT_MINS_IN_MS) ||
+                          (GW::PartyMgr::GetPartySize() == 6 && GW::Map::GetInstanceTime() < SEVEN_MINS_IN_MS));
 
-    if (IsAtValeSpirits(player_data->pos) && stone_should_be_used && UseInventoryItem(CANTHA_STONE_ID, 1, 5))
+    const auto item_context = GW::ItemContext::instance();
+    const auto world_context = GW::WorldContext::instance();
+
+    if (item_context && IsAtValeSpirits(player_data->pos) && stone_should_be_used &&
+        UseInventoryItem(CANTHA_STONE_ID, 1, item_context->bags_array.size()))
     {
         used_canthas = true;
         return RoutineState::FINISHED;
     }
 
-    if (IsAtValeSpirits(player_data->pos) && RoutineCanthaGuards())
+    if (IsInVale(player_data->pos) && RoutineCanthaGuards())
+        return RoutineState::FINISHED;
+
+    if (IsInVale(player_data->pos) && RoutineDbAtSpirits())
         return RoutineState::FINISHED;
 
     if (IsGoingToDhuum(player_data->pos) && DropBondsLT())
@@ -693,36 +697,33 @@ RoutineState EmoRoutine::Routine()
     if (RoutineDbAtDhuum())
         return RoutineState::FINISHED;
 
-    auto dhuum_id = uint32_t{0};
-    auto dhuum_hp = float{1.0F};
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
+    if (!is_in_dhuum_fight)
+        return RoutineState::FINISHED;
 
-    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
+    if (world_context && item_context)
     {
-        action_state = ActionState::INACTIVE;
-        move_ongoing = false;
-        used_canthas = false;
+        if (world_context->morale <= 90 && UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size()))
+            return RoutineState::FINISHED;
     }
-
-    if (!is_in_dhuum_fight || !dhuum_id)
-        return RoutineState::FINISHED;
-
-    // 100 morale value is 0% in game
-    const auto current_morale = GW::GameContext::instance()->world->morale;
-    if (current_morale <= 90 && UseInventoryItem(COOKIE_ID, 1, 5))
-        return RoutineState::FINISHED;
 
     if (RoutineWisdom())
         return RoutineState::FINISHED;
 
-    if (dhuum_hp < 0.20F)
-        return RoutineState::FINISHED;
-
-    if (DhuumIsCastingJudgement(dhuum_id) &&
-        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_id)))
-        return RoutineState::FINISHED;
-
     if (RoutineKeepPlayerAlive())
+        return RoutineState::FINISHED;
+
+    if (!skillbar->pi.SkillFound() && !skillbar->gdw.SkillFound())
+        return RoutineState::FINISHED;
+
+    auto dhuum_hp = float{0.0F};
+    auto dhuum_max_hp = uint32_t{0U};
+    const auto dhuum_agent = GetDhuumAgent();
+    GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
+    if (dhuum_hp < 0.25F)
+        return RoutineState::FINISHED;
+
+    if (dhuum_agent && DhuumIsCastingJudgement(dhuum_agent) &&
+        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_agent->agent_id)))
         return RoutineState::FINISHED;
 
     if (RoutineGDW())

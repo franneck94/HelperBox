@@ -14,12 +14,13 @@
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
 #include <DataPlayer.h>
+#include <Features/Uw/UwMetadata.h>
 #include <HelperCallbacks.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class UwDhuumStats : public HelperBoxWindow
+class UwDhuumStats : public HelperBoxWindow, public UwMetadata
 {
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -38,7 +39,7 @@ private:
     void UpdateDamageData();
 
 public:
-    UwDhuumStats() : player_data({}), rests({}), damages({})
+    UwDhuumStats() : UwMetadata(), player_data({}), rests({}), damages({})
     {
         /* Skill on self or party player_data */
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
@@ -75,7 +76,7 @@ public:
         return "DhuumStatsWindow";
     }
 
-    void Draw(IDirect3DDevice9 *pDevice) override;
+    void Draw() override;
     void Update(float delta, const AgentLivingData &) override;
 
 private:

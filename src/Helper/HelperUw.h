@@ -2,13 +2,17 @@
 
 #include <array>
 #include <cstdint>
+#include <vector>
+
+#include <GWCA/GameContainers/GamePos.h>
+#include <GWCA/GameEntities/Agent.h>
 
 #include <ActionsBase.h>
 #include <ActionsMove.h>
 #include <ActionsUw.h>
 #include <DataPlayer.h>
 #include <Logger.h>
-#include <MathUtils.h>
+#include <UtilsMath.h>
 
 bool UwHelperActivationConditions();
 
@@ -34,7 +38,9 @@ bool IsMesmerTerra(const DataPlayer &player_data);
 
 const GW::Agent *GetDhuumAgent();
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp = nullptr);
+bool IsInDhuumFight(const GW::GamePos &player_pos);
+
+void GetDhuumAgentData(const GW::Agent *dhuum_agent, float &dhuum_hp, uint32_t &dhuum_max_hp);
 
 bool TankIsFullteamLT();
 
@@ -47,6 +53,8 @@ bool TargetReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> 
 bool TalkReaper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> &npcs);
 
 bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiving *> enemies);
+
+bool TakeChamber();
 
 bool AcceptChamber();
 
@@ -61,7 +69,8 @@ bool TakePits();
 bool TakePlanes();
 
 template <uint32_t N>
-void UpdateUwInfo(const DataPlayer &player_data,
+void UpdateUwInfo(const std::map<std::string, uint32_t> &reaper_moves,
+                  const DataPlayer &player_data,
                   const std::array<MoveABC *, N> &moves,
                   uint32_t &move_idx,
                   const bool first_call,
@@ -84,8 +93,41 @@ void UpdateUwInfo(const DataPlayer &player_data,
 
     if ((port_detected && next_move_oob) || (first_call && curr_move_oob && !is_spawn))
     {
-        Log::Info("Ported!");
-        move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
+        const auto lab_reaper = GW::GamePos{-5751.45F, 12746.52F, 0};
+        const auto pits_reaper = GW::GamePos{8685.21F, 6344.59F, 0};
+        const auto planes_reaper = GW::GamePos{11368.55F, -17974.64F, 0};
+        const auto wastes_reaper = GW::GamePos{-235.05F, 18496.461F, 0};
+
+        const auto ported_to_lab = GW::GetDistance(lab_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_pits = GW::GetDistance(pits_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_planes = GW::GetDistance(planes_reaper, player_data.pos) < 2000.0F;
+        const auto ported_to_wastes = GW::GetDistance(wastes_reaper, player_data.pos) < 2000.0F;
+
+        if (ported_to_lab && reaper_moves.contains("Lab"))
+        {
+            Log::Info("Ported to Lab!");
+            move_idx = reaper_moves.at("Lab");
+        }
+        else if (ported_to_pits && reaper_moves.contains("Pits"))
+        {
+            Log::Info("Ported to Pits!");
+            move_idx = reaper_moves.at("Pits");
+        }
+        else if (ported_to_planes && reaper_moves.contains("Planes"))
+        {
+            Log::Info("Ported to Planes!");
+            move_idx = reaper_moves.at("Planes");
+        }
+        else if (ported_to_wastes && reaper_moves.contains("Wastes"))
+        {
+            Log::Info("Ported to Wastes!");
+            move_idx = reaper_moves.at("Wastes");
+        }
+        else
+        {
+            Log::Info("Ported!");
+            move_idx = MoveABC::GetFirstCloseMove(player_data, moves);
+        }
         move_ongoing = false;
     }
     else if (port_detected && !next_move_oob)
@@ -97,14 +139,16 @@ void UpdateUwInfo(const DataPlayer &player_data,
 
 bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, const GW::GamePos &keeper_pos);
 
-bool DhuumIsCastingJudgement(const uint32_t dhuum_id);
+bool DhuumIsCastingJudgement(const GW::Agent *dhuum_agent);
 
 bool CheckForAggroFree(const DataPlayer &player_data, const AgentLivingData *livings_data, const GW::GamePos &next_pos);
 
 float GetProgressValue();
 
-bool DhuumFightDone(uint32_t dhuum_id);
+bool DhuumFightDone(const uint32_t num_objectives);
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role);
+
+bool TargetTrigger(DataPlayer &player_data, const TriggerRole role);
 
 bool LtIsBonded();

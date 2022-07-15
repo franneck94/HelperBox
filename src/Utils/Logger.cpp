@@ -1,10 +1,16 @@
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+#include <ctime>
+#include <string>
+
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
 #include <GWCA/Utilities/Debug.h>
 
-#include <Defines.h>
 #include <Logger.h>
+#include <Utils.h>
 
 namespace
 {
@@ -25,8 +31,6 @@ enum LogType : uint8_t
     LogType_Warning,
     LogType_Error
 };
-
-auto crash_dumped = false;
 } // namespace
 
 static void GWCALogHandler(void *, GW::LogLevel, const char *msg, const char *, unsigned int, const char *)

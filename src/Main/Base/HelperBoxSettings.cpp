@@ -1,15 +1,15 @@
 #include <Base/HelperBox.h>
 #include <Base/MainWindow.h>
 #include <Base/SettingsWindow.h>
-#include <Defines.h>
 #include <Features/General/AutoFollowWindow.h>
-#include <Features/General/CancelActionWindow.h>
 #include <Features/General/ChatCommands.h>
 #include <Features/Uw/UwDhuumBitch.h>
 #include <Features/Uw/UwDhuumStats.h>
 #include <Features/Uw/UwEmo.h>
 #include <Features/Uw/UwMesmer.h>
+#include <Features/Uw/UwMetadata.h>
 #include <Features/Uw/UwRanger.h>
+#include <Utils.h>
 
 #include <SimpleIni.h>
 
@@ -25,9 +25,9 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
     // optional_modules.push_back(&AutoFollowWindow::Instance());
-    // optional_modules.push_back(&CancelActionWindow::Instance());
 
     // UW
+    static auto uw_base = UwMetadata::Instance();
     optional_modules.push_back(&UwEmo::Instance());
     optional_modules.push_back(&UwDhuumBitch::Instance());
     optional_modules.push_back(&UwMesmer::Instance());
@@ -66,7 +66,7 @@ void HelperBoxSettings::SaveSettings(CSimpleIni *ini)
     ini->SetBoolValue(Name(), VAR_NAME(use_cancel), use_cancel);
 }
 
-void HelperBoxSettings::Draw(IDirect3DDevice9 *)
+void HelperBoxSettings::Draw()
 {
     ImGui::GetStyle().WindowBorderSize = (move_all ? 1.0F : 0.0F);
 }

@@ -11,6 +11,7 @@ target_link_libraries(DataDll PUBLIC
     gwca
     simpleini
     fmt::fmt
+    Stdafx
     UtilsDll
     TypesDll)
 

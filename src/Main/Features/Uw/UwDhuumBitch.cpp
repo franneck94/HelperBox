@@ -5,7 +5,8 @@
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
 #include <GWCA/Constants/Skills.h>
-#include <GWCA/Context/GameContext.h>
+#include <GWCA/Context/ItemContext.h>
+#include <GWCA/Context/WorldContext.h>
 #include <GWCA/GameContainers/GamePos.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Map.h>
@@ -21,14 +22,15 @@
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
 #include <DataSkillbar.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperAgents.h>
+#include <HelperItems.h>
 #include <HelperUw.h>
 #include <HelperUwPos.h>
 #include <Logger.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include <fmt/format.h>
 #include <imgui.h>
@@ -41,15 +43,24 @@ namespace
 static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
 static auto lt_is_ready = false;
+
+constexpr static auto COOKIE_ID = uint32_t{28433};
+constexpr static auto VAMPIRISMUS_AGENT_ID = uint32_t{5723};
+constexpr static auto SOS1_AGENT_ID = uint32_t{4229};
+constexpr static auto SOS2_AGENT_ID = uint32_t{4230};
+constexpr static auto SOS3_AGENT_ID = uint32_t{4231};
+
+const static auto reaper_moves =
+    std::map<std::string, uint32_t>{{"Lab", 0}, {"Pits", 43}, {"Planes", 50}, {"Wastes", 58}};
 }; // namespace
 
-UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routinme(&player_data, &skillbar, livings_data)
+UwDhuumBitch::UwDhuumBitch() : UwMetadata(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
 };
 
-void UwDhuumBitch::Draw(IDirect3DDevice9 *)
+void UwDhuumBitch::Draw()
 {
     if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsDhuumBitch(player_data))
         return;
@@ -57,7 +68,7 @@ void UwDhuumBitch::Draw(IDirect3DDevice9 *)
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
     if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
-        db_routinme.Draw();
+        db_routine.Draw();
         DrawMovingButtons(moves, move_ongoing, move_idx);
     }
     ImGui::End();
@@ -96,7 +107,11 @@ void UwDhuumBitch::UpdateUw()
 void UwDhuumBitch::UpdateUwEntry()
 {
     if (TankIsFullteamLT())
+    {
         load_cb_triggered = false;
+        move_idx = 0;
+        move_ongoing = false;
+    }
 
     if (load_cb_triggered)
     {
@@ -116,19 +131,20 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
     {
         move_idx = 0;
         move_ongoing = false;
-        db_routinme.action_state = ActionState::INACTIVE;
+        db_routine.action_state = ActionState::INACTIVE;
         return;
     }
     player_data.Update();
     livings_data = &_livings_data;
-    db_routinme.livings_data = livings_data;
+    db_routine.livings_data = livings_data;
+    db_routine.num_finished_objectives = num_finished_objectives;
 
     if (!IsDhuumBitch(player_data))
         return;
 
     if (IsUw() && first_frame)
     {
-        UpdateUwInfo(player_data, moves, move_idx, true, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, true, move_ongoing);
         first_frame = false;
     }
 
@@ -136,20 +152,15 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
         return;
     skillbar.Update();
 
-    damage_action_state = &db_routinme.action_state;
+    damage_action_state = &db_routine.action_state;
 
     if (IsUw())
     {
-        UpdateUwInfo(player_data, moves, move_idx, false, move_ongoing);
+        UpdateUwInfo(reaper_moves, player_data, moves, move_idx, false, move_ongoing);
         UpdateUw();
     }
 
-    db_routinme.Update();
-}
-
-DbRoutine::DbRoutine(DataPlayer *p, DbSkillbarData *s, const AgentLivingData *a)
-    : DbActionABC(p, "DbRoutine", s), livings_data(a)
-{
+    db_routine.Update();
 }
 
 bool DbRoutine::CastPiOnTarget() const
@@ -173,7 +184,12 @@ bool DbRoutine::CastPiOnTarget() const
 
 bool DbRoutine::RoutineKillSkele() const
 {
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) || CastPiOnTarget())
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
+        return true;
+
+    if (CastPiOnTarget())
         return true;
 
     return false;
@@ -186,8 +202,16 @@ bool DbRoutine::RoutineKillEnemiesStandard() const
     if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) ||
-        RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
+        return true;
+
+    if (!FoundSpirit(livings_data->spirits, VAMPIRISMUS_AGENT_ID) &&
+        (RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy)))
+        return true;
+
+    if (CastPiOnTarget())
         return true;
 
     return false;
@@ -202,8 +226,13 @@ bool DbRoutine::RoutineValeSpirits() const
     if (!found_honor && RoutineState::FINISHED == skillbar->honor.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy) ||
-        RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy))
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
+        return true;
+
+    if (!FoundSpirit(livings_data->spirits, VAMPIRISMUS_AGENT_ID) &&
+        (RoutineState::FINISHED == skillbar->vamp.Cast(player_data->energy)))
         return true;
 
     if (!found_eoe && player_data->energy >= 30U && RoutineState::FINISHED == skillbar->eoe.Cast(player_data->energy))
@@ -249,7 +278,9 @@ bool DbRoutine::RoutineDhuumDamage() const
     if (!found_winnow && RoutineState::FINISHED == skillbar->winnow.Cast(player_data->energy))
         return true;
 
-    if (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy))
+    if ((!FoundSpirit(livings_data->spirits, SOS1_AGENT_ID) || !FoundSpirit(livings_data->spirits, SOS2_AGENT_ID) ||
+         !FoundSpirit(livings_data->spirits, SOS3_AGENT_ID)) &&
+        (RoutineState::FINISHED == skillbar->sos.Cast(player_data->energy)))
         return true;
 
     return false;
@@ -257,11 +288,15 @@ bool DbRoutine::RoutineDhuumDamage() const
 
 RoutineState DbRoutine::Routine()
 {
-    static auto dhuum_fight_ongoing = false;
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
+    const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
+    const auto dhuum_Fight_done = DhuumFightDone(num_finished_objectives);
 
-    if (!IsUw())
+    if (!IsUw() || dhuum_Fight_done)
+    {
+        action_state = ActionState::INACTIVE;
         return RoutineState::FINISHED;
+    }
 
     if (!player_data->CanCast() || !livings_data)
         return RoutineState::ACTIVE;
@@ -297,6 +332,8 @@ RoutineState DbRoutine::Routine()
 
     if (IsAtValeSpirits(player_data->pos))
     {
+        SwapToMeleeSet();
+
         const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 1800.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
@@ -307,42 +344,41 @@ RoutineState DbRoutine::Routine()
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;
     }
+    else
+    {
+        SwapToRangeSet();
+    }
 
     if (!is_in_dhuum_room)
         return RoutineState::FINISHED;
 
-    if (dhuum_fight_ongoing && RoutineDhuumRecharge())
+    if (is_in_dhuum_fight && RoutineDhuumRecharge())
         return RoutineState::FINISHED;
 
-    auto dhuum_id = uint32_t{0};
-    auto dhuum_hp = float{1.0F};
-    const auto is_in_dhuum_fight = IsInDhuumFight(&dhuum_id, &dhuum_hp);
-    if (!is_in_dhuum_fight && dhuum_fight_ongoing)
-        dhuum_fight_ongoing = false;
+    const auto dhuum_agent = GetDhuumAgent();
+    if (!is_in_dhuum_fight || !dhuum_agent)
+        return RoutineState::FINISHED;
 
-    if (!is_in_dhuum_fight && DhuumFightDone(dhuum_id))
+    const auto world_context = GW::WorldContext::instance();
+    const auto item_context = GW::ItemContext::instance();
+    if (world_context && item_context)
     {
-        action_state = ActionState::INACTIVE;
-        move_ongoing = false;
+        if (world_context->morale < 90 && UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size()))
+            return RoutineState::FINISHED;
     }
 
-    if (!is_in_dhuum_fight || !dhuum_id)
-        return RoutineState::FINISHED;
-    dhuum_fight_ongoing = true;
-
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
-    if (!dhuum_agent)
-        return RoutineState::FINISHED;
     const auto dhuum_dist = GW::GetDistance(player_data->pos, dhuum_agent->pos);
-
-    if (dhuum_hp < 0.20F)
-        return RoutineState::FINISHED;
-
     if (dhuum_dist > GW::Constants::Range::Spellcast)
         return RoutineState::FINISHED;
 
-    if (DhuumIsCastingJudgement(dhuum_id) &&
-        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_id)))
+    auto dhuum_hp = float{0.0F};
+    auto dhuum_max_hp = uint32_t{0U};
+    GetDhuumAgentData(dhuum_agent, dhuum_hp, dhuum_max_hp);
+    if (dhuum_hp < 0.20F)
+        return RoutineState::FINISHED;
+
+    if (dhuum_agent && DhuumIsCastingJudgement(dhuum_agent) &&
+        (RoutineState::FINISHED == skillbar->pi.Cast(player_data->energy, dhuum_agent->agent_id)))
         return RoutineState::FINISHED;
 
     if (RoutineDhuumDamage())

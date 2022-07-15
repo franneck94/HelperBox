@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <string>
 
+#include <GWCA/Context/ItemContext.h>
+#include <GWCA/Context/WorldContext.h>
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ChatMgr.h>
 #include <GWCA/Managers/GameThreadMgr.h>
@@ -8,12 +10,20 @@
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxWindow.h>
 #include <Base/MainWindow.h>
+#include <Features/Uw/UwMetadata.h>
 #include <HelperAgents.h>
+#include <HelperItems.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <Logger.h>
 
 #include "ChatCommands.h"
+
+namespace
+{
+constexpr static auto COOKIE_ID = uint32_t{28433};
+}; // namespace
 
 void ChatCommands::Initialize()
 {
@@ -118,9 +128,6 @@ void ChatCommands::UseSkill::Update()
     if (!me_living)
         return;
 
-    if (!slot)
-        return;
-
     const auto current_energy = static_cast<uint32_t>(me_living->energy * me_living->max_energy);
     CastSelectedSkill(current_energy, skillbar);
 }
@@ -129,6 +136,19 @@ void ChatCommands::DhuumUseSkill::Update()
 {
     if (slot == 0)
         return;
+
+    const auto me_living = GetPlayerAsLiving();
+    if (!me_living || !IsUw())
+    {
+        slot = 0;
+        return;
+    }
+
+    auto target_id = uint32_t{0};
+    const auto target = GetTargetAsLiving();
+    if (target && target->allegiance == GW::Constants::Allegiance::Enemy && !me_living->GetIsAttacking())
+        AttackAgent(target);
+
     if ((clock() - skill_timer) / 1000.0f < skill_usage_delay)
         return;
     const auto skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
@@ -138,28 +158,23 @@ void ChatCommands::DhuumUseSkill::Update()
         return;
     }
 
-    const auto me_living = GetPlayerAsLiving();
-    if (!me_living)
-        return;
-
     const auto progress_perc = GetProgressValue();
-    auto target_id = uint32_t{0};
-    if (progress_perc < 1.0F)
+    if (UwMetadata::Instance().num_finished_objectives == 10 && progress_perc > 0.0F && progress_perc < 1.0F)
     {
         slot = 1;
+
+        const auto item_context = GW::ItemContext::instance();
+        const auto world_context = GW::WorldContext::instance();
+        if (world_context && item_context)
+        {
+            if (world_context->morale <= 85)
+                UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size());
+        }
     }
     else // Rest done
     {
         const auto dhuum_agent = GetDhuumAgent();
-        if (!dhuum_agent)
-        {
-            slot = 0;
-            return;
-        }
-        const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
-        const auto target = GetTargetAsLiving();
-        if (!dhuum_living || dhuum_living->allegiance != GW::Constants::Allegiance::Enemy || !target ||
-            target->player_number != static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
+        if (!dhuum_agent || DhuumFightDone(UwMetadata::Instance().num_finished_objectives))
         {
             slot = 0;
             return;
@@ -167,9 +182,6 @@ void ChatCommands::DhuumUseSkill::Update()
 
         slot = 5;
         target_id = target->agent_id;
-
-        if (!me_living->GetIsAttacking())
-            AttackAgent(target);
     }
 
     if (!slot)
@@ -181,7 +193,7 @@ void ChatCommands::DhuumUseSkill::Update()
 
 void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 {
-    if (!IsMapReady() && IsExplorable())
+    if (!IsMapReady() || !IsUw())
         return;
 
     auto &dhuum_useskill = Instance().dhuum_useskill;
@@ -192,7 +204,7 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
     if (argc < 2)
         return;
     const auto arg1 = std::wstring{argv[1]};
-    if (arg1 != L"start")
+    if (arg1 != L"start" || arg1 == L"end" || arg1 == L"stop")
         return;
 
     dhuum_useskill.slot = static_cast<uint32_t>(-1);
@@ -200,7 +212,7 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 
 void ChatCommands::CmdUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 {
-    if (!IsMapReady() && IsExplorable())
+    if (!IsMapReady() || !IsExplorable())
         return;
 
     auto &useskill = Instance().useskill;

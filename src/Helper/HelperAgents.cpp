@@ -7,6 +7,7 @@
 
 #include <GWCA/Constants/Constants.h>
 #include <GWCA/Constants/Maps.h>
+#include <GWCA/Context/CharContext.h>
 #include <GWCA/GameContainers/Array.h>
 #include <GWCA/GameEntities/Agent.h>
 #include <GWCA/GameEntities/Party.h>
@@ -15,6 +16,7 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/ItemMgr.h>
 #include <GWCA/Managers/PartyMgr.h>
+#include <GWCA/Managers/PlayerMgr.h>
 
 #include <ActionsBase.h>
 #include <DataPlayer.h>
@@ -222,6 +224,29 @@ std::pair<GW::Agent *, float> GetClosestEnemy(const DataPlayer *player_data)
     return std::make_pair(closest, closest_dist);
 }
 
+uint32_t GetClosestToPosition(const GW::GamePos &pos,
+                              const std::vector<GW::AgentLiving *> &livings,
+                              const uint32_t target_id)
+{
+    uint32_t closest_id = 0U;
+    float closest_dist = FLT_MAX;
+
+    for (const auto living : livings)
+    {
+        if (!living || target_id == living->agent_id)
+            continue;
+
+        const auto dist = GW::GetDistance(pos, living->pos);
+        if (dist < closest_dist)
+        {
+            closest_dist = dist;
+            closest_id = living->agent_id;
+        }
+    }
+
+    return closest_id;
+}
+
 uint32_t GetClosestById(const DataPlayer &player_data, const std::vector<GW::AgentLiving *> &livings, const uint32_t id)
 {
     uint32_t closest_id = 0U;
@@ -345,6 +370,19 @@ uint32_t GetPartyIdxByID(const uint32_t id)
     return idx;
 }
 
+std::vector<GW::AgentLiving *> FilterById(const std::vector<GW::AgentLiving *> &livings, const uint32_t id)
+{
+    auto res = std::vector<GW::AgentLiving *>{};
+
+    for (auto living : livings)
+    {
+        if (living->player_number == id)
+            res.push_back(living);
+    }
+
+    return res;
+}
+
 void FilterByIdAndDistance(const GW::GamePos &player_pos,
                            const std::vector<GW::AgentLiving *> &livings,
                            std::vector<GW::AgentLiving *> &filtered_livings,
@@ -456,4 +494,55 @@ const GW::AgentLiving *GetTargetAsLiving()
     if (!me)
         return nullptr;
     return me->GetAsAgentLiving();
+}
+
+GW::Player *GetPlayerByName(const wchar_t *_name)
+{
+    if (!_name)
+        return NULL;
+    GW::PlayerArray *players = GW::PlayerMgr::GetPlayerArray();
+    if (!players)
+        return nullptr;
+    for (GW::Player &player : *players)
+    {
+        if (!player.name)
+            continue;
+        if (_name == player.name)
+            return &player;
+    }
+    return nullptr;
+}
+
+std::wstring GetPlayerName(uint32_t player_number)
+{
+    GW::Player *player = nullptr;
+    if (!player_number)
+    {
+        player = GW::PlayerMgr::GetPlayerByID(GW::PlayerMgr::GetPlayerNumber());
+        if (!player || !player->name)
+        {
+            // Map not loaded; try to get from character context
+            auto c = GW::CharContext::instance();
+            return c ? c->player_name : L"";
+        }
+    }
+    else
+    {
+        player = GW::PlayerMgr::GetPlayerByID(player_number);
+    }
+    return player && player->name ? player->name : L"";
+}
+
+bool FoundSpirit(const std::vector<GW::AgentLiving *> &spirits, const uint32_t spirit_id)
+{
+    if (spirits.size())
+    {
+        for (const auto spirit : spirits)
+        {
+            if (spirit->player_number == spirit_id)
+                return true;
+        }
+    }
+
+    return false;
 }

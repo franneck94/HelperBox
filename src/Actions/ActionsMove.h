@@ -17,8 +17,8 @@
 #include <DataSkillbar.h>
 #include <Helper.h>
 #include <Logger.h>
-#include <MathUtils.h>
-#include <Timer.h>
+#include <Utils.h>
+#include <UtilsMath.h>
 
 class TriggerABC
 {
@@ -65,7 +65,7 @@ public:
     template <uint32_t N>
     static void UpdatedUwMoves(const DataPlayer &player_data,
                                const AgentLivingData *livings_data,
-                               std::array<MoveABC *, N> &moves,
+                               const std::array<MoveABC *, N> &moves,
                                uint32_t &move_idx,
                                bool &move_ongoing)
     {

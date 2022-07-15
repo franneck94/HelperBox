@@ -40,8 +40,7 @@ public:
     DataSkill empathy = DataSkill{GW::Constants::SkillID::Empathy, static_cast<uint32_t>(-1)};
 
     // Solo LT Skills
-    DataSkill mantra_of_concentration =
-        DataSkill{GW::Constants::SkillID::Mantra_of_Concentration, static_cast<uint32_t>(-1)};
+    DataSkill mantra_of_resolve = DataSkill{GW::Constants::SkillID::Mantra_of_Resolve, static_cast<uint32_t>(-1)};
     DataSkill visage = DataSkill{GW::Constants::SkillID::Sympathetic_Visage, static_cast<uint32_t>(-1)};
 
     // T4 Skills
@@ -56,7 +55,7 @@ public:
                   &worry,
                   &ebon,
                   &empathy,
-                  &mantra_of_concentration,
+                  &mantra_of_resolve,
                   &visage,
                   &mantra_of_earth,
                   &stonestriker};

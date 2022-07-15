@@ -20,9 +20,10 @@
 #include <Base/HelperBoxTheme.h>
 #include <Base/MainWindow.h>
 #include <Logger.h>
-#include <Path.h>
+#include <Utils.h>
 
 #include <SimpleIni.h>
+#include <d3d9.h>
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
@@ -399,7 +400,7 @@ void HelperBox::Draw(IDirect3DDevice9 *device)
         {
             if (world_map_showing)
                 continue;
-            uielement->Draw(device);
+            uielement->Draw();
         }
 
         ImGui::EndFrame();

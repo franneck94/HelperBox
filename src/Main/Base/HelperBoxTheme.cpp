@@ -1,7 +1,7 @@
 #include <filesystem>
 
 #include <Logger.h>
-#include <Path.h>
+#include <Utils.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
@@ -131,7 +131,7 @@ void HelperBoxTheme::SaveSettings(CSimpleIni *ini)
     SaveUILayout();
 }
 
-void HelperBoxTheme::Draw(IDirect3DDevice9 *)
+void HelperBoxTheme::Draw()
 {
     if (layout_dirty)
         LoadUILayout();

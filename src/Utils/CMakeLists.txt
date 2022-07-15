@@ -4,7 +4,6 @@ file(GLOB UTILS_SOURCES
 
 add_library(UtilsDll STATIC ${UTILS_SOURCES})
 target_compile_options(UtilsDll PUBLIC /ZI)
-target_precompile_headers(UtilsDll PUBLIC "stdafx.h")
 target_include_directories(UtilsDll PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(UtilsDll PUBLIC
@@ -12,6 +11,7 @@ target_link_libraries(UtilsDll PUBLIC
     gwca
     simpleini
     fmt::fmt
+    Stdafx
     TypesDll)
 
 if (${ENABLE_WARNINGS})

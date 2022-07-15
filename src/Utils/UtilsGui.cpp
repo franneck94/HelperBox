@@ -12,7 +12,7 @@
 #include <imgui.h>
 #include <implot.h>
 
-#include "GuiUtils.h"
+#include "UtilsGui.h"
 
 void DrawButton(ActionState &action_state, const ImVec4 color, std::string_view text, const ImVec2 button_size)
 {

@@ -1,6 +1,7 @@
 #include <Base/HelperBox.h>
-#include <Defines.h>
+#include <Utils.h>
 
+#include <d3d9.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -113,7 +114,7 @@ void HelperBoxUIElement::ShowVisibleRadio()
     ImGui::PopID();
 }
 
-bool HelperBoxUIElement::DrawTabButton(IDirect3DDevice9 *)
+bool HelperBoxUIElement::DrawTabButton()
 {
     ImGui::PushStyleColor(ImGuiCol_Button, visible ? ImGui::GetStyle().Colors[ImGuiCol_Button] : ImVec4(0, 0, 0, 0));
     ImVec2 pos = ImGui::GetCursorScreenPos();

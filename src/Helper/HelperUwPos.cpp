@@ -3,14 +3,13 @@
 #include <GWCA/Managers/MapMgr.h>
 
 #include <HelperMaps.h>
-#include <MathUtils.h>
+#include <UtilsMath.h>
 
 #include "HelperUwPos.h"
 
 bool IsUw()
 {
-    return GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld ||
-           GW::Map::GetMapID() == (GW::Constants::MapID)421;
+    return GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld;
 }
 
 bool IsUwEntryOutpost()
@@ -18,9 +17,24 @@ bool IsUwEntryOutpost()
     return IsEndGameEntryOutpost();
 }
 
+bool IsAOnSpawnPlateau(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{666.24F, 6836.26F, 0}, range);
+}
+
 bool IsAtSpawn(const GW::GamePos &player_pos, const float range)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{1248.00F, 6965.51F, 0}, range);
+}
+
+bool IsAtChamberSpike(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-790.53F, 9529.63F, 0}, 400.0F);
+}
+
+bool IsAtChamberMonuSpike(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-4049.11F, 13631.00F, 0}, 400.0F);
 }
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos)
@@ -110,6 +124,26 @@ bool IsAtValeSpirits(const GW::GamePos &player_pos)
     return false;
 }
 
+bool IsAtTakePull(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{6054.83F, 18997.46F, 0}, range);
+}
+
+bool IsAtMntsMonument(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-8567.25F, -5301.14F, 0}, range);
+}
+
+bool IsAtHeuchlerPattrick(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{2644.61F, -4983.74F, 0}, range);
+}
+
+bool IsInWastes(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{3577.13F, 19130.53F, 0}, range);
+}
+
 bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{-16105.50F, 17284.84F, 0}, range);
@@ -117,7 +151,7 @@ bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range)
 
 bool IsGoingToDhuum(const GW::GamePos &player_pos)
 {
-    return IsNearToGamePos(player_pos, GW::GamePos{-9567.56F, 17288.916F, 0}, 100.0F);
+    return IsNearToGamePos(player_pos, GW::GamePos{-9567.56F, 17288.916F, 0}, 1500.0F);
 }
 
 bool IsAtFilterSkelePos(const GW::GamePos &player_pos, const GW::GamePos &next_pos)

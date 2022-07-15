@@ -10,13 +10,20 @@
 
 #include <ActionsBase.h>
 #include <ActionsMove.h>
-#include <GuiConstants.h>
 #include <Helper.h>
-#include <MathUtils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include <fmt/format.h>
 #include <imgui.h>
 #include <implot.h>
+
+namespace
+{
+static const auto DEFAULT_BUTTON_SIZE = ImVec2(100.0, 50.0);
+static const auto SKIP_BUTTON_X = DEFAULT_BUTTON_SIZE.x / 2.25F;
+static const auto SKIP_BUTTON_Y = DEFAULT_BUTTON_SIZE.y / 2.0F;
+} // namespace
 
 void DrawButton(ActionState &action_state,
                 const ImVec4 color,
@@ -46,7 +53,7 @@ void DrawMovingButtons(const std::array<MoveABC *, N> &moves, bool &move_ongoing
     if (was_already_ongoing)
         ImGui::PopStyleColor();
 
-    if (ImGui::Button("Prev.", SKIP_BUTTON_SIZE))
+    if (ImGui::Button("Prev.", ImVec2(SKIP_BUTTON_X, SKIP_BUTTON_Y)))
     {
         if (move_idx > 0)
             --move_idx;
@@ -55,7 +62,7 @@ void DrawMovingButtons(const std::array<MoveABC *, N> &moves, bool &move_ongoing
         move_ongoing = false;
     }
     ImGui::SameLine();
-    if (ImGui::Button("Next", SKIP_BUTTON_SIZE))
+    if (ImGui::Button("Next", ImVec2(SKIP_BUTTON_X, SKIP_BUTTON_Y)))
     {
         if (move_idx < moves.size() - 1)
             ++move_idx;

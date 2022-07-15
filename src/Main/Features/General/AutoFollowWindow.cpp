@@ -11,10 +11,10 @@
 #include <ActionsBase.h>
 #include <Base/HelperBox.h>
 #include <DataPlayer.h>
-#include <GuiUtils.h>
 #include <Helper.h>
 #include <HelperUw.h>
-#include <MathUtils.h>
+#include <UtilsGui.h>
+#include <UtilsMath.h>
 
 #include <imgui.h>
 
@@ -44,7 +44,7 @@ RoutineState AutoFollowAction::Routine()
     return RoutineState::ACTIVE;
 }
 
-void AutoFollowWindow::Draw(IDirect3DDevice9 *)
+void AutoFollowWindow::Draw()
 {
     if (!visible)
         return;

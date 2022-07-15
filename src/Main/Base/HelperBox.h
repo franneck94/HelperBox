@@ -11,6 +11,7 @@
 #include <DataPlayer.h>
 
 #include <SimpleIni.h>
+#include <d3d9.h>
 
 DWORD __stdcall SafeThreadEntry(LPVOID mod);
 DWORD __stdcall ThreadEntry(LPVOID);

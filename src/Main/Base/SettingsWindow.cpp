@@ -3,14 +3,14 @@
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxSettings.h>
 #include <Base/MainWindow.h>
-#include <Defines.h>
 #include <Features/General/ChatCommands.h>
+#include <Utils.h>
 
 #include <imgui.h>
 
 #include "SettingsWindow.h"
 
-void SettingsWindow::Draw(IDirect3DDevice9 *)
+void SettingsWindow::Draw()
 {
     static auto last_instance_type = GW::Constants::InstanceType::Loading;
     auto instance_type = GW::Map::GetInstanceType();

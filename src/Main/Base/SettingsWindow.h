@@ -23,7 +23,7 @@ public:
         return "Settings";
     }
 
-    void Draw(IDirect3DDevice9 *pDevice) override;
+    void Draw() override;
     bool DrawSettingsSection(const char *section);
 
     size_t sep = 0;

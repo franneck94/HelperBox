@@ -32,7 +32,7 @@ public:
         return "HelperBox";
     }
 
-    void Draw(IDirect3DDevice9 *pDevice) override;
+    void Draw() override;
     void LoadSettings(CSimpleIni *ini) override;
     void SaveSettings(CSimpleIni *ini) override;
     void DrawSettingInternal() override{};

@@ -5,19 +5,21 @@
 
 #include <ActionTypes.h>
 #include <DataPlayer.h>
-#include <GuiConstants.h>
+#include <UtilsGui.h>
+
+#include <imgui.h>
 
 class ActionABC
 {
 public:
-    constexpr static auto TIMER_THRESHOLD_MS = uint32_t{200U};
+    constexpr static auto TIMER_THRESHOLD_MS = long{200U};
 
-    static bool HasWaitedLongEnough();
+    static bool HasWaitedLongEnough(const long timer_threshold_ms = TIMER_THRESHOLD_MS);
 
     ActionABC(DataPlayer *p, std::string_view t) : player_data(p), text(t){};
     virtual ~ActionABC(){};
 
-    void Draw(const ImVec2 button_size = DEFAULT_BUTTON_SIZE);
+    void Draw(const ImVec2 button_size = ImVec2(100.0, 50.0));
     virtual RoutineState Routine() = 0;
     virtual void Update() = 0;
 

@@ -15,7 +15,7 @@
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperUwPos.h>
-#include <MathUtils.h>
+#include <UtilsMath.h>
 
 #include "HelperUw.h"
 
@@ -35,8 +35,11 @@ uint32_t GetTankId()
 {
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
-    if (!success || party_members.size() < 2)
+    if (!success)
         return 0;
+
+    if (party_members.size() == 1)
+        return party_members[0].id;
 
     auto tank_idx = uint32_t{0};
     switch (GW::Map::GetMapID())
@@ -175,6 +178,9 @@ bool IsMesmerTerra(const DataPlayer &player_data)
 const GW::Agent *GetDhuumAgent()
 {
     const auto agents_array = GW::Agents::GetAgentArray();
+    if (!agents_array || !agents_array->valid())
+        return nullptr;
+
     const GW::Agent *dhuum_agent = nullptr;
 
     for (const auto agent : *agents_array)
@@ -196,10 +202,17 @@ const GW::Agent *GetDhuumAgent()
     return dhuum_agent;
 }
 
-bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
+bool IsInDhuumFight(const GW::GamePos &player_pos)
 {
     if (!IsUw())
         return false;
+
+    if (!IsInDhuumRoom(player_pos) && !IsInVale(player_pos)) // Vale for spirits respawn
+        return false;
+
+    const auto progress_perc = GetProgressValue();
+    if (progress_perc >= 0.0F && progress_perc <= 1.0F)
+        return true;
 
     const auto dhuum_agent = GetDhuumAgent();
     if (!dhuum_agent)
@@ -209,19 +222,20 @@ bool IsInDhuumFight(uint32_t *dhuum_id, float *dhuum_hp, uint32_t *dhuum_max_hp)
     if (!dhuum_living)
         return false;
 
-    if (dhuum_id)
-        *dhuum_id = dhuum_living->agent_id;
+    return dhuum_living->allegiance == GW::Constants::Allegiance::Enemy;
+}
 
-    if (dhuum_living->allegiance == GW::Constants::Allegiance::Enemy)
-    {
-        if (dhuum_hp)
-            *dhuum_hp = dhuum_living->hp;
-        if (dhuum_max_hp)
-            *dhuum_max_hp = dhuum_living->max_hp;
-        return true;
-    }
+void GetDhuumAgentData(const GW::Agent *dhuum_agent, float &dhuum_hp, uint32_t &dhuum_max_hp)
+{
+    if (!dhuum_agent)
+        return;
 
-    return false;
+    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
+    if (!dhuum_living)
+        return;
+
+    dhuum_hp = dhuum_living->hp;
+    dhuum_max_hp = dhuum_living->max_hp;
 }
 
 bool TankIsFullteamLT()
@@ -303,6 +317,13 @@ bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiv
     return TargetClosestEnemyById(player_data, enemies, GW::Constants::ModelID::UW::KeeperOfSouls) != 0;
 }
 
+bool TakeChamber()
+{
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Chamber);
+    GW::Agents::SendDialog(dialog);
+    return true;
+}
+
 bool AcceptChamber()
 {
     const auto dialog = QuestRewardDialog(GW::Constants::QuestID::UW::Chamber);
@@ -361,9 +382,8 @@ bool FoundKeeperAtPos(const std::vector<GW::AgentLiving *> &keeper_livings, cons
     return found_keeper;
 }
 
-bool DhuumIsCastingJudgement(const uint32_t dhuum_id)
+bool DhuumIsCastingJudgement(const GW::Agent *dhuum_agent)
 {
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
     if (!dhuum_agent)
         return false;
 
@@ -419,24 +439,10 @@ float GetProgressValue()
     return c->progress_bar->progress;
 }
 
-bool DhuumFightDone(uint32_t dhuum_id)
+bool DhuumFightDone(const uint32_t num_objectives)
 {
-    if (!dhuum_id)
-        return false;
-
-    const auto dhuum_agent = GW::Agents::GetAgentByID(dhuum_id);
-    if (!dhuum_agent)
-        return false;
-
-    const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
-    if (!dhuum_living)
-        return false;
-
-    const auto progress = GetProgressValue();
-    if (dhuum_living->allegiance != GW::Constants::Allegiance::Enemy && progress > 0.99F)
-        return true;
-
-    return false;
+    const auto progress_perc = GetProgressValue();
+    return num_objectives > 10 || progress_perc < 0.0F || progress_perc > 1.0F;
 }
 
 uint32_t GetUwTriggerRoleId(const TriggerRole role)
@@ -463,6 +469,18 @@ uint32_t GetUwTriggerRoleId(const TriggerRole role)
     }
 
     return trigger_id;
+}
+
+bool TargetTrigger(DataPlayer &player_data, const TriggerRole role)
+{
+    const auto trigger_id = GetUwTriggerRoleId(role);
+
+    if (!trigger_id)
+        return false;
+
+    player_data.ChangeTarget(trigger_id);
+
+    return true;
 }
 
 bool LtIsBonded()

@@ -7,7 +7,7 @@
 #include <GWCA/Managers/AgentMgr.h>
 #include <GWCA/Managers/CameraMgr.h>
 
-#include "MathUtils.h"
+#include "UtilsMath.h"
 
 bool FloatCompare(const float a, const float b, const float epsilon)
 {
