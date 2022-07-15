@@ -9,8 +9,7 @@
 
 bool IsUw()
 {
-    return GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld ||
-           GW::Map::GetMapID() == (GW::Constants::MapID)421;
+    return GW::Map::GetMapID() == GW::Constants::MapID::The_Underworld;
 }
 
 bool IsUwEntryOutpost()
