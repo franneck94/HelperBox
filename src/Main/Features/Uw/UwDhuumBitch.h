@@ -6,12 +6,12 @@
 #include <GWCA/Packets/StoC.h>
 #include <GWCA/Utilities/Hook.h>
 
-#include "UwHelperBase.h"
 #include <ActionsBase.h>
 #include <ActionsMove.h>
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
+#include <Features/Uw/UwMetadata.h>
 #include <HelperCallbacks.h>
 #include <HelperUw.h>
 #include <UtilsGui.h>
@@ -43,7 +43,7 @@ public:
     uint32_t num_finished_objectives = 0U;
 };
 
-class UwDhuumBitch : public HelperBoxWindow, public UwHelperABC
+class UwDhuumBitch : public HelperBoxWindow, public UwMetadata
 {
 public:
     UwDhuumBitch();

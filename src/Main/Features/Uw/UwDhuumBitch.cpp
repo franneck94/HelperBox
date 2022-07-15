@@ -54,7 +54,7 @@ const static auto reaper_moves =
     std::map<std::string, uint32_t>{{"Lab", 0}, {"Pits", 43}, {"Planes", 50}, {"Wastes", 58}};
 }; // namespace
 
-UwDhuumBitch::UwDhuumBitch() : UwHelperABC(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
+UwDhuumBitch::UwDhuumBitch() : UwMetadata(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
