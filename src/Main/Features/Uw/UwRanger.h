@@ -44,16 +44,22 @@ public:
     void Update(float delta, const AgentLivingData &) override;
 
 private:
-    void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings, const ImVec4 color, std::string_view label);
+    void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
+                            const ImVec4 color,
+                            std::string_view label,
+                            const bool draw_time = true);
 
     DataPlayer player_data;
     std::map<uint32_t, clock_t> last_casted_times_ms;
 
     std::vector<GW::AgentLiving *> filtered_livings;
+    std::vector<GW::AgentLiving *> coldfire_livings;
     std::vector<GW::AgentLiving *> behemoth_livings;
     std::vector<GW::AgentLiving *> dryder_livings;
     std::vector<GW::AgentLiving *> skele_livings;
     std::vector<GW::AgentLiving *> horseman_livings;
+
+    std::vector<uint32_t> king_path_coldfire_ids;
 
     AutoTargetAction auto_target;
 };
