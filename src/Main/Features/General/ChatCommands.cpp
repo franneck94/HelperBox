@@ -136,6 +136,19 @@ void ChatCommands::DhuumUseSkill::Update()
 {
     if (slot == 0)
         return;
+
+    const auto me_living = GetPlayerAsLiving();
+    if (!me_living)
+    {
+        slot = 0;
+        return;
+    }
+
+    auto target_id = uint32_t{0};
+    const auto target = GetTargetAsLiving();
+    if (target && target->allegiance == GW::Constants::Allegiance::Enemy && !me_living->GetIsAttacking())
+        AttackAgent(target);
+
     if ((clock() - skill_timer) / 1000.0f < skill_usage_delay)
         return;
     const auto skillbar = GW::SkillbarMgr::GetPlayerSkillbar();
@@ -144,15 +157,6 @@ void ChatCommands::DhuumUseSkill::Update()
         slot = 0;
         return;
     }
-
-    const auto me_living = GetPlayerAsLiving();
-    if (!me_living)
-        return;
-
-    auto target_id = uint32_t{0};
-    const auto target = GetTargetAsLiving();
-    if (target && !me_living->GetIsAttacking())
-        AttackAgent(target);
 
     const auto progress_perc = GetProgressValue();
     if (progress_perc > 0.0F && progress_perc < 1.0F)
