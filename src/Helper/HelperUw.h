@@ -14,7 +14,7 @@
 #include <Logger.h>
 #include <UtilsMath.h>
 
-bool UwHelperActivationConditions();
+bool UwHelperActivationConditions(const bool need_party_loaded = true);
 
 uint32_t GetTankId();
 

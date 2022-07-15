@@ -11,5 +11,7 @@ ImGuiWindowFlags HelperBoxWindow::GetWinFlags(ImGuiWindowFlags flags) const
     if (lock_size)
         flags |= ImGuiWindowFlags_NoResize;
 
+    flags |= ImGuiWindowFlags_NoScrollbar;
+
     return flags;
 }

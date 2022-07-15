@@ -96,13 +96,10 @@ void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
 
     for (const auto living : livings)
     {
-        if (!living)
+        if (!living || living->hp == 0.0F || living->GetIsDead())
             continue;
 
         ImGui::TableNextRow();
-
-        if (living->hp == 0.0F || living->GetIsDead())
-            continue;
 
         if (living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth) &&
             living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
@@ -112,7 +109,7 @@ void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
         }
         else if (!draw_time &&
                  living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ColdfireNight) &&
-                 living->GetIsIdle())
+                 GW::GetDistance(player_data.pos, living->pos) > 1800.0F)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0F, 0.0F, 0.0F, 1.0F));
             last_casted_times_ms[living->agent_id] = clock();
@@ -160,14 +157,14 @@ void UwRanger::Draw()
     if (!visible)
         return;
 
-    if (!UwHelperActivationConditions())
+    if (!UwHelperActivationConditions(false))
         return;
     if (!IsRangerTerra(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
         const auto width = ImGui::GetWindowWidth();
         auto_target.Draw(ImVec2(width, 35.0F));
@@ -258,7 +255,7 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         last_casted_times_ms.clear();
     }
 
-    if (!player_data.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions, false))
         return;
     player_data.Update();
     if (!send_message && !died_just_now && player_data.dead)

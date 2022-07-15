@@ -139,12 +139,12 @@ void UwDhuumStats::Draw()
     if (!visible)
         return;
 
-    if (!player_data.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions, false))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(150.0F, 175.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
         const auto is_in_dhuum_fight = IsInDhuumFight(player_data.pos);
         const auto entered_dhuum_room = IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass);
@@ -257,7 +257,7 @@ void UwDhuumStats::UpdateDamageData()
 
 void UwDhuumStats::Update(float, const AgentLivingData &)
 {
-    if (!player_data.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions, false))
         return;
     player_data.Update();
 

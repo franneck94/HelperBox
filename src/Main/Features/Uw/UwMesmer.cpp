@@ -410,14 +410,14 @@ void UwMesmer::Draw()
     if (!visible)
         return;
 
-    if (!UwHelperActivationConditions())
+    if (!UwHelperActivationConditions(false))
         return;
     if (!IsUwMesmer(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(200.0F, 240.0F), ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin(Name(), nullptr, GetWinFlags()))
     {
         const auto width = ImGui::GetWindowWidth();
 
@@ -466,7 +466,7 @@ void UwMesmer::Update(float, const AgentLivingData &_livings_data)
     horseman_livings.clear();
     keeper_livings.clear();
 
-    if (!player_data.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions, false))
         return;
     player_data.Update();
 

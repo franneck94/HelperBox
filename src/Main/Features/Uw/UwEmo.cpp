@@ -70,7 +70,7 @@ UwEmo::UwEmo() : UwMetadata(), skillbar({}), emo_routine(&player_data, &skillbar
 
 void UwEmo::Draw()
 {
-    if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsEmo(player_data))
+    if (!visible || !player_data.ValidateData(UwHelperActivationConditions, true) || !IsEmo(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
@@ -156,7 +156,7 @@ void UwEmo::UpdateUwEntry()
 
 void UwEmo::Update(float, const AgentLivingData &_livings_data)
 {
-    if (!player_data.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions, true))
     {
         move_idx = 0;
         move_ongoing = false;

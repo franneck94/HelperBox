@@ -10,12 +10,12 @@
 
 #include "Helper.h"
 
-bool HelperActivationConditions()
+bool HelperActivationConditions(const bool need_party_loaded)
 {
     if (!GW::Map::GetIsMapLoaded())
         return false;
 
-    if (!GW::PartyMgr::GetIsPartyLoaded())
+    if (need_party_loaded && !GW::PartyMgr::GetIsPartyLoaded())
         return false;
 
     if (!IsMapReady())

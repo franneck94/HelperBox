@@ -49,7 +49,7 @@ void AutoFollowWindow::Draw()
     if (!visible)
         return;
 
-    if (!player_data.ValidateData(HelperActivationConditions))
+    if (!player_data.ValidateData(HelperActivationConditions, false))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(125.0F, 50.0F), ImGuiCond_FirstUseEver);
@@ -64,7 +64,7 @@ void AutoFollowWindow::Draw()
 
 void AutoFollowWindow::Update(float, const AgentLivingData &)
 {
-    if (!player_data.ValidateData(HelperActivationConditions))
+    if (!player_data.ValidateData(HelperActivationConditions, false))
         return;
     player_data.Update();
 

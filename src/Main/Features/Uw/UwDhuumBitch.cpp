@@ -62,7 +62,7 @@ UwDhuumBitch::UwDhuumBitch() : UwMetadata(), skillbar({}), db_routine(&player_da
 
 void UwDhuumBitch::Draw()
 {
-    if (!visible || !player_data.ValidateData(UwHelperActivationConditions) || !IsDhuumBitch(player_data))
+    if (!visible || !player_data.ValidateData(UwHelperActivationConditions, true) || !IsDhuumBitch(player_data))
         return;
 
     ImGui::SetNextWindowSize(ImVec2(110.0F, 170.0F), ImGuiCond_FirstUseEver);
@@ -127,7 +127,7 @@ void UwDhuumBitch::UpdateUwEntry()
 
 void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
 {
-    if (!player_data.ValidateData(UwHelperActivationConditions))
+    if (!player_data.ValidateData(UwHelperActivationConditions, true))
     {
         move_idx = 0;
         move_ongoing = false;

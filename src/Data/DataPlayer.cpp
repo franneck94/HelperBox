@@ -18,9 +18,9 @@
 
 #include "DataPlayer.h"
 
-bool DataPlayer::ValidateData(std::function<bool()> cb_fn) const
+bool DataPlayer::ValidateData(std::function<bool(bool)> cb_fn, const bool need_party_loaded) const
 {
-    if (!cb_fn())
+    if (!cb_fn(need_party_loaded))
         return false;
 
     const auto me_agent = GW::Agents::GetPlayer();

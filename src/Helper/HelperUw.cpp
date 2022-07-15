@@ -19,9 +19,9 @@
 
 #include "HelperUw.h"
 
-bool UwHelperActivationConditions()
+bool UwHelperActivationConditions(const bool need_party_loaded)
 {
-    if (!HelperActivationConditions())
+    if (!HelperActivationConditions(need_party_loaded))
         return false;
 
     if (!IsUwEntryOutpost() && !IsUw())
@@ -441,6 +441,9 @@ float GetProgressValue()
 
 bool DhuumFightDone(const uint32_t num_objectives)
 {
+    if (num_objectives <= 10)
+        return false;
+
     const auto progress_perc = GetProgressValue();
     return num_objectives > 10 || progress_perc < 0.0F || progress_perc > 1.0F;
 }

@@ -4,7 +4,7 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
-bool HelperActivationConditions();
+bool HelperActivationConditions(const bool need_party_loaded = true);
 
 DWORD QuestAcceptDialog(DWORD quest);
 
