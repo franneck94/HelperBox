@@ -10,10 +10,12 @@
 #include <Base/HelperBox.h>
 #include <Base/HelperBoxWindow.h>
 #include <Base/MainWindow.h>
+#include <Features/Uw/UwMetadata.h>
 #include <HelperAgents.h>
 #include <HelperItems.h>
 #include <HelperMaps.h>
 #include <HelperUw.h>
+#include <HelperUwPos.h>
 #include <Logger.h>
 
 #include "ChatCommands.h"
@@ -147,9 +149,13 @@ void ChatCommands::DhuumUseSkill::Update()
     if (!me_living)
         return;
 
-    const auto progress_perc = GetProgressValue();
     auto target_id = uint32_t{0};
-    if (progress_perc < 1.0F)
+    const auto target = GetTargetAsLiving();
+    if (target && !me_living->GetIsAttacking())
+        AttackAgent(target);
+
+    const auto progress_perc = GetProgressValue();
+    if (progress_perc > 0.0F && progress_perc < 1.0F)
     {
         slot = 1;
 
@@ -157,22 +163,14 @@ void ChatCommands::DhuumUseSkill::Update()
         const auto world_context = GW::WorldContext::instance();
         if (world_context && item_context)
         {
-            if (world_context->morale <= 80)
+            if (world_context->morale <= 85)
                 UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size());
         }
     }
     else // Rest done
     {
         const auto dhuum_agent = GetDhuumAgent();
-        if (!dhuum_agent)
-        {
-            slot = 0;
-            return;
-        }
-        const auto dhuum_living = dhuum_agent->GetAsAgentLiving();
-        const auto target = GetTargetAsLiving();
-        if (!dhuum_living || dhuum_living->allegiance != GW::Constants::Allegiance::Enemy || !target ||
-            target->player_number != static_cast<uint16_t>(GW::Constants::ModelID::UW::Dhuum))
+        if (!dhuum_agent || DhuumFightDone(UwMetadata::Instance().num_finished_objectives))
         {
             slot = 0;
             return;
@@ -180,9 +178,6 @@ void ChatCommands::DhuumUseSkill::Update()
 
         slot = 5;
         target_id = target->agent_id;
-
-        if (!me_living->GetIsAttacking())
-            AttackAgent(target);
     }
 
     if (!slot)
@@ -194,7 +189,7 @@ void ChatCommands::DhuumUseSkill::Update()
 
 void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 {
-    if (!IsMapReady() && IsExplorable())
+    if (!IsMapReady() || !IsUw())
         return;
 
     auto &dhuum_useskill = Instance().dhuum_useskill;
