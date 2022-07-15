@@ -138,7 +138,7 @@ void ChatCommands::DhuumUseSkill::Update()
         return;
 
     const auto me_living = GetPlayerAsLiving();
-    if (!me_living)
+    if (!me_living || !IsUw())
     {
         slot = 0;
         return;
@@ -159,7 +159,7 @@ void ChatCommands::DhuumUseSkill::Update()
     }
 
     const auto progress_perc = GetProgressValue();
-    if (progress_perc > 0.0F && progress_perc < 1.0F)
+    if (UwMetadata::Instance().num_finished_objectives == 10 && progress_perc > 0.0F && progress_perc < 1.0F)
     {
         slot = 1;
 
@@ -212,7 +212,7 @@ void ChatCommands::CmdDhuumUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 
 void ChatCommands::CmdUseSkill(const wchar_t *, int argc, LPWSTR *argv)
 {
-    if (!IsMapReady() && IsExplorable())
+    if (!IsMapReady() || !IsExplorable())
         return;
 
     auto &useskill = Instance().useskill;
