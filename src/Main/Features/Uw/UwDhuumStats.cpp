@@ -130,6 +130,12 @@ static void FormatTime(const uint64_t &duration, size_t bufsize, char *buf)
 
 void UwDhuumStats::Draw()
 {
+    static char buffer[16]{'\0'};
+    static auto entered_dhuum_room_first = false;
+
+    if (load_cb_triggered)
+        entered_dhuum_room_first = false;
+
     if (!visible)
         return;
 
@@ -140,9 +146,15 @@ void UwDhuumStats::Draw()
 
     if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoScrollbar))
     {
-        static char buffer[16]{'\0'};
-
         const auto is_in_dhuum_fight = IsInDhuumFight(player_data.pos);
+        const auto entered_dhuum_room = IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass);
+        const auto dhuum_fight_done = DhuumFightDone(num_finished_objectives);
+
+        if (!entered_dhuum_room_first && is_in_dhuum_fight)
+        {
+            entered_dhuum_room_first = true;
+            GW::Chat::SendChat('/', "damage reset");
+        }
 
         ImGui::Text("Dhuum HP: %3.0f%%", dhuum_hp * 100.0F);
         const auto timer_ms = TIMER_DIFF(dhuum_fight_start_time_ms);
@@ -158,15 +170,13 @@ void UwDhuumStats::Draw()
         const auto instance_time_ms = GW::Map::GetInstanceTime();
         const auto finished_ms =
             static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
-        if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) && dhuum_hp < 1.0F &&
-            !DhuumFightDone(num_finished_objectives))
+        if (IsUw() && entered_dhuum_room && dhuum_hp < 1.0F && !dhuum_fight_done)
         {
             std::memset(buffer, '\0', sizeof(char) * 16);
             FormatTime(finished_ms, 16, buffer);
             ImGui::Text("ETA: %s", buffer);
         }
-        else if (IsUw() && IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass) &&
-                 DhuumFightDone(num_finished_objectives))
+        else if (IsUw() && entered_dhuum_room && dhuum_fight_done)
         {
             ImGui::Text("Finished: %s", buffer);
         }
