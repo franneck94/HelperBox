@@ -130,11 +130,13 @@ public:
         ImGui::PopItemWidth();
         slot_idx = _slot_idx;
 
+#ifdef _DEBUG
         ImGui::Text("Show Debug Map:");
         ImGui::SameLine(width * 0.5F);
         ImGui::PushItemWidth(width * 0.5F);
         ImGui::Checkbox("debugMapActive", &show_debug_map);
         ImGui::PopItemWidth();
+#endif
     }
 
     void Draw() override;
