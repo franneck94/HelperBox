@@ -6,12 +6,12 @@
 
 #include <GWCA/GameEntities/Agent.h>
 
-#include "UwHelperBase.h"
 #include <ActionsBase.h>
 #include <ActionsUw.h>
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
+#include <Features/Uw/UwMetadata.h>
 
 #include <SimpleIni.h>
 #include <imgui.h>
@@ -57,7 +57,7 @@ private:
     bool starting_active = false;
 };
 
-class UwMesmer : public HelperBoxWindow, public UwHelperABC
+class UwMesmer : public HelperBoxWindow, public UwMetadata
 {
 public:
     UwMesmer()

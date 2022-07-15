@@ -62,7 +62,7 @@ const static auto reaper_moves =
     std::map<std::string, uint32_t>{{"Lab", 31}, {"Pits", 45}, {"Planes", 48}, {"Wastes", 50}};
 }; // namespace
 
-UwEmo::UwEmo() : UwHelperABC(), skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
+UwEmo::UwEmo() : UwMetadata(), skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();

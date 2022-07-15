@@ -13,13 +13,12 @@
 #include <Base/HelperBoxWindow.h>
 #include <DataLivings.h>
 #include <DataPlayer.h>
+#include <Features/Uw/UwMetadata.h>
 #include <Helper.h>
 #include <HelperAgents.h>
 #include <HelperItems.h>
 #include <HelperUw.h>
 #include <UtilsGui.h>
-
-#include "UwHelperBase.h"
 
 #include <SimpleIni.h>
 #include <imgui.h>
@@ -70,7 +69,7 @@ private:
     bool party_data_valid = false;
 };
 
-class UwEmo : public HelperBoxWindow, public UwHelperABC
+class UwEmo : public HelperBoxWindow, public UwMetadata
 {
 public:
     UwEmo();
