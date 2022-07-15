@@ -33,29 +33,39 @@
 
 namespace
 {
-static constexpr auto MAX_TABLE_LENGTH = 6U;
-
-static constexpr auto IDS = std::array<uint32_t, 6>{GW::Constants::ModelID::UW::BladedAatxe,
-                                                    GW::Constants::ModelID::UW::DyingNightmare,
-                                                    GW::Constants::ModelID::UW::TerrorwebDryder,
-                                                    GW::Constants::ModelID::UW::FourHorseman,
-                                                    GW::Constants::ModelID::UW::SkeletonOfDhuum1,
-                                                    GW::Constants::ModelID::UW::SkeletonOfDhuum2};
+static constexpr auto SPAWN_SPIRIT_ID = uint32_t{2374};
+static constexpr auto MAX_TABLE_LENGTH = uint32_t{6U};
+static constexpr auto IDS = std::array<uint32_t, 6U>{GW::Constants::ModelID::UW::BladedAatxe,
+                                                     GW::Constants::ModelID::UW::DyingNightmare,
+                                                     GW::Constants::ModelID::UW::TerrorwebDryder,
+                                                     GW::Constants::ModelID::UW::FourHorseman,
+                                                     GW::Constants::ModelID::UW::SkeletonOfDhuum1,
+                                                     GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
 bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies, const GW::AgentLiving *enemy)
 {
+    if (!enemy->GetIsAttacking())
+        return false;
+
+    if (enemy->hp < 0.25F)
+        return false;
+
     const auto closest_id = GetClosestToPosition(enemy->pos, enemies, enemy->agent_id);
-    if (closest_id)
-    {
-        const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
-        const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
+    if (!closest_id)
+        return false;
+    const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
+    if (!other_enemy)
+        return false;
+    const auto other_enemy_living = other_enemy->GetAsAgentLiving();
+    if (!other_enemy_living)
+        return false;
 
-        if (dist > GW::Constants::Range::Adjacent && enemy->hp > 0.70F)
-            return true;
-    }
+    const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
+    if (dist < GW::Constants::Range::Adjacent && other_enemy_living->GetIsHexed())
+        return false;
 
-    return false;
+    return true;
 }
 
 bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
@@ -156,7 +166,7 @@ bool LtRoutine::DoNeedVisage(const std::vector<GW::AgentLiving *> &enemies,
         return false;
 
     const auto enemies_in_range = (aatxes.size() || graspings.size());
-    const auto spike_has_begun = closest_enemy_living->hp < 0.70F;
+    const auto spike_has_begun = closest_enemy_living->hp > 0.80F;
 
     return (enemies_in_range && spike_has_begun);
 }
@@ -227,7 +237,7 @@ RoutineState LtRoutine::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    auto delay_ms = long{200L};
+    delay_ms = 200L;
     if (gone_to_npc)
         delay_ms = long{500L};
 
@@ -236,8 +246,7 @@ RoutineState LtRoutine::Routine()
 
     if (starting_active)
     {
-        constexpr auto spirit_id = uint32_t{2374};
-        const auto agent_id = GetClosestNpcbyId(*player_data, livings_data->npcs, spirit_id);
+        const auto agent_id = GetClosestNpcbyId(*player_data, livings_data->npcs, SPAWN_SPIRIT_ID);
         if (!agent_id)
         {
             starting_active = false;

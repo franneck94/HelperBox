@@ -55,6 +55,8 @@ private:
     uint32_t last_graspings_skill = 0U;
 
     bool starting_active = false;
+    long delay_ms = 200L;
+
 };
 
 class UwMesmer : public HelperBoxWindow, public UwMetadata
