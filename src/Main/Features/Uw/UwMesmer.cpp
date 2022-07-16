@@ -483,7 +483,7 @@ void UwMesmer::Update(float, const AgentLivingData &_livings_data)
     const auto &pos = player_data.pos;
     livings_data = &_livings_data;
     lt_routine.livings_data = livings_data;
-    lt_routine.load_cb_triggered = load_cb_triggered;
+    lt_routine.load_cb_triggered = UwMetadata::Instance().load_cb_triggered;
 
     FilterByIdsAndDistances(pos, _livings_data.enemies, filtered_livings, IDS, 1600.0F);
     FilterByIdAndDistance(pos, filtered_livings, aatxe_livings, GW::Constants::ModelID::UW::BladedAatxe);

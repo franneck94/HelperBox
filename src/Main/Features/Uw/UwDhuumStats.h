@@ -20,7 +20,7 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
-class UwDhuumStats : public HelperBoxWindow, public UwMetadata
+class UwDhuumStats : public HelperBoxWindow
 {
 private:
     void SkillPacketCallback(const uint32_t value_id,
@@ -39,7 +39,7 @@ private:
     void UpdateDamageData();
 
 public:
-    UwDhuumStats() : UwMetadata(), player_data({}), rests({}), damages({})
+    UwDhuumStats() : player_data({}), rests({}), damages({})
     {
         /* Skill on self or party player_data */
         GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
@@ -81,6 +81,7 @@ public:
 
 private:
     DataPlayer player_data;
+    const AgentLivingData *livings_data = nullptr;
 
     GW::HookEntry SkillCasted_Entry;
     GW::HookEntry Damage_Entry;

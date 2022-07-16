@@ -42,7 +42,6 @@ namespace
 {
 static auto move_ongoing = false;
 static ActionState *damage_action_state = nullptr;
-static auto lt_is_ready = false;
 
 constexpr static auto COOKIE_ID = uint32_t{28433};
 constexpr static auto VAMPIRISMUS_AGENT_ID = uint32_t{5723};
@@ -54,7 +53,7 @@ const static auto reaper_moves =
     std::map<std::string, uint32_t>{{"Lab", 0}, {"Pits", 43}, {"Planes", 50}, {"Wastes", 58}};
 }; // namespace
 
-UwDhuumBitch::UwDhuumBitch() : UwMetadata(), skillbar({}), db_routine(&player_data, &skillbar, livings_data)
+UwDhuumBitch::UwDhuumBitch() : skillbar({}), db_routine(&player_data, &skillbar, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -84,7 +83,8 @@ void UwDhuumBitch::UpdateUw()
     UpdateUwEntry();
     MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
 
-    if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
+    if (UwMetadata::Instance().num_finished_objectives == 10U && !move_ongoing &&
+        moves[move_idx]->name == "Go To Dhuum 1")
     {
         moves[move_idx]->Execute();
         if (player_data.living->GetIsMoving())
@@ -96,7 +96,7 @@ void UwDhuumBitch::UpdateUw()
         (moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go To Dhuum 6");
     const auto is_moving = player_data.living->GetIsMoving();
 
-    Move_PositionABC::LtMoveTrigger(lt_is_ready,
+    Move_PositionABC::LtMoveTrigger(UwMetadata::Instance().lt_is_ready,
                                     move_ongoing,
                                     is_hm_trigger_take,
                                     is_hm_trigger_move,
@@ -108,17 +108,17 @@ void UwDhuumBitch::UpdateUwEntry()
 {
     if (TankIsFullteamLT())
     {
-        load_cb_triggered = false;
+        UwMetadata::Instance().load_cb_triggered = false;
         move_idx = 0;
         move_ongoing = false;
     }
 
-    if (load_cb_triggered)
+    if (UwMetadata::Instance().load_cb_triggered)
     {
         move_idx = 0;
         move_ongoing = false;
         moves[0]->Execute();
-        load_cb_triggered = false;
+        UwMetadata::Instance().load_cb_triggered = false;
         move_ongoing = true;
 
         *damage_action_state = ActionState::ACTIVE;
@@ -137,7 +137,7 @@ void UwDhuumBitch::Update(float, const AgentLivingData &_livings_data)
     player_data.Update();
     livings_data = &_livings_data;
     db_routine.livings_data = livings_data;
-    db_routine.num_finished_objectives = num_finished_objectives;
+    db_routine.num_finished_objectives = UwMetadata::Instance().num_finished_objectives;
 
     if (!IsDhuumBitch(player_data))
         return;

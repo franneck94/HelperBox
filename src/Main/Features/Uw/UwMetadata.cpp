@@ -12,12 +12,14 @@
 
 #include "UwMetadata.h"
 
-UwMetadata::UwMetadata() : player_data({})
+UwMetadata::UwMetadata()
 {
     GW::StoC::RegisterPacketCallback(&SendChat_Entry,
                                      GAME_SMSG_CHAT_MESSAGE_LOCAL,
                                      [this](GW::HookStatus *status, GW::Packet::StoC::PacketBase *packet) -> void {
-                                         lt_is_ready = OnChatMessageLtIsReady(status, packet, TriggerRole::LT);
+                                         lt_is_ready = OnChatMessagePlayerReady(status, packet, TriggerRole::LT);
+                                         emo_is_ready = OnChatMessagePlayerReady(status, packet, TriggerRole::EMO);
+                                         db_is_ready = OnChatMessagePlayerReady(status, packet, TriggerRole::DB);
                                      });
 
     GW::StoC::RegisterPacketCallback<GW::Packet::StoC::MapLoaded>(

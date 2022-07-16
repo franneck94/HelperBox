@@ -133,7 +133,7 @@ void UwDhuumStats::Draw()
     static char buffer[16]{'\0'};
     static auto entered_dhuum_room_first = false;
 
-    if (load_cb_triggered)
+    if (UwMetadata::Instance().load_cb_triggered)
         entered_dhuum_room_first = false;
 
     if (!visible)
@@ -148,7 +148,7 @@ void UwDhuumStats::Draw()
     {
         const auto is_in_dhuum_fight = IsInDhuumFight(player_data.pos);
         const auto entered_dhuum_room = IsInDhuumRoom(player_data.pos, GW::Constants::Range::Compass);
-        const auto dhuum_fight_done = DhuumFightDone(num_finished_objectives);
+        const auto dhuum_fight_done = DhuumFightDone(UwMetadata::Instance().num_finished_objectives);
 
         if (!entered_dhuum_room_first && is_in_dhuum_fight)
         {

@@ -39,7 +39,6 @@ namespace
 {
 static ActionState *emo_casting_action_state = nullptr;
 static auto move_ongoing = false;
-static auto lt_is_ready = false;
 
 constexpr static auto DHUUM_JUDGEMENT_SKILL_ID = uint32_t{3085U};
 constexpr static auto CANTHA_IDS =
@@ -62,7 +61,7 @@ const static auto reaper_moves =
     std::map<std::string, uint32_t>{{"Lab", 31}, {"Pits", 45}, {"Planes", 48}, {"Wastes", 50}};
 }; // namespace
 
-UwEmo::UwEmo() : UwMetadata(), skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
+UwEmo::UwEmo() : skillbar({}), emo_routine(&player_data, &skillbar, &bag_idx, &slot_idx, livings_data)
 {
     if (skillbar.ValidateData())
         skillbar.Load();
@@ -95,7 +94,8 @@ void UwEmo::UpdateUw()
     UpdateUwEntry();
     MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
 
-    if (num_finished_objectives == 10U && !move_ongoing && moves[move_idx]->name == "Go To Dhuum 1")
+    if (UwMetadata::Instance().num_finished_objectives == 10U && !move_ongoing &&
+        moves[move_idx]->name == "Go To Dhuum 1")
     {
         moves[move_idx]->Execute();
         if (player_data.living->GetIsMoving())
@@ -111,7 +111,7 @@ void UwEmo::UpdateUw()
          moves[move_idx]->name == "Go Spirits 2");
     const auto is_moving = player_data.living->GetIsMoving();
 
-    Move_PositionABC::LtMoveTrigger(lt_is_ready,
+    Move_PositionABC::LtMoveTrigger(UwMetadata::Instance().lt_is_ready,
                                     move_ongoing,
                                     is_hm_trigger_take,
                                     is_hm_trigger_move,
@@ -123,23 +123,23 @@ void UwEmo::UpdateUwEntry()
 {
     static auto triggered_tank_bonds_at_start = false;
 
-    if (load_cb_triggered)
+    if (UwMetadata::Instance().load_cb_triggered)
     {
         move_idx = 0;
-        num_finished_objectives = 0U;
+        UwMetadata::Instance().num_finished_objectives = 0U;
         move_ongoing = false;
         emo_routine.used_canthas = false;
     }
 
-    if (load_cb_triggered && !TankIsSoloLT())
+    if (UwMetadata::Instance().load_cb_triggered && !TankIsSoloLT())
     {
         Log::Warning("No Solo LT found. Deactivate auto move.");
-        load_cb_triggered = false;
+        UwMetadata::Instance().load_cb_triggered = false;
     }
 
-    if (load_cb_triggered)
+    if (UwMetadata::Instance().load_cb_triggered)
     {
-        load_cb_triggered = false;
+        UwMetadata::Instance().load_cb_triggered = false;
         triggered_tank_bonds_at_start = true;
         emo_routine.action_state = ActionState::ACTIVE;
         return;
@@ -165,7 +165,7 @@ void UwEmo::Update(float, const AgentLivingData &_livings_data)
     player_data.Update();
     livings_data = &_livings_data;
     emo_routine.livings_data = livings_data;
-    emo_routine.num_finished_objectives = num_finished_objectives;
+    emo_routine.num_finished_objectives = UwMetadata::Instance().num_finished_objectives;
 
     if (!IsEmo(player_data))
         return;

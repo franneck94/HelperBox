@@ -21,13 +21,14 @@ public:
         return instance;
     }
 
-    DataPlayer player_data;
-    const AgentLivingData *livings_data = nullptr;
-
-    GW::HookEntry ObjectiveDone_Entry;
     GW::HookEntry MapLoaded_Entry;
     bool load_cb_triggered = false;
+
+    GW::HookEntry ObjectiveDone_Entry;
     uint32_t num_finished_objectives = 0U;
+
     GW::HookEntry SendChat_Entry;
     bool lt_is_ready = false;
+    bool emo_is_ready = false;
+    bool db_is_ready = false;
 };

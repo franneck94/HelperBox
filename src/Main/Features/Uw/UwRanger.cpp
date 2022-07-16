@@ -129,7 +129,8 @@ void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
             ImGui::TableNextColumn();
             const auto timer_diff_ms = TIMER_DIFF(last_casted_times_ms[living->agent_id]);
             const auto timer_diff_s = timer_diff_ms / 1000;
-            if (timer_diff_s > 40)
+            if (timer_diff_s > 40 ||
+                living->player_number != static_cast<uint32_t>(GW::Constants::ModelID::UW::ObsidianBehemoth))
             {
                 ImGui::Text(" - ");
             }

@@ -69,7 +69,7 @@ private:
     bool party_data_valid = false;
 };
 
-class UwEmo : public HelperBoxWindow, public UwMetadata
+class UwEmo : public HelperBoxWindow
 {
 public:
     UwEmo();
@@ -148,13 +148,14 @@ private:
 
     bool first_frame = false;
     EmoSkillbarData skillbar;
+    DataPlayer player_data;
+    const AgentLivingData *livings_data = nullptr;
+    EmoRoutine emo_routine;
 
     // Settings
     bool show_debug_map = true;
     uint32_t bag_idx = static_cast<uint32_t>(-1);
     uint32_t slot_idx = static_cast<uint32_t>(-1);
-
-    EmoRoutine emo_routine;
 
     std::function<bool()> swap_to_high_armor_fn = [&]() { return HighArmor(bag_idx, slot_idx); };
     std::function<bool()> swap_to_low_armor_fn = [&]() { return LowArmor(bag_idx, slot_idx); };

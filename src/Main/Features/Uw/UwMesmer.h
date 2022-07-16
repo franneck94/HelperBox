@@ -59,7 +59,7 @@ private:
 
 };
 
-class UwMesmer : public HelperBoxWindow, public UwMetadata
+class UwMesmer : public HelperBoxWindow
 {
 public:
     UwMesmer()
@@ -90,6 +90,8 @@ private:
 
     DataPlayer player_data;
     const AgentLivingData *livings_data = nullptr;
+    MesmerSkillbarData skillbar;
+    LtRoutine lt_routine;
 
     std::vector<GW::AgentLiving *> filtered_livings;
     std::vector<GW::AgentLiving *> aatxe_livings;
@@ -98,7 +100,4 @@ private:
     std::vector<GW::AgentLiving *> skele_livings;
     std::vector<GW::AgentLiving *> horseman_livings;
     std::vector<GW::AgentLiving *> keeper_livings;
-
-    MesmerSkillbarData skillbar;
-    LtRoutine lt_routine;
 };

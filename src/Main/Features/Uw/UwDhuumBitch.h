@@ -43,7 +43,7 @@ public:
     uint32_t num_finished_objectives = 0U;
 };
 
-class UwDhuumBitch : public HelperBoxWindow, public UwMetadata
+class UwDhuumBitch : public HelperBoxWindow
 {
 public:
     UwDhuumBitch();
@@ -101,6 +101,8 @@ private:
     bool show_debug_map = true;
 
     bool first_frame = false;
+    DataPlayer player_data;
+    const AgentLivingData *livings_data = nullptr;
     DbSkillbarData skillbar;
 
     DbRoutine db_routine;

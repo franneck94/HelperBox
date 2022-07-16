@@ -79,7 +79,7 @@ static std::wstring DataToUtf8String(const wchar_t *message)
     return std::wstring(start, end);
 }
 
-bool OnChatMessageLtIsReady(GW::HookStatus *, GW::Packet::StoC::PacketBase *packet, const TriggerRole trigger_role)
+bool OnChatMessagePlayerReady(GW::HookStatus *, GW::Packet::StoC::PacketBase *packet, const TriggerRole trigger_role)
 {
     const wchar_t *message = nullptr;
     uint32_t channel = 0;
