@@ -60,8 +60,8 @@ void AutoTargetAction::Update()
     {
         auto_target_active = true;
 
-        if (was_at_mnts_monu_last_frame &&
-            !IsAtMntsMonument(player_data->pos, 1400.0F)) // leaving mnts monument, deactive auto target
+        if ((was_at_mnts_monu_last_frame && !IsAtMntsMonument(player_data->pos, 1400.0F)) ||
+            (behemoth_livings && behemoth_livings->size() == 0))
         {
             auto_target_active = false;
             action_state = ActionState::INACTIVE;
@@ -277,6 +277,7 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
     if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
         return;
 
+    auto_target.behemoth_livings = &behemoth_livings;
     auto_target.Update();
 
     const auto &pos = player_data.pos;

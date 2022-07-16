@@ -21,6 +21,8 @@ public:
 
     RoutineState Routine() override;
     void Update() override;
+
+    std::vector<GW::AgentLiving *> *behemoth_livings = nullptr;
 };
 
 class UwRanger : public HelperBoxWindow
