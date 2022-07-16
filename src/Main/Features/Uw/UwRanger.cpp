@@ -48,8 +48,6 @@ const auto KING_PATH_RIGHT = GW::GamePos{5939.21F, 20276.94F, 0};
 
 void AutoTargetAction::Update()
 {
-    static auto was_at_mnts_monu_last_frame = false;
-
     if (!IsExplorable())
     {
         auto_target_active = false;
@@ -60,8 +58,7 @@ void AutoTargetAction::Update()
     {
         auto_target_active = true;
 
-        if ((was_at_mnts_monu_last_frame && !IsAtMntsMonument(player_data->pos, 1400.0F)) ||
-            (behemoth_livings && behemoth_livings->size() == 0))
+        if (behemoth_livings && behemoth_livings->size() == 0)
         {
             auto_target_active = false;
             action_state = ActionState::INACTIVE;
@@ -72,8 +69,6 @@ void AutoTargetAction::Update()
         auto_target_active = false;
         action_state = ActionState::INACTIVE;
     }
-
-    was_at_mnts_monu_last_frame = IsAtMntsMonument(player_data->pos);
 }
 
 RoutineState AutoTargetAction::Routine()
@@ -277,9 +272,6 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
     if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
         return;
 
-    auto_target.behemoth_livings = &behemoth_livings;
-    auto_target.Update();
-
     const auto &pos = player_data.pos;
     FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, T1_IDS, GW::Constants::Range::Compass);
     FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, T2_IDS, 800.0F);
@@ -295,6 +287,9 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
     SortByDistance(player_data, dryder_livings);
     SortByDistance(player_data, skele_livings);
     SortByDistance(player_data, horseman_livings);
+
+    auto_target.behemoth_livings = &behemoth_livings;
+    auto_target.Update();
 
     if (IsInWastes(player_data.pos, 6000.0F))
     {
