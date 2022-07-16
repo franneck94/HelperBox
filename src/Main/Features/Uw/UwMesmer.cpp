@@ -213,10 +213,14 @@ bool LtRoutine::RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies, 
         return true;
     if (CastHexesOnEnemyType(enemies, dryders, last_dryder_skill, last_dryder_id, true))
         return true;
-    if (CastHexesOnEnemyType(enemies, aatxes, last_aatxe_skill, last_aatxe_id, false))
-        return true;
-    if (include_graspings && CastHexesOnEnemyType(enemies, graspings, last_graspings_skill, last_graspings_id, false))
-        return true;
+    if (dryders.size() == 0)
+    {
+        if (CastHexesOnEnemyType(enemies, aatxes, last_aatxe_skill, last_aatxe_id, false))
+            return true;
+        if (include_graspings &&
+            CastHexesOnEnemyType(enemies, graspings, last_graspings_skill, last_graspings_id, false))
+            return true;
+    }
 
     return false;
 }
