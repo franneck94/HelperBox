@@ -43,11 +43,27 @@ public:
     void Draw() override;
     void Update(float delta, const AgentLivingData &) override;
 
+    void DrawSettingInternal() override
+    {
+        static auto _attack_at_auto_target = attack_at_auto_target;
+        const auto width = ImGui::GetWindowWidth();
+
+        ImGui::Text("Also attack Behemoths wile auto target is active:");
+        ImGui::SameLine(width * 0.5F);
+        ImGui::PushItemWidth(width * 0.5F);
+        ImGui::Checkbox("###attackAtAutoTarget", &_attack_at_auto_target);
+        ImGui::PopItemWidth();
+        attack_at_auto_target = _attack_at_auto_target;
+    }
+
 private:
     void DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
                             const ImVec4 color,
                             std::string_view label,
                             const bool draw_time = true);
+
+    // Settings
+    bool attack_at_auto_target = true;
 
     DataPlayer player_data;
     std::map<uint32_t, clock_t> last_casted_times_ms;
