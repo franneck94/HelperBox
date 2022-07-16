@@ -21,13 +21,15 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
 {
     SettingsWindow::Instance().sep = optional_modules.size();
 
+    // Metadata
+    static auto uw_base = UwMetadata::Instance();
+
     //General
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
     // optional_modules.push_back(&AutoFollowWindow::Instance());
 
     // UW
-    static auto uw_base = UwMetadata::Instance();
     optional_modules.push_back(&UwEmo::Instance());
     optional_modules.push_back(&UwDhuumBitch::Instance());
     optional_modules.push_back(&UwMesmer::Instance());

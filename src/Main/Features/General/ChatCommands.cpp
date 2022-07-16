@@ -146,7 +146,7 @@ void ChatCommands::DhuumUseSkill::Update()
 
     auto target_id = uint32_t{0};
     const auto target = GetTargetAsLiving();
-    if (target && target->allegiance == GW::Constants::Allegiance::Enemy && !me_living->GetIsAttacking())
+    if (target && target->allegiance == GW::Constants::Allegiance::Enemy && me_living && !me_living->GetIsAttacking())
         AttackAgent(target);
 
     if ((clock() - skill_timer) / 1000.0f < skill_usage_delay)
@@ -181,7 +181,8 @@ void ChatCommands::DhuumUseSkill::Update()
         }
 
         slot = 5;
-        target_id = target->agent_id;
+        if (target)
+            target_id = target->agent_id;
     }
 
     if (!slot)
