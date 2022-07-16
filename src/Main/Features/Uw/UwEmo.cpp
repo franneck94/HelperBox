@@ -227,7 +227,7 @@ bool EmoRoutine::RoutineWhenInRangeBondLT() const
         return false;
 
     const auto lt_living = lt_agent->GetAsAgentLiving();
-    if (!lt_living || lt_living->GetIsDead())
+    if (!lt_living || lt_living->GetIsDead() || lt_living->hp == 0.00F)
         return false;
 
     if (lt_living->GetIsMoving() || player_data->living->GetIsMoving())
@@ -332,7 +332,7 @@ bool EmoRoutine::RoutineCanthaGuards() const
     {
         for (const auto cantha : filtered_canthas)
         {
-            if (!cantha || cantha->GetIsDead())
+            if (!cantha || cantha->GetIsDead() || cantha->hp == 0.00F)
                 continue;
 
             if (cantha->hp < 0.70F && player_data->hp_perc > 0.50F)
@@ -373,7 +373,8 @@ bool EmoRoutine::RoutineLtAtFusePulls() const
 
     const auto target_living = player_data->target->GetAsAgentLiving();
     if (!target_living || target_living->GetIsMoving() || player_data->living->GetIsMoving() ||
-        target_living->GetIsDead() || target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+        target_living->GetIsDead() || target_living->hp == 0.00F ||
+        target_living->primary != static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
     {
         casted_fuse_once = false;
         return false;
@@ -418,7 +419,7 @@ bool EmoRoutine::RoutineDbAtDhuum() const
         return false;
 
     const auto living = db_agent->GetAsAgentLiving();
-    if (!living || living->GetIsDead())
+    if (!living || living->GetIsDead() || living->hp == 0.00F)
         return false;
 
     if (CastBondIfNotAvailable(skillbar->balth, db_agent->agent_id, player_data))
@@ -440,7 +441,7 @@ bool EmoRoutine::RoutineTurtle() const
         return false;
 
     const auto turtle_living = turtle_agent->GetAsAgentLiving();
-    if (!turtle_living || turtle_living->GetIsDead())
+    if (!turtle_living || turtle_living->GetIsDead() || turtle_living->hp == 0.00F)
         return false;
 
     const auto dist = GW::GetDistance(player_data->pos, turtle_agent->pos);
@@ -487,7 +488,7 @@ bool EmoRoutine::RoutineGDW() const
         return false;
 
     const auto living = agent->GetAsAgentLiving();
-    if (!living || living->GetIsMoving() || living->GetIsDead())
+    if (!living || living->GetIsMoving() || living->GetIsDead() || living->hp == 0.00F)
         return false;
 
     const auto dist = GW::GetDistance(GW::GamePos{-16410.75F, 17294.47F, 0}, agent->pos);
@@ -512,7 +513,7 @@ bool EmoRoutine::RoutineTurtleGDW() const
         return false;
 
     const auto living = agent->GetAsAgentLiving();
-    if (!living || living->GetIsMoving() || living->GetIsDead())
+    if (!living || living->GetIsMoving() || living->GetIsDead() || living->hp == 0.00F)
         return false;
 
     const auto dist = GW::GetDistance(GW::GamePos{-16105.50F, 17284.84F, 0}, agent->pos);
@@ -540,7 +541,7 @@ bool EmoRoutine::RoutineDbBeforeDhuum() const
     if (dist > 2100.0F)
         return false;
 
-    if (living->hp > 0.75F || living->GetIsDead())
+    if (living->hp > 0.75F || living->GetIsDead() || living->hp == 0.00F)
         return false;
 
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player_data))
@@ -578,7 +579,7 @@ bool EmoRoutine::RoutineKeepPlayerAlive() const
             continue;
 
         const auto living = agent->GetAsAgentLiving();
-        if (!living || living->GetIsDead())
+        if (!living || living->GetIsDead() || living->hp == 0.00F)
             continue;
 
         const auto dist = GW::GetDistance(player_data->pos, agent->pos);
@@ -633,7 +634,8 @@ RoutineState EmoRoutine::Routine()
     if (!player_data->CanCast())
         return RoutineState::ACTIVE;
 
-    if (!ActionABC::HasWaitedLongEnough())
+    if ((move_ongoing && !ActionABC::HasWaitedLongEnough(500L)) ||
+        (!move_ongoing && !ActionABC::HasWaitedLongEnough(250L)))
         return RoutineState::ACTIVE;
 
     if (IsUw() && IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())

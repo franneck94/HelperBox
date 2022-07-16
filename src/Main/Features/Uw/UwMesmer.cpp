@@ -237,7 +237,7 @@ RoutineState LtRoutine::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    delay_ms = 200L;
+    delay_ms = 250L;
     if (gone_to_npc)
         delay_ms = long{500L};
 

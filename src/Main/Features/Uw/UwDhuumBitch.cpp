@@ -301,7 +301,8 @@ RoutineState DbRoutine::Routine()
     if (!player_data->CanCast() || !livings_data)
         return RoutineState::ACTIVE;
 
-    if (!ActionABC::HasWaitedLongEnough())
+    if ((move_ongoing && !ActionABC::HasWaitedLongEnough(500L)) ||
+        (!move_ongoing && !ActionABC::HasWaitedLongEnough(250L)))
         return RoutineState::ACTIVE;
 
     if (TankIsFullteamLT() && !is_in_dhuum_room)
