@@ -76,12 +76,6 @@ RoutineState AutoTargetAction::Routine()
     return RoutineState::NONE;
 }
 
-static float ComputeLivingSpeed(const GW::AgentLiving *living)
-{
-    float speed_rel = sqrtf(living->move_x * living->move_x + living->move_y * living->move_y);
-    return speed_rel;
-}
-
 void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
                                   const ImVec4 color,
                                   std::string_view label,
@@ -104,9 +98,12 @@ void UwRanger::DrawSplittedAgents(std::vector<GW::AgentLiving *> livings,
         }
         else if (!draw_time &&
                  living->player_number == static_cast<uint32_t>(GW::Constants::ModelID::UW::ColdfireNight) &&
-                 GW::GetDistance(player_data.pos, living->pos) > 1800.0F)
+                 (GW::GetDistance(player_data.pos, living->pos) > 1800.0F || living->GetIsAttacking()))
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0F, 0.0F, 0.0F, 1.0F));
+            if (GW::GetDistance(player_data.pos, living->pos) > 1800.0F)
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0F, 0.0F, 0.0F, 1.0F));
+            else
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.1F, 0.9F, 0.1F, 1.0F));
             last_casted_times_ms[living->agent_id] = clock();
         }
         else
@@ -194,42 +191,72 @@ void UwRanger::Draw()
 
     if (king_path_coldfire_ids.size())
     {
-        if (ImGui::Begin("KingColdies"))
+        auto king_coldfire_livings = std::vector<GW::AgentLiving *>{};
+        for (const auto id : king_path_coldfire_ids)
         {
-            const auto width = ImGui::GetWindowWidth();
-            if (ImGui::BeginTable("KingColdiesTable", 3))
-            {
-                ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.25F);
-                ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25F);
-                ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.50F);
+            const auto agent = GW::Agents::GetAgentByID(id);
+            if (!agent)
+                continue;
 
-                ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-                ImGui::TableNextColumn();
-                ImGui::Text("HP");
-                ImGui::TableNextColumn();
-                ImGui::Text("Dist.");
-                ImGui::TableNextColumn();
-                ImGui::Text("Target");
+            const auto living = agent->GetAsAgentLiving();
+            if (!living)
+                continue;
 
-                auto king_coldfire_livings = std::vector<GW::AgentLiving *>{};
-                for (const auto id : king_path_coldfire_ids)
-                {
-                    const auto agent = GW::Agents::GetAgentByID(id);
-                    if (!agent)
-                        continue;
-
-                    const auto living = agent->GetAsAgentLiving();
-                    if (!living)
-                        continue;
-
-                    king_coldfire_livings.push_back(living);
-                }
-                DrawSplittedAgents(king_coldfire_livings, ImVec4(0.7F, 0.7F, 1.0F, 1.0F), "Coldfire", false);
-            }
-            ImGui::EndTable();
+            king_coldfire_livings.push_back(living);
         }
-        ImGui::End();
+
+        if (king_coldfire_livings.size())
+        {
+            if (ImGui::Begin("KingColdies"))
+            {
+                const auto width = ImGui::GetWindowWidth();
+                if (ImGui::BeginTable("KingColdiesTable", 3))
+                {
+                    ImGui::TableSetupColumn("HP", ImGuiTableColumnFlags_WidthFixed, width * 0.25F);
+                    ImGui::TableSetupColumn("Dist.", ImGuiTableColumnFlags_WidthFixed, width * 0.25F);
+                    ImGui::TableSetupColumn("Target", ImGuiTableColumnFlags_WidthFixed, width * 0.50F);
+
+                    ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("HP");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Dist.");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Target");
+
+                    DrawSplittedAgents(king_coldfire_livings, ImVec4(0.7F, 0.7F, 1.0F, 1.0F), "Coldfire", false);
+                }
+                ImGui::EndTable();
+            }
+            ImGui::End();
+        }
     }
+}
+
+static bool AddColdfire(const std::vector<uint32_t> &king_path_coldfire_ids,
+                        const GW::AgentLiving *coldfire,
+                        const GameRectangle &rectangle)
+{
+    const auto find_it = std::find(king_path_coldfire_ids.begin(), king_path_coldfire_ids.end(), coldfire->agent_id);
+    if (!rectangle.PointInGameRectangle(coldfire->pos) && find_it != king_path_coldfire_ids.end())
+        return false;
+
+    if (king_path_coldfire_ids.size() == 0)
+        return true;
+
+    if (king_path_coldfire_ids.size() >= 3)
+        return false;
+
+    const auto center_id = king_path_coldfire_ids[0];
+    const auto center_agent = GW::Agents::GetAgentByID(center_id);
+    if (!center_agent)
+        return false;
+
+    const auto dist_to_center = GW::GetDistance(coldfire->pos, center_agent->pos);
+    if (dist_to_center < GW::Constants::Range::Earshot)
+        return true;
+
+    return false;
 }
 
 void UwRanger::Update(float, const AgentLivingData &livings_data)
@@ -300,9 +327,7 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         {
             for (const auto coldfire : coldfire_livings)
             {
-                if (king_path_rectangle.PointInGameRectangle(coldfire->pos) &&
-                    std::find(king_path_coldfire_ids.begin(), king_path_coldfire_ids.end(), coldfire->agent_id) ==
-                        king_path_coldfire_ids.end())
+                if (AddColdfire(king_path_coldfire_ids, coldfire, king_path_rectangle))
                 {
                     king_path_coldfire_ids.push_back(coldfire->agent_id);
                     Log::Info("Added king coldie!");
@@ -311,7 +336,6 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         }
 
         const auto size_before = king_path_coldfire_ids.size();
-
         const auto remove_it = std::remove_if(king_path_coldfire_ids.begin(),
                                               king_path_coldfire_ids.end(),
                                               [](const auto id) { return !GW::Agents::GetAgentByID(id); });

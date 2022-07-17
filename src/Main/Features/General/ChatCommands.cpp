@@ -138,7 +138,7 @@ void ChatCommands::DhuumUseSkill::Update()
         return;
 
     const auto me_living = GetPlayerAsLiving();
-    if (!me_living || !IsUw())
+    if (!me_living || !IsUw() || !IsInDhuumRoom(me_living->pos))
     {
         slot = 0;
         return;
@@ -159,7 +159,7 @@ void ChatCommands::DhuumUseSkill::Update()
     }
 
     const auto progress_perc = GetProgressValue();
-    if (UwMetadata::Instance().num_finished_objectives == 10 && progress_perc > 0.0F && progress_perc < 1.0F)
+    if (UwMetadata::Instance().num_finished_objectives <= 10 && progress_perc > 0.0F && progress_perc < 1.0F)
     {
         slot = 1;
 
@@ -168,21 +168,22 @@ void ChatCommands::DhuumUseSkill::Update()
         if (world_context && item_context)
         {
             if (world_context->morale <= 85)
+            {
                 UseInventoryItem(COOKIE_ID, 1, item_context->bags_array.size());
+                return;
+            }
         }
     }
-    else // Rest done
+    else if (progress_perc == 1.0F)
     {
-        const auto dhuum_agent = GetDhuumAgent();
-        if (!dhuum_agent || DhuumFightDone(UwMetadata::Instance().num_finished_objectives))
-        {
-            slot = 0;
-            return;
-        }
-
         slot = 5;
         if (target)
             target_id = target->agent_id;
+    }
+    else
+    {
+        slot = 0;
+        return;
     }
 
     if (!slot)
