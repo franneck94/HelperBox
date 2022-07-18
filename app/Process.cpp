@@ -4,11 +4,12 @@
 
 #include "Process.h"
 
-ProcessModule::ProcessModule(ProcessModule &&other) : base(other.base), size(other.size), name(std::move(other.name))
+ProcessModule::ProcessModule(ProcessModule &&other)
+    : base(other.base), size(other.size), name(std::move(other.name)) 
 {
 }
 
-Process::Process() : m_hProcess(nullptr), m_Rights(0)
+Process::Process() : m_hProcess(nullptr), m_Rights(0) 
 {
 }
 

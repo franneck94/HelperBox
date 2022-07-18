@@ -10,7 +10,7 @@
 DataSkill::DataSkill(const GW::Constants::SkillID id_, const uint32_t idx_)
     : id(static_cast<uint32_t>(id_)), idx(idx_), energy_cost(0U), recharge(UINT32_MAX)
 {
-    const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(id);
+    const auto* const skill_data = GW::SkillbarMgr::GetSkillConstantData(id);
     if (!skill_data)
         energy_cost = 0U;
     else
@@ -24,7 +24,7 @@ void DataSkill::Update(const GW::SkillbarSkill *const skillbar_skills)
     recharge = skillbar_skills[idx].GetRecharge();
 }
 
-bool DataSkill::CanBeCasted(const uint32_t current_energy) const
+bool DataSkill::CanBeCasted(const uint32_t current_energy) const noexcept
 {
     return SkillFound() && (current_energy > energy_cost && recharge == 0);
 }
@@ -42,7 +42,7 @@ RoutineState DataSkill::Cast(const uint32_t current_energy, const uint32_t targe
     return RoutineState::FINISHED;
 }
 
-bool DataSkill::SkillFound() const
+bool DataSkill::SkillFound() const noexcept
 {
     return idx != static_cast<uint32_t>(-1);
 }

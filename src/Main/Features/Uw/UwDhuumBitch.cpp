@@ -391,7 +391,7 @@ RoutineState DbRoutine::Routine()
     return RoutineState::FINISHED;
 }
 
-bool DbRoutine::PauseRoutine()
+bool DbRoutine::PauseRoutine() noexcept
 {
     if (player_data->living->GetIsMoving())
         return true;

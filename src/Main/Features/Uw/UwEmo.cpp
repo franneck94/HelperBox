@@ -737,7 +737,7 @@ RoutineState EmoRoutine::Routine()
     return RoutineState::FINISHED;
 }
 
-bool EmoRoutine::PauseRoutine()
+bool EmoRoutine::PauseRoutine() noexcept
 {
     if (player_data->living->GetIsMoving())
         return true;

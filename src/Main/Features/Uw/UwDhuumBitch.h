@@ -29,7 +29,7 @@ public:
     void Update() override;
 
 private:
-    bool PauseRoutine() override;
+    bool PauseRoutine() noexcept override;
 
     bool CastPiOnTarget() const;
     bool RoutineKillSkele() const;

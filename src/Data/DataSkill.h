@@ -20,9 +20,9 @@ public:
 
     void Update(const GW::SkillbarSkill *const skillbar_skills);
 
-    bool CanBeCasted(const uint32_t current_energy) const;
+    bool CanBeCasted(const uint32_t current_energy) const noexcept;
 
     RoutineState Cast(const uint32_t current_energy, const uint32_t target_id = 0) const;
 
-    bool SkillFound() const;
+    bool SkillFound() const noexcept;
 };

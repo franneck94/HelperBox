@@ -23,8 +23,8 @@ bool DataPlayer::ValidateData(std::function<bool(bool)> cb_fn, const bool need_p
     if (!cb_fn(need_party_loaded))
         return false;
 
-    const auto me_agent = GW::Agents::GetPlayer();
-    const auto me_living = GW::Agents::GetPlayerAsAgentLiving();
+    const auto* const me_agent = GW::Agents::GetPlayer();
+    const auto *const me_living = GW::Agents::GetPlayerAsAgentLiving();
 
     if (me_agent == nullptr || me_living == nullptr)
         return false;
@@ -83,7 +83,7 @@ bool DataPlayer::HasBuff(const GW::Constants::SkillID buff_skill_id) const
     if (!me_buffs || !me_buffs->valid())
         return false;
 
-    for (const auto buff : *me_buffs)
+    for (const auto &buff : *me_buffs)
     {
         const auto agent_id = buff.target_agent_id;
         const auto skill_id = buff.skill_id;
@@ -104,7 +104,7 @@ bool DataPlayer::HasEffect(const GW::Constants::SkillID effect_skill_id) const
     if (!me_effects)
         return false;
 
-    for (const auto effect : me_effects->effects)
+    for (const auto &effect : me_effects->effects)
     {
         const auto agent_id = effect.agent_id;
         const auto skill_id = effect.skill_id;
@@ -126,7 +126,7 @@ static DWORD GetTimeElapsed(const DWORD timestamp)
 
 static float GetTimeRemaining(const float duration, const DWORD timestamp)
 {
-    return (float)(duration * 1000.f) - (float)GetTimeElapsed(timestamp);
+    return static_cast<float>(duration * 1000.f) - static_cast<float>(GetTimeElapsed(timestamp));
 }
 
 float DataPlayer::GetRemainingEffectDuration(const GW::Constants::SkillID effect_skill_id) const
@@ -187,7 +187,7 @@ void DataPlayer::ChangeTarget(const uint32_t target_id)
 }
 
 
-bool DataPlayer::SkillStoppedCallback(GW::Packet::StoC::GenericValue *packet)
+bool DataPlayer::SkillStoppedCallback(const GW::Packet::StoC::GenericValue *const packet) const noexcept
 {
     const auto value_id = packet->Value_id;
     const auto caster_id = packet->agent_id;

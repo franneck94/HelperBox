@@ -23,7 +23,7 @@
 class TriggerABC
 {
 public:
-    TriggerABC(const bool _is_proceeding_move) : is_proceeding_move(_is_proceeding_move){};
+    TriggerABC(const bool _is_proceeding_move) noexcept : is_proceeding_move(_is_proceeding_move){};
     bool is_proceeding_move;
 };
 
@@ -38,7 +38,7 @@ public:
         : x(_x), y(_y), pos({x, y, 0}), name(_name), cb_fn(_cb_fn), TriggerABC(_is_proceeding_move){};
     virtual ~MoveABC() noexcept {};
 
-    const char *Name() const
+    const char *Name() const noexcept
     {
         return name.data();
     }
@@ -157,6 +157,9 @@ public:
                               const bool is_moving,
                               const MoveABC *move)
     {
+        if (!move)
+            return;
+
         if (ready && (trigger_move || trigger_take))
         {
             move->Execute();

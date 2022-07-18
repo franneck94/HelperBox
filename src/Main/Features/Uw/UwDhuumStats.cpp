@@ -168,8 +168,8 @@ void UwDhuumStats::Draw()
         ImGui::Text("ETA Damage (s): %3.0f", num_attacks > 0 && is_in_dhuum_fight ? eta_damage_s : 0.0F);
         ImGui::Separator();
         const auto instance_time_ms = GW::Map::GetInstanceTime();
-        const auto finished_ms =
-            static_cast<uint64_t>(instance_time_ms + std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
+        const auto max_time_ms = static_cast<uint64_t>(std::max(eta_rest_s * 1000.0F, eta_damage_s * 1000.0F));
+        const auto finished_ms = static_cast<uint64_t>(instance_time_ms) + max_time_ms;
         if (IsUw() && entered_dhuum_room && dhuum_hp < 1.0F && !dhuum_fight_done)
         {
             std::memset(buffer, '\0', sizeof(char) * 16);
