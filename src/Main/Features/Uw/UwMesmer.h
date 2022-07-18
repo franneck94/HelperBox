@@ -16,6 +16,12 @@
 #include <SimpleIni.h>
 #include <imgui.h>
 
+struct SpikeSkillInfo
+{
+    uint32_t last_id;
+    uint32_t last_skill;
+};
+
 class LtRoutine : public MesmerActionABC
 {
 public:
@@ -27,36 +33,49 @@ public:
 
 private:
     static bool EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies, const GW::AgentLiving *enemy);
-    bool DoNeedVisage(const std::vector<GW::AgentLiving *> &enemies,
-                      const std::vector<GW::AgentLiving *> &aatxes,
-                      const std::vector<GW::AgentLiving *> &graspings) const;
+    bool DoNeedVisage() const;
     bool ReadyForSpike() const;
     bool DoNeedEnchNow(const GW::Constants::SkillID ench_id) const;
-    bool RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies) const;
-    bool RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies, const auto include_graspings);
-    bool CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
-                              const std::vector<GW::AgentLiving *> &filtered_enemies,
-                              uint32_t &last_skill,
-                              uint32_t &last_id,
+    bool RoutineSelfEnches() const;
+    bool RoutineSpikeBall(const auto include_graspings);
+    bool CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filtered_enemies,
+                              SpikeSkillInfo &spike_skill,
                               const bool use_empathy);
 
 public:
     const AgentLivingData *livings_data = nullptr;
+    std::vector<GW::AgentLiving *> enemies_in_aggro = {};
     bool load_cb_triggered = false;
 
 private:
-    uint32_t last_nightmare_id = 0U;
-    uint32_t last_nightmare_skill = 0U;
-    uint32_t last_aatxe_id = 0U;
-    uint32_t last_aatxe_skill = 0U;
-    uint32_t last_dryder_id = 0U;
-    uint32_t last_dryder_skill = 0U;
-    uint32_t last_graspings_id = 0U;
-    uint32_t last_graspings_skill = 0U;
+    std::vector<GW::AgentLiving *> nightmares = {};
+    SpikeSkillInfo nightmare_spike = {};
+    std::vector<GW::AgentLiving *> dryders = {};
+    SpikeSkillInfo dryder_spike = {};
+    std::vector<GW::AgentLiving *> dryders_silver = {};
+    SpikeSkillInfo dryder_silver_spike = {};
+    std::vector<GW::AgentLiving *> aatxes = {};
+    SpikeSkillInfo aatxe_spike = {};
+    std::vector<GW::AgentLiving *> graspings = {};
+    SpikeSkillInfo graspings_spike = {};
+    std::vector<GW::AgentLiving *> mindblades = {};
+    SpikeSkillInfo mindblades_spike = {};
+    std::vector<GW::AgentLiving *> horsemans = {};
+    SpikeSkillInfo horsemans_spike = {};
+    std::vector<GW::AgentLiving *> smites = {};
+    SpikeSkillInfo smites_spike = {};
+    std::vector<GW::AgentLiving *> coldfires = {};
+    SpikeSkillInfo coldfires_spike = {};
+    std::vector<GW::AgentLiving *> skeles = {};
+    SpikeSkillInfo skeles_spike = {};
+    std::vector<GW::AgentLiving *> collector = {};
+    SpikeSkillInfo collector_spike = {};
+    std::vector<GW::AgentLiving *> thresher = {};
+    SpikeSkillInfo thresher_spike = {};
 
     bool starting_active = false;
+    uint32_t last_skill = 0;
     long delay_ms = 200L;
-
 };
 
 class UwMesmer : public HelperBoxWindow

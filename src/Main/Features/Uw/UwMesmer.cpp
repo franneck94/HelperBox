@@ -43,7 +43,8 @@ static constexpr auto IDS = std::array<uint32_t, 6U>{GW::Constants::ModelID::UW:
                                                      GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
-bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies, const GW::AgentLiving *enemy)
+bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies_in_aggro,
+                                      const GW::AgentLiving *enemy)
 {
     if (!enemy->GetIsAttacking())
         return false;
@@ -51,7 +52,7 @@ bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enem
     if (enemy->hp < 0.25F)
         return false;
 
-    const auto closest_id = GetClosestToPosition(enemy->pos, enemies, enemy->agent_id);
+    const auto closest_id = GetClosestToPosition(enemy->pos, enemies_in_aggro, enemy->agent_id);
     if (!closest_id)
         return false;
     const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
@@ -62,75 +63,77 @@ bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enem
         return false;
 
     const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
-    if (dist < GW::Constants::Range::Adjacent && other_enemy_living->GetIsHexed())
+    if (other_enemy->agent_id != enemy->agent_id && dist < GW::Constants::Range::Adjacent &&
+        other_enemy_living->GetIsHexed())
         return false;
 
     return true;
 }
 
-bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &enemies,
-                                     const std::vector<GW::AgentLiving *> &filtered_enemies,
-                                     uint32_t &last_skill,
-                                     uint32_t &last_id,
+bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filtered_enemies,
+                                     SpikeSkillInfo &spike_skill,
                                      const bool use_empathy)
 {
-    if (filtered_enemies.end() == std::find_if(filtered_enemies.begin(),
-                                               filtered_enemies.end(),
-                                               [&](const auto &enemy) { return enemy->agent_id == last_id; }))
+    if (filtered_enemies.end() ==
+        std::find_if(filtered_enemies.begin(), filtered_enemies.end(), [&](const auto &enemy) {
+            return enemy->agent_id == spike_skill.last_id;
+        }))
     {
-        last_skill = 0;
-        last_id = 0;
+        spike_skill.last_skill = 0;
+        spike_skill.last_id = 0;
     }
 
-    auto max_num_skills = uint32_t{2U};
+    auto max_num_skills = (skillbar->worry.SkillFound() && skillbar->demise.SkillFound()) ? uint32_t{2U} : 0U;
     if (use_empathy)
         ++max_num_skills;
 
-    for (size_t i = 0; i < filtered_enemies.size(); ++i)
+    for (const auto &enemy : filtered_enemies)
     {
-        const auto &enemy = filtered_enemies[i];
-        const auto id = enemy->agent_id;
-
-        if (last_skill == 0 && enemy->GetIsHexed())
+        if (spike_skill.last_skill == 0 && enemy->GetIsHexed())
             continue;
-        else if (last_skill > 0 && last_skill < max_num_skills && id != last_id)
+        else if (spike_skill.last_skill > 0 && spike_skill.last_skill < max_num_skills &&
+                 enemy->agent_id != spike_skill.last_id)
             continue;
-        else if (last_skill >= max_num_skills && id == last_id)
+        else if (spike_skill.last_skill >= max_num_skills)
         {
-            last_skill = 0;
+            spike_skill.last_skill = 0;
             continue;
         }
 
-        const auto target_should_get_empathy = EnemyShouldGetEmpathy(enemies, enemy);
+        const auto target_should_get_empathy = EnemyShouldGetEmpathy(enemies_in_aggro, enemy);
 
-        if (last_skill == 0 && !enemy->GetIsHexed() &&
-            RoutineState::FINISHED == skillbar->worry.Cast(player_data->energy, id))
+        if (spike_skill.last_skill == 0 && !enemy->GetIsHexed() &&
+            RoutineState::FINISHED == skillbar->worry.Cast(player_data->energy, enemy->agent_id))
         {
-            if (!player_data->target || (player_data->target && player_data->target->agent_id != id))
-                player_data->ChangeTarget(id);
-            ++last_skill;
-            last_id = id;
+            if (!player_data->target || (player_data->target && player_data->target->agent_id != enemy->agent_id))
+                player_data->ChangeTarget(enemy->agent_id);
+            ++spike_skill.last_skill;
+            spike_skill.last_id = enemy->agent_id;
+            last_skill = spike_skill.last_skill;
             return true;
         }
-        else if (last_skill == 1 && RoutineState::FINISHED == skillbar->demise.Cast(player_data->energy, id))
+        else if (spike_skill.last_skill == 1 &&
+                 RoutineState::FINISHED == skillbar->demise.Cast(player_data->energy, enemy->agent_id))
         {
-            if (!player_data->target || (player_data->target && player_data->target->agent_id != id))
-                player_data->ChangeTarget(id);
-            ++last_skill;
-            last_id = id;
+            if (!player_data->target || (player_data->target && player_data->target->agent_id != enemy->agent_id))
+                player_data->ChangeTarget(enemy->agent_id);
+            ++spike_skill.last_skill;
+            spike_skill.last_id = enemy->agent_id;
+            last_skill = spike_skill.last_skill;
             return true;
         }
-        else if (use_empathy && last_skill == 2 &&
+        else if (use_empathy && spike_skill.last_skill == 2 &&
                  (!target_should_get_empathy ||
-                  RoutineState::FINISHED == skillbar->empathy.Cast(player_data->energy, id)))
+                  RoutineState::FINISHED == skillbar->empathy.Cast(player_data->energy, enemy->agent_id)))
         {
             if (target_should_get_empathy)
             {
-                if (!player_data->target || (player_data->target && player_data->target->agent_id != id))
-                    player_data->ChangeTarget(id);
+                if (!player_data->target || (player_data->target && player_data->target->agent_id != enemy->agent_id))
+                    player_data->ChangeTarget(enemy->agent_id);
             }
-            ++last_skill;
-            last_id = id;
+            ++spike_skill.last_skill;
+            spike_skill.last_id = enemy->agent_id;
+            last_skill = spike_skill.last_skill;
             return true;
         }
     }
@@ -152,11 +155,12 @@ bool LtRoutine::DoNeedEnchNow(const GW::Constants::SkillID ench_id) const
     return false;
 }
 
-bool LtRoutine::DoNeedVisage(const std::vector<GW::AgentLiving *> &enemies,
-                             const std::vector<GW::AgentLiving *> &aatxes,
-                             const std::vector<GW::AgentLiving *> &graspings) const
+bool LtRoutine::DoNeedVisage() const
 {
-    const auto closest_id = GetClosestToPosition(player_data->pos, enemies, 0);
+    if (smites.size() > 0)
+        return true;
+
+    const auto closest_id = GetClosestToPosition(player_data->pos, enemies_in_aggro, 0);
     const auto closest_enemy = GW::Agents::GetAgentByID(closest_id);
     if (!closest_enemy)
         return false;
@@ -166,22 +170,19 @@ bool LtRoutine::DoNeedVisage(const std::vector<GW::AgentLiving *> &enemies,
         return false;
 
     const auto enemies_in_range = (aatxes.size() || graspings.size());
-    const auto spike_has_begun = closest_enemy_living->hp > 0.80F;
+    const auto spike_has_begun = closest_enemy_living->hp > 0.50F;
 
     return (enemies_in_range && spike_has_begun);
 }
 
-bool LtRoutine::RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies) const
+bool LtRoutine::RoutineSelfEnches() const
 {
-    const auto nightmares = FilterById(enemies, GW::Constants::ModelID::UW::DyingNightmare);
-    const auto dryders = FilterById(enemies, GW::Constants::ModelID::UW::TerrorwebDryder);
-    const auto aatxes = FilterById(enemies, GW::Constants::ModelID::UW::BladedAatxe);
-    const auto graspings = FilterById(enemies, GW::Constants::ModelID::UW::GraspingDarkness);
-
-    const auto need_obsi = (nightmares.size() || dryders.size());
-    const auto need_stoneflesh = (aatxes.size() || graspings.size());
-    const auto need_mantra = (aatxes.size() || graspings.size());
-    const auto need_visage = DoNeedVisage(enemies, aatxes, graspings);
+    const auto need_obsi = (nightmares.size() || dryders.size() || dryders_silver.size() || coldfires.size() ||
+                            mindblades.size() || horsemans.size());
+    const auto need_stoneflesh =
+        (aatxes.size() || graspings.size() || smites.size() || collector.size() || thresher.size());
+    const auto need_mantra = (aatxes.size() || graspings.size() || mindblades.size());
+    const auto need_visage = DoNeedVisage();
 
     if (need_obsi && DoNeedEnchNow(GW::Constants::SkillID::Obsidian_Flesh) &&
         (RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy)))
@@ -202,23 +203,29 @@ bool LtRoutine::RoutineSelfEnches(const std::vector<GW::AgentLiving *> &enemies)
     return false;
 }
 
-bool LtRoutine::RoutineSpikeBall(const std::vector<GW::AgentLiving *> &enemies, const auto include_graspings)
+bool LtRoutine::RoutineSpikeBall(const auto include_graspings)
 {
-    const auto nightmares = FilterById(enemies, GW::Constants::ModelID::UW::DyingNightmare);
-    const auto aatxes = FilterById(enemies, GW::Constants::ModelID::UW::BladedAatxe);
-    const auto dryders = FilterById(enemies, GW::Constants::ModelID::UW::TerrorwebDryder);
-    const auto graspings = FilterById(enemies, GW::Constants::ModelID::UW::GraspingDarkness);
+    if (CastHexesOnEnemyType(nightmares, nightmare_spike, true))
+        return true;
+    if (CastHexesOnEnemyType(dryders, dryder_spike, true))
+        return true;
+    if (CastHexesOnEnemyType(skeles, skeles_spike, true))
+        return true;
+    if (CastHexesOnEnemyType(coldfires, coldfires_spike, true))
+        return true;
 
-    if (CastHexesOnEnemyType(enemies, nightmares, last_nightmare_skill, last_nightmare_id, true))
-        return true;
-    if (CastHexesOnEnemyType(enemies, dryders, last_dryder_skill, last_dryder_id, true))
-        return true;
-    if (dryders.size() == 0)
+    if (dryders.size() == 0 ||
+        (dryders.size() == 1 && GW::GetDistance(dryders[0]->pos, player_data->pos) < GW::Constants::Range::Area))
     {
-        if (CastHexesOnEnemyType(enemies, aatxes, last_aatxe_skill, last_aatxe_id, false))
+        if (CastHexesOnEnemyType(aatxes, aatxe_spike, false))
             return true;
-        if (include_graspings &&
-            CastHexesOnEnemyType(enemies, graspings, last_graspings_skill, last_graspings_id, false))
+        if (include_graspings && CastHexesOnEnemyType(graspings, graspings_spike, false))
+            return true;
+    }
+
+    if (smites.size() > 0 && coldfires.size() == 0)
+    {
+        if (CastHexesOnEnemyType(smites, smites_spike, true))
             return true;
     }
 
@@ -242,6 +249,8 @@ RoutineState LtRoutine::Routine()
         return RoutineState::FINISHED;
 
     delay_ms = 250L;
+    if (last_skill != 1)
+        delay_ms += 250L;
     if (gone_to_npc)
         delay_ms = long{500L};
 
@@ -306,22 +315,36 @@ RoutineState LtRoutine::Routine()
         }
     }
 
-    const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Spellcast);
-    const auto is_at_spike_pos =
-        IsAtChamberSpike(player_data->pos) || IsAtChamberMonuSpike(player_data->pos) || IsAtFusePulls(player_data->pos);
+    enemies_in_aggro = FilterAgentsByRange(livings_data->enemies, *player_data, GW::Constants::Range::Spellcast);
+    nightmares = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::DyingNightmare);
+    dryders = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::TerrorwebDryder);
+    dryders_silver = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::TerrorwebDryderSilver);
+    aatxes = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::BladedAatxe);
+    graspings = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::GraspingDarkness);
+    mindblades = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::MindbladeSpectre);
+    horsemans = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::FourHorseman);
+    smites = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::SmiteCrawler);
+    coldfires = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::ColdfireNight);
+    skeles = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::SkeletonOfDhuum1);
+    collector = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::DeadCollector);
+    thresher = FilterById(enemies_in_aggro, GW::Constants::ModelID::UW::DeadThresher);
 
-    if (is_at_spike_pos && ReadyForSpike() && RoutineSelfEnches(enemies))
+    const auto is_at_spike_pos = IsAtChamberSpike(player_data->pos) || IsAtChamberMonuSpike(player_data->pos) ||
+                                 IsAtFusePulls(player_data->pos) || IsAtValeMonu(player_data->pos) ||
+                                 IsInWastes(player_data->pos) || IsInPits(player_data->pos);
+
+    if (is_at_spike_pos && ReadyForSpike() && RoutineSelfEnches())
         return RoutineState::ACTIVE;
 
-    if (enemies.size() == 0)
+    if (enemies_in_aggro.size() == 0)
     {
         action_state = ActionState::INACTIVE;
         return RoutineState::FINISHED;
     }
 
-    if (is_at_spike_pos && ReadyForSpike() && !IsInVale(player_data->pos) && RoutineSpikeBall(enemies, false))
+    if (is_at_spike_pos && ReadyForSpike() && !IsInVale(player_data->pos) && RoutineSpikeBall(false))
         return RoutineState::ACTIVE;
-    if (is_at_spike_pos && ReadyForSpike() && IsInVale(player_data->pos) && RoutineSpikeBall(enemies, true))
+    else if (is_at_spike_pos && ReadyForSpike() && IsInVale(player_data->pos) && RoutineSpikeBall(true))
         return RoutineState::ACTIVE;
 
     return RoutineState::FINISHED;
@@ -345,17 +368,22 @@ void LtRoutine::Update()
         paused = false;
         action_state = ActionState::ACTIVE;
 
-        last_nightmare_id = 0U;
-        last_nightmare_skill = 0U;
-        last_aatxe_id = 0U;
-        last_aatxe_skill = 0U;
-        last_dryder_id = 0U;
-        last_dryder_skill = 0U;
-        last_graspings_id = 0U;
-        last_graspings_skill = 0U;
+        last_skill = 0;
+        nightmare_spike = {};
+        dryder_spike = {};
+        dryder_silver_spike = {};
+        aatxe_spike = {};
+        graspings_spike = {};
+        mindblades_spike = {};
+        horsemans_spike = {};
+        smites_spike = {};
+        coldfires_spike = {};
+        skeles_spike = {};
+        collector_spike = {};
+        thresher_spike = {};
     }
 
-    if (IsAOnSpawnPlateau(player_data->pos) && GW::PartyMgr::GetPartySize() <= 6 && !player_data->target &&
+    if (IsOnSpawnPlateau(player_data->pos) && GW::PartyMgr::GetPartySize() <= 6 && !player_data->target &&
         load_cb_triggered)
     {
         starting_active = true;
