@@ -95,7 +95,7 @@ void UwEmo::UpdateUw()
     MoveABC::UpdatedUwMoves(player_data, livings_data, moves, move_idx, move_ongoing);
 
     if (UwMetadata::Instance().num_finished_objectives == 10U && !move_ongoing &&
-        moves[move_idx]->name == "Go To Dhuum 1")
+        (moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go To Dhuum 2"))
     {
         moves[move_idx]->Execute();
         if (player_data.living->GetIsMoving())
@@ -105,7 +105,8 @@ void UwEmo::UpdateUw()
     const auto is_hm_trigger_take = moves[move_idx]->name == "Talk Lab Reaper";
     const auto is_hm_trigger_move =
         (moves[move_idx]->name == "Go To Wastes 1" || moves[move_idx]->name == "Go Wastes 2" ||
-         moves[move_idx]->name == "Go To Wastes 5" || moves[move_idx]->name == "Go To Dhuum 1" ||
+         moves[move_idx]->name == "Go To Wastes 5" || moves[move_idx]->name == "Go Wastes 1" ||
+         moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go To Dhuum 2" ||
          moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
          moves[move_idx]->name == "Go Lab 1" || moves[move_idx]->name == "Go To Dhuum 6" ||
          moves[move_idx]->name == "Go Spirits 2");
@@ -135,6 +136,7 @@ void UwEmo::UpdateUwEntry()
     {
         Log::Warning("No Solo LT found. Deactivate auto move.");
         UwMetadata::Instance().load_cb_triggered = false;
+        emo_routine.action_state = ActionState::ACTIVE;
     }
 
     if (UwMetadata::Instance().load_cb_triggered)
@@ -454,16 +456,13 @@ bool EmoRoutine::RoutineTurtle() const
     if (CastBondIfNotAvailable(skillbar->life, turtle_agent->agent_id, player_data))
         return true;
 
-    if (turtle_living->hp < 0.80F && player_data->hp_perc > 0.25F)
-        return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, turtle_agent->agent_id));
-    else if (turtle_living->hp < 0.95F && player_data->hp_perc > 0.5F)
-        return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, turtle_agent->agent_id));
-    else if (turtle_living->hp < 0.99F && player_data->hp_perc > 0.75F)
-        return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, turtle_agent->agent_id));
-    else if (turtle_living->hp < 0.95F)
+    if (player_data->hp_perc < 0.50F || turtle_living->hp > 0.975F)
+        return false;
+    else if (player_data->hp_perc < 0.25F || turtle_living->hp < 0.975F)
         return (RoutineState::FINISHED == skillbar->sb.Cast(player_data->energy, turtle_agent->agent_id));
 
-    return false;
+    return (turtle_living->hp < 0.90F &&
+            RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, turtle_agent->agent_id));
 }
 
 bool EmoRoutine::RoutineWisdom() const
@@ -589,12 +588,12 @@ bool EmoRoutine::RoutineKeepPlayerAlive() const
         if (living->hp > 0.50F)
             continue;
 
-        if (living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+        if (player_data->hp_perc > 0.75F)
+            return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, living->agent_id));
+
+        if (living->primary != static_cast<uint8_t>(GW::Constants::Profession::Ranger) && living->hp < 0.30F)
             if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player_data))
                 return true;
-
-        if (player_data->hp_perc > 0.50F)
-            return (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, living->agent_id));
     }
 
     return false;
@@ -638,8 +637,14 @@ RoutineState EmoRoutine::Routine()
         (!move_ongoing && !ActionABC::HasWaitedLongEnough(250L)))
         return RoutineState::ACTIVE;
 
-    if (IsUw() && IsAtSpawn(player_data->pos, 800.0F) && BondLtAtStartRoutine())
+    if (IsUw() && IsOnSpawnPlateau(player_data->pos, 600.0F) && BondLtAtStartRoutine())
         return RoutineState::ACTIVE;
+
+    if (IsUw() && IsOnSpawnPlateau(player_data->pos, 600.0F) && !TankIsSoloLT())
+    {
+        action_state = ActionState::INACTIVE;
+        return RoutineState::FINISHED;
+    }
 
     if (RoutineSelfBonds())
         return RoutineState::FINISHED;
@@ -650,7 +655,7 @@ RoutineState EmoRoutine::Routine()
     if (!is_in_dhuum_room && RoutineWhenInRangeBondLT())
         return RoutineState::FINISHED;
 
-    if (RoutineKeepPlayerAlive()) // TODO: Maybe only at spawn
+    if (RoutineKeepPlayerAlive())
         return RoutineState::FINISHED;
 
     if (!is_in_dhuum_room && RoutineDbBeforeDhuum())
