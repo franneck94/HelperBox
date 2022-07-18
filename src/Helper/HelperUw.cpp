@@ -90,6 +90,8 @@ uint32_t GetEmoId()
 
 uint32_t GetDhuumBitchId()
 {
+    const auto party_size = GW::PartyMgr::GetPartySize();
+
     std::vector<PlayerMapping> party_members;
     const auto success = GetPartyMembers(party_members);
     if (!success)
@@ -105,8 +107,17 @@ uint32_t GetDhuumBitchId()
         if (!living)
             continue;
 
-        if (living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Ranger))
-            return agent->agent_id;
+        if (party_size <= 6)
+        {
+            if (living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+                return agent->agent_id;
+        }
+        else
+        {
+            if (living->primary == static_cast<uint8_t>(GW::Constants::Profession::Ritualist) &&
+                living->secondary == static_cast<uint8_t>(GW::Constants::Profession::Ranger))
+                return agent->agent_id;
+        }
     }
 
     return 0;

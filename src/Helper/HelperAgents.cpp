@@ -43,10 +43,11 @@ bool IsAliveAlly(const GW::Agent *target)
     if (!target_living)
         return false;
 
-    if (target_living->allegiance != GW::Constants::Allegiance::Ally_NonAttackable || target_living->GetIsDead())
+    if (target_living->allegiance != GW::Constants::Allegiance::Ally_NonAttackable || target_living->GetIsDead() ||
+        target_living->hp == 0.00F)
         return false;
 
-    return true;
+    return target_living->GetIsAlive();
 }
 
 const GW::EffectArray *GetEffects(const uint32_t agent_id)

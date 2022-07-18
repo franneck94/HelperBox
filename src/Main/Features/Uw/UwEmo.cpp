@@ -795,26 +795,24 @@ void EmoRoutine::Update()
 
 bool EmoRoutine::BondLtAtStartRoutine() const
 {
-    auto target_id = GetTankId();
-    if (!target_id)
+    auto tank_id = GetTankId();
+    if (!tank_id)
         return false;
-    player_data->ChangeTarget(target_id);
-
-    auto target = player_data->target;
-    if (!target)
+    const auto tank = GW::Agents::GetAgentByID(tank_id);
+    if (!tank)
         return false;
 
-    const auto is_alive_ally = IsAliveAlly(target);
+    const auto is_alive_ally = IsAliveAlly(tank);
     if (!is_alive_ally)
         return false;
 
-    if (CastBondIfNotAvailable(skillbar->balth, target_id, player_data))
+    if (CastBondIfNotAvailable(skillbar->balth, tank_id, player_data))
         return true;
 
-    if (CastBondIfNotAvailable(skillbar->prot, target_id, player_data))
+    if (CastBondIfNotAvailable(skillbar->prot, tank_id, player_data))
         return true;
 
-    if (CastBondIfNotAvailable(skillbar->life, target_id, player_data))
+    if (CastBondIfNotAvailable(skillbar->life, tank_id, player_data))
         return true;
 
     return false;
