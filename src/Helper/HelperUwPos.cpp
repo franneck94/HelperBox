@@ -17,7 +17,7 @@ bool IsUwEntryOutpost()
     return IsEndGameEntryOutpost();
 }
 
-bool IsAOnSpawnPlateau(const GW::GamePos &player_pos, const float range)
+bool IsOnSpawnPlateau(const GW::GamePos &player_pos, const float range)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{666.24F, 6836.26F, 0}, range);
 }
@@ -35,6 +35,11 @@ bool IsAtChamberSpike(const GW::GamePos &player_pos)
 bool IsAtChamberMonuSpike(const GW::GamePos &player_pos)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{-4049.11F, 13631.00F, 0}, 400.0F);
+}
+
+bool IsAtValeMonu(const GW::GamePos &player_pos)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{-13312.71F, 5165.071F, 0}, 1800.0F);
 }
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos)
@@ -142,6 +147,11 @@ bool IsAtHeuchlerPattrick(const GW::GamePos &player_pos, const float range)
 bool IsInWastes(const GW::GamePos &player_pos, const float range)
 {
     return IsNearToGamePos(player_pos, GW::GamePos{3577.13F, 19130.53F, 0}, range);
+}
+
+bool IsInPits(const GW::GamePos &player_pos, const float range)
+{
+    return IsNearToGamePos(player_pos, GW::GamePos{12566.49F, 7812.503F, 0}, range);
 }
 
 bool IsInDhuumRoom(const GW::GamePos &player_pos, const float range)

@@ -8,13 +8,15 @@ bool IsUwEntryOutpost();
 
 bool IsUw();
 
-bool IsAOnSpawnPlateau(const GW::GamePos &player_pos, const float range = 200.0F);
+bool IsOnSpawnPlateau(const GW::GamePos &player_pos, const float range = 200.0F);
 
 bool IsAtSpawn(const GW::GamePos &player_pos, const float range = 500.0F);
 
 bool IsAtChamberSpike(const GW::GamePos &player_pos);
 
 bool IsAtChamberMonuSpike(const GW::GamePos &player_pos);
+
+bool IsAtValeMonu(const GW::GamePos &player_pos);
 
 bool IsAtChamberSkele(const GW::GamePos &player_pos);
 
@@ -47,6 +49,8 @@ bool IsAtTakePull(const GW::GamePos &player_pos, const float range = GW::Constan
 bool IsAtMntsMonument(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Spellcast);
 
 bool IsAtHeuchlerPattrick(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Spirit);
+
+bool IsInPits(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Compass);
 
 bool IsInWastes(const GW::GamePos &player_pos, const float range = GW::Constants::Range::Compass);
 
