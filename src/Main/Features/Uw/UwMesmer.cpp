@@ -54,17 +54,16 @@ bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enem
 
     const auto closest_id = GetClosestToPosition(enemy->pos, enemies_in_aggro, enemy->agent_id);
     if (!closest_id)
-        return false;
+        return true;
     const auto other_enemy = GW::Agents::GetAgentByID(closest_id);
     if (!other_enemy)
-        return false;
+        return true;
     const auto other_enemy_living = other_enemy->GetAsAgentLiving();
     if (!other_enemy_living)
-        return false;
+        return true;
 
     const auto dist = GW::GetDistance(other_enemy->pos, enemy->pos);
-    if (other_enemy->agent_id != enemy->agent_id && dist < GW::Constants::Range::Adjacent &&
-        other_enemy_living->GetIsHexed())
+    if (dist < GW::Constants::Range::Adjacent && other_enemy_living->GetIsHexed())
         return false;
 
     return true;
@@ -214,8 +213,11 @@ bool LtRoutine::RoutineSpikeBall(const auto include_graspings)
     if (CastHexesOnEnemyType(coldfires, coldfires_spike, true))
         return true;
 
-    if (dryders.size() == 0 ||
-        (dryders.size() == 1 && GW::GetDistance(dryders[0]->pos, player_data->pos) < GW::Constants::Range::Area))
+    if ((dryders.size() == 0) ||
+        (dryders.size() == 1 && GW::GetDistance(dryders[0]->pos, player_data->pos) < GW::Constants::Range::Area) ||
+        (dryders.size() == 1 && dryders[0]->hp < 0.30F) ||
+        (dryders.size() == 2 && dryders[0]->hp < 0.20F && dryders[1]->hp < 0.20F) ||
+        (dryders.size() == 3 && dryders[0]->hp < 0.15F && dryders[1]->hp < 0.15F && dryders[2]->hp < 0.15F))
     {
         if (CastHexesOnEnemyType(aatxes, aatxe_spike, false))
             return true;
@@ -223,7 +225,9 @@ bool LtRoutine::RoutineSpikeBall(const auto include_graspings)
             return true;
     }
 
-    if (smites.size() > 0 && coldfires.size() == 0)
+    if ((coldfires.size() == 0) || (coldfires.size() == 1 && coldfires[0]->hp < 0.25F) ||
+        (coldfires.size() == 1 && coldfires[0]->hp < 0.25F) ||
+        (coldfires.size() == 2 && coldfires[0]->hp < 0.15F && coldfires[1]->hp < 0.15F))
     {
         if (CastHexesOnEnemyType(smites, smites_spike, true))
             return true;
@@ -248,13 +252,13 @@ RoutineState LtRoutine::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    delay_ms = 250L;
+    delay_ms = 300L;
     if (last_skill != 1)
         delay_ms += 250L;
     if (gone_to_npc)
         delay_ms = long{500L};
 
-    if (!ActionABC::HasWaitedLongEnough(delay_ms)) // ms
+    if (!ActionABC::HasWaitedLongEnough(delay_ms))
         return RoutineState::ACTIVE;
 
     if (starting_active)

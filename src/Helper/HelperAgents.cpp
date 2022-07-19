@@ -229,8 +229,8 @@ uint32_t GetClosestToPosition(const GW::GamePos &pos,
                               const std::vector<GW::AgentLiving *> &livings,
                               const uint32_t target_id)
 {
-    uint32_t closest_id = 0U;
-    float closest_dist = FLT_MAX;
+    auto closest_id = uint32_t{0U};
+    auto closest_dist = FLT_MAX;
 
     for (const auto living : livings)
     {
@@ -250,8 +250,8 @@ uint32_t GetClosestToPosition(const GW::GamePos &pos,
 
 uint32_t GetClosestById(const DataPlayer &player_data, const std::vector<GW::AgentLiving *> &livings, const uint32_t id)
 {
-    uint32_t closest_id = 0U;
-    float closest_dist = FLT_MAX;
+    auto closest_id = uint32_t{0U};
+    auto closest_dist = FLT_MAX;
 
     for (const auto living : livings)
     {
@@ -352,7 +352,7 @@ std::vector<GW::AgentLiving *> FilterAgentsByRange(const std::vector<GW::AgentLi
 
 uint32_t GetPartyIdxByID(const uint32_t id)
 {
-    std::vector<PlayerMapping> party_members;
+    auto party_members = std::vector<PlayerMapping>{};
     const auto success = GetPartyMembers(party_members);
 
     if (!success)
@@ -499,18 +499,18 @@ const GW::AgentLiving *GetTargetAsLiving()
 
 GW::Player *GetPlayerByName(const wchar_t *_name)
 {
-    if (!_name)
-        return NULL;
-    GW::PlayerArray *players = GW::PlayerMgr::GetPlayerArray();
-    if (!players)
+    const auto players = GW::Agents::GetPlayerArray();
+    if (!players || !players->valid() || !_name)
         return nullptr;
-    for (GW::Player &player : *players)
+
+    for (auto &player : *players)
     {
         if (!player.name)
             continue;
         if (_name == player.name)
             return &player;
     }
+
     return nullptr;
 }
 
@@ -531,6 +531,7 @@ std::wstring GetPlayerName(uint32_t player_number)
     {
         player = GW::PlayerMgr::GetPlayerByID(player_number);
     }
+
     return player && player->name ? player->name : L"";
 }
 

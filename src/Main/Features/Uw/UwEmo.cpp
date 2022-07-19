@@ -109,7 +109,8 @@ void UwEmo::UpdateUw()
          moves[move_idx]->name == "Go To Dhuum 1" || moves[move_idx]->name == "Go To Dhuum 2" ||
          moves[move_idx]->name == "Go Keeper 3" || moves[move_idx]->name == "Go Keeper 4/5" ||
          moves[move_idx]->name == "Go Lab 1" || moves[move_idx]->name == "Go To Dhuum 6" ||
-         moves[move_idx]->name == "Go Spirits 2");
+         moves[move_idx]->name == "Go Spirits 2" || moves[move_idx]->name == "Go Pits 1" ||
+         moves[move_idx]->name == "Go Pits Start" || moves[move_idx]->name == "Go Planes Start");
     const auto is_moving = player_data.living->GetIsMoving();
 
     Move_PositionABC::LtMoveTrigger(UwMetadata::Instance().lt_is_ready,

@@ -143,7 +143,7 @@ private:
         new Move_WaitAndContinue{-5751.45F, 12746.52F, "Take Escort", [&]() { return TakeEscort(); }},
         new Move_WaitAndContinue{-6622.24F, 10387.12F, "Go Basement 1", cast_sq},
         new Move_CastSkillAndContinue{-6622.24F, 10387.12F, "Cast EoE 3", &skillbar.eoe},
-        new Move_WaitAndContinue{-6443.12F, 10059.45F, "Go Basement 1"},
+        new Move_NoWaitAndContinue{-6443.12F, 10059.45F, "Go Basement 1"},
         new Move_DistanceAndContinue{-5183.64F, 8876.31F, "Go Basement 2", 2200.0F},
         new Move_DistanceAndContinue{-6241.24F, 7945.73F, "Go Basement 3", 2000.0F},
         new Move_DistanceAndContinue{-8798.22F, 5643.86F, "Go Basement 4", 4000.0F},
