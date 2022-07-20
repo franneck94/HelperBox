@@ -535,13 +535,16 @@ std::wstring GetPlayerName(uint32_t player_number)
     return player && player->name ? player->name : L"";
 }
 
-bool FoundSpirit(const std::vector<GW::AgentLiving *> &spirits, const uint32_t spirit_id)
+bool FoundSpirit(const DataPlayer &player_data,
+                 const std::vector<GW::AgentLiving *> &spirits,
+                 const uint32_t spirit_id,
+                 const float range)
 {
     if (spirits.size())
     {
         for (const auto spirit : spirits)
         {
-            if (spirit->player_number == spirit_id)
+            if (spirit->player_number == spirit_id && GW::GetDistance(spirit->pos, player_data.pos) < range)
                 return true;
         }
     }

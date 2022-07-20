@@ -127,4 +127,7 @@ GW::Player *GetPlayerByName(const wchar_t *_name);
 
 std::wstring GetPlayerName(uint32_t player_number);
 
-bool FoundSpirit(const std::vector<GW::AgentLiving *> &spirits, const uint32_t spirit_id);
+bool FoundSpirit(const DataPlayer &player_data,
+                 const std::vector<GW::AgentLiving *> &spirits,
+                 const uint32_t spirit_id,
+                 const float range = GW::Constants::Range::Spellcast);
