@@ -281,6 +281,10 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
     if (!player_data.ValidateData(UwHelperActivationConditions, false))
         return;
     player_data.Update();
+
+    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
+        return;
+
     if (!send_message && !died_just_now && player_data.dead)
         died_just_now = true;
     if (!send_message && died_just_now && IsAtHeuchlerPattrick(player_data.pos))
@@ -295,9 +299,6 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         died_just_now = false;
         send_message = true;
     }
-
-    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
-        return;
 
     const auto &pos = player_data.pos;
     FilterByIdsAndDistances(pos, livings_data.enemies, filtered_livings, T1_IDS, GW::Constants::Range::Compass);
