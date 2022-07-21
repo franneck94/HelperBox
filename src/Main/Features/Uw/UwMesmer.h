@@ -35,7 +35,6 @@ private:
     static bool EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies, const GW::AgentLiving *enemy);
     bool DoNeedVisage() const;
     bool ReadyForSpike() const;
-    bool DoNeedEnchNow(const GW::Constants::SkillID ench_id) const;
     bool RoutineSelfEnches() const;
     bool RoutineSpikeBall(const auto include_graspings);
     bool CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filtered_enemies,

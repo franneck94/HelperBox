@@ -140,20 +140,6 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filte
     return false;
 }
 
-bool LtRoutine::DoNeedEnchNow(const GW::Constants::SkillID ench_id) const
-{
-    const auto found = player_data->HasEffect(ench_id);
-    const auto data = GW::SkillbarMgr::GetSkillConstantData((uint32_t)ench_id);
-
-    const auto duration_s = player_data->GetRemainingEffectDuration(ench_id) / 1000.0F;
-    const auto trigger_time_s = data ? data->activation + data->aftercast : 1.0F;
-
-    if (!found || duration_s < trigger_time_s)
-        return true;
-
-    return false;
-}
-
 bool LtRoutine::DoNeedVisage() const
 {
     if (smites.size() > 0)
@@ -183,19 +169,19 @@ bool LtRoutine::RoutineSelfEnches() const
     const auto need_mantra = (aatxes.size() || graspings.size() || mindblades.size());
     const auto need_visage = DoNeedVisage();
 
-    if (need_obsi && DoNeedEnchNow(GW::Constants::SkillID::Obsidian_Flesh) &&
+    if (need_obsi && DoNeedEnchNow(player_data, GW::Constants::SkillID::Obsidian_Flesh) &&
         (RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy)))
         return true;
 
-    if (need_stoneflesh && DoNeedEnchNow(GW::Constants::SkillID::Stoneflesh_Aura) &&
+    if (need_stoneflesh && DoNeedEnchNow(player_data, GW::Constants::SkillID::Stoneflesh_Aura) &&
         (RoutineState::FINISHED == skillbar->stoneflesh.Cast(player_data->energy)))
         return true;
 
-    if (need_mantra && DoNeedEnchNow(GW::Constants::SkillID::Mantra_of_Resolve) &&
+    if (need_mantra && DoNeedEnchNow(player_data, GW::Constants::SkillID::Mantra_of_Resolve) &&
         (RoutineState::FINISHED == skillbar->mantra_of_resolve.Cast(player_data->energy)))
         return true;
 
-    if (need_visage && DoNeedEnchNow(GW::Constants::SkillID::Sympathetic_Visage) &&
+    if (need_visage && DoNeedEnchNow(player_data, GW::Constants::SkillID::Sympathetic_Visage) &&
         (RoutineState::FINISHED == skillbar->visage.Cast(player_data->energy)))
         return true;
 

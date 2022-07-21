@@ -248,6 +248,28 @@ uint32_t GetClosestToPosition(const GW::GamePos &pos,
     return closest_id;
 }
 
+
+uint32_t GetMostDistantEnemy(const GW::GamePos &pos, const std::vector<GW::AgentLiving *> &livings)
+{
+    auto distant_id = uint32_t{0U};
+    auto distant_dist = 0.0F;
+
+    for (const auto living : livings)
+    {
+        if (!living)
+            continue;
+
+        const auto dist = GW::GetDistance(pos, living->pos);
+        if (dist > distant_dist)
+        {
+            distant_dist = dist;
+            distant_id = living->agent_id;
+        }
+    }
+
+    return distant_id;
+}
+
 uint32_t GetClosestById(const DataPlayer &player_data, const std::vector<GW::AgentLiving *> &livings, const uint32_t id)
 {
     auto closest_id = uint32_t{0U};
@@ -548,6 +570,20 @@ bool FoundSpirit(const DataPlayer &player_data,
                 return true;
         }
     }
+
+    return false;
+}
+
+bool DoNeedEnchNow(const DataPlayer *player_data, const GW::Constants::SkillID ench_id)
+{
+    const auto found = player_data->HasEffect(ench_id);
+    const auto data = GW::SkillbarMgr::GetSkillConstantData((uint32_t)ench_id);
+
+    const auto duration_s = player_data->GetRemainingEffectDuration(ench_id) / 1000.0F;
+    const auto trigger_time_s = data ? data->activation + data->aftercast : 1.0F;
+
+    if (!found || duration_s < trigger_time_s)
+        return true;
 
     return false;
 }

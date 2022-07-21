@@ -49,6 +49,7 @@ private:
     bool RoutineGDW() const;
     bool RoutineTurtleGDW() const;
     bool RoutineKeepPlayerAlive() const;
+    bool DropAllBonds() const;
 
     const uint32_t *bag_idx = nullptr;
     const uint32_t *slot_idx = nullptr;

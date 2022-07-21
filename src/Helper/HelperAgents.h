@@ -74,6 +74,8 @@ uint32_t GetClosestToPosition(const GW::GamePos &pos,
                               const std::vector<GW::AgentLiving *> &livings,
                               const uint32_t target_id);
 
+uint32_t GetMostDistantEnemy(const GW::GamePos &pos, const std::vector<GW::AgentLiving *> &livings);
+
 uint32_t GetClosestById(const DataPlayer &player_data,
                         const std::vector<GW::AgentLiving *> &livings,
                         const uint32_t id);
@@ -131,3 +133,5 @@ bool FoundSpirit(const DataPlayer &player_data,
                  const std::vector<GW::AgentLiving *> &spirits,
                  const uint32_t spirit_id,
                  const float range = GW::Constants::Range::Spellcast);
+
+bool DoNeedEnchNow(const DataPlayer *player_data, const GW::Constants::SkillID ench_id);
