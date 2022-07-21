@@ -22,16 +22,48 @@ struct SpikeSkillInfo
     uint32_t last_skill;
 };
 
+struct TriggeredSpikeSkillInfo
+{
+    uint32_t triggered_skill_id;
+    uint32_t target_id;
+};
+
+enum class CastedSpikeSkill
+{
+    DEMISE,
+    WORRY,
+    EMPATHY,
+    NONE,
+};
+
 class LtRoutine : public MesmerActionABC
 {
 public:
     LtRoutine(DataPlayer *p, MesmerSkillbarData *s, const AgentLivingData *a)
-        : MesmerActionABC(p, "LtRoutine", s), livings_data(a){};
+        : MesmerActionABC(p, "LtRoutine", s), livings_data(a)
+    {
+        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
+            &SkillCasted_Entry,
+            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
+                const uint32_t value_id = packet->Value_id;
+                const uint32_t caster_id = packet->agent_id;
+                const uint32_t target_id = 0U;
+                const uint32_t value = packet->value;
+                const bool no_target = true;
+                SkillPacketCallback(value_id, caster_id, target_id, value, no_target);
+            });
+    };
 
     RoutineState Routine() override;
     void Update() override;
 
 private:
+    void SkillPacketCallback(const uint32_t value_id,
+                             const uint32_t caster_id,
+                             const uint32_t target_id,
+                             const uint32_t value,
+                             const bool no_target);
+
     static bool EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies, const GW::AgentLiving *enemy);
     bool DoNeedVisage() const;
     bool ReadyForSpike() const;
@@ -73,8 +105,11 @@ private:
     SpikeSkillInfo thresher_spike = {};
 
     bool starting_active = false;
-    uint32_t last_skill = 0;
     long delay_ms = 200L;
+
+    CastedSpikeSkill casted_spike_skill = CastedSpikeSkill::NONE;
+    TriggeredSpikeSkillInfo triggered_spike_skill = {};
+    GW::HookEntry SkillCasted_Entry;
 };
 
 class UwMesmer : public HelperBoxWindow

@@ -43,6 +43,38 @@ static constexpr auto IDS = std::array<uint32_t, 6U>{GW::Constants::ModelID::UW:
                                                      GW::Constants::ModelID::UW::SkeletonOfDhuum2};
 } // namespace
 
+void LtRoutine::SkillPacketCallback(const uint32_t value_id,
+                                    const uint32_t caster_id,
+                                    const uint32_t target_id,
+                                    const uint32_t value,
+                                    const bool no_target)
+{
+    auto agent_id = caster_id;
+    const auto activated_skill_id = value;
+
+    // ignore non-skill packets
+    switch (value_id)
+    {
+    case GW::Packet::StoC::GenericValueID::instant_skill_activated:
+    case GW::Packet::StoC::GenericValueID::skill_activated:
+    case GW::Packet::StoC::GenericValueID::skill_finished:
+    case GW::Packet::StoC::GenericValueID::attack_skill_activated:
+    case GW::Packet::StoC::GenericValueID::attack_skill_finished:
+    {
+        if (!no_target)
+            agent_id = target_id;
+        break;
+    }
+    default:
+        return;
+    }
+
+    if (target_id != triggered_spike_skill.target_id || activated_skill_id != triggered_spike_skill.triggered_skill_id)
+        return;
+
+    Log::Info("Casted skill %u on enemy %u", activated_skill_id, target_id);
+}
+
 bool LtRoutine::EnemyShouldGetEmpathy(const std::vector<GW::AgentLiving *> &enemies_in_aggro,
                                       const GW::AgentLiving *enemy)
 {
@@ -108,22 +140,28 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filte
                 player_data->ChangeTarget(enemy->agent_id);
             ++spike_skill.last_skill;
             spike_skill.last_id = enemy->agent_id;
-            last_skill = spike_skill.last_skill;
+            casted_spike_skill = CastedSpikeSkill::WORRY;
+            triggered_spike_skill = {.triggered_skill_id = (uint32_t)GW::Constants::SkillID::Wastrels_Worry,
+                                     .target_id = player_data->target->agent_id};
             return true;
         }
-        else if (spike_skill.last_skill == 1 &&
-                 RoutineState::FINISHED == skillbar->demise.Cast(player_data->energy, enemy->agent_id))
+
+        if (spike_skill.last_skill == 1 &&
+            RoutineState::FINISHED == skillbar->demise.Cast(player_data->energy, enemy->agent_id))
         {
             if (!player_data->target || (player_data->target && player_data->target->agent_id != enemy->agent_id))
                 player_data->ChangeTarget(enemy->agent_id);
             ++spike_skill.last_skill;
             spike_skill.last_id = enemy->agent_id;
-            last_skill = spike_skill.last_skill;
+            casted_spike_skill = CastedSpikeSkill::DEMISE;
+            triggered_spike_skill = {.triggered_skill_id = (uint32_t)GW::Constants::SkillID::Wastrels_Demise,
+                                     .target_id = player_data->target->agent_id};
             return true;
         }
-        else if (use_empathy && spike_skill.last_skill == 2 &&
-                 (!target_should_get_empathy ||
-                  RoutineState::FINISHED == skillbar->empathy.Cast(player_data->energy, enemy->agent_id)))
+
+        if (use_empathy && spike_skill.last_skill == 2 &&
+            (!target_should_get_empathy ||
+             RoutineState::FINISHED == skillbar->empathy.Cast(player_data->energy, enemy->agent_id)))
         {
             if (target_should_get_empathy)
             {
@@ -132,7 +170,9 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filte
             }
             ++spike_skill.last_skill;
             spike_skill.last_id = enemy->agent_id;
-            last_skill = spike_skill.last_skill;
+            casted_spike_skill = CastedSpikeSkill::EMPATHY;
+            triggered_spike_skill = {.triggered_skill_id = (uint32_t)GW::Constants::SkillID::Empathy,
+                                     .target_id = player_data->target->agent_id};
             return true;
         }
     }
@@ -155,9 +195,9 @@ bool LtRoutine::DoNeedVisage() const
         return false;
 
     const auto enemies_in_range = (aatxes.size() || graspings.size());
-    const auto spike_has_begun = closest_enemy_living->hp > 0.50F;
+    const auto spike_almost_done = closest_enemy_living->hp > 0.50F;
 
-    return (enemies_in_range && spike_has_begun);
+    return (enemies_in_range && spike_almost_done);
 }
 
 bool LtRoutine::RoutineSelfEnches() const
@@ -238,11 +278,28 @@ RoutineState LtRoutine::Routine()
     if (!IsUw())
         return RoutineState::FINISHED;
 
-    delay_ms = 300L;
-    if (last_skill != 1)
-        delay_ms += 250L;
+    delay_ms = 250L;
+    switch (casted_spike_skill)
+    {
+    case CastedSpikeSkill::DEMISE:
+    {
+        delay_ms += 200L;
+        break;
+    }
+    case CastedSpikeSkill::WORRY:
+    {
+        delay_ms += 400L;
+        break;
+    }
+    case CastedSpikeSkill::EMPATHY:
+    {
+        delay_ms += 200L;
+        break;
+    }
+    }
+
     if (gone_to_npc)
-        delay_ms = long{500L};
+        delay_ms = 500L;
 
     if (!ActionABC::HasWaitedLongEnough(delay_ms))
         return RoutineState::ACTIVE;
@@ -358,7 +415,8 @@ void LtRoutine::Update()
         paused = false;
         action_state = ActionState::ACTIVE;
 
-        last_skill = 0;
+        casted_spike_skill = CastedSpikeSkill::NONE;
+        triggered_spike_skill = {};
         nightmare_spike = {};
         dryder_spike = {};
         dryder_silver_spike = {};
