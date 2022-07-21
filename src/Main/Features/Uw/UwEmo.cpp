@@ -541,13 +541,13 @@ bool EmoRoutine::RoutineDbBeforeDhuum() const
     else if (GW::PartyMgr::GetPartySize() > 6 && dist > GW::Constants::Range::Spellcast)
         return false;
 
+    if (GW::PartyMgr::GetPartySize() > 6 && CastBondIfNotAvailable(skillbar->balth, living->agent_id, player_data))
+        return true;
+
     if (living->hp > 0.75F || living->GetIsDead() || living->hp == 0.00F)
         return false;
 
     if (CastBondIfNotAvailable(skillbar->prot, living->agent_id, player_data))
-        return true;
-
-    if (GW::PartyMgr::GetPartySize() > 6 && CastBondIfNotAvailable(skillbar->balth, living->agent_id, player_data))
         return true;
 
     if (living->hp < 0.50F && player_data->hp_perc > 0.50F)
