@@ -134,4 +134,6 @@ bool FoundSpirit(const DataPlayer &player_data,
                  const uint32_t spirit_id,
                  const float range = GW::Constants::Range::Spellcast);
 
-bool DoNeedEnchNow(const DataPlayer *player_data, const GW::Constants::SkillID ench_id);
+bool DoNeedEnchNow(const DataPlayer *player_data,
+                   const GW::Constants::SkillID ench_id,
+                   const float time_offset_s = 0.0F);
