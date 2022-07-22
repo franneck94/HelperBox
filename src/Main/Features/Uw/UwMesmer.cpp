@@ -54,6 +54,9 @@ void LtRoutine::SkillPacketCallback(const uint32_t value_id,
     auto agent_id = caster_id;
     const auto activated_skill_id = value;
 
+    if (!activated_skill_id || !caster_id || !target_id)
+        return;
+
     // ignore non-skill packets
     switch (value_id)
     {
@@ -71,10 +74,12 @@ void LtRoutine::SkillPacketCallback(const uint32_t value_id,
         return;
     }
 
+    Log::Info("1 Casted skill %u on enemy %u", activated_skill_id, target_id);
+
     if (target_id != triggered_spike_skill.target_id || activated_skill_id != triggered_spike_skill.triggered_skill_id)
         return;
 
-    Log::Info("Casted skill %u on enemy %u", activated_skill_id, target_id);
+    Log::Info(" 2Casted skill %u on enemy %u\n", activated_skill_id, target_id);
     finished_skill = true;
 }
 
@@ -112,7 +117,7 @@ bool LtRoutine::CastSingleHexOnEnemy(const GW::AgentLiving *enemy, SpikeSkillInf
             player_data->ChangeTarget(enemy->agent_id);
         spike_skill.last_skill = (GW::Constants::SkillID)skill.id;
         spike_skill.last_id = enemy->agent_id;
-        triggered_spike_skill = {.triggered_skill_id = (uint32_t)skill.id, .target_id = player_data->target->agent_id};
+        triggered_spike_skill = {.triggered_skill_id = skill.id, .target_id = player_data->target->agent_id};
         return true;
     }
 
@@ -124,43 +129,70 @@ bool LtRoutine::CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filte
                                      SpikeSkillInfo &spike_skill,
                                      const bool use_empathy)
 {
-    if (filtered_enemies.end() ==
+    const auto num_spike_skills = use_empathy ? 3U : 2U;
+    const auto last_target_found =
+        filtered_enemies.end() !=
         std::find_if(filtered_enemies.begin(), filtered_enemies.end(), [&](const auto &enemy) {
             return enemy->agent_id == spike_skill.last_id;
-        }))
-    {
-        spike_skill.last_skill = GW::Constants::SkillID::Wastrels_Demise;
-        spike_skill.last_id = 0;
-    }
-    if (!finished_skill)
-        return false;
+        });
 
-    const auto max_num_skills = 3U;
-    for (const auto &enemy : filtered_enemies)
+    if (last_target_found)
     {
-        if (spike_skill.last_skill == GW::Constants::SkillID::Wastrels_Demise && enemy->GetIsHexed())
-            continue;
-        else if (enemy->agent_id != spike_skill.last_id)
-            continue;
-        else if ((uint32_t)spike_skill.last_skill >= max_num_skills)
+        const auto enemy = GW::Agents::GetAgentByID(spike_skill.last_id);
+        if (!enemy)
+            return false;
+        const auto enemy_living = enemy->GetAsAgentLiving();
+        if (!enemy_living)
+            return false;
+
+        switch (spike_skill.last_skill)
         {
-            spike_skill.last_skill = GW::Constants::SkillID::Wastrels_Demise;
-            continue;
+        case GW::Constants::SkillID::Empathy:
+        case GW::Constants::SkillID::No_Skill:
+        {
+            if (CastSingleHexOnEnemy(enemy_living, spike_skill, skillbar->demise))
+                return true;
+            break;
+        }
+        case GW::Constants::SkillID::Wastrels_Demise:
+        {
+            if (CastSingleHexOnEnemy(enemy_living, spike_skill, skillbar->worry))
+                return true;
+            break;
+        }
+        case GW::Constants::SkillID::Wastrels_Worry:
+        {
+            const auto target_should_get_empathy = EnemyShouldGetEmpathy(enemies_in_aggro, enemy_living);
+            if (use_empathy && target_should_get_empathy &&
+                CastSingleHexOnEnemy(enemy_living, spike_skill, skillbar->empathy))
+                return true;
+            else if (!use_empathy)
+            {
+                spike_skill.last_skill = GW::Constants::SkillID::Empathy;
+                spike_skill.last_id = 0;
+            }
+            break;
+        }
+        }
+    }
+
+    if (!last_target_found || (uint32_t)spike_skill.last_skill >= num_spike_skills)
+    {
+        spike_skill.last_skill = GW::Constants::SkillID::No_Skill;
+        spike_skill.last_id = 0;
+
+        for (const auto &enemy : filtered_enemies)
+        {
+            if (!enemy->GetIsHexed())
+            {
+                spike_skill.last_id = enemy->agent_id;
+                spike_skill.last_skill = GW::Constants::SkillID::No_Skill;
+
+                return false;
+            }
         }
 
-        if (!enemy->GetIsHexed() && spike_skill.last_skill == GW::Constants::SkillID::Wastrels_Demise &&
-            CastSingleHexOnEnemy(enemy, spike_skill, skillbar->demise))
-            return true;
-
-        if (spike_skill.last_skill == GW::Constants::SkillID::Wastrels_Demise &&
-            CastSingleHexOnEnemy(enemy, spike_skill, skillbar->worry))
-            return true;
-
-        const auto target_should_get_empathy = EnemyShouldGetEmpathy(enemies_in_aggro, enemy);
-        if (use_empathy && target_should_get_empathy &&
-            spike_skill.last_skill == GW::Constants::SkillID::Wastrels_Worry &&
-            CastSingleHexOnEnemy(enemy, spike_skill, skillbar->empathy))
-            return true;
+        return false;
     }
 
     return false;
@@ -195,11 +227,11 @@ bool LtRoutine::RoutineSelfEnches() const
     const auto need_mantra = (aatxes.size() || graspings.size() || mindblades.size());
     const auto need_visage = DoNeedVisage();
 
-    if (need_obsi && DoNeedEnchNow(player_data, GW::Constants::SkillID::Obsidian_Flesh, 0.0F) &&
+    if (need_obsi && DoNeedEnchNow(player_data, GW::Constants::SkillID::Obsidian_Flesh, 2.0F) &&
         (RoutineState::FINISHED == skillbar->obsi.Cast(player_data->energy)))
         return true;
 
-    if (need_stoneflesh && DoNeedEnchNow(player_data, GW::Constants::SkillID::Stoneflesh_Aura, 0.0F) &&
+    if (need_stoneflesh && DoNeedEnchNow(player_data, GW::Constants::SkillID::Stoneflesh_Aura, 2.0F) &&
         (RoutineState::FINISHED == skillbar->stoneflesh.Cast(player_data->energy)))
         return true;
 
@@ -284,7 +316,7 @@ RoutineState LtRoutine::Routine()
     }
     }
     if (gone_to_npc)
-        delay_ms = 500L;
+        delay_ms = 475L;
 
     if (!ActionABC::HasWaitedLongEnough(delay_ms))
         return RoutineState::ACTIVE;

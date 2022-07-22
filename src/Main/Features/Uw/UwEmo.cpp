@@ -269,13 +269,15 @@ bool EmoRoutine::RoutineSelfBonds() const
             return true;
     }
 
-    if ((!found_sb || need_sb_right_now) && player_data->CastEffect(skillbar->sb))
-        return true;
-
     if (!found_ether)
         return false;
 
-    if ((player_data->energy_perc < 0.85F || !found_burning) && player_data->CastEffect(skillbar->burning))
+    const auto need_pump = player_data->energy_perc < 0.85F || player_data->hp_perc < 0.80F;
+
+    if ((need_pump || !found_sb || need_sb_right_now) && player_data->CastEffect(skillbar->sb))
+        return true;
+
+    if ((need_pump || !found_burning) && player_data->CastEffect(skillbar->burning))
         return true;
 
     return false;
@@ -650,6 +652,8 @@ bool EmoRoutine::DropAllBonds() const
 
 RoutineState EmoRoutine::Routine()
 {
+    static auto last_warning_ms = clock();
+
     const auto is_in_dhuum_room = IsInDhuumRoom(player_data->pos);
     const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
     const auto dhuum_fight_done = DhuumFightDone(num_finished_objectives);
@@ -659,6 +663,15 @@ RoutineState EmoRoutine::Routine()
         (void)DropAllBonds();
         action_state = ActionState::INACTIVE;
         return RoutineState::FINISHED;
+    }
+
+    if (player_data->energy < 20U && TIMER_DIFF(last_warning_ms) > 2000)
+    {
+        Log::Warning("Low Energy!, Num bonds: %u", player_data->GetNumberOfPartyBonds());
+        last_warning_ms = clock();
+
+        if (player_data->energy < 5U)
+            (void)DropAllBonds();
     }
 
     if (!player_data->CanCast())
