@@ -582,7 +582,7 @@ bool DoNeedEnchNow(const DataPlayer *player_data, const GW::Constants::SkillID e
     const auto remain_duration_s = player_data->GetRemainingEffectDuration(ench_id) / 1000.0F;
     const auto trigger_time_s = data ? data->activation + data->aftercast : 1.0F;
 
-    if (!found || remain_duration_s < (trigger_time_s + time_offset_s))
+    if (!found || remain_duration_s <= (trigger_time_s + time_offset_s))
         return true;
 
     return false;

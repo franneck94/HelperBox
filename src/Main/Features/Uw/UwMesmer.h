@@ -19,21 +19,13 @@
 struct SpikeSkillInfo
 {
     uint32_t last_id;
-    uint32_t last_skill;
+    GW::Constants::SkillID last_skill;
 };
 
 struct TriggeredSpikeSkillInfo
 {
     uint32_t triggered_skill_id;
     uint32_t target_id;
-};
-
-enum class CastedSpikeSkill
-{
-    DEMISE,
-    WORRY,
-    EMPATHY,
-    NONE,
 };
 
 class LtRoutine : public MesmerActionABC
@@ -69,6 +61,7 @@ private:
     bool ReadyForSpike() const;
     bool RoutineSelfEnches() const;
     bool RoutineSpikeBall(const auto include_graspings);
+    bool CastSingleHexOnEnemy(const GW::AgentLiving *enemy, SpikeSkillInfo &spike_skill, const DataSkill &skill);
     bool CastHexesOnEnemyType(const std::vector<GW::AgentLiving *> &filtered_enemies,
                               SpikeSkillInfo &spike_skill,
                               const bool use_empathy);
@@ -107,7 +100,6 @@ private:
     bool starting_active = false;
     long delay_ms = 200L;
 
-    CastedSpikeSkill casted_spike_skill = CastedSpikeSkill::NONE;
     TriggeredSpikeSkillInfo triggered_spike_skill = {};
     GW::HookEntry SkillCasted_Entry;
 };
