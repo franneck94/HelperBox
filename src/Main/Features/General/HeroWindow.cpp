@@ -123,17 +123,36 @@ void HeroWindow::Draw()
     if (ImGui::Begin(Name(), nullptr, GetWinFlags() | ImGuiWindowFlags_NoDecoration))
     {
         const auto width = ImGui::GetWindowWidth();
-        auto added_color = false;
+        auto added_color_follow = false;
         auto toggled_follow = false;
 
+        switch (current_hero_behaviour)
+        {
+        case HeroBehaviour::GUARD:
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1F, 0.1F, 1.0F, 1.0F));
+            break;
+        }
+        case HeroBehaviour::AVOID_COMBAT:
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1F, 0.9F, 0.1F, 1.0F));
+            break;
+        }
+        case HeroBehaviour::ATTACK:
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0F, 0.1F, 0.1F, 1.0F));
+            break;
+        }
+        }
         if (ImGui::Button("Behaviour###toggleState", ImVec2{width / 3.0F - 10.0F, 50.0F}))
         {
             ToggleHeroBehaviour();
         }
+        ImGui::PopStyleColor();
         if (following_active)
         {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.1F, 0.9F, 0.1F, 1.0F));
-            added_color = true;
+            added_color_follow = true;
         }
         ImGui::SameLine();
         if (ImGui::Button("Follow###followPlayer", ImVec2{width / 3.0F - 10.0F, 50.0F}))
@@ -150,7 +169,7 @@ void HeroWindow::Draw()
         {
             GW::PartyMgr::UnflagAll();
         }
-        if (added_color)
+        if (added_color_follow)
             ImGui::PopStyleColor();
         ImGui::SameLine();
         if (ImGui::Button("Attack###attackTarget", ImVec2{width / 3.0F - 10.0F, 50.0F}))
