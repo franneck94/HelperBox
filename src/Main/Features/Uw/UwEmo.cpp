@@ -834,7 +834,8 @@ void EmoRoutine::Update()
         action_state = ActionState::ACTIVE;
     }
 
-    if (action_state == ActionState::INACTIVE && player_data->living && !player_data->living->GetIsMoving() &&
+    if (action_state == ActionState::INACTIVE && GW::PartyMgr::GetPartySize() <= 6 && player_data->living &&
+        !player_data->living->GetIsMoving() &&
         ((player_data->energy_perc < 0.10F || player_data->hp_perc < 0.10F) && livings_data->enemies.size() > 0U))
         action_state = ActionState::ACTIVE;
 
