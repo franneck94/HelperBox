@@ -23,7 +23,7 @@ bool DataPlayer::ValidateData(std::function<bool(bool)> cb_fn, const bool need_p
     if (!cb_fn(need_party_loaded))
         return false;
 
-    const auto* const me_agent = GW::Agents::GetPlayer();
+    const auto *const me_agent = GW::Agents::GetPlayer();
     const auto *const me_living = GW::Agents::GetPlayerAsAgentLiving();
 
     if (me_agent == nullptr || me_living == nullptr)
@@ -43,7 +43,7 @@ void DataPlayer::Update()
     me = me_agent;
     living = me_living;
 
-    dead = living->GetIsDead() && living->hp < 0.1F;
+    dead = living->GetIsDead() || living->hp == 0.0F || !living->GetIsAlive();
 
     target = GW::Agents::GetTarget();
 
@@ -117,6 +117,28 @@ bool DataPlayer::HasEffect(const GW::Constants::SkillID effect_skill_id) const
     }
 
     return false;
+}
+
+uint32_t DataPlayer::GetNumberOfPartyBonds() const
+{
+    const auto effects = GW::Effects::GetPartyEffectsArray();
+    if (!effects || !effects->valid())
+        return false;
+
+    const auto &buffs = (*effects)[0].buffs;
+    if (!buffs.valid())
+        return false;
+
+    auto num_bonds = uint32_t{0};
+    for (size_t i = 0; i < buffs.size(); ++i)
+    {
+        const auto agent_id = buffs[i].target_agent_id;
+
+        if (agent_id != id)
+            ++num_bonds;
+    }
+
+    return num_bonds;
 }
 
 static DWORD GetTimeElapsed(const DWORD timestamp)

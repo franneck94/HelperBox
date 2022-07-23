@@ -271,19 +271,22 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
     skele_livings.clear();
     horseman_livings.clear();
 
-    if (IsLoading())
+    if (!player_data.ValidateData(UwHelperActivationConditions, false))
     {
         send_message = false;
         died_just_now = false;
         last_casted_times_ms.clear();
-    }
-
-    if (!player_data.ValidateData(UwHelperActivationConditions, false))
         return;
+    }
     player_data.Update();
 
-    if (!IsRangerTerra(player_data) && !IsMesmerTerra(player_data))
+    if (!IsRangerTerra(player_data) || IsLoading())
+    {
+        send_message = false;
+        died_just_now = false;
+        last_casted_times_ms.clear();
         return;
+    }
 
     if (!send_message && !died_just_now && player_data.dead)
         died_just_now = true;

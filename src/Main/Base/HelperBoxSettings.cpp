@@ -3,6 +3,7 @@
 #include <Base/SettingsWindow.h>
 #include <Features/General/AutoFollowWindow.h>
 #include <Features/General/ChatCommands.h>
+#include <Features/General/HeroWindow.h>
 #include <Features/Uw/UwDhuumBitch.h>
 #include <Features/Uw/UwDhuumStats.h>
 #include <Features/Uw/UwEmo.h>
@@ -27,6 +28,7 @@ void HelperBoxSettings::LoadModules(CSimpleIni *ini)
     //General
     optional_modules.push_back(&ChatCommands::Instance());
     optional_modules.push_back(&SettingsWindow::Instance());
+    optional_modules.push_back(&HeroWindow::Instance());
     // optional_modules.push_back(&AutoFollowWindow::Instance());
 
     // UW
