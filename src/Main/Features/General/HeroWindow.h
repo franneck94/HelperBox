@@ -41,6 +41,7 @@ public:
     void Update(float delta, const AgentLivingData &) override;
 
 private:
+    uint32_t GetNumPlayerHeroes();
     void ToggleHeroBehaviour();
     void FollowPlayer();
     void AttackTarget();

@@ -25,6 +25,17 @@
 
 #include "HeroWindow.h"
 
+uint32_t HeroWindow::GetNumPlayerHeroes()
+{
+    auto num = uint32_t{0};
+    for (const auto &hero : *party_heros)
+    {
+        if (hero.owner_player_id == player_data.living->login_number)
+            ++num;
+    }
+    return num;
+}
+
 void HeroWindow::ToggleHeroBehaviour()
 {
     if (!IsMapReady() || !party_heros)
@@ -86,27 +97,10 @@ void HeroWindow::AttackTarget()
             if (!hero_living)
                 continue;
 
-            // if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
-            // {
-            //     auto key = GW::UI::ControlAction::ControlAction_None;
-            //     if (hero.hero_id == 1)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-            //     else if (hero.hero_id == 2)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-            //     else if (hero.hero_id == 3)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-            //     else if (hero.hero_id == 4)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-            //     else if (hero.hero_id == 5)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-            //     else if (hero.hero_id == 6)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-            //     else if (hero.hero_id == 7)
-            //         key = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-
-            //     GW::GameThread::Enqueue([&]() { GW::UI::Keydown(key); });
-            //     GW::GameThread::Enqueue([&]() { GW::UI::Keypress(key); });
-            // }
+            if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+            {
+                GW::CtoS::SendPacket(0x14, GAME_CMSG_HERO_USE_SKILL, hero.agent_id, 1, target_agent_id, 1);
+            }
         }
     }
 }
@@ -119,6 +113,9 @@ void HeroWindow::Draw()
         return;
 
     if (!player_data.ValidateData(HelperActivationConditions, false))
+        return;
+
+    if (!party_heros || party_heros->size() == 0 || GetNumPlayerHeroes() == 0)
         return;
 
     ImGui::SetNextWindowSize(ImVec2(240.0F, 45.0F), ImGuiCond_FirstUseEver);
