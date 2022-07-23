@@ -141,7 +141,7 @@ void HeroWindow::Draw()
             following_active = !following_active;
             toggled_follow = true;
         }
-        if (following_active && TIMER_DIFF(last_follow_trigger_ms) > 1500)
+        if (following_active && TIMER_DIFF(last_follow_trigger_ms) > 1000)
         {
             FollowPlayer();
             last_follow_trigger_ms = clock();
