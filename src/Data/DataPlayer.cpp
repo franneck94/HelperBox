@@ -43,7 +43,7 @@ void DataPlayer::Update()
     me = me_agent;
     living = me_living;
 
-    dead = living->GetIsDead() && living->hp < 0.1F;
+    dead = living->GetIsDead() || living->hp == 0.0F || !living->GetIsAlive();
 
     target = GW::Agents::GetTarget();
 
