@@ -363,7 +363,8 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         if (dist < GW::Constants::Range::Earshot && living->GetIsCasting() && living->skill == HEALING_SPRING_U16)
         {
             player_data.ChangeTarget(living->agent_id);
-            if (attack_at_auto_target && player_data.living->GetIsIdle() && player_data.target)
+            if (attack_at_auto_target && (!player_data.living->GetIsMoving() && !player_data.living->GetIsCasting()) &&
+                player_data.target)
                 AttackAgent(player_data.target);
         }
     }
