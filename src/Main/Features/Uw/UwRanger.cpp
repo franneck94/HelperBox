@@ -290,13 +290,13 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
 
     if (!send_message && !died_just_now && player_data.dead)
         died_just_now = true;
-    if (!send_message && died_just_now && IsAtHeuchlerPattrick(player_data.pos))
+    if (!send_message && died_just_now && IsAtHeuchlerPattrick(player_data.pos) && player_data.dead)
     {
         GW::Chat::SendChat('#', L"Oh my god, step bro im stuck. Can you help me?");
         died_just_now = false;
         send_message = true;
     }
-    else if (!send_message && died_just_now && IsAtTakePull(player_data.pos))
+    else if (!send_message && died_just_now && IsAtTakePull(player_data.pos) && player_data.dead)
     {
         GW::Chat::SendChat('#', L"Oh, i did a take pull...");
         died_just_now = false;
