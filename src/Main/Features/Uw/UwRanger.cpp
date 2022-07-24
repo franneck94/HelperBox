@@ -346,9 +346,7 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
         king_path_coldfire_ids.erase(remove_it, king_path_coldfire_ids.end());
 
         if (size_before != king_path_coldfire_ids.size())
-        {
             Log::Info("Delete king coldie!");
-        }
     }
 
     if (!auto_target_active)
