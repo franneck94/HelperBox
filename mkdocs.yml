@@ -30,6 +30,7 @@ plugins:
 nav:
   - "Index": index.md
   - "Chat": ChatCommands.md
+  - "Hero": General/HeroWindow.md
   - "UW EMO": Uw/Emo.md
   - "UW Mesmer": Uw/Mesmer.md
   - "UW Ranger": Uw/Ranger.md

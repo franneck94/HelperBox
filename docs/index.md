@@ -26,6 +26,7 @@ Note: The UW Helper Windows are only displayed in Embark Beach and the Underworl
 For a detailed description:
 
 - Chat Commands see [here](./ChatCommands.md)
+- General features see [here](./General/HeroWindow.md)
 - For EMO see [here](./Uw/Emo.md)
 - For Mesmer see [here](./Uw/Mesmer.md)
 - For Ranger see [here](./Uw/Ranger.md)
