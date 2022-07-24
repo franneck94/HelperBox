@@ -97,10 +97,10 @@ void HeroWindow::AttackTarget()
             if (!hero_living)
                 continue;
 
-            if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
-            {
-                GW::CtoS::SendPacket(0x14, GAME_CMSG_HERO_USE_SKILL, hero.agent_id, 1, target_agent_id, 1);
-            }
+            // if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+            // {
+            //     GW::CtoS::SendPacket(0x14, GAME_CMSG_HERO_USE_SKILL, hero.agent_id, 1, target_agent_id, 1);
+            // }
         }
     }
 }
