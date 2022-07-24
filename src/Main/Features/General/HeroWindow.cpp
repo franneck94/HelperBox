@@ -115,7 +115,7 @@ void HeroWindow::Draw()
     if (!player_data.ValidateData(HelperActivationConditions, false))
         return;
 
-    if (IsExplorable() && (!party_heros || party_heros->size() == 0 || GetNumPlayerHeroes() == 0))
+    if (!party_heros || party_heros->size() == 0 || GetNumPlayerHeroes() == 0)
         return;
 
     ImGui::SetNextWindowSize(ImVec2(240.0F, 45.0F), ImGuiCond_FirstUseEver);
