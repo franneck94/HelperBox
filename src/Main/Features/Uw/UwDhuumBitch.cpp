@@ -340,12 +340,12 @@ RoutineState DbRoutine::Routine()
     {
         SwapToMeleeSet();
 
-        const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 1800.0F);
+        const auto enemies = FilterAgentsByRange(livings_data->enemies, *player_data, 1700.0F);
         if (enemies.size() == 0)
             return RoutineState::ACTIVE;
 
         if (!player_data->living->GetIsAttacking() && player_data->CanAttack())
-            TargetAndAttackEnemyInAggro(*player_data, livings_data->enemies, 1800.0F);
+            TargetAndAttackEnemyInAggro(*player_data, livings_data->enemies, 1700.0F);
 
         if (RoutineValeSpirits())
             return RoutineState::FINISHED;

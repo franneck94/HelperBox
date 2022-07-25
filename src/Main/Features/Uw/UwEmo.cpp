@@ -257,7 +257,8 @@ bool EmoRoutine::RoutineSelfBonds() const
     const auto need_sb_right_now = DoNeedEnchNow(player_data, GW::Constants::SkillID::Spirit_Bond, 2.0F);
     const auto need_ether_right_now = DoNeedEnchNow(player_data, GW::Constants::SkillID::Ether_Renewal, 1.0F);
 
-    if ((!found_ether || need_ether_right_now) && player_data->CastEffect(skillbar->ether))
+    const auto is_full_energy = player_data->energy_perc == 1.0F;
+    if (!is_full_energy && (!found_ether || need_ether_right_now) && player_data->CastEffect(skillbar->ether))
         return true;
 
     if (player_data->energy > 30U)
@@ -273,7 +274,6 @@ bool EmoRoutine::RoutineSelfBonds() const
         return false;
 
     const auto need_pump = player_data->energy_perc < 0.85F || player_data->hp_perc < 0.80F;
-
     if ((need_pump || !found_sb || need_sb_right_now) && player_data->CastEffect(skillbar->sb))
         return true;
 
@@ -393,8 +393,7 @@ bool EmoRoutine::RoutineLtAtFusePulls() const
     const auto most_distant_mindblade_id = GetMostDistantEnemy(target_living->pos, mindblades);
     const auto most_distant_mindblade = GW::Agents::GetAgentByID(most_distant_mindblade_id);
     const auto still_need_fuse_pull =
-        (most_distant_mindblade &&
-         GW::GetDistance(target_living->pos, most_distant_mindblade->pos) > GW::Constants::Range::Earshot);
+        (most_distant_mindblade && GW::GetDistance(target_living->pos, most_distant_mindblade->pos) > 500.0F);
 
     if ((still_need_fuse_pull || target_living->hp < 0.90F) && player_data->hp_perc > 0.50F &&
         (RoutineState::FINISHED == skillbar->fuse.Cast(player_data->energy, target_living->agent_id)))
