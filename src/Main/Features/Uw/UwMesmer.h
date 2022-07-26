@@ -34,14 +34,16 @@ public:
     LtRoutine(DataPlayer *p, MesmerSkillbarData *s, const AgentLivingData *a)
         : MesmerActionABC(p, "LtRoutine", s), livings_data(a)
     {
-        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValue>(
-            &SkillCasted_Entry,
-            [this](GW::HookStatus *, GW::Packet::StoC::GenericValue *packet) -> void {
+        GW::StoC::RegisterPacketCallback<GW::Packet::StoC::GenericValueTarget>(
+            &GenericValueTarget_Entry,
+            [this](GW::HookStatus *status, GW::Packet::StoC::GenericValueTarget *packet) -> void {
+                UNREFERENCED_PARAMETER(status);
+
                 const uint32_t value_id = packet->Value_id;
-                const uint32_t caster_id = packet->agent_id;
-                const uint32_t target_id = 0U;
+                const uint32_t caster_id = packet->caster;
+                const uint32_t target_id = packet->target;
                 const uint32_t value = packet->value;
-                const bool no_target = true;
+                const bool no_target = false;
                 SkillPacketCallback(value_id, caster_id, target_id, value, no_target);
             });
     };
@@ -101,7 +103,7 @@ private:
     long delay_ms = 200L;
 
     TriggeredSpikeSkillInfo triggered_spike_skill = {};
-    GW::HookEntry SkillCasted_Entry;
+    GW::HookEntry GenericValueTarget_Entry;
 };
 
 class UwMesmer : public HelperBoxWindow

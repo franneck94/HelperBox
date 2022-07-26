@@ -121,6 +121,7 @@ bool LtRoutine::CastSingleHexOnEnemy(const GW::AgentLiving *enemy, SpikeSkillInf
         return true;
     }
 
+    triggered_spike_skill = {.triggered_skill_id = 0, .target_id = 0};
     return false;
 }
 
