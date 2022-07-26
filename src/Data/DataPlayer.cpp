@@ -90,7 +90,7 @@ bool DataPlayer::HasBuff(const GW::Constants::SkillID buff_skill_id) const
 
         if (agent_id == id)
         {
-            if (skill_id == buff_skill_id)
+            if (skill_id == (uint32_t)buff_skill_id)
                 return true;
         }
     }
@@ -111,7 +111,7 @@ bool DataPlayer::HasEffect(const GW::Constants::SkillID effect_skill_id) const
 
         if (agent_id == id || agent_id == 0)
         {
-            if (skill_id == effect_skill_id)
+            if (skill_id == (uint32_t)effect_skill_id)
                 return true;
         }
     }
@@ -164,7 +164,7 @@ float DataPlayer::GetRemainingEffectDuration(const GW::Constants::SkillID effect
 
         if (agent_id == id || agent_id == 0)
         {
-            if (skill_id == effect_skill_id)
+            if (skill_id == (uint32_t)effect_skill_id)
                 return GetTimeRemaining(effect.duration, effect.timestamp);
         }
     }

@@ -110,7 +110,7 @@ void HeroWindow::AttackTarget()
                     if (skillbar.agent_id != hero_living->agent_id)
                         continue;
 
-                    if (skillbar.skills[0].skill_id != GW::Constants::SkillID::Energy_Surge)
+                    if (skillbar.skills[0].skill_id != (uint32_t)GW::Constants::SkillID::Energy_Surge)
                         continue;
 
                     hero_has_spike_skill = true;
@@ -123,6 +123,16 @@ void HeroWindow::AttackTarget()
                 //                                    .target_id = target_agent_id,
                 //                                    .skill_slot = 1};
                 // GW::CtoS::SendPacket(&packet);
+
+                // GW::CtoS::SendPacket(16, GAME_CMSG_HERO_USE_SKILL, hero.hero_id, target_agent_id, 1);
+
+                auto action = GW::UI::ControlAction{};
+                if (hero.hero_id == 0)
+                    action = GW::UI::ControlAction::ControlAction_Hero1Skill1;
+                else
+                    return;
+
+                GW::GameThread::Enqueue([&]() { GW::UI::Keypress(action); });
             }
         }
     }

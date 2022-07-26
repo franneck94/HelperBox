@@ -55,7 +55,7 @@ bool Move_CastSkillABC::UpdateMoveState(const DataPlayer &player_data, const Age
     if (reached_pos && started_cast && !player_data.living->GetIsMoving() && !player_data.living->GetIsCasting())
         started_cast = false;
 
-    const auto skill_data = GW::SkillbarMgr::GetSkillConstantData(skill_cb->id);
+    const auto skill_data = GW::SkillbarMgr::GetSkillConstantData((uint32_t)skill_cb->id);
     if (!skill_data)
         return true;
     const auto cast_time_s = (skill_data->activation + skill_data->aftercast) * 1000.0F;

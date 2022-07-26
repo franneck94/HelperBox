@@ -43,7 +43,7 @@ public:
                 const uint32_t caster_id = packet->caster;
                 const uint32_t target_id = packet->target;
                 const uint32_t value = packet->value;
-                const bool no_target = false;
+                const bool no_target = true;
                 SkillPacketCallback(value_id, caster_id, target_id, value, no_target);
             });
     };

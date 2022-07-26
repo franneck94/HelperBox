@@ -162,7 +162,7 @@ bool IsLT(const DataPlayer &player_data)
     {
         for (const auto skill : skillbar->skills)
         {
-            if (skill.skill_id == GW::Constants::SkillID::Mantra_of_Earth)
+            if (skill.skill_id == (uint32_t)GW::Constants::SkillID::Mantra_of_Earth)
                 return false;
         }
     }
