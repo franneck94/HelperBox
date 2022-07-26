@@ -255,7 +255,7 @@ bool EmoRoutine::RoutineSelfBonds() const
     const auto found_sb = player_data->HasEffect(GW::Constants::SkillID::Spirit_Bond);
 
     const auto need_sb_right_now = DoNeedEnchNow(player_data, GW::Constants::SkillID::Spirit_Bond, 2.0F);
-    const auto need_ether_right_now = DoNeedEnchNow(player_data, GW::Constants::SkillID::Ether_Renewal, 1.0F);
+    const auto need_ether_right_now = DoNeedEnchNow(player_data, GW::Constants::SkillID::Ether_Renewal, 3.0F);
 
     const auto is_full_energy = player_data->energy_perc == 1.0F;
     if (!is_full_energy && (!found_ether || need_ether_right_now) && player_data->CastEffect(skillbar->ether))
