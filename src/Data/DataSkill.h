@@ -11,7 +11,7 @@
 struct DataSkill
 {
 public:
-    const uint32_t id;
+    const GW::Constants::SkillID id;
     uint32_t idx;
     uint8_t energy_cost;
     uint32_t recharge;

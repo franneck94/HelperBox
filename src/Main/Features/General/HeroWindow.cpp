@@ -97,10 +97,23 @@ void HeroWindow::AttackTarget()
             if (!hero_living)
                 continue;
 
-            // if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
-            // {
-            //     GW::CtoS::SendPacket(0x14, GAME_CMSG_HERO_USE_SKILL, hero.agent_id, 1, target_agent_id, 1);
-            // }
+            if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
+            {
+                const auto skillbar_array = GW::SkillbarMgr::GetSkillbarArray();
+                if (!skillbar_array)
+                    continue;
+                for (const auto &skillbar : *skillbar_array)
+                {
+                    if (skillbar.skills[0].skill_id != GW::Constants::SkillID::Energy_Surge)
+                        continue;
+                }
+                GW::CtoS::SendPacket(0x14, GAME_CMSG_HERO_USE_SKILL, hero.agent_id, 1, target_agent_id, 1);
+
+                // GW::GameThread::Enqueue([t] {
+                //     GW::UI::SendUIMessage(GW::UI::UIMessage::k, (void *)t);
+                //     delete t;
+                // });
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ struct SpikeSkillInfo
 
 struct TriggeredSpikeSkillInfo
 {
-    uint32_t triggered_skill_id;
+    GW::Constants::SkillID triggered_skill_id;
     uint32_t target_id;
 };
 

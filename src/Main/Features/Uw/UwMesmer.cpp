@@ -52,9 +52,9 @@ void LtRoutine::SkillPacketCallback(const uint32_t value_id,
                                     const bool no_target)
 {
     auto agent_id = caster_id;
-    const auto activated_skill_id = value;
+    const auto activated_skill_id = static_cast<GW::Constants::SkillID>(value);
 
-    if (!activated_skill_id || !caster_id || !target_id)
+    if (!value || !caster_id || !target_id)
         return;
 
     // ignore non-skill packets
@@ -121,7 +121,7 @@ bool LtRoutine::CastSingleHexOnEnemy(const GW::AgentLiving *enemy, SpikeSkillInf
         return true;
     }
 
-    triggered_spike_skill = {.triggered_skill_id = 0, .target_id = 0};
+    triggered_spike_skill = {.triggered_skill_id = GW::Constants::SkillID::No_Skill, .target_id = 0};
     return false;
 }
 

@@ -24,14 +24,14 @@ bool HelperActivationConditions(const bool need_party_loaded)
     return true;
 }
 
-DWORD QuestAcceptDialog(DWORD quest)
+DWORD QuestAcceptDialog(GW::Constants::QuestID quest)
 {
-    return (quest << 8) | 0x800001;
+    return (static_cast<int>(quest) << 8) | 0x800001;
 }
 
-DWORD QuestRewardDialog(DWORD quest)
+DWORD QuestRewardDialog(GW::Constants::QuestID quest)
 {
-    return (quest << 8) | 0x800007;
+    return (static_cast<int>(quest) << 8) | 0x800007;
 }
 
 void CancelMovement()
