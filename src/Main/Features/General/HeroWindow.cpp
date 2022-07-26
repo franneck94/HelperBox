@@ -20,6 +20,7 @@
 #include <DataPlayer.h>
 #include <Helper.h>
 #include <HelperMaps.h>
+#include <HelperPackets.h>
 
 #include <imgui.h>
 
@@ -102,17 +103,26 @@ void HeroWindow::AttackTarget()
                 const auto skillbar_array = GW::SkillbarMgr::GetSkillbarArray();
                 if (!skillbar_array)
                     continue;
+
+                auto hero_has_spike_skill = false;
                 for (const auto &skillbar : *skillbar_array)
                 {
+                    if (skillbar.agent_id != hero_living->agent_id)
+                        continue;
+
                     if (skillbar.skills[0].skill_id != GW::Constants::SkillID::Energy_Surge)
                         continue;
-                }
-                GW::CtoS::SendPacket(0x14, GAME_CMSG_HERO_USE_SKILL, hero.agent_id, 1, target_agent_id, 1);
 
-                // GW::GameThread::Enqueue([t] {
-                //     GW::UI::SendUIMessage(GW::UI::UIMessage::k, (void *)t);
-                //     delete t;
-                // });
+                    hero_has_spike_skill = true;
+                }
+                if (!hero_has_spike_skill)
+                    return;
+
+                // GW::Packet::HeroUseSkill packet = {.header = GAME_CMSG_HERO_USE_SKILL,
+                //                                    .hero_id = hero.agent_id,
+                //                                    .target_id = target_agent_id,
+                //                                    .skill_slot = 1};
+                // GW::CtoS::SendPacket(&packet);
             }
         }
     }
