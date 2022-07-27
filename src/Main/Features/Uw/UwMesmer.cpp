@@ -74,12 +74,15 @@ void LtRoutine::SkillPacketCallback(const uint32_t value_id,
         return;
     }
 
+#ifdef _DEBUG
     Log::Info("1 Casted skill %u on enemy %u", activated_skill_id, target_id);
+    Log::Info("2 %u %u", triggered_spike_skill.target_id, triggered_spike_skill.triggered_skill_id);
+#endif
 
     if (target_id != triggered_spike_skill.target_id || activated_skill_id != triggered_spike_skill.triggered_skill_id)
         return;
 
-    Log::Info(" 2Casted skill %u on enemy %u\n", activated_skill_id, target_id);
+    Log::Info("Casted skill %u on enemy %u\n", activated_skill_id, target_id);
     finished_skill = true;
 }
 

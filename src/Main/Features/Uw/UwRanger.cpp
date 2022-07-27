@@ -334,19 +334,25 @@ void UwRanger::Update(float, const AgentLivingData &livings_data)
                 if (AddColdfire(king_path_coldfire_ids, coldfire, king_path_rectangle))
                 {
                     king_path_coldfire_ids.push_back(coldfire->agent_id);
+#ifdef _DEBUG
                     Log::Info("Added king coldie!");
+#endif
                 }
             }
         }
 
+#ifdef _DEBUG
         const auto size_before = king_path_coldfire_ids.size();
+#endif
         const auto remove_it = std::remove_if(king_path_coldfire_ids.begin(),
                                               king_path_coldfire_ids.end(),
                                               [](const auto id) { return !GW::Agents::GetAgentByID(id); });
         king_path_coldfire_ids.erase(remove_it, king_path_coldfire_ids.end());
 
+#ifdef _DEBUG
         if (size_before != king_path_coldfire_ids.size())
             Log::Info("Delete king coldie!");
+#endif
     }
 
     if (!auto_target_active)
