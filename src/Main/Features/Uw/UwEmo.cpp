@@ -657,10 +657,14 @@ RoutineState EmoRoutine::Routine()
     const auto is_in_dhuum_fight = IsInDhuumFight(player_data->pos);
     const auto dhuum_fight_done = DhuumFightDone(num_finished_objectives);
 
+    if (is_in_dhuum_fight)
+        move_ongoing = false;
+
     if (IsUw() && dhuum_fight_done)
     {
         (void)DropAllBonds();
         action_state = ActionState::INACTIVE;
+        move_ongoing = false;
         return RoutineState::FINISHED;
     }
 
