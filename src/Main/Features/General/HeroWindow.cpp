@@ -118,6 +118,7 @@ void HeroWindow::AttackTarget()
                 if (!hero_has_spike_skill)
                     return;
 
+                // GW::SkillbarMgr::HeroUseSkill(hero.agent_id, 1, target_agent_id, 0);
                 // GW::Packet::HeroUseSkill packet = {.header = GAME_CMSG_HERO_USE_SKILL,
                 //                                    .hero_id = hero.agent_id,
                 //                                    .target_id = target_agent_id,
@@ -126,13 +127,10 @@ void HeroWindow::AttackTarget()
 
                 // GW::CtoS::SendPacket(16, GAME_CMSG_HERO_USE_SKILL, hero.hero_id, target_agent_id, 1);
 
-                auto action = GW::UI::ControlAction{};
-                if (hero.hero_id == 0)
-                    action = GW::UI::ControlAction::ControlAction_Hero1Skill1;
-                else
-                    return;
+                // auto action = GW::UI::ControlAction{};
+                // action = GW::UI::ControlAction::ControlAction_Hero1Skill1;
 
-                GW::GameThread::Enqueue([&]() { GW::UI::Keypress(action); });
+                // GW::GameThread::Enqueue([&]() { GW::UI::Keypress(action); });
             }
         }
     }
