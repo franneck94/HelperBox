@@ -63,8 +63,6 @@ void HeroWindow::FollowPlayer()
     if (!IsMapReady())
         return;
 
-    Log::Info("Heroes will follow the player!");
-
     GW::PartyMgr::FlagAll(follow_pos);
 }
 
@@ -190,6 +188,8 @@ void HeroWindow::Draw()
         {
             following_active = !following_active;
             toggled_follow = true;
+
+            Log::Info("Heroes will follow the player!");
         }
         if (following_active && TIMER_DIFF(last_follow_trigger_ms) > 800)
         {

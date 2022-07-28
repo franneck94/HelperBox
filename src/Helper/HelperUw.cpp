@@ -330,49 +330,49 @@ bool TargetClosestKeeper(DataPlayer &player_data, const std::vector<GW::AgentLiv
 
 bool TakeChamber()
 {
-    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW_Chamber);
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Chamber);
     GW::Agents::SendDialog(dialog);
     return true;
 }
 
 bool AcceptChamber()
 {
-    const auto dialog = QuestRewardDialog(GW::Constants::QuestID::UW_Chamber);
+    const auto dialog = QuestRewardDialog(GW::Constants::QuestID::UW::Chamber);
     GW::Agents::SendDialog(dialog);
     return true;
 }
 
 bool TakeRestore()
 {
-    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW_Restore);
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Restore);
     GW::Agents::SendDialog(dialog);
     return true;
 }
 
 bool TakeEscort()
 {
-    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW_Escort);
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Escort);
     GW::Agents::SendDialog(dialog);
     return true;
 }
 
 bool TakeUWG()
 {
-    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW_UWG);
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::UWG);
     GW::Agents::SendDialog(dialog);
     return true;
 }
 
 bool TakePits()
 {
-    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW_Pits);
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Pits);
     GW::Agents::SendDialog(dialog);
     return true;
 }
 
 bool TakePlanes()
 {
-    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW_Planes);
+    const auto dialog = QuestAcceptDialog(GW::Constants::QuestID::UW::Planes);
     GW::Agents::SendDialog(dialog);
     return true;
 }

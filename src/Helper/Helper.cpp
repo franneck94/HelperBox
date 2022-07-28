@@ -24,12 +24,12 @@ bool HelperActivationConditions(const bool need_party_loaded)
     return true;
 }
 
-DWORD QuestAcceptDialog(GW::Constants::QuestID quest)
+DWORD QuestAcceptDialog(const uint32_t quest)
 {
     return (static_cast<int>(quest) << 8) | 0x800001;
 }
 
-DWORD QuestRewardDialog(GW::Constants::QuestID quest)
+DWORD QuestRewardDialog(const uint32_t quest)
 {
     return (static_cast<int>(quest) << 8) | 0x800007;
 }

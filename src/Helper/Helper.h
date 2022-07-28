@@ -6,9 +6,9 @@
 
 bool HelperActivationConditions(const bool need_party_loaded = true);
 
-DWORD QuestAcceptDialog(GW::Constants::QuestID quest);
+DWORD QuestAcceptDialog(const uint32_t quest);
 
-DWORD QuestRewardDialog(GW::Constants::QuestID quest);
+DWORD QuestRewardDialog(const uint32_t quest);
 
 void CancelMovement();
 
