@@ -98,23 +98,23 @@ void HeroWindow::AttackTarget()
 
             if (hero_living->primary == static_cast<uint8_t>(GW::Constants::Profession::Mesmer))
             {
-                const auto skillbar_array = GW::SkillbarMgr::GetSkillbarArray();
-                if (!skillbar_array)
-                    continue;
+                // const auto skillbar_array = GW::SkillbarMgr::GetSkillbarArray();
+                // if (!skillbar_array)
+                //     continue;
 
-                auto hero_has_spike_skill = false;
-                for (const auto &skillbar : *skillbar_array)
-                {
-                    if (skillbar.agent_id != hero_living->agent_id)
-                        continue;
+                // auto hero_has_spike_skill = false;
+                // for (const auto &skillbar : *skillbar_array)
+                // {
+                //     if (skillbar.agent_id != hero_living->agent_id)
+                //         continue;
 
-                    if (skillbar.skills[0].skill_id != (uint32_t)GW::Constants::SkillID::Energy_Surge)
-                        continue;
+                //     if (skillbar.skills[0].skill_id != (uint32_t)GW::Constants::SkillID::Energy_Surge)
+                //         continue;
 
-                    hero_has_spike_skill = true;
-                }
-                if (!hero_has_spike_skill)
-                    return;
+                //     hero_has_spike_skill = true;
+                // }
+                // if (!hero_has_spike_skill)
+                //     return;
 
                 // GW::SkillbarMgr::HeroUseSkill(hero.agent_id, 1, target_agent_id, 0);
                 // GW::Packet::HeroUseSkill packet = {.header = GAME_CMSG_HERO_USE_SKILL,
