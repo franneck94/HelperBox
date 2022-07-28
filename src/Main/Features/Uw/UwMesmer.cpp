@@ -54,7 +54,10 @@ void LtRoutine::SkillPacketCallback(const uint32_t value_id,
     auto agent_id = caster_id;
     const auto activated_skill_id = static_cast<GW::Constants::SkillID>(value);
 
-    if (!value || !caster_id || !target_id)
+    if (!value || !caster_id || !target_id || !player_data->living)
+        return;
+
+    if (caster_id != player_data->living->agent_id)
         return;
 
     // ignore non-skill packets
@@ -82,7 +85,9 @@ void LtRoutine::SkillPacketCallback(const uint32_t value_id,
     if (target_id != triggered_spike_skill.target_id || activated_skill_id != triggered_spike_skill.triggered_skill_id)
         return;
 
+#ifdef _DEBUG
     Log::Info("Casted skill %u on enemy %u\n", activated_skill_id, target_id);
+#endif
     finished_skill = true;
 }
 
